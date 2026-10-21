@@ -37,9 +37,19 @@ export function RotationGenerator({
   const t = useTranslations();
   const locale = useLocale();
   const today = formatDateToLocal(new Date());
-  const [from, setFrom] = useState(today);
-  const [to, setTo] = useState(addDays(today, 12 * 7 - 1));
-  const [plan, setPlan] = useState<GenerationPlan | null>(null);
+  const [from, setFromRaw] = useState(today);
+  const [to, setToRaw] = useState(addDays(today, 12 * 7 - 1));
+  // The plan is stored with the range it was computed for; Apply uses exactly that range.
+  const [shown, setShown] = useState<{ plan: GenerationPlan; from: string; to: string } | null>(null);
+  const plan = shown?.plan ?? null;
+  const setFrom = (value: string) => {
+    setFromRaw(value);
+    setShown(null);
+  };
+  const setTo = (value: string) => {
+    setToRaw(value);
+    setShown(null);
+  };
 
   const preview = usePreviewRotation();
   const generate = useGenerateRotation();
@@ -63,7 +73,14 @@ export function RotationGenerator({
     }
   };
 
-  const reload = () => preview.mutate({ id: rotation.id, from, to }, { onSuccess: setPlan, onError });
+  const load = (range: { from: string; to: string }) =>
+    preview.mutate(
+      { id: rotation.id, ...range },
+      { onSuccess: (result) => setShown({ plan: result, ...range }), onError }
+    );
+  const runPreview = () => load({ from, to });
+  // Re-previews the range the user is currently looking at
+  const reload = () => load(shown ?? { from, to });
 
   const pending = plan?.entries.filter((e) => e.kind !== "unchanged") ?? [];
   const overwritten = plan?.entries.reduce((n, e) => n + (e.kind === "update" ? e.remove.length : 0), 0) ?? 0;
@@ -110,16 +127,16 @@ export function RotationGenerator({
         ))}
       </div>
       <div className="flex flex-col gap-2 sm:flex-row">
-        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={reload} disabled={preview.isPending}>
+        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={runPreview} disabled={preview.isPending}>
           {t("rotation.generator.preview")}
         </Button>
         <Button
           type="button"
           className="w-full sm:w-auto"
-          disabled={!plan || pending.length === 0 || generate.isPending}
+          disabled={!shown || pending.length === 0 || generate.isPending}
           onClick={() =>
             generate.mutate(
-              { id: rotation.id, from, to },
+              { id: rotation.id, from: shown!.from, to: shown!.to },
               {
                 onSuccess: (summary) => {
                   toast.success(t("rotation.generator.applied", { ...summary }));
@@ -192,7 +209,7 @@ export function RotationGenerator({
           </div>
           <ul className="divide-y divide-line">
             {plan.entries.map((entry) => (
-              <PlanRow key={entry.date} entry={entry} name={name} date={day(entry.date)} onSkip={() => markSkip(entry.date)} />
+              <PlanRow key={entry.date} entry={entry} name={name} date={day(entry.date)} busy={save.isPending} onSkip={() => markSkip(entry.date)} />
             ))}
           </ul>
         </div>
@@ -205,11 +222,13 @@ function PlanRow({
   entry,
   name,
   date,
+  busy,
   onSkip,
 }: {
   entry: PlanEntry;
   name: (id: string) => string;
   date: string;
+  busy: boolean;
   onSkip: () => void;
 }) {
   const t = useTranslations();
@@ -234,7 +253,7 @@ function PlanRow({
           </span>
         )}
         {entry.kind !== "delete" && (
-          <Button type="button" size="sm" variant="ghost" onClick={onSkip}>
+          <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={onSkip}>
             {t("rotation.generator.markSkip")}
           </Button>
         )}
