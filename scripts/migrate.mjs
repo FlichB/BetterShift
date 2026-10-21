@@ -31,6 +31,11 @@ try {
   migrate(drizzle(sqlite), {
     migrationsFolder: path.join(process.cwd(), "drizzle"),
   });
+  // [fork] Fork tables run on their own track after upstream's, see docs/adr/0002-eigene-migrationsspur-fuer-fork.md.
+  migrate(drizzle(sqlite), {
+    migrationsFolder: path.join(process.cwd(), "drizzle", "fork"),
+    migrationsTable: "__drizzle_migrations_fork",
+  });
   console.log(`[Migrate] Schema is up to date: ${path.resolve(dbPath)}`);
 } finally {
   sqlite.close();

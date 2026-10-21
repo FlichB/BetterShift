@@ -13,7 +13,7 @@
     "test": "npm run lint && npm run test:unit && npm run build && npm run i18n",
     "test:ci": "npm run lint && npm run test:unit && npm run build && npm run i18n && npm run db:generate && npm run db:migrate",
     "test:unit": "vitest run",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "drizzle-kit generate && drizzle-kit generate --config drizzle.fork.config.ts",
     "db:migrate": "node scripts/migrate.mjs",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
