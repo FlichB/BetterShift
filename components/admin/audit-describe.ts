@@ -174,6 +174,21 @@ export function useAuditDescription() {
           return t("adminAudit.describe.accountDeleted");
         case "auth.session.revoked":
           return t("adminAudit.describe.sessionsRevoked", { count: count(m, "count") || 1 });
+        // [fork] Rotation events
+        case "rotation.created":
+          return t("adminAudit.describe.rotationCreated", { name: text(m, "rotationName"), calendar });
+        case "rotation.updated":
+          return t("adminAudit.describe.rotationUpdated", { name: text(m, "rotationName"), calendar });
+        case "rotation.deleted":
+          return t("adminAudit.describe.rotationDeleted", { name: text(m, "rotationName"), calendar });
+        case "rotation.generated":
+          return t("adminAudit.describe.rotationGenerated", {
+            name: text(m, "rotationName"),
+            from: text(m, "from"),
+            to: text(m, "to"),
+          });
+        case "rotation.lock_removed":
+          return t("adminAudit.describe.rotationLockRemoved", { name: text(m, "rotationName") });
       }
       return log.action;
     },

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { format } from "date-fns";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { CalendarPlus, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthFeatures } from "@/hooks/useAuthFeatures";
@@ -22,14 +22,14 @@ import { FullscreenLoader } from "@/components/fullscreen-loader";
 import { InfoNote, ListRow, Pill, inputClass, CheckRow } from "@/components/form-kit";
 import { accountWideContentClass, AccountPageHeader } from "@/components/profile/account-layout";
 import { RotationForm } from "@/components/rotation/rotation-form";
+import { RotationGenerator } from "@/components/rotation/rotation-generator";
 import { handleRateLimitError } from "@/lib/rate-limit-client";
 import { parseLocalDate } from "@/lib/date-utils";
 import { getDateLocale } from "@/lib/locales";
 import type { RotationDetail } from "@/lib/rotation/service";
 import { cn } from "@/lib/utils";
 
-// Task 10 adds { mode: "generate"; rotationId: string } here
-type ViewState = { mode: "list" } | { mode: "form"; rotationId?: string };
+type ViewState = { mode: "list" } | { mode: "form"; rotationId?: string } | { mode: "generate"; rotationId: string };
 
 export default function RotationsPage() {
   const t = useTranslations();
@@ -62,6 +62,8 @@ export default function RotationsPage() {
   const dateLocale = getDateLocale(locale);
   const formatDay = (date: string) => format(parseLocalDate(date), "P", { locale: dateLocale });
   const editing = view.mode === "form" ? rotations.find((r) => r.id === view.rotationId) : undefined;
+  // Looked up on every render so the generator sees the refetched rotation after "Fällt aus"
+  const generating = view.mode === "generate" ? rotations.find((r) => r.id === view.rotationId) : undefined;
 
   const describe = (rotation: RotationDetail) => {
     const period =
@@ -126,6 +128,17 @@ export default function RotationsPage() {
                   onDone={() => setView({ mode: "list" })}
                 />
               </>
+            ) : view.mode === "generate" && generating ? (
+              <>
+                <h2 className="text-[16px] font-semibold text-fg-strong">
+                  {t("rotation.generator.title")}: {generating.name}
+                </h2>
+                <RotationGenerator
+                  rotation={generating}
+                  calendar={calendar}
+                  onClose={() => setView({ mode: "list" })}
+                />
+              </>
             ) : (
               <>
                 <Button className="w-full sm:w-auto" onClick={() => setView({ mode: "form" })}>
@@ -156,6 +169,10 @@ export default function RotationsPage() {
                             <p className="text-[13px] text-fg-secondary">{days}</p>
                           </div>
                           <div className="flex flex-wrap gap-2">
+                            <Button size="sm" onClick={() => setView({ mode: "generate", rotationId: rotation.id })}>
+                              <CalendarPlus className="size-3.5" />
+                              {t("rotation.generator.title")}
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
