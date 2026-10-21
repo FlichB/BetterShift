@@ -153,4 +153,13 @@ describe("rotation service", () => {
     expect(deleteRotation(rotation.id, { deleteFutureDuties: true }, now)).toEqual({ deletedDuties: 4 });
     expect(db.select().from(shifts).where(eq(shifts.calendarId, team.calendarId)).all()).toHaveLength(0);
   });
+
+  it("copies the preset notes into generated shifts", async () => {
+    db.update(shiftPresets).set({ notes: "Schlüssel bei Chef" }).where(eq(shiftPresets.id, team.presetId)).run();
+    const rotation = createRotation(input, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-08", team.ownerId, now);
+    const [duty] = dutiesOf(rotation.id);
+    const shift = db.select().from(shifts).where(eq(shifts.id, duty.shiftId)).get()!;
+    expect(shift.notes).toBe("Schlüssel bei Chef");
+  });
 });

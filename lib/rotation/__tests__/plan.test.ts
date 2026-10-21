@@ -7,6 +7,7 @@ const template: DutyTemplate = {
   endTime: "15:00",
   color: "#3b82f6",
   isAllDay: false,
+  notes: null,
 };
 const now = new Date(2026, 10, 1, 12, 0); // 2026-11-01 12:00
 const members = ["a", "b", "c", "d"];
@@ -150,5 +151,19 @@ describe("planGeneration", () => {
       now,
     });
     expect(plan.entries.map((e) => e.date)).toEqual(["2026-11-07", "2026-11-14", "2026-11-21"]);
+  });
+});
+
+describe("planGeneration notes", () => {
+  it("flags changed preset notes", () => {
+    const plan = planGeneration({
+      desired: [{ date: "2026-11-07", userIds: ["a", "b"] }],
+      existing: [existing("2026-11-07", [slot("a"), slot("b")], { notes: "old" })],
+      template,
+      memberIds: members,
+      perShift: 2,
+      now,
+    });
+    expect(plan.entries[0]).toMatchObject({ kind: "update", add: [], remove: [], fieldsChanged: true });
   });
 });

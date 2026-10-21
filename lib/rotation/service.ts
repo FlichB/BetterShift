@@ -159,6 +159,7 @@ function loadExistingDuties(tx: Tx, rotationId: string, from: string, to: string
       endTime: shifts.endTime,
       color: shifts.color,
       isAllDay: shifts.isAllDay,
+      notes: shifts.notes,
     })
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
@@ -214,6 +215,7 @@ async function loadTemplate(rotation: RotationDetail): Promise<LoadedTemplate> {
       endTime: preset.isAllDay ? "23:59" : preset.endTime,
       color: preset.color,
       isAllDay: preset.isAllDay,
+      notes: preset.notes,
     },
     segments,
     customFieldValues: await readPresetCustomFieldValues(preset.id),
@@ -252,6 +254,7 @@ export async function runGeneration(
 
   return db.transaction((tx) => {
     const rotation = loadRotation(tx, id);
+    if (rotation.presetId !== loaded.presetId) throw new RotationServiceError("presetMissing");
     const plan = buildPlan(tx, rotation, from, to, template, now);
     const summary: GenerationSummary = { created: 0, updated: 0, deleted: 0, unchanged: 0, warnings: plan.warnings.length };
 

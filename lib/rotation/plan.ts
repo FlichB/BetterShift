@@ -7,6 +7,7 @@ export interface DutyTemplate {
   endTime: string;
   color: string;
   isAllDay: boolean;
+  notes: string | null;
 }
 
 export interface ExistingSlot {
@@ -61,7 +62,8 @@ function fieldsDiffer(a: DutyTemplate, b: DutyTemplate): boolean {
     a.startTime !== b.startTime ||
     a.endTime !== b.endTime ||
     a.color !== b.color ||
-    a.isAllDay !== b.isAllDay
+    a.isAllDay !== b.isAllDay ||
+    a.notes !== b.notes
   );
 }
 
