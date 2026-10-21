@@ -1445,7 +1445,7 @@
       },
       "locked": "Swapped (locked)",
       "fieldsChanged": "Time/title from preset",
-      "overwriteNotice": "{count, plural, one {# slot differs from the plan and will be overwritten} other {# slots differ from the plan and will be overwritten}}",
+      "overwriteNotice": "{count, plural, one {# slot will be reassigned} other {# slots will be reassigned}}",
       "markSkip": "Skipped",
       "warnings": "Notes",
       "warning": {

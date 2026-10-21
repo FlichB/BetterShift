@@ -1445,7 +1445,7 @@
       },
       "locked": "Getauscht (gesperrt)",
       "fieldsChanged": "Zeit/Titel aus Preset",
-      "overwriteNotice": "{count, plural, one {# Platz weicht vom Plan ab und wird überschrieben} other {# Plätze weichen vom Plan ab und werden überschrieben}}",
+      "overwriteNotice": "{count, plural, one {# Platz wird neu besetzt} other {# Plätze werden neu besetzt}}",
       "markSkip": "Fällt aus",
       "warnings": "Hinweise",
       "warning": {
