@@ -154,6 +154,8 @@ function loadExistingDuties(tx: Tx, rotationId: string, from: string, to: string
     .select({
       shiftId: rotationDuties.shiftId,
       date: rotationDuties.date,
+      presetId: shifts.presetId,
+      signupCapacity: shifts.signupCapacity,
       title: shifts.title,
       startTime: shifts.startTime,
       endTime: shifts.endTime,
@@ -222,7 +224,7 @@ async function loadTemplate(rotation: RotationDetail): Promise<LoadedTemplate> {
   };
 }
 
-function buildPlan(tx: Tx, rotation: RotationDetail, from: string, to: string, template: DutyTemplate, now: Date) {
+function buildPlan(tx: Tx, rotation: RotationDetail, from: string, to: string, template: DutyTemplate, presetId: string, now: Date) {
   // Duties before startDate belong to an earlier configuration and are left alone.
   const windowStart = from > rotation.startDate ? from : rotation.startDate;
   if (windowStart > to) return { entries: [], warnings: [] };
@@ -230,6 +232,7 @@ function buildPlan(tx: Tx, rotation: RotationDetail, from: string, to: string, t
     desired: generateDuties(toRule(rotation), windowStart, to),
     existing: loadExistingDuties(tx, rotation.id, windowStart, to),
     template,
+    presetId,
     memberIds: rotation.memberIds,
     perShift: rotation.perShift,
     now,
@@ -238,8 +241,8 @@ function buildPlan(tx: Tx, rotation: RotationDetail, from: string, to: string, t
 
 export async function previewGeneration(id: string, from: string, to: string, now: Date): Promise<GenerationPlan> {
   const rotation = loadRotation(db, id);
-  const { template } = await loadTemplate(rotation);
-  return db.transaction((tx) => buildPlan(tx, rotation, from, to, template, now));
+  const { template, presetId } = await loadTemplate(rotation);
+  return db.transaction((tx) => buildPlan(tx, rotation, from, to, template, presetId, now));
 }
 
 export async function runGeneration(
@@ -255,7 +258,7 @@ export async function runGeneration(
   return db.transaction((tx) => {
     const rotation = loadRotation(tx, id);
     if (rotation.presetId !== loaded.presetId) throw new RotationServiceError("presetMissing");
-    const plan = buildPlan(tx, rotation, from, to, template, now);
+    const plan = buildPlan(tx, rotation, from, to, template, loaded.presetId, now);
     const summary: GenerationSummary = { created: 0, updated: 0, deleted: 0, unchanged: 0, warnings: plan.warnings.length };
 
     for (const entry of plan.entries) {
@@ -297,9 +300,11 @@ export async function runGeneration(
           }
           if (entry.fieldsChanged) {
             tx.update(shifts)
-              .set({ ...template, signupCapacity: rotation.perShift, updatedAt: now })
+              .set({ ...template, presetId: loaded.presetId, signupCapacity: rotation.perShift, updatedAt: now })
               .where(eq(shifts.id, entry.shiftId))
               .run();
+            replaceShiftSegments(tx, entry.shiftId, loaded.segments);
+            replaceShiftCustomFieldValues(tx, entry.shiftId, loaded.customFieldValues);
           }
           summary.updated++;
           break;

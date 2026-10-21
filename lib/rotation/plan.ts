@@ -20,6 +20,8 @@ export interface ExistingSlot {
 export interface ExistingDuty extends DutyTemplate {
   shiftId: string;
   date: string;
+  presetId: string | null;
+  signupCapacity: number | null;
   slots: ExistingSlot[];
 }
 
@@ -51,6 +53,8 @@ export interface PlanInput {
   desired: PlannedDuty[];
   existing: ExistingDuty[];
   template: DutyTemplate;
+  /** Preset the template was read from; duties pointing elsewhere get re-synced. */
+  presetId: string;
   memberIds: string[];
   perShift: number;
   now: Date;
@@ -69,7 +73,7 @@ function fieldsDiffer(a: DutyTemplate, b: DutyTemplate): boolean {
 
 /** Diffs planned against stored duties; never plans anything for a started duty. */
 export function planGeneration(input: PlanInput): GenerationPlan {
-  const { desired, template, memberIds, perShift, now } = input;
+  const { desired, template, presetId, memberIds, perShift, now } = input;
   const members = new Set(memberIds);
   const existingByDate = new Map(input.existing.map((e) => [e.date, e]));
   const entries: PlanEntry[] = [];
@@ -105,7 +109,8 @@ export function planGeneration(input: PlanInput): GenerationPlan {
     const actual = current.slots.map((s) => s.userId);
     const add = target.filter((id) => !actual.includes(id));
     const remove = actual.filter((id) => !target.includes(id));
-    const fieldsChanged = fieldsDiffer(current, template);
+    const fieldsChanged =
+      fieldsDiffer(current, template) || current.presetId !== presetId || current.signupCapacity !== perShift;
 
     if (add.length === 0 && remove.length === 0 && !fieldsChanged) {
       entries.push({ kind: "unchanged", shiftId: current.shiftId, date: current.date, userIds: target, locked });

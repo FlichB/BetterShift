@@ -14,6 +14,8 @@ const members = ["a", "b", "c", "d"];
 
 const existing = (date: string, slots: ExistingDuty["slots"], over: Partial<ExistingDuty> = {}): ExistingDuty => ({
   shiftId: `s-${date}`,
+  presetId: "p1",
+  signupCapacity: 2,
   date,
   slots,
   ...template,
@@ -32,6 +34,7 @@ describe("planGeneration", () => {
       existing: [],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
@@ -45,6 +48,7 @@ describe("planGeneration", () => {
       existing: [existing("2026-11-07", [slot("a"), slot("b")])],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
@@ -59,6 +63,7 @@ describe("planGeneration", () => {
       existing: [existing("2026-11-07", [slot("c", true, "a"), slot("b")])],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
@@ -71,6 +76,7 @@ describe("planGeneration", () => {
       existing: [existing("2026-11-07", [slot("a"), slot("d")])],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
@@ -83,6 +89,7 @@ describe("planGeneration", () => {
       existing: [existing("2026-11-07", [slot("a"), slot("b")], { endTime: "14:00" })],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
@@ -98,6 +105,7 @@ describe("planGeneration", () => {
       ],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
@@ -115,6 +123,7 @@ describe("planGeneration", () => {
       existing: [existing("2026-11-07", [slot("x", true, "a"), slot("b")])],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
@@ -132,6 +141,7 @@ describe("planGeneration", () => {
       existing: [existing("2026-10-31", [slot("c"), slot("d")])],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
@@ -147,6 +157,7 @@ describe("planGeneration", () => {
       existing: [existing("2026-11-21", [slot("a"), slot("b")])],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
@@ -161,6 +172,7 @@ describe("planGeneration notes", () => {
       existing: [existing("2026-11-07", [slot("a"), slot("b")], { notes: "old" })],
       template,
       memberIds: members,
+      presetId: "p1",
       perShift: 2,
       now,
     });
