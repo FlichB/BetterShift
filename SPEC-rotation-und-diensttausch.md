@@ -132,8 +132,8 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 
 ## 9. Abnahmekriterien
 
-- [ ] Rotation mit 8 Personen / 2 pro Dienst / wöchentlich (Samstag) erzeugt einen Plan, in dem jede Person exakt jede 4. Woche Dienst hat
-- [ ] Erneutes Generieren erzeugt keine Duplikate und überschreibt keine getauschten Plätze
+- [x] Rotation mit 8 Personen / 2 pro Dienst / wöchentlich (Samstag) erzeugt einen Plan, in dem jede Person exakt jede 4. Woche Dienst hat *(Phase 1: Unit-Test + API-Abnahme 2026-10-21)*
+- [x] Erneutes Generieren erzeugt keine Duplikate und überschreibt keine getauschten Plätze *(Phase 1: Duplikate per API geprüft; Sperren per Integrationstest, echte Tausche ab Phase 2)*
 - [ ] Mitarbeiter A kann einen Dienst abgeben; B übernimmt; der Kalender zeigt B (spätestens nach 15 s)
 - [ ] Tausch zweier Dienste funktioniert in einem Schritt und ist atomar
 - [ ] Doppelbelegung wird verhindert; zwei gleichzeitige Annahmen → nur eine erfolgreich
@@ -141,7 +141,7 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 - [ ] Alle Tauschvorgänge stehen im Audit-Log
 - [ ] ICS-Feed spiegelt Tausche ohne weiteres Zutun wider
 - [ ] UI auf Deutsch, auf dem Smartphone bedienbar
-- [ ] Nicht-Berechtigte können keine Rotationen anlegen oder generieren
+- [x] Nicht-Berechtigte können keine Rotationen anlegen oder generieren *(Phase 1: Teilnehmer mit „Read" → 403, API-Abnahme 2026-10-21)*
 
 ## 10. Testfälle (Auswahl)
 
