@@ -36,6 +36,10 @@ jobs:
       - name: ESLint
         run: npm run lint
 
+      # [fork] unit tests (rotation module)
+      - name: Unit tests
+        run: npm run test:unit
+
       - name: Build Test (includes TypeScript check)
         run: npm run build
 
