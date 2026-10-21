@@ -75,12 +75,13 @@ export function RotationGenerator({
 
   const load = (range: { from: string; to: string }) =>
     preview.mutate(
-      { id: rotation.id, ...range },
-      { onSuccess: (result) => setShown({ plan: result, ...range }), onError }
+      { id: rotation.id, from: range.from, to: range.to },
+      // The plan comes last: spreading a range object that carries a stale `plan` must never win
+      { onSuccess: (result) => setShown({ from: range.from, to: range.to, plan: result }), onError }
     );
   const runPreview = () => load({ from, to });
   // Re-previews the range the user is currently looking at
-  const reload = () => load(shown ?? { from, to });
+  const reload = () => load({ from: shown?.from ?? from, to: shown?.to ?? to });
 
   const pending = plan?.entries.filter((e) => e.kind !== "unchanged") ?? [];
   const overwritten = plan?.entries.reduce((n, e) => n + (e.kind === "update" ? e.remove.length : 0), 0) ?? 0;
