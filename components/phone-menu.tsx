@@ -14,6 +14,7 @@ import {
   Loader2,
   LogIn,
   LogOut,
+  RefreshCcw,
   Shield,
   SlidersHorizontal,
   SunMoon,
@@ -392,6 +393,8 @@ function PhoneMenuSheet({
                     title={t("activityLog.title")}
                     onClick={() => navigate("/profile?section=activity")}
                   />
+                  {/* [fork] Rotation generator */}
+                  <MenuRow icon={RefreshCcw} title={t("rotation.menu")} onClick={() => navigate("/rotations")} />
                   <MenuRow
                     icon={Compass}
                     title={t("calendar.browseCalendars")}

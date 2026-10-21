@@ -1383,6 +1383,7 @@
     "delete": "Rotation löschen",
     "deleteConfirm": "Rotation „{name}“ löschen?",
     "deleteFutureDuties": "Zukünftige Dienste dieser Rotation ebenfalls löschen",
+    "summary": "{members, plural, one {# Teilnehmer} other {# Teilnehmer}} · {perShift} pro Dienst",
     "deleted": "Rotation gelöscht ({count, plural, =0 {keine Dienste entfernt} one {# Dienst entfernt} other {# Dienste entfernt}})",
     "saved": "Rotation gespeichert",
     "fields": {
