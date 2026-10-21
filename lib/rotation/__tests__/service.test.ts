@@ -139,6 +139,40 @@ describe("rotation service", () => {
     expect(dutiesOf(rotation.id).map((d) => d.date)).toEqual(["2026-11-07", "2026-11-21", "2026-11-28"]);
   });
 
+  it("syncs capacity when perShift changes", async () => {
+    const rotation = createRotation(input, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, now);
+    updateRotation(rotation.id, { ...input, perShift: 3 });
+    const summary = await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, now);
+    expect(summary.updated).toBe(4);
+    for (const d of dutiesOf(rotation.id)) {
+      expect(d.userIds).toHaveLength(3);
+      expect(db.select().from(shifts).where(eq(shifts.id, d.shiftId)).get()!.signupCapacity).toBe(3);
+    }
+  });
+
+  it("re-syncs presetId when the rotation switches to an identical preset", async () => {
+    const rotation = createRotation(input, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, now);
+    const secondPreset = crypto.randomUUID();
+    db.insert(shiftPresets)
+      .values({
+        id: secondPreset,
+        calendarId: team.calendarId,
+        title: "Samstagsdienst",
+        startTime: "09:30",
+        endTime: "15:00",
+        color: "#3b82f6",
+      })
+      .run();
+    updateRotation(rotation.id, { ...input, presetId: secondPreset });
+    const summary = await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, now);
+    expect(summary.updated).toBe(4);
+    for (const d of dutiesOf(rotation.id)) {
+      expect(db.select().from(shifts).where(eq(shifts.id, d.shiftId)).get()!.presetId).toBe(secondPreset);
+    }
+  });
+
   it("fails cleanly when the preset is archived", async () => {
     const rotation = createRotation(input, team.ownerId);
     db.update(shiftPresets).set({ archivedAt: new Date() }).where(eq(shiftPresets.id, team.presetId)).run();

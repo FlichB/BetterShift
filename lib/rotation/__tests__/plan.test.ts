@@ -96,6 +96,32 @@ describe("planGeneration", () => {
     expect(plan.entries[0]).toMatchObject({ kind: "update", add: [], remove: [], fieldsChanged: true });
   });
 
+  it("flags capacity mismatch", () => {
+    const plan = planGeneration({
+      desired: [{ date: "2026-11-07", userIds: ["a", "b"] }],
+      existing: [existing("2026-11-07", [slot("a"), slot("b")], { signupCapacity: 3 })],
+      template,
+      presetId: "p1",
+      memberIds: members,
+      perShift: 2,
+      now,
+    });
+    expect(plan.entries[0]).toMatchObject({ kind: "update", add: [], remove: [], fieldsChanged: true });
+  });
+
+  it("flags preset mismatch", () => {
+    const plan = planGeneration({
+      desired: [{ date: "2026-11-07", userIds: ["a", "b"] }],
+      existing: [existing("2026-11-07", [slot("a"), slot("b")], { presetId: "p-old" })],
+      template,
+      presetId: "p1",
+      memberIds: members,
+      perShift: 2,
+      now,
+    });
+    expect(plan.entries[0]).toMatchObject({ kind: "update", add: [], remove: [], fieldsChanged: true });
+  });
+
   it("deletes unlocked duties that are no longer planned, keeps locked ones with a warning", () => {
     const plan = planGeneration({
       desired: [],
