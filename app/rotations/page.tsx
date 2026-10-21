@@ -67,7 +67,7 @@ export default function RotationsPage() {
 
   const describe = (rotation: RotationDetail) => {
     const period =
-      rotation.period === "days" ? `${rotation.periodDays} ${t("rotation.fields.periodDays")}` : t(`rotation.period.${rotation.period}`);
+      rotation.period === "days" ? t("rotation.everyNDays", { count: rotation.periodDays ?? 0 }) : t(`rotation.period.${rotation.period}`);
     const days =
       rotation.weekdays.length === 0
         ? t("rotation.allDays")

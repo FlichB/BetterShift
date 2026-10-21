@@ -179,7 +179,7 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 15. **Ausfalltage** werden an der Rotation gepflegt; die Reihenfolge rückt nach.
 16. **Neustart ab X:** Standardmäßig beginnt die Reihe mit dem Teilnehmer nach dem letzten Dienst vor X; der Admin kann das ändern.
 17. **Manuelle Änderungen** an generierten Plätzen werden beim Neugenerieren überschrieben (mit Hinweis in der Vorschau).
-18. **Teilnehmer** erhalten im Teamkalender das Bündel „Read".
+18. **Teilnehmer** erhalten im Teamkalender das Bündel „Read". Hinweis (2026-10-21): Das mitgelieferte Bündel „Read" enthält `signUpSelf` („Sich selbst eintragen"); bis Phase 2 einen Guard ergänzt, sollten Teilnehmer ein Bündel ohne diese Berechtigung erhalten.
 19. **Verfallen:** Lesend sofort, plus stündlicher In-Prozess-Timer, der den Status setzt und protokolliert.
 20. **Persönlicher ICS-Feed** („nur meine Dienste") in Phase 4; `TZ=Europe/Vienna`.
 21. **Outlook:** Dienste sollen später automatisch in den Outlook-Kalendern der Betroffenen erscheinen. Empfehlung: iCalendar-Einladungen per SMTP (Phase 3); offen: Microsoft 365 oder Exchange on-prem. Jeder Platz erhält eine stabile ID als Termin-UID.
