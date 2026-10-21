@@ -48,13 +48,16 @@ export function MemberOrderList({
         </ol>
       )}
       {available.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {available.map((m) => (
-            <Button key={m.id} type="button" variant="outline" size="sm" onClick={() => onChange([...value, m.id])}>
-              <Plus className="size-3.5" />
-              {m.name ?? m.id}
-            </Button>
-          ))}
+        <div className="space-y-2">
+          <p className="text-sm text-fg-secondary">{t("rotation.addMember")}</p>
+          <div className="flex flex-wrap gap-2">
+            {available.map((m) => (
+              <Button key={m.id} type="button" variant="outline" size="sm" onClick={() => onChange([...value, m.id])}>
+                <Plus className="size-3.5" />
+                {m.name ?? m.id}
+              </Button>
+            ))}
+          </div>
         </div>
       )}
       <p className="text-sm text-fg-secondary">{t("rotation.memberHint")}</p>
