@@ -61,12 +61,27 @@ describe("createGraphClient", () => {
     });
   });
 
-  it("turns a rejected token request into an auth error", async () => {
+  it("turns a rejected token request into an auth error without echoing the secret", async () => {
+    const secretConfig = { ...config, clientSecret: "s3cr3t-value" };
     const { fetchImpl } = fakeFetch([json(400, { error: "invalid_client", error_description: "bad secret" })]);
-    const error = await createGraphClient(config, fetchImpl).cancelEvent("ev1", "x").catch((e) => e);
+    const error = await createGraphClient(secretConfig, fetchImpl).cancelEvent("ev1", "x").catch((e) => e);
     expect(error).toBeInstanceOf(GraphError);
     expect(error.isAuth).toBe(true);
-    expect(error.message).not.toContain("secret\""); // never echoes the request
+    expect(error.message).not.toContain("s3cr3t-value");
+  });
+
+  it("keeps a transient token outage (503) retryable instead of treating it as bad credentials", async () => {
+    const { fetchImpl } = fakeFetch([json(503, { error: "temporarily_unavailable", error_description: "try later" })]);
+    const error = await createGraphClient(config, fetchImpl).cancelEvent("ev1", "x").catch((e) => e);
+    expect(error).toBeInstanceOf(GraphError);
+    expect(error.status).toBe(503);
+    expect(error.isAuth).toBe(false);
+  });
+
+  it("treats an empty Retry-After header as no delay", async () => {
+    const { fetchImpl } = fakeFetch([token(), json(429, { error: { code: "TooManyRequests", message: "slow" } }, { "Retry-After": "  " })]);
+    const error = await createGraphClient(config, fetchImpl).updateEvent("ev1", input).catch((e) => e);
+    expect(error.retryAfterMs).toBeNull();
   });
 
   it("reports throttling with Retry-After", async () => {

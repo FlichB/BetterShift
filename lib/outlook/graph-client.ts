@@ -71,8 +71,10 @@ function eventBody(input: EventInput) {
 }
 
 function retryAfter(response: Response): number | null {
-  const seconds = Number(response.headers.get("retry-after"));
-  return response.headers.has("retry-after") && Number.isFinite(seconds) ? seconds * 1000 : null;
+  const raw = response.headers.get("retry-after")?.trim();
+  if (!raw) return null;
+  const seconds = Number(raw);
+  return Number.isFinite(seconds) ? seconds * 1000 : null;
 }
 
 async function failure(response: Response): Promise<GraphError> {
@@ -104,8 +106,13 @@ export function createGraphClient(config: OutlookConfig, fetchImpl: typeof fetch
         signal: AbortSignal.timeout(TIMEOUT_MS),
       }
     );
-    // Any token failure means the credentials are unusable: report it as auth so the worker pauses.
-    if (!response.ok) throw new GraphError(401, (await failure(response)).message);
+    if (!response.ok) {
+      const error = await failure(response);
+      // Only a rejected login (400/401/403) means the credentials are unusable; throttling and
+      // AAD outages keep their own status so the worker retries instead of pausing.
+      if ([400, 401, 403].includes(response.status)) throw new GraphError(401, error.message);
+      throw error;
+    }
     const data = (await response.json()) as { access_token: string; expires_in: number };
     token = { value: data.access_token, expiresAt: Date.now() + data.expires_in * 1000 };
     return token.value;
@@ -149,7 +156,7 @@ export function createGraphClient(config: OutlookConfig, fetchImpl: typeof fetch
           attendees: { emailAddress: { address: string; name?: string } }[];
         };
         return {
-          id: data.id,
+          id,
           subject: data.subject,
           start: data.start,
           end: data.end,
