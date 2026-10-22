@@ -8,7 +8,7 @@ import { rateLimit } from "@/lib/rate-limiter";
 import { readJson } from "@/lib/rotation/http";
 import { shiftDate, swapAuditBase, type SwapOfferedMetadata } from "@/lib/swap/audit";
 import { swapError, swapErrorResponse, swapsDisabled } from "@/lib/swap/http";
-import { canUseSwaps, swapCalendarIds } from "@/lib/swap/permissions";
+import { canOtherUserSwap, canUseSwaps, swapCalendarIds } from "@/lib/swap/permissions";
 import { createOffer, dutyCalendarId, listBoard } from "@/lib/swap/service";
 import { validateOffer } from "@/lib/swap/validate";
 import type { Board } from "@/lib/swap/types";
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const calendarId = dutyCalendarId(input.shiftId);
     if (!calendarId) return swapError("notDuty");
     if (!(await canUseSwaps(user.id, calendarId))) return swapError("forbidden");
-    if (input.targetUserId && !(await canUseSwaps(input.targetUserId, calendarId))) return swapError("invalid");
+    if (input.targetUserId && !(await canOtherUserSwap(input.targetUserId, calendarId))) return swapError("invalid");
 
     const swap = createOffer(input, user.id, new Date());
     await logUserAction<SwapOfferedMetadata>({
