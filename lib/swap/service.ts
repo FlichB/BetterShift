@@ -1,12 +1,12 @@
 // [fork] Swap board service. Every write runs in one synchronous better-sqlite3
 // transaction: read state, ask lib/swap/rules.ts, write. Due offers are settled
 // in a separate transaction first, so their status sticks even if the request fails.
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { shiftSignups, shifts } from "@/lib/db/schema";
-import { rotationDuties } from "@/lib/rotation/schema";
+import { rotationDuties, rotationSlotLocks } from "@/lib/rotation/schema";
 import { logResolved } from "@/lib/swap/audit";
-import { checkOffer, dueStatus, type DutyTiming, type SlotView } from "@/lib/swap/rules";
+import { checkAccept, checkOffer, dueStatus, nextLock, type DutyTiming, type SlotMove, type SlotView } from "@/lib/swap/rules";
 import { shiftSwapHidden, shiftSwaps, type ShiftSwap } from "@/lib/swap/schema";
 import type { SwapErrorCode, SwapType } from "@/lib/swap/types";
 
@@ -191,4 +191,86 @@ export function unhideOffer(id: string, userId: string): void {
   db.delete(shiftSwapHidden)
     .where(and(eq(shiftSwapHidden.swapId, id), eq(shiftSwapHidden.userId, userId)))
     .run();
+}
+
+export interface AcceptResult {
+  swap: ShiftSwap;
+  moves: SlotMove[];
+  cancelled: ResolvedSwap[];
+}
+
+/** Hands one Platz over and carries its lock along (see nextLock). */
+function applyMove(tx: Tx, move: SlotMove, actorId: string, now: Date): void {
+  const fromLock = and(eq(rotationSlotLocks.shiftId, move.shiftId), eq(rotationSlotLocks.userId, move.fromUserId));
+  const existing = tx.select().from(rotationSlotLocks).where(fromLock).get() ?? null;
+  tx.update(shiftSignups)
+    .set({ userId: move.toUserId, signedUpBy: actorId })
+    .where(and(eq(shiftSignups.shiftId, move.shiftId), eq(shiftSignups.userId, move.fromUserId)))
+    .run();
+  if (existing) tx.delete(rotationSlotLocks).where(fromLock).run();
+  const lock = nextLock(move, existing);
+  if (lock) {
+    tx.insert(rotationSlotLocks)
+      .values({ ...lock, lockedAt: now })
+      .onConflictDoUpdate({
+        target: [rotationSlotLocks.shiftId, rotationSlotLocks.userId],
+        set: { replacesUserId: lock.replacesUserId, lockedAt: now },
+      })
+      .run();
+  }
+}
+
+export function acceptOffer(id: string, acceptorId: string, counterShiftId: string | null, now: Date): AcceptResult {
+  expireDue(now);
+  const result = db.transaction((tx): AcceptResult => {
+    const swap = loadOpen(tx, id);
+    if (swap.status !== "open") throw new SwapServiceError("notOpen");
+    const offered = loadSlot(tx, swap.offeredShiftId);
+    if (!offered) throw new SwapServiceError("notOpen");
+
+    const counterId = swap.type === "exchange" ? (swap.requestedShiftId ?? counterShiftId) : null;
+    const counter = counterId ? loadSlot(tx, counterId) : null;
+    if (counterId && !counter) throw new SwapServiceError("invalidShift");
+
+    const check = checkAccept({
+      offer: swap,
+      acceptorId,
+      offered,
+      counter,
+      acceptorDuties: dutiesOf(tx, acceptorId),
+      offererDuties: dutiesOf(tx, swap.offeredByUserId),
+      now,
+    });
+    if (!check.ok) throw new SwapServiceError(check.error);
+
+    for (const move of check.moves) applyMove(tx, move, acceptorId, now);
+    const accepted = tx
+      .update(shiftSwaps)
+      .set({ status: "accepted", acceptedByUserId: acceptorId, acceptedShiftId: counterId, resolvedAt: now })
+      .where(eq(shiftSwaps.id, id))
+      .returning()
+      .get();
+
+    // Open offers of a Platz that just changed hands can no longer be honoured.
+    const cancelled: ResolvedSwap[] = [];
+    for (const move of check.moves) {
+      const rows = tx
+        .update(shiftSwaps)
+        .set({ status: "cancelled", resolvedAt: now })
+        .where(
+          and(
+            eq(shiftSwaps.status, "open"),
+            eq(shiftSwaps.offeredShiftId, move.shiftId),
+            eq(shiftSwaps.offeredByUserId, move.fromUserId),
+            ne(shiftSwaps.id, id)
+          )
+        )
+        .returning()
+        .all();
+      cancelled.push(...rows.map((swap) => ({ swap, status: "cancelled" as const })));
+    }
+    return { swap: accepted, moves: check.moves, cancelled };
+  });
+  if (result.cancelled.length > 0) void logResolved(result.cancelled);
+  return result;
 }
