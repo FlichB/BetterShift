@@ -116,7 +116,7 @@ shift_swaps (id, type: 'give' | 'exchange', status: 'open' | 'accepted' | 'decli
 - E-Mail (SMTP per ENV) und/oder Web-Push
 - Auslöser: neues Angebot an alle bzw. an mich, mein Angebot wurde angenommen, Dienst morgen
 - Pro User abschaltbar
-- **Outlook-Integration:** Dienste als iCalendar-Einladungen (REQUEST/CANCEL) per SMTP in die persönlichen Kalender (siehe 12, offen: M365 vs. Exchange)
+- **Outlook-Integration:** Dienste als iCalendar-Einladungen (REQUEST/CANCEL) per SMTP in die persönlichen Kalender oder per Microsoft Graph (siehe 12.21; Umgebung: Microsoft 365)
 
 ## 8. Umsetzungsphasen
 
@@ -179,8 +179,8 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 15. **Ausfalltage** werden an der Rotation gepflegt; die Reihenfolge rückt nach.
 16. **Neustart ab X:** Standardmäßig beginnt die Reihe mit dem Teilnehmer nach dem letzten Dienst vor X; der Admin kann das ändern.
 17. **Manuelle Änderungen** an generierten Plätzen werden beim Neugenerieren überschrieben (mit Hinweis in der Vorschau).
-18. **Teilnehmer** erhalten im Teamkalender das Bündel „Read". Hinweis (2026-10-21): Das mitgelieferte Bündel „Read" enthält `signUpSelf` („Sich selbst eintragen"); bis Phase 2 einen Guard ergänzt, sollten Teilnehmer ein Bündel ohne diese Berechtigung erhalten.
+18. **Teilnehmer** erhalten im Teamkalender das Bündel „Read". Hinweis (2026-10-21): Das mitgelieferte Bündel „Read" enthält `signUpSelf` („Sich selbst eintragen"); bis Phase 2 einen Guard ergänzt, sollten Teilnehmer ein Bündel ohne diese Berechtigung erhalten. **Entscheidung (2026-10-22):** Phase 2 sperrt im Code das Selbst-Ein- und Austragen bei Plätzen generierter Dienste; Plätze wechseln nur über die Tauschbörse. „Read" bleibt danach für Teilnehmer nutzbar.
 19. **Verfallen:** Lesend sofort, plus stündlicher In-Prozess-Timer, der den Status setzt und protokolliert.
 20. **Persönlicher ICS-Feed** („nur meine Dienste") in Phase 4; `TZ=Europe/Vienna`.
-21. **Outlook:** Dienste sollen später automatisch in den Outlook-Kalendern der Betroffenen erscheinen. Empfehlung: iCalendar-Einladungen per SMTP (Phase 3); offen: Microsoft 365 oder Exchange on-prem. Jeder Platz erhält eine stabile ID als Termin-UID.
+21. **Outlook:** Dienste sollen später automatisch in den Outlook-Kalendern der Betroffenen erscheinen. Umgebung: **Microsoft 365** (Entscheidung 2026-10-22). Optionen für Phase 3: iCalendar-Einladungen per SMTP über M365 oder direkt per Microsoft Graph (App-Registrierung in Entra ID nötig) — Auswahl im Grilling vor Phase 3. Jeder Platz erhält eine stabile ID als Termin-UID.
 22. **Migrationen** der Fork-Tabellen in eigenem Ordner/Tracking, siehe `docs/adr/0002-eigene-migrationsspur-fuer-fork.md`.
