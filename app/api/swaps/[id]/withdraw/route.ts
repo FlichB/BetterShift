@@ -7,7 +7,7 @@ import { withdrawOffer } from "@/lib/swap/service";
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const ctx = await swapWriteContext(request, id);
+    const ctx = await swapWriteContext(request, id, { allowOfferer: true });
     if (!ctx.ok) return ctx.response;
     const swap = withdrawOffer(id, ctx.userId, new Date());
     await logUserAction<SwapResolvedMetadata>({

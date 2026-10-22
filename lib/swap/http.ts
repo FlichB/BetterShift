@@ -43,8 +43,9 @@ export function swapsDisabled(): NextResponse | null {
 /** Session, offer, calendar permission and rate limit for /api/swaps/[id]/** writes. */
 export async function swapWriteContext(
   request: NextRequest,
-  id: string
-): Promise<{ ok: true; userId: string; swap: ShiftSwap } | { ok: false; response: NextResponse }> {
+  id: string,
+  options: { allowOfferer?: boolean } = {}
+): Promise<{ ok: true; userId: string; calendarId: string; swap: ShiftSwap } | { ok: false; response: NextResponse }> {
   const disabled = swapsDisabled();
   if (disabled) return { ok: false, response: disabled };
   const user = await getSessionUser(request.headers);
@@ -52,8 +53,10 @@ export async function swapWriteContext(
   const swap = getSwap(id);
   const calendarId = swap ? dutyCalendarId(swap.offeredShiftId) : null;
   if (!swap || !calendarId) return { ok: false, response: swapError("notFound") };
-  if (!(await canUseSwaps(user.id, calendarId))) return { ok: false, response: swapError("forbidden") };
+  // The offerer may always withdraw their own offer, even after losing swap rights.
+  const ownOffer = options.allowOfferer && swap.offeredByUserId === user.id;
+  if (!ownOffer && !(await canUseSwaps(user.id, calendarId))) return { ok: false, response: swapError("forbidden") };
   const limited = rateLimit(request, user.id, "swap-mutations");
   if (limited) return { ok: false, response: limited };
-  return { ok: true, userId: user.id, swap };
+  return { ok: true, userId: user.id, calendarId, swap };
 }

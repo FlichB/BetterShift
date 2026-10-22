@@ -139,7 +139,7 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 - [x] Doppelbelegung wird verhindert; zwei gleichzeitige Annahmen → nur eine erfolgreich *(Phase 2: zwei parallele Annahmen → 200 und 409 `notOpen`, 2026-10-22)*
 - [ ] Begonnene/vergangene Dienste können weder getauscht noch neu generiert werden
 - [x] Alle Tauschvorgänge stehen im Audit-Log *(Phase 2: `swap.offered/accepted/declined/withdrawn` mit lesbaren Texten, 2026-10-22)*
-- [ ] ICS-Feed spiegelt Tausche ohne weiteres Zutun wider
+- [ ] ICS-Feed spiegelt Tausche ohne weiteres Zutun wider *(Hinweis: Der Team-Feed enthält keine Platzinhaber; Tausche werden erst mit dem persönlichen Feed sichtbar, Phase 4, 12.20)*
 - [x] UI auf Deutsch, auf dem Smartphone bedienbar *(Phase 2: Teil Tauschbörse in 375 px Breite ohne horizontales Scrollen, 2026-10-22)*
 - [x] Nicht-Berechtigte können keine Rotationen anlegen oder generieren *(Phase 1: Teilnehmer mit „Read" → 403, API-Abnahme 2026-10-21)*
 
@@ -184,3 +184,4 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 20. **Persönlicher ICS-Feed** („nur meine Dienste") in Phase 4; `TZ=Europe/Vienna`.
 21. **Outlook:** Dienste sollen später automatisch in den Outlook-Kalendern der Betroffenen erscheinen. Umgebung: **Microsoft 365** (Entscheidung 2026-10-22). Optionen für Phase 3: iCalendar-Einladungen per SMTP über M365 oder direkt per Microsoft Graph (App-Registrierung in Entra ID nötig) — Auswahl im Grilling vor Phase 3. Jeder Platz erhält eine stabile ID als Termin-UID.
 22. **Migrationen** der Fork-Tabellen in eigenem Ordner/Tracking, siehe `docs/adr/0002-eigene-migrationsspur-fuer-fork.md`.
+23. **Angebote ohne Tauschrecht (2026-10-22):** Verliert der Anbieter das Tauschrecht im Kalender (`signUpSelf`), wird sein offenes Tauschangebot (`exchange`) beim Annehmen auf `cancelled` gesetzt und mit `notOpen` abgewiesen; eine Abgabe (`give`) bleibt annehmbar. Der Anbieter darf sein eigenes Angebot immer zurückziehen.

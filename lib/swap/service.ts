@@ -96,6 +96,13 @@ function resolve(tx: Tx, id: string, status: ShiftSwap["status"], now: Date): Sh
     .get();
 }
 
+const logFailed = (error: unknown) => console.error("[Swap] Failed to log resolved offers:", error);
+
+/** Cancels one offer that is still open; null when it was no longer open. */
+export function cancelOffer(id: string, now: Date): ShiftSwap | null {
+  return db.transaction((tx) => resolve(tx, id, "cancelled", now) ?? null);
+}
+
 /** Sets expired/cancelled on open offers that ended by themselves and logs them. */
 export function expireDue(now: Date): ResolvedSwap[] {
   const resolved = db.transaction((tx) => {
@@ -108,7 +115,7 @@ export function expireDue(now: Date): ResolvedSwap[] {
     }
     return out;
   });
-  if (resolved.length > 0) void logResolved(resolved);
+  if (resolved.length > 0) void logResolved(resolved).catch(logFailed);
   return resolved;
 }
 
@@ -272,7 +279,7 @@ export function acceptOffer(id: string, acceptorId: string, counterShiftId: stri
     }
     return { swap: accepted, moves: check.moves, cancelled };
   });
-  if (result.cancelled.length > 0) void logResolved(result.cancelled);
+  if (result.cancelled.length > 0) void logResolved(result.cancelled).catch(logFailed);
   return result;
 }
 

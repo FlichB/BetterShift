@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { auditLogs, shiftSignups } from "@/lib/db/schema";
 import { shiftSwapHidden } from "@/lib/swap/schema";
 import {
+  cancelOffer,
   createOffer,
   declineOffer,
   expireDue,
@@ -56,6 +57,17 @@ describe("offers", () => {
     expect(code(() => withdrawOffer(swap.id, s.m2, now))).toBe("forbidden");
     expect(withdrawOffer(swap.id, s.m0, now).status).toBe("withdrawn");
     expect(code(() => withdrawOffer(swap.id, s.m0, now))).toBe("notOpen");
+  });
+
+  it("cancels an open offer once and leaves other offers alone", () => {
+    const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    expect(cancelOffer(swap.id, now)?.status).toBe("cancelled");
+    expect(getSwap(swap.id)?.status).toBe("cancelled");
+    expect(cancelOffer(swap.id, now)).toBeNull();
+    const withdrawn = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    withdrawOffer(withdrawn.id, s.m0, now);
+    expect(cancelOffer(withdrawn.id, now)).toBeNull();
+    expect(getSwap(withdrawn.id)?.status).toBe("withdrawn");
   });
 
   it("lets only the target decline a Direktanfrage", () => {

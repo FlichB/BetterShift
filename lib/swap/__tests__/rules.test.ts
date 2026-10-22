@@ -86,7 +86,8 @@ describe("checkOffer", () => {
     expect(checkOffer({ ...exchange, requested: slot(sat1, ["A", "B"]) })).toBe("invalidShift");
     expect(checkOffer({ ...exchange, requested: slot({ ...sat2, calendarId: "other" }, ["C"]) })).toBe("invalidShift");
     expect(checkOffer({ ...exchange, requested: slot(sat2, ["A", "D"]) })).toBe("alreadyOnDuty");
-    expect(checkOffer({ ...exchange, targetUserId: "B", requested: slot(sat2, ["C", "D"]) })).toBe("slotNotOwned");
+    expect(checkOffer({ ...base, targetUserId: "B", offered: slot(sat1, ["A", "B"]) })).toBe("alreadyOnDuty");
+    expect(checkOffer({ ...exchange, offered: slot(sat1, ["A"]), targetUserId: "B", requested: slot(sat2, ["C", "D"]) })).toBe("slotNotOwned");
     expect(
       checkOffer({ ...exchange, requested: slot(sat2, ["C"]), now: new Date(2026, 10, 14, 10, 0) })
     ).toBe("alreadyStarted");
