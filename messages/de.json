@@ -1466,6 +1466,24 @@
       },
       "unlock": "Sperre aufheben"
     },
+    "outlook": {
+      "toggle": "In Outlook (office@) eintragen",
+      "toggleHint": "Jeder Dienst wird ein Termin im office@-Kalender; die Platzinhaber erhalten Einladungen und Aktualisierungen.",
+      "notConfigured": "Microsoft 365 ist auf diesem Server nicht eingerichtet (siehe docs/OUTLOOK_SETUP.md).",
+      "status": "{synced} von {total} Diensten in Outlook",
+      "failed": "{count, plural, one {# Fehler} other {# Fehler}}",
+      "lastSync": "letzter Abgleich {ago}",
+      "syncNow": "Jetzt abgleichen",
+      "syncStarted": "Abgleich gestartet",
+      "disableTitle": "Outlook-Abgleich ausschalten?",
+      "disableConfirm": "Alle künftigen Termine dieser Rotation werden im office@-Kalender abgesagt; die Teilnehmer erhalten eine Absage.",
+      "disable": "Ausschalten",
+      "errors": {
+        "outlookNotConfigured": "Microsoft 365 ist auf diesem Server nicht eingerichtet.",
+        "rateLimited": "Zu viele Abgleiche – bitte später erneut versuchen.",
+        "generic": "Das hat nicht geklappt. Bitte erneut versuchen."
+      }
+    },
     "errors": {
       "name": "Bitte einen Namen (max. 100 Zeichen) angeben.",
       "calendarId": "Kalender ungültig.",

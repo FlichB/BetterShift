@@ -1466,6 +1466,24 @@
       },
       "unlock": "Remove lock"
     },
+    "outlook": {
+      "toggle": "Zapsat do Outlooku (office@)",
+      "toggleHint": "Každá služba se stane událostí v kalendáři office@; držitelé míst dostanou pozvánky a aktualizace.",
+      "notConfigured": "Microsoft 365 není na tomto serveru nastaven (viz docs/OUTLOOK_SETUP.md).",
+      "status": "{synced} z {total} služeb v Outlooku",
+      "failed": "{count, plural, one {# chyba} few {# chyby} many {# chyby} other {# chyb}}",
+      "lastSync": "poslední synchronizace {ago}",
+      "syncNow": "Synchronizovat nyní",
+      "syncStarted": "Synchronizace zahájena",
+      "disableTitle": "Vypnout synchronizaci s Outlookem?",
+      "disableConfirm": "Všechny budoucí události této rotace budou v kalendáři office@ zrušeny; účastníci obdrží zrušení.",
+      "disable": "Vypnout",
+      "errors": {
+        "outlookNotConfigured": "Microsoft 365 není na tomto serveru nastaven.",
+        "rateLimited": "Příliš mnoho synchronizací – zkuste to prosím později.",
+        "generic": "To se nepovedlo. Zkuste to prosím znovu."
+      }
+    },
     "errors": {
       "name": "Please enter a name (max. 100 characters).",
       "calendarId": "Invalid calendar.",

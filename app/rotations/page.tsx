@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FullscreenLoader } from "@/components/fullscreen-loader";
 import { InfoNote, ListRow, Pill, inputClass, CheckRow } from "@/components/form-kit";
 import { accountWideContentClass, AccountPageHeader } from "@/components/profile/account-layout";
+import { OutlookPanel } from "@/components/rotation/outlook-panel";
 import { RotationForm } from "@/components/rotation/rotation-form";
 import { RotationGenerator } from "@/components/rotation/rotation-generator";
 import { handleRateLimitError } from "@/lib/rate-limit-client";
@@ -194,6 +195,7 @@ export default function RotationsPage() {
                               {t("common.delete")}
                             </Button>
                           </div>
+                          <OutlookPanel rotationId={rotation.id} />
                         </ListRow>
                       </li>
                     );

@@ -1466,6 +1466,24 @@
       },
       "unlock": "Remove lock"
     },
+    "outlook": {
+      "toggle": "Ajouter à Outlook (office@)",
+      "toggleHint": "Chaque service devient un événement du calendrier office@ ; les titulaires reçoivent des invitations et des mises à jour.",
+      "notConfigured": "Microsoft 365 n'est pas configuré sur ce serveur (voir docs/OUTLOOK_SETUP.md).",
+      "status": "{synced} service(s) sur {total} dans Outlook",
+      "failed": "{count, plural, one {# erreur} other {# erreurs}}",
+      "lastSync": "dernière synchronisation {ago}",
+      "syncNow": "Synchroniser maintenant",
+      "syncStarted": "Synchronisation lancée",
+      "disableTitle": "Désactiver la synchronisation Outlook ?",
+      "disableConfirm": "Tous les événements à venir de cette rotation seront annulés dans le calendrier office@ ; les participants recevront une annulation.",
+      "disable": "Désactiver",
+      "errors": {
+        "outlookNotConfigured": "Microsoft 365 n'est pas configuré sur ce serveur.",
+        "rateLimited": "Trop de synchronisations – veuillez réessayer plus tard.",
+        "generic": "Cela n'a pas fonctionné. Veuillez réessayer."
+      }
+    },
     "errors": {
       "name": "Please enter a name (max. 100 characters).",
       "calendarId": "Invalid calendar.",

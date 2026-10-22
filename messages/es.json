@@ -1466,6 +1466,24 @@
       },
       "unlock": "Remove lock"
     },
+    "outlook": {
+      "toggle": "Añadir a Outlook (office@)",
+      "toggleHint": "Cada turno se convierte en un evento del calendario office@; los titulares reciben invitaciones y actualizaciones.",
+      "notConfigured": "Microsoft 365 no está configurado en este servidor (véase docs/OUTLOOK_SETUP.md).",
+      "status": "{synced} de {total} turnos en Outlook",
+      "failed": "{count, plural, one {# error} other {# errores}}",
+      "lastSync": "última sincronización {ago}",
+      "syncNow": "Sincronizar ahora",
+      "syncStarted": "Sincronización iniciada",
+      "disableTitle": "¿Desactivar la sincronización con Outlook?",
+      "disableConfirm": "Todos los próximos eventos de esta rotación se cancelarán en el calendario office@; los participantes recibirán una cancelación.",
+      "disable": "Desactivar",
+      "errors": {
+        "outlookNotConfigured": "Microsoft 365 no está configurado en este servidor.",
+        "rateLimited": "Demasiadas sincronizaciones: inténtalo de nuevo más tarde.",
+        "generic": "No ha funcionado. Inténtalo de nuevo."
+      }
+    },
     "errors": {
       "name": "Please enter a name (max. 100 characters).",
       "calendarId": "Invalid calendar.",
