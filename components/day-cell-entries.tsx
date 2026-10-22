@@ -175,7 +175,7 @@ export function QuickSignupButton({
 }) {
   const t = useTranslations();
   const { user: currentUser } = useAuth();
-  const { canManageOwn, canManageOthers } = useShiftSignupPermission(shift.calendarId);
+  const { canManageOwn, canManageOthers } = useShiftSignupPermission(shift.calendarId); // [fork] unchanged by the fork: kept for the duty guard below
   // [fork] Duty Plätze change hands via the swap board only (spec 12.18)
   const { dutyShiftIds } = useSwapCalendarState(shift.calendarId);
   const { signUpForShift, isPending: signingUp } = useQuickSelfSignup();

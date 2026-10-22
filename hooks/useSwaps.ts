@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthFeatures } from "@/hooks/useAuthFeatures";
 import { LIVE_REFETCH_INTERVAL } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
@@ -31,6 +31,7 @@ export function useSwapBoard(includeHidden: boolean) {
     queryKey: swapQueryKeys.board(includeHidden),
     queryFn: () => request<Board>(`/api/swaps${includeHidden ? "?hidden=1" : ""}`),
     refetchInterval: LIVE_REFETCH_INTERVAL,
+    placeholderData: keepPreviousData,
   });
 }
 

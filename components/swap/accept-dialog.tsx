@@ -27,7 +27,9 @@ export function AcceptDialog({
   const [counterId, setCounterId] = useState<string>();
 
   const mySlots = (duties.data?.duties ?? []).filter(
-    (d) => d.shiftId !== entry.offered.shiftId && d.holders.some((h) => h.id === user?.id)
+    (d) => d.shiftId !== entry.offered.shiftId &&
+      d.holders.some((h) => h.id === user?.id) &&
+      !d.holders.some((h) => h.id === entry.offeredBy.id)
   );
   const counter = entry.requested ?? mySlots.find((d) => d.shiftId === counterId);
   const offered = fmt(entry.offered);

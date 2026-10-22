@@ -98,7 +98,7 @@ function SwapsContent() {
         backHref="/"
         actions={
           data.calendars.length > 0 && (
-            <Button size="sm" onClick={() => setOfferOpen(true)}>
+            <Button size="sm" aria-label={t("swap.offer")} onClick={() => setOfferOpen(true)}>
               <Plus className="size-4" />
               <span className="hidden sm:inline">{t("swap.offer")}</span>
             </Button>

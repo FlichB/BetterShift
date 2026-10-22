@@ -22,7 +22,7 @@ import {
   Compass,
   FileText,
   RefreshCcw,
-  ArrowLeftRight,
+  ArrowLeftRight, // [fork]
   Settings,
   Shield,
   SlidersHorizontal,
