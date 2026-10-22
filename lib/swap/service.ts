@@ -4,6 +4,7 @@
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
+import { enqueueSwapEvent, offerKind } from "@/lib/notify/enqueue";
 import { hasStarted } from "@/lib/rotation/dates";
 import { rotationDuties, rotationSlotLocks } from "@/lib/rotation/schema";
 import { logResolved } from "@/lib/swap/audit";
@@ -149,7 +150,7 @@ export function createOffer(input: OfferInput, offererId: string, now: Date): Sh
       now,
     });
     if (error) throw new SwapServiceError(error);
-    return tx
+    const swap = tx
       .insert(shiftSwaps)
       .values({
         type: input.type,
@@ -162,6 +163,8 @@ export function createOffer(input: OfferInput, offererId: string, now: Date): Sh
       })
       .returning()
       .get();
+    enqueueSwapEvent(tx, offerKind(swap), swap, offererId, now);
+    return swap;
   });
 }
 
@@ -182,7 +185,9 @@ export function declineOffer(id: string, userId: string, now: Date): ShiftSwap {
     if (!swap.targetUserId) throw new SwapServiceError("notDirect");
     if (swap.targetUserId !== userId) throw new SwapServiceError("notTarget");
     if (swap.status !== "open") throw new SwapServiceError("notOpen");
-    return resolve(tx, id, "declined", now);
+    const declined = resolve(tx, id, "declined", now);
+    enqueueSwapEvent(tx, "offer_declined", declined, userId, now);
+    return declined;
   });
 }
 
@@ -258,6 +263,7 @@ export function acceptOffer(id: string, acceptorId: string, counterShiftId: stri
       .where(eq(shiftSwaps.id, id))
       .returning()
       .get();
+    enqueueSwapEvent(tx, "offer_accepted", accepted, acceptorId, now);
 
     // Open offers of a Platz that just changed hands can no longer be honoured.
     const cancelled: ResolvedSwap[] = [];
