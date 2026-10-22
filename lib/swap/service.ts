@@ -1,14 +1,15 @@
 // [fork] Swap board service. Every write runs in one synchronous better-sqlite3
 // transaction: read state, ask lib/swap/rules.ts, write. Due offers are settled
 // in a separate transaction first, so their status sticks even if the request fails.
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { shiftSignups, shifts } from "@/lib/db/schema";
+import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
+import { hasStarted } from "@/lib/rotation/dates";
 import { rotationDuties, rotationSlotLocks } from "@/lib/rotation/schema";
 import { logResolved } from "@/lib/swap/audit";
 import { checkAccept, checkOffer, dueStatus, nextLock, type DutyTiming, type SlotMove, type SlotView } from "@/lib/swap/rules";
 import { shiftSwapHidden, shiftSwaps, type ShiftSwap } from "@/lib/swap/schema";
-import type { SwapErrorCode, SwapType } from "@/lib/swap/types";
+import type { Board, BoardEntry, CalendarSwapState, DutyInfo, DutyListEntry, Person, SwapErrorCode, SwapType } from "@/lib/swap/types";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Reader = Tx | typeof db;
@@ -273,4 +274,150 @@ export function acceptOffer(id: string, acceptorId: string, counterShiftId: stri
   });
   if (result.cancelled.length > 0) void logResolved(result.cancelled);
   return result;
+}
+
+const HISTORY_MS = 30 * 86_400_000;
+
+function dutyInfos(shiftIds: string[]): Map<string, DutyInfo> {
+  if (shiftIds.length === 0) return new Map();
+  const rows = db
+    .select(dutyColumns)
+    .from(rotationDuties)
+    .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .where(inArray(rotationDuties.shiftId, shiftIds))
+    .all();
+  return new Map(rows.map((r) => [r.shiftId, r]));
+}
+
+function people(userIds: string[]): Map<string, Person> {
+  if (userIds.length === 0) return new Map();
+  const rows = db.select({ id: user.id, name: user.name }).from(user).where(inArray(user.id, userIds)).all();
+  return new Map(rows.map((r) => [r.id, r]));
+}
+
+export function listBoard(
+  userId: string,
+  calendarIds: string[],
+  now: Date,
+  includeHidden: boolean
+): Omit<Board, "calendars"> {
+  expireDue(now);
+  const empty = { forMe: [], mine: [], hidden: [] };
+  if (calendarIds.length === 0) return empty;
+
+  const rows = db
+    .select({ swap: shiftSwaps, calendarName: calendars.name })
+    .from(shiftSwaps)
+    .innerJoin(shifts, eq(shifts.id, shiftSwaps.offeredShiftId))
+    .innerJoin(calendars, eq(calendars.id, shifts.calendarId))
+    .where(inArray(shifts.calendarId, calendarIds))
+    .all();
+  const hiddenIds = new Set(
+    db
+      .select({ swapId: shiftSwapHidden.swapId })
+      .from(shiftSwapHidden)
+      .where(eq(shiftSwapHidden.userId, userId))
+      .all()
+      .map((h) => h.swapId)
+  );
+
+  const shiftIds = rows.flatMap(({ swap }) =>
+    [swap.offeredShiftId, swap.requestedShiftId, swap.acceptedShiftId].filter((id): id is string => Boolean(id))
+  );
+  const userIds = rows.flatMap(({ swap }) =>
+    [swap.offeredByUserId, swap.targetUserId, swap.acceptedByUserId].filter((id): id is string => Boolean(id))
+  );
+  const duties = dutyInfos([...new Set(shiftIds)]);
+  const users = people([...new Set(userIds)]);
+  const person = (id: string | null) => (id ? (users.get(id) ?? { id, name: null }) : null);
+
+  const board: Omit<Board, "calendars"> = { forMe: [], mine: [], hidden: [] };
+  for (const { swap, calendarName } of rows) {
+    const offered = duties.get(swap.offeredShiftId);
+    if (!offered) continue; // shift is no duty anymore
+    const entry: BoardEntry = {
+      id: swap.id,
+      type: swap.type,
+      status: swap.status,
+      calendarName,
+      offered,
+      requested: swap.requestedShiftId ? (duties.get(swap.requestedShiftId) ?? null) : null,
+      accepted: swap.acceptedShiftId ? (duties.get(swap.acceptedShiftId) ?? null) : null,
+      offeredBy: person(swap.offeredByUserId)!,
+      target: person(swap.targetUserId),
+      acceptedBy: person(swap.acceptedByUserId),
+      note: swap.note,
+      createdAt: swap.createdAt.toISOString(),
+      resolvedAt: swap.resolvedAt?.toISOString() ?? null,
+    };
+
+    if (swap.offeredByUserId === userId) {
+      const recent = swap.status === "open" || (swap.resolvedAt && now.getTime() - swap.resolvedAt.getTime() < HISTORY_MS);
+      if (recent) board.mine.push(entry);
+    } else if (swap.status === "open" && (!swap.targetUserId || swap.targetUserId === userId)) {
+      if (!swap.targetUserId && hiddenIds.has(swap.id)) {
+        if (includeHidden) board.hidden.push(entry);
+      } else {
+        board.forMe.push(entry);
+      }
+    }
+  }
+  const byDate = (a: BoardEntry, b: BoardEntry) => a.offered.date.localeCompare(b.offered.date);
+  board.forMe.sort(byDate);
+  board.hidden.sort(byDate);
+  board.mine.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return board;
+}
+
+export function listDuties(calendarId: string, userId: string, now: Date): DutyListEntry[] {
+  expireDue(now);
+  const rows = db
+    .select(dutyColumns)
+    .from(rotationDuties)
+    .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .where(eq(shifts.calendarId, calendarId))
+    .all()
+    .filter((d) => !hasStarted(d.date, d.startTime, now))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
+  if (rows.length === 0) return [];
+
+  const shiftIds = rows.map((r) => r.shiftId);
+  const signups = db
+    .select({ shiftId: shiftSignups.shiftId, id: user.id, name: user.name })
+    .from(shiftSignups)
+    .innerJoin(user, eq(user.id, shiftSignups.userId))
+    .where(inArray(shiftSignups.shiftId, shiftIds))
+    .all();
+  const myOpen = new Map(
+    db
+      .select({ id: shiftSwaps.id, shiftId: shiftSwaps.offeredShiftId })
+      .from(shiftSwaps)
+      .where(and(eq(shiftSwaps.status, "open"), eq(shiftSwaps.offeredByUserId, userId), inArray(shiftSwaps.offeredShiftId, shiftIds)))
+      .all()
+      .map((s) => [s.shiftId, s.id])
+  );
+  return rows.map((duty) => ({
+    ...duty,
+    holders: signups.filter((s) => s.shiftId === duty.shiftId).map(({ id, name }) => ({ id, name })),
+    myOpenSwapId: myOpen.get(duty.shiftId) ?? null,
+  }));
+}
+
+export function calendarState(calendarId: string, now: Date): CalendarSwapState {
+  expireDue(now);
+  const dutyShiftIds = db
+    .select({ shiftId: rotationDuties.shiftId })
+    .from(rotationDuties)
+    .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .where(eq(shifts.calendarId, calendarId))
+    .all()
+    .map((d) => d.shiftId);
+  const openOfferShiftIds = db
+    .selectDistinct({ shiftId: shiftSwaps.offeredShiftId })
+    .from(shiftSwaps)
+    .innerJoin(shifts, eq(shifts.id, shiftSwaps.offeredShiftId))
+    .where(and(eq(shiftSwaps.status, "open"), eq(shifts.calendarId, calendarId)))
+    .all()
+    .map((s) => s.shiftId);
+  return { dutyShiftIds, openOfferShiftIds };
 }
