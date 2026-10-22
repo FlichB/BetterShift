@@ -7,7 +7,7 @@ import { shiftSignups, shifts, user } from "@/lib/db/schema";
 import { formatDateToLocal } from "@/lib/date-utils";
 import type { OutlookSyncFailedMetadata } from "@/lib/outlook/audit";
 import { desiredEvent, dutyStartsAt, fingerprint, type DesiredEvent, type DutyForSync } from "@/lib/outlook/desired";
-import { GraphError, type GraphClient } from "@/lib/outlook/graph-client";
+import { GraphError, type GraphClient, type GraphEvent } from "@/lib/outlook/graph-client";
 import { outlookEvents, type OutlookEvent } from "@/lib/outlook/schema";
 import { hasStarted } from "@/lib/rotation/dates";
 import { rotationDuties, rotations } from "@/lib/rotation/schema";
@@ -201,4 +201,61 @@ export async function syncOutlook(client: GraphClient, now: Date, options: SyncO
 /** "Jetzt abgleichen": duties waiting for their backoff become due immediately. */
 export function resetBackoff(rotationId: string): void {
   db.update(outlookEvents).set({ nextAttemptAt: null }).where(eq(outlookEvents.rotationId, rotationId)).run();
+}
+
+const toMinute = (dateTime: string) => dateTime.slice(0, 16);
+const addressSet = (attendees: { address: string }[]) =>
+  attendees
+    .map((a) => a.address.toLowerCase())
+    .sort()
+    .join(",");
+
+/** Whether office@ still shows what the duty wants (Graph adds fractional seconds to times). */
+export function eventMatches(actual: GraphEvent, wanted: DesiredEvent): boolean {
+  return (
+    actual.subject === wanted.subject &&
+    toMinute(actual.start.dateTime) === toMinute(wanted.start.dateTime) &&
+    toMinute(actual.end.dateTime) === toMinute(wanted.end.dateTime) &&
+    actual.isAllDay === wanted.isAllDay &&
+    addressSet(actual.attendees) === addressSet(wanted.attendees)
+  );
+}
+
+/**
+ * Nightly full reconcile (spec 12.25): reads every synced future event and marks manual changes
+ * in office@ so the next syncOutlook run repairs them.
+ */
+export async function verifyOutlook(
+  client: GraphClient,
+  now: Date,
+  rotationId?: string
+): Promise<{ drifted: number; authError: string | null }> {
+  const wanted = new Map(loadDesiredDuties(now, rotationId).map((d) => [d.shiftId, desiredEvent(d)]));
+  const rows = db
+    .select()
+    .from(outlookEvents)
+    .where(eq(outlookEvents.state, "active"))
+    .all()
+    .filter((r) => r.eventId && wanted.has(r.shiftId));
+
+  let drifted = 0;
+  for (const row of rows) {
+    try {
+      const actual = await client.getEvent(row.eventId!);
+      if (!actual || actual.isCancelled) {
+        db.update(outlookEvents)
+          .set({ eventId: null, fingerprint: null, transactionId: null })
+          .where(eq(outlookEvents.shiftId, row.shiftId))
+          .run();
+        drifted++;
+      } else if (!eventMatches(actual, wanted.get(row.shiftId)!)) {
+        db.update(outlookEvents).set({ fingerprint: null }).where(eq(outlookEvents.shiftId, row.shiftId)).run();
+        drifted++;
+      }
+    } catch (error) {
+      if (error instanceof GraphError && error.isAuth) return { drifted, authError: error.message };
+      console.error(`[Outlook] Verifying event of duty ${row.shiftId} failed:`, error);
+    }
+  }
+  return { drifted, authError: null };
 }
