@@ -29,8 +29,9 @@ export class FakeGraph implements GraphClient {
   }
 
   async createEvent(input: EventInput, transactionId: string) {
-    this.step(`create:${input.start.dateTime}`);
+    // Recorded before the failure queue is consulted so tests can see ids of attempts that failed.
     this.transactionIds.push(transactionId);
+    this.step(`create:${input.start.dateTime}`);
     const id = `ev-${++this.seq}`;
     this.store(id, input);
     return { id, iCalUId: `uid-${id}` };
