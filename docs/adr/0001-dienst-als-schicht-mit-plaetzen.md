@@ -24,5 +24,5 @@ BetterShift ordnet Schichten nur einem Kalender zu, nicht einer Person. Für meh
 
 - Kalenderansicht, ICS-Feed und Statistik funktionieren ohne Änderung.
 - Teilnehmer erhalten nur das Bündel „Read", damit Plätze ausschließlich über die Tauschlogik (mit Audit-Log) wechseln.
-- Hinweis (2026-10-21): Das mitgelieferte Bündel „Read" enthält `signUpSelf` („Sich selbst eintragen"). Teilnehmer sollten daher, bis Phase 2 einen Guard ergänzt, ein Bündel ohne diese Berechtigung erhalten.
+- Phase 2 sperrt Selbst-Ein-/Austragen bei Plätzen generierter Dienste für Benutzer ohne `signUpOthers`; das Bündel „Read" ist für Teilnehmer geeignet.
 - Der vorhandene ICS-Feed enthält alle Dienste des Teamkalenders; ein persönlicher Feed ist eine separate Erweiterung.

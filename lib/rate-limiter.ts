@@ -29,6 +29,8 @@
  * - RATE_LIMIT_USER_SEARCH_WINDOW
  * - RATE_LIMIT_BUNDLE_MUTATIONS_REQUESTS - Permission bundle create/update/delete/clone (per calendar)
  * - RATE_LIMIT_BUNDLE_MUTATIONS_WINDOW
+ * - RATE_LIMIT_SWAP_MUTATIONS_REQUESTS - [fork] Swap board offers/accepts (per user)
+ * - RATE_LIMIT_SWAP_MUTATIONS_WINDOW
  * - RATE_LIMIT_TELEMETRY_PAYLOAD_REQUESTS - Admin telemetry payload preview
  * - RATE_LIMIT_TELEMETRY_PAYLOAD_WINDOW
  * - RATE_LIMIT_TELEMETRY_SEND_REQUESTS - Admin "send telemetry now" button
@@ -211,6 +213,11 @@ const config = {
       parseInt(process.env.RATE_LIMIT_CUSTOM_FIELD_MUTATIONS_WINDOW || "3600", 10) *
       1000, // 1 hour
   },
+  // [fork] Swap board writes (offer, accept, decline, withdraw, hide), per user.
+  swapMutations: {
+    requests: parseInt(process.env.RATE_LIMIT_SWAP_MUTATIONS_REQUESTS || "60", 10),
+    windowMs: parseInt(process.env.RATE_LIMIT_SWAP_MUTATIONS_WINDOW || "600", 10) * 1000, // 10 minutes
+  },
   // Read-only, unauthenticated: every page load on /login and the dashboard hits
   // it, so the ceiling is high -- it exists to stop scraping loops, not traffic.
   announcements: {
@@ -266,6 +273,7 @@ const limitsByType = {
   "admin-calendar-mutations": config.adminCalendarMutations,
   "bundle-mutations": config.bundleMutations,
   "custom-field-mutations": config.customFieldMutations,
+  "swap-mutations": config.swapMutations, // [fork]
   announcements: config.announcements,
   "admin-announcement-mutations": config.adminAnnouncementMutations,
   "telemetry-payload": config.telemetryPayload,

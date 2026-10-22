@@ -12,6 +12,7 @@ export async function register() {
     // whole server down.
     const { autoSyncService } = await import("@/lib/auto-sync-service");
     const { telemetryService } = await import("@/lib/telemetry/sender");
+    const { swapExpiryService } = await import("@/lib/swap/expiry"); // [fork]
     try {
       // Preload version during startup to avoid blocking on first request
       const { initializeVersion } = await import("@/lib/version");
@@ -28,6 +29,13 @@ export async function register() {
       telemetryService.start();
     } catch (error) {
       console.error("[Instrumentation] Telemetry scheduler failed:", error);
+    }
+
+    // [fork] Swap board: expire open offers whose duty has begun (spec 12.19)
+    try {
+      swapExpiryService.start();
+    } catch (error) {
+      console.error("[Instrumentation] Swap expiry scheduler failed:", error);
     }
 
     // Register shutdown handlers regardless of whether start() above
@@ -48,6 +56,7 @@ export async function register() {
       console.log(`Received ${signal}, shutting down auto-sync service...`);
       autoSyncService.stop();
       telemetryService.stop();
+      swapExpiryService.stop(); // [fork]
     };
     process.once("SIGTERM", shutdown);
     process.once("SIGINT", shutdown);

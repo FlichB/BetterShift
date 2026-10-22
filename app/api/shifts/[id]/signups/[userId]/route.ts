@@ -5,6 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { getSessionUser } from "@/lib/auth/sessions";
 import { getShiftSignupPermission } from "@/lib/auth/permissions";
 import { canActOnSignup, getShiftOrNull } from "@/lib/shift-signups";
+import { blocksSelfSignup } from "@/lib/swap/guard"; // [fork]
 
 // DELETE withdraw a user from a shift's signup list
 export async function DELETE(
@@ -33,6 +34,11 @@ export async function DELETE(
         { error: "Insufficient permissions" },
         { status: 403 }
       );
+    }
+
+    // [fork] Duty Plätze change hands via the swap board only (spec 12.18)
+    if (blocksSelfSignup(shiftId, user.id, targetUserId, permission)) {
+      return NextResponse.json({ error: "dutySlotSwapOnly" }, { status: 403 });
     }
 
     await db

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/sessions";
-import { hasCapability } from "@/lib/auth/permissions";
+import { getShiftSignupPermission, hasCapability } from "@/lib/auth/permissions"; // [fork] getShiftSignupPermission
+import { blocksSelfSignup } from "@/lib/swap/guard"; // [fork]
 import { addShiftSignup, getShiftOrNull, getShiftSignupUsers } from "@/lib/shift-signups";
 
 // GET all signups for a shift
@@ -60,6 +61,11 @@ export async function POST(
 
     const body = await request.json().catch(() => ({}));
     const targetUserId: string = body.userId || user.id;
+
+    // [fork] Duty Plätze change hands via the swap board only (spec 12.18)
+    if (blocksSelfSignup(shiftId, user.id, targetUserId, await getShiftSignupPermission(user.id, shift.calendarId))) {
+      return NextResponse.json({ error: "dutySlotSwapOnly" }, { status: 403 });
+    }
 
     const existing = await getShiftSignupUsers(shiftId);
     const existingIds = new Set(existing.map((s) => s.id));

@@ -22,6 +22,7 @@ import {
   Compass,
   FileText,
   RefreshCcw,
+  ArrowLeftRight, // [fork]
   Settings,
   Shield,
   SlidersHorizontal,
@@ -117,6 +118,11 @@ export function UserMenu({ onOpenViewSettings, onOpenPhoneMenu }: MenuProps) {
           <DropdownMenuItem onClick={() => router.push("/rotations")}>
             <RefreshCcw className="mr-2 h-4 w-4" />
             {t("rotation.menu")}
+          </DropdownMenuItem>
+          {/* [fork] Swap board */}
+          <DropdownMenuItem onClick={() => router.push("/swaps")}>
+            <ArrowLeftRight className="mr-2 h-4 w-4" />
+            {t("swap.menu")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setDiscoveryOpen(true)}>
             <Compass className="mr-2 h-4 w-4" />
