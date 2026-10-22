@@ -1583,6 +1583,37 @@
       "internal": "Unexpected error."
     }
   },
+  "notifications": {
+    "mail": {
+      "subject": {
+        "offerToAll": "Duty offered: {duty}",
+        "offerToMe": "Request for you: {duty}",
+        "offerAccepted": "Your offer was accepted: {duty}",
+        "offerDeclined": "Your request was declined: {duty}"
+      },
+      "lead": {
+        "offerToAll": "{name} is offering the duty on {duty}.",
+        "offerToMe": "{name} is asking you directly about the duty on {duty}.",
+        "offerAccepted": "{name} accepted your offer for the duty on {duty}.",
+        "offerDeclined": "{name} declined your request for the duty on {duty}."
+      },
+      "kind": {
+        "give": "Hand-over – whoever accepts takes the duty.",
+        "exchangeFor": "Swap for the duty on {duty}.",
+        "exchangeAny": "Swap – whoever accepts gives back one of their own upcoming duties."
+      },
+      "youGet": "In return you take the duty on {duty}.",
+      "note": "Note: {note}",
+      "allDay": "all day",
+      "button": "Open swap board",
+      "footer": "Change notifications",
+      "someone": "Someone"
+    }
+  },
+  "outlook": {
+    "eventBody": "This event is managed by BetterShift. Swap duties on the swap board.",
+    "cancelComment": "This duty no longer takes place."
+  },
   "announcements": {
     "dismiss": "Dismiss announcement"
   }

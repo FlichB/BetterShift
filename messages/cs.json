@@ -1583,6 +1583,37 @@
       "internal": "Unexpected error."
     }
   },
+  "notifications": {
+    "mail": {
+      "subject": {
+        "offerToAll": "Nabídnutá služba: {duty}",
+        "offerToMe": "Žádost pro tebe: {duty}",
+        "offerAccepted": "Tvoje nabídka byla přijata: {duty}",
+        "offerDeclined": "Tvoje žádost byla odmítnuta: {duty}"
+      },
+      "lead": {
+        "offerToAll": "{name} nabízí službu dne {duty}.",
+        "offerToMe": "{name} se tě přímo ptá na službu dne {duty}.",
+        "offerAccepted": "{name} přijal(a) tvoji nabídku na službu dne {duty}.",
+        "offerDeclined": "{name} odmítl(a) tvoji žádost o službu dne {duty}."
+      },
+      "kind": {
+        "give": "Předání – kdo přijme, převezme službu.",
+        "exchangeFor": "Výměna za službu dne {duty}.",
+        "exchangeAny": "Výměna – kdo přijme, vrátí jednu ze svých budoucích služeb."
+      },
+      "youGet": "Na oplátku přebíráš službu dne {duty}.",
+      "note": "Poznámka: {note}",
+      "allDay": "celý den",
+      "button": "Otevřít burzu výměn",
+      "footer": "Změnit upozornění",
+      "someone": "Někdo"
+    }
+  },
+  "outlook": {
+    "eventBody": "Tuto událost spravuje BetterShift. Služby se vyměňují na burze výměn.",
+    "cancelComment": "Tato služba se již nekoná."
+  },
   "announcements": {
     "dismiss": "Skrýt oznámení"
   }

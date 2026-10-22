@@ -1583,6 +1583,37 @@
       "internal": "Unexpected error."
     }
   },
+  "notifications": {
+    "mail": {
+      "subject": {
+        "offerToAll": "Service proposé : {duty}",
+        "offerToMe": "Demande pour toi : {duty}",
+        "offerAccepted": "Ton offre a été acceptée : {duty}",
+        "offerDeclined": "Ta demande a été refusée : {duty}"
+      },
+      "lead": {
+        "offerToAll": "{name} propose le service du {duty}.",
+        "offerToMe": "{name} te sollicite directement pour le service du {duty}.",
+        "offerAccepted": "{name} a accepté ton offre pour le service du {duty}.",
+        "offerDeclined": "{name} a refusé ta demande pour le service du {duty}."
+      },
+      "kind": {
+        "give": "Cession – celui qui accepte reprend le service.",
+        "exchangeFor": "Échange contre le service du {duty}.",
+        "exchangeAny": "Échange – celui qui accepte rend l'un de ses propres services à venir."
+      },
+      "youGet": "En échange, tu reprends le service du {duty}.",
+      "note": "Note : {note}",
+      "allDay": "toute la journée",
+      "button": "Ouvrir le tableau d'échanges",
+      "footer": "Modifier les notifications",
+      "someone": "Quelqu'un"
+    }
+  },
+  "outlook": {
+    "eventBody": "Cet événement est géré par BetterShift. Les services s'échangent dans le tableau d'échanges.",
+    "cancelComment": "Ce service n'a plus lieu."
+  },
   "announcements": {
     "dismiss": "Masquer l'annonce"
   }

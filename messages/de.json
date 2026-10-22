@@ -1583,6 +1583,37 @@
       "internal": "Unerwarteter Fehler."
     }
   },
+  "notifications": {
+    "mail": {
+      "subject": {
+        "offerToAll": "Dienst angeboten: {duty}",
+        "offerToMe": "Anfrage an dich: {duty}",
+        "offerAccepted": "Dein Angebot wurde angenommen: {duty}",
+        "offerDeclined": "Deine Anfrage wurde abgelehnt: {duty}"
+      },
+      "lead": {
+        "offerToAll": "{name} bietet den Dienst am {duty} an.",
+        "offerToMe": "{name} fragt dich gezielt für den Dienst am {duty} an.",
+        "offerAccepted": "{name} hat dein Angebot für den Dienst am {duty} angenommen.",
+        "offerDeclined": "{name} hat deine Anfrage für den Dienst am {duty} abgelehnt."
+      },
+      "kind": {
+        "give": "Abgabe – wer annimmt, übernimmt den Dienst.",
+        "exchangeFor": "Tausch gegen den Dienst am {duty}.",
+        "exchangeAny": "Tausch – wer annimmt, gibt einen eigenen künftigen Dienst zurück."
+      },
+      "youGet": "Du übernimmst im Gegenzug den Dienst am {duty}.",
+      "note": "Notiz: {note}",
+      "allDay": "ganztägig",
+      "button": "Zur Tauschbörse",
+      "footer": "Benachrichtigungen ändern",
+      "someone": "Jemand"
+    }
+  },
+  "outlook": {
+    "eventBody": "Dieser Termin wird von BetterShift verwaltet. Dienste tauschst du in der Tauschbörse.",
+    "cancelComment": "Dieser Dienst findet nicht mehr statt."
+  },
   "announcements": {
     "dismiss": "Ankündigung ausblenden"
   }

@@ -1583,6 +1583,37 @@
       "internal": "Unexpected error."
     }
   },
+  "notifications": {
+    "mail": {
+      "subject": {
+        "offerToAll": "Turno offerto: {duty}",
+        "offerToMe": "Richiesta per te: {duty}",
+        "offerAccepted": "La tua offerta è stata accettata: {duty}",
+        "offerDeclined": "La tua richiesta è stata rifiutata: {duty}"
+      },
+      "lead": {
+        "offerToAll": "{name} offre il turno del {duty}.",
+        "offerToMe": "{name} ti chiede direttamente il turno del {duty}.",
+        "offerAccepted": "{name} ha accettato la tua offerta per il turno del {duty}.",
+        "offerDeclined": "{name} ha rifiutato la tua richiesta per il turno del {duty}."
+      },
+      "kind": {
+        "give": "Cessione – chi accetta prende il turno.",
+        "exchangeFor": "Scambio con il turno del {duty}.",
+        "exchangeAny": "Scambio – chi accetta restituisce uno dei propri turni futuri."
+      },
+      "youGet": "In cambio prendi il turno del {duty}.",
+      "note": "Nota: {note}",
+      "allDay": "tutto il giorno",
+      "button": "Apri la bacheca degli scambi",
+      "footer": "Modifica le notifiche",
+      "someone": "Qualcuno"
+    }
+  },
+  "outlook": {
+    "eventBody": "Questo evento è gestito da BetterShift. I turni si scambiano nella bacheca degli scambi.",
+    "cancelComment": "Questo turno non si svolge più."
+  },
   "announcements": {
     "dismiss": "Nascondi annuncio"
   }
