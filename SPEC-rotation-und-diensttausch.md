@@ -117,6 +117,7 @@ shift_swaps (id, type: 'give' | 'exchange', status: 'open' | 'accepted' | 'decli
 - Auslöser: neues Angebot an alle bzw. an mich, mein Angebot wurde angenommen, Dienst morgen
 - Pro User abschaltbar
 - **Outlook-Integration:** Dienste als iCalendar-Einladungen (REQUEST/CANCEL) per SMTP in die persönlichen Kalender oder per Microsoft Graph (siehe 12.21; Umgebung: Microsoft 365)
+- **Entschieden (2026-10-22, siehe 12.24–12.27):** Microsoft Graph; office@ bleibt Organisator, ein Termin pro Dienst; Angebots-Mails per Graph von office@; keine Mail „Dienst morgen" (Outlook erinnert), kein Web-Push
 
 ## 8. Umsetzungsphasen
 
@@ -185,3 +186,7 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 21. **Outlook:** Dienste sollen später automatisch in den Outlook-Kalendern der Betroffenen erscheinen. Umgebung: **Microsoft 365** (Entscheidung 2026-10-22). Optionen für Phase 3: iCalendar-Einladungen per SMTP über M365 oder direkt per Microsoft Graph (App-Registrierung in Entra ID nötig) — Auswahl im Grilling vor Phase 3. Jeder Platz erhält eine stabile ID als Termin-UID.
 22. **Migrationen** der Fork-Tabellen in eigenem Ordner/Tracking, siehe `docs/adr/0002-eigene-migrationsspur-fuer-fork.md`.
 23. **Angebote ohne Tauschrecht (2026-10-22):** Verliert der Anbieter das Tauschrecht im Kalender (`signUpSelf`), wird sein offenes Tauschangebot (`exchange`) beim Annehmen auf `cancelled` gesetzt und mit `notOpen` abgewiesen; eine Abgabe (`give`) bleibt annehmbar. Der Anbieter darf sein eigenes Angebot immer zurückziehen.
+24. **Outlook-Weg (2026-10-22):** Microsoft Graph statt iCal per SMTP. Wie bisher ist das Postfach office@ Organisator; die App pflegt nur den office@-Kalender (Entra-App mit `Calendars.ReadWrite` + `Mail.Send`, per Exchange-RBAC auf office@ beschränkt), Exchange verschickt Einladungen, Aktualisierungen und Absagen. **Ein Termin pro Dienst**, Teilnehmer = aktuelle Platzinhaber – ersetzt die Platz-UID aus 12.21. Aktivierung per ENV plus Schalter pro Rotation.
+25. **Abgleich (2026-10-22):** In-Prozess-Worker vergleicht jede Minute lokale Fingerprints der Sollzustände (erfasst auch Umbesetzungen über Upstream-Routen) und gleicht nur Abweichungen mit Graph ab; nachts zusätzlich Vollabgleich gegen den office@-Kalender. Kein Altbestand im office@-Kalender zu übernehmen.
+26. **Adresse (2026-10-22):** Outlook-Adresse eines Teilnehmers = seine Login-E-Mail.
+27. **Benachrichtigungen (2026-10-22):** E-Mail per Graph von office@ bei neuem Angebot an alle, Direktanfrage an mich, Annahme bzw. Ablehnung meines Angebots; pro Benutzer und Art abschaltbar auf `/swaps`. Einreihen in derselben Transaktion wie die Tauschaktion (Outbox). Design: `docs/superpowers/specs/2026-10-22-phase-3-outlook-benachrichtigungen-design.md`.
