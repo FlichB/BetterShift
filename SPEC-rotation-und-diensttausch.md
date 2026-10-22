@@ -143,6 +143,13 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 - [ ] ICS-Feed spiegelt Tausche ohne weiteres Zutun wider *(Hinweis: Der Team-Feed enthält keine Platzinhaber; Tausche werden erst mit dem persönlichen Feed sichtbar, Phase 4, 12.20)*
 - [x] UI auf Deutsch, auf dem Smartphone bedienbar *(Phase 2: Teil Tauschbörse in 375 px Breite ohne horizontales Scrollen, 2026-10-22)*
 - [x] Nicht-Berechtigte können keine Rotationen anlegen oder generieren *(Phase 1: Teilnehmer mit „Read" → 403, API-Abnahme 2026-10-21)*
+- [x] *(Phase 3)* Rotation mit Outlook-Schalter: pro künftigem Dienst genau ein Termin im office@-Kalender mit den Inhabern als Teilnehmern *(Dry-Run abgenommen 2026-10-22, echter Tenant offen: 19 von 19 `create` mit je zwei Teilnehmern)*
+- [x] *(Phase 3)* Tausch, Abgabe und Umbesetzung durch den Chef ändern die Teilnehmer innerhalb von 60 s *(Dry-Run abgenommen 2026-10-22, echter Tenant offen: `update` binnen eines 15-s-Intervalls nach Tausch und nach Umbesetzung per Signup-Route)*
+- [ ] *(Phase 3)* Ausfalltag oder Ausschalten sagt künftige Termine ab; vergangene bleiben unberührt *(Teilweise: Ausschalten sagt 19 von 19 Terminen ab, Dry-Run 2026-10-22; Ausfalltag und „vergangene bleiben unberührt" noch ungeprüft)*
+- [ ] *(Phase 3)* In office@ gelöschte oder geänderte Termine werden spätestens im Nachtlauf wiederhergestellt
+- [x] *(Phase 3)* Angebots-Mails an die richtigen Empfänger; abgeschaltete Arten werden nicht versendet *(Dry-Run abgenommen 2026-10-22, echter Tenant offen: BCC ohne Anbietenden, abgeschalteter Benutzer fehlt, Annahme-Mail an den Anbietenden)*
+- [x] *(Phase 3)* Ohne Microsoft-365-Konfiguration verhält sich die App wie nach Phase 2 *(API-Abnahme 2026-10-22: `configured:false`, Schalter wird mit 400 abgelehnt)*
+- [ ] *(Phase 3)* Graph-Ausfall verliert keine Änderung
 
 ## 10. Testfälle (Auswahl)
 
