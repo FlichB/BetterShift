@@ -1484,6 +1484,100 @@
       "internal": "Unexpected error."
     }
   },
+  "swap": {
+    "title": "Swap board",
+    "subtitle": "Give away and swap duties",
+    "menu": "Swap board",
+    "calendar": "Calendar",
+    "tabs": {
+      "forMe": "For me",
+      "mine": "My offers"
+    },
+    "offer": "Offer a duty",
+    "emptyForMe": "There are no open offers for you right now.",
+    "emptyMine": "You haven't made any offers in the last 30 days.",
+    "noCalendars": "You have no duties you're allowed to swap in any calendar.",
+    "showHidden": "Show hidden",
+    "hideHidden": "Hide hidden",
+    "kind": {
+      "give": "Give away",
+      "exchangeFor": "Swap for {date}",
+      "exchangeAny": "Swap for any duty"
+    },
+    "toYou": "to you",
+    "toUser": "to {name}",
+    "toAll": "to everyone",
+    "from": "from {name}",
+    "acceptedBy": "taken by {name}",
+    "status": {
+      "open": "Open",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn",
+      "expired": "Expired",
+      "cancelled": "Void"
+    },
+    "actions": {
+      "take": "Take over",
+      "swap": "Swap",
+      "decline": "Decline",
+      "hide": "Hide",
+      "unhide": "Show again",
+      "withdraw": "Withdraw"
+    },
+    "confirm": {
+      "takeTitle": "Take over this duty?",
+      "takeText": "You take over the duty on {date}, {time}. This applies immediately.",
+      "swapTitle": "Swap duties?",
+      "swapText": "You take over {date}, {time} and give away {counter}. This applies immediately.",
+      "pickCounter": "Which of your duties do you give in return?",
+      "noCounter": "You have no upcoming duty in this calendar to give in return."
+    },
+    "done": {
+      "taken": "Duty taken over.",
+      "swapped": "Duties swapped.",
+      "offered": "Offer created.",
+      "withdrawn": "Offer withdrawn.",
+      "declined": "Request declined."
+    },
+    "form": {
+      "shift": "Your duty",
+      "shiftPlaceholder": "Choose a duty",
+      "type": "Kind",
+      "give": "Give away",
+      "exchange": "Swap",
+      "audience": "To whom?",
+      "everyone": "Everyone",
+      "person": "One person",
+      "target": "Colleague",
+      "targetPlaceholder": "Choose a person",
+      "requested": "Duty wanted in return",
+      "anyDuty": "Any – the other person chooses",
+      "note": "Note",
+      "notePlaceholder": "e.g. reason or wish",
+      "submit": "Offer",
+      "noSlots": "You have no upcoming duties in this calendar."
+    },
+    "errors": {
+      "notFound": "Offer not found.",
+      "forbidden": "Not allowed.",
+      "invalid": "Invalid input.",
+      "notDuty": "Only duties of a rotation can be swapped.",
+      "invalidShift": "This duty doesn't fit the offer.",
+      "notOpen": "The offer is no longer open.",
+      "ownOffer": "This is your own offer.",
+      "notTarget": "This request is meant for someone else.",
+      "slotNotOwned": "The place now belongs to someone else.",
+      "alreadyStarted": "The duty has already started.",
+      "alreadyOnDuty": "This person is already on this duty.",
+      "doubleBooked": "That would double-book someone.",
+      "duplicateOffer": "There is already an open offer for this place.",
+      "notDirect": "Only direct requests can be declined.",
+      "notBroadcast": "Only offers to everyone can be hidden.",
+      "dutySlotSwapOnly": "Places on duties change hands only through the swap board.",
+      "internal": "Unexpected error."
+    }
+  },
   "announcements": {
     "dismiss": "Nascondi annuncio"
   }

@@ -15,6 +15,7 @@ import {
   LogIn,
   LogOut,
   RefreshCcw,
+  ArrowLeftRight,
   Shield,
   SlidersHorizontal,
   SunMoon,
@@ -395,6 +396,8 @@ function PhoneMenuSheet({
                   />
                   {/* [fork] Rotation generator */}
                   <MenuRow icon={RefreshCcw} title={t("rotation.menu")} onClick={() => navigate("/rotations")} />
+                  {/* [fork] Swap board */}
+                  <MenuRow icon={ArrowLeftRight} title={t("swap.menu")} onClick={() => navigate("/swaps")} />
                   <MenuRow
                     icon={Compass}
                     title={t("calendar.browseCalendars")}
