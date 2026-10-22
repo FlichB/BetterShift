@@ -1558,6 +1558,11 @@
       "submit": "Offer",
       "noSlots": "You have no upcoming duties in this calendar."
     },
+    "offerShift": "Give away / swap",
+    "openOffer": "There is an open swap offer for this duty.",
+    "openOfferLink": "Go to swap board",
+    "marker": "Open swap offer",
+    "signupHint": "Places on this duty change hands through the swap board.",
     "errors": {
       "notFound": "Offer not found.",
       "forbidden": "Not allowed.",

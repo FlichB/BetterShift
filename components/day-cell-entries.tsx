@@ -22,6 +22,8 @@ import { useCalendars } from "@/hooks/useCalendars";
 import { useAuthFeatures } from "@/hooks/useAuthFeatures";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuickSelfSignup, useShiftSignupPermission } from "@/hooks/useShiftSignups";
+import { SwapMarker } from "@/components/swap/swap-marker"; // [fork]
+import { useSwapCalendarState } from "@/hooks/useSwaps"; // [fork]
 
 const LONG_PRESS_MS = 500;
 
@@ -173,13 +175,15 @@ export function QuickSignupButton({
 }) {
   const t = useTranslations();
   const { user: currentUser } = useAuth();
-  const { canManageOwn } = useShiftSignupPermission(shift.calendarId);
+  const { canManageOwn, canManageOthers } = useShiftSignupPermission(shift.calendarId);
+  // [fork] Duty Plätze change hands via the swap board only (spec 12.18)
+  const { dutyShiftIds } = useSwapCalendarState(shift.calendarId);
   const { signUpForShift, isPending: signingUp } = useQuickSelfSignup();
   const signups = shift.signups ?? [];
   const capacity = shift.signupCapacity ?? null;
   const alreadySignedUp = !!currentUser && signups.some((s) => s.id === currentUser.id);
   const isFull = capacity != null && signups.length >= capacity;
-  if (!canManageOwn || alreadySignedUp || isFull) return null;
+  if (!canManageOwn || alreadySignedUp || isFull || (dutyShiftIds.has(shift.id) && !canManageOthers)) return null; // [fork]
 
   return (
     <button
@@ -286,6 +290,7 @@ export function ShiftChip({
             <span className={cn(lineClass(wrap), "min-w-0 flex-1 text-[11.5px] font-medium leading-4")}>
               {shift.title}
             </span>
+            <SwapMarker shiftId={shift.id} calendarId={shift.calendarId} /> {/* [fork] */}
             <SignupBadge shift={shift} enabled={signupsEnabled} />
             {interactive && <QuickSignupButton shift={shift} />}
           </span>
@@ -323,6 +328,7 @@ export function ShiftChip({
           variant="compact"
         />
       </span>
+      <SwapMarker shiftId={shift.id} calendarId={shift.calendarId} /> {/* [fork] */}
       <SignupBadge shift={shift} enabled={signupsEnabled} />
       {interactive && <QuickSignupButton shift={shift} />}
       <ChipTime shift={shift} full={wrap} />

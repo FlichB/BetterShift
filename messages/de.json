@@ -1558,6 +1558,11 @@
       "submit": "Anbieten",
       "noSlots": "Du hast keine künftigen Dienste in diesem Kalender."
     },
+    "offerShift": "Abgeben / Tauschen",
+    "openOffer": "Für diesen Dienst gibt es ein offenes Tauschangebot.",
+    "openOfferLink": "Zur Tauschbörse",
+    "marker": "Offenes Tauschangebot",
+    "signupHint": "Plätze dieses Dienstes wechseln über die Tauschbörse.",
     "errors": {
       "notFound": "Angebot nicht gefunden.",
       "forbidden": "Keine Berechtigung.",

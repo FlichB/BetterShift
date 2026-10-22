@@ -15,6 +15,7 @@ import {
 import { Field, inputClass, Pill, RowIconButton, SectionLabel } from "@/components/form-kit";
 import { PersonRow } from "@/components/person-row";
 import { useAuth } from "@/hooks/useAuth";
+import { useSwapCalendarState } from "@/hooks/useSwaps"; // [fork]
 import {
   useShiftSignupPermission,
   useShiftSignups,
@@ -52,6 +53,9 @@ export function ShiftSignupList({
   const { canManageOwn, canManageOthers, signupsEnabled } = useShiftSignupPermission(calendarId);
   const live = useShiftSignups(shiftId);
   const { members } = useCalendarMembers(calendarId, canManageOthers);
+  // [fork] Duty Plätze change hands via the swap board only (spec 12.18)
+  const { dutyShiftIds } = useSwapCalendarState(calendarId);
+  const selfLocked = !!shiftId && dutyShiftIds.has(shiftId) && !canManageOthers;
   const [pickedUserId, setPickedUserId] = useState("");
 
   const isPending = !shiftId;
@@ -144,7 +148,8 @@ export function ShiftSignupList({
       )}
 
       {signupUsers.map((signup) => {
-        const canRemoveThis = canManageOthers || (canManageOwn && signup.id === currentUser?.id);
+        const canRemoveThis =
+          canManageOthers || (canManageOwn && !selfLocked && signup.id === currentUser?.id); // [fork] selfLocked
         return (
           <PersonRow
             key={signup.id}
@@ -165,7 +170,7 @@ export function ShiftSignupList({
         );
       })}
 
-      {canManageOwn && !selfSignedUp && !isFull && (
+      {canManageOwn && !selfLocked && !selfSignedUp && !isFull && ( // [fork] selfLocked
         <Button
           type="button"
           variant="outline"
@@ -181,6 +186,9 @@ export function ShiftSignupList({
       {showSelfSignupDisabledHint && (
         <p className="text-[12px] text-fg-tertiary">{t("shiftSignup.selfSignupDisabled")}</p>
       )}
+
+      {/* [fork] */}
+      {selfLocked && <p className="text-[12px] text-fg-tertiary">{t("swap.signupHint")}</p>}
 
       {canManageOthers && !isFull && (
         <div className="flex flex-col gap-1.5">

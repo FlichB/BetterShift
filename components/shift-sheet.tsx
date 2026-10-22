@@ -8,6 +8,7 @@ import { ShiftFormFields } from "@/components/shift-form-fields";
 import { PresetSelect } from "@/components/preset-select";
 import { ReadOnlyBanner } from "@/components/read-only-banner";
 import { ShiftSignupList } from "@/components/shift-signup-list";
+import { SwapShiftActions } from "@/components/swap/swap-shift-actions"; // [fork]
 import { useShiftForm } from "@/hooks/useShiftForm";
 import { useCalendarPermission } from "@/hooks/useCalendarPermission";
 import { useCalendars } from "@/hooks/useCalendars";
@@ -271,6 +272,11 @@ export function ShiftSheet({
             pendingUserIds={pendingSignupUserIds}
             onPendingUserIdsChange={setPendingSignupUserIds}
           />
+        )}
+
+        {/* [fork] Swap board entry for duties */}
+        {calendarId && shift && !isTempId(shift.id) && (
+          <SwapShiftActions shiftId={shift.id} calendarId={calendarId} />
         )}
       </div>
     </BaseSheet>
