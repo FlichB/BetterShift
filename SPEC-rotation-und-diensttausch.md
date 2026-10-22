@@ -134,13 +134,13 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 
 - [x] Rotation mit 8 Personen / 2 pro Dienst / wöchentlich (Samstag) erzeugt einen Plan, in dem jede Person exakt jede 4. Woche Dienst hat *(Phase 1: Unit-Test + API-Abnahme 2026-10-21)*
 - [x] Erneutes Generieren erzeugt keine Duplikate und überschreibt keine getauschten Plätze *(Phase 1: Duplikate per API geprüft; Sperren per Integrationstest, echte Tausche ab Phase 2)*
-- [ ] Mitarbeiter A kann einen Dienst abgeben; B übernimmt; der Kalender zeigt B (spätestens nach 15 s)
-- [ ] Tausch zweier Dienste funktioniert in einem Schritt und ist atomar
-- [ ] Doppelbelegung wird verhindert; zwei gleichzeitige Annahmen → nur eine erfolgreich
+- [x] Mitarbeiter A kann einen Dienst abgeben; B übernimmt; der Kalender zeigt B (spätestens nach 15 s) *(Phase 2: Abgeben/Übernehmen im Dev-Server abgenommen, Kalender-Symbol verschwindet ohne Neuladen, 2026-10-22)*
+- [x] Tausch zweier Dienste funktioniert in einem Schritt und ist atomar *(Phase 2: gezielter Tausch und „Tausch beliebig" per Dev-Server-Abnahme, 2026-10-22)*
+- [x] Doppelbelegung wird verhindert; zwei gleichzeitige Annahmen → nur eine erfolgreich *(Phase 2: zwei parallele Annahmen → 200 und 409 `notOpen`, 2026-10-22)*
 - [ ] Begonnene/vergangene Dienste können weder getauscht noch neu generiert werden
-- [ ] Alle Tauschvorgänge stehen im Audit-Log
+- [x] Alle Tauschvorgänge stehen im Audit-Log *(Phase 2: `swap.offered/accepted/declined/withdrawn` mit lesbaren Texten, 2026-10-22)*
 - [ ] ICS-Feed spiegelt Tausche ohne weiteres Zutun wider
-- [ ] UI auf Deutsch, auf dem Smartphone bedienbar
+- [x] UI auf Deutsch, auf dem Smartphone bedienbar *(Phase 2: Teil Tauschbörse in 375 px Breite ohne horizontales Scrollen, 2026-10-22)*
 - [x] Nicht-Berechtigte können keine Rotationen anlegen oder generieren *(Phase 1: Teilnehmer mit „Read" → 403, API-Abnahme 2026-10-21)*
 
 ## 10. Testfälle (Auswahl)
@@ -179,7 +179,7 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 15. **Ausfalltage** werden an der Rotation gepflegt; die Reihenfolge rückt nach.
 16. **Neustart ab X:** Standardmäßig beginnt die Reihe mit dem Teilnehmer nach dem letzten Dienst vor X; der Admin kann das ändern.
 17. **Manuelle Änderungen** an generierten Plätzen werden beim Neugenerieren überschrieben (mit Hinweis in der Vorschau).
-18. **Teilnehmer** erhalten im Teamkalender das Bündel „Read". Hinweis (2026-10-21): Das mitgelieferte Bündel „Read" enthält `signUpSelf` („Sich selbst eintragen"); bis Phase 2 einen Guard ergänzt, sollten Teilnehmer ein Bündel ohne diese Berechtigung erhalten. **Entscheidung (2026-10-22):** Phase 2 sperrt im Code das Selbst-Ein- und Austragen bei Plätzen generierter Dienste; Plätze wechseln nur über die Tauschbörse. „Read" bleibt danach für Teilnehmer nutzbar.
+18. **Teilnehmer** erhalten im Teamkalender das Bündel „Read". Hinweis (2026-10-21): Das mitgelieferte Bündel „Read" enthält `signUpSelf` („Sich selbst eintragen"); bis Phase 2 einen Guard ergänzt, sollten Teilnehmer ein Bündel ohne diese Berechtigung erhalten. **Entscheidung (2026-10-22):** Phase 2 sperrt im Code das Selbst-Ein- und Austragen bei Plätzen generierter Dienste; Plätze wechseln nur über die Tauschbörse. „Read" bleibt danach für Teilnehmer nutzbar. Umgesetzt in Phase 2: Selbst-Ein-/Austragen auf Diensten ist für Benutzer ohne `signUpOthers` gesperrt (`lib/swap/guard.ts`); Abnahme 2026-10-22 (403 `dutySlotSwapOnly`).
 19. **Verfallen:** Lesend sofort, plus stündlicher In-Prozess-Timer, der den Status setzt und protokolliert.
 20. **Persönlicher ICS-Feed** („nur meine Dienste") in Phase 4; `TZ=Europe/Vienna`.
 21. **Outlook:** Dienste sollen später automatisch in den Outlook-Kalendern der Betroffenen erscheinen. Umgebung: **Microsoft 365** (Entscheidung 2026-10-22). Optionen für Phase 3: iCalendar-Einladungen per SMTP über M365 oder direkt per Microsoft Graph (App-Registrierung in Entra ID nötig) — Auswahl im Grilling vor Phase 3. Jeder Platz erhält eine stabile ID als Termin-UID.
