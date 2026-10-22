@@ -13,6 +13,7 @@ export async function register() {
     const { autoSyncService } = await import("@/lib/auto-sync-service");
     const { telemetryService } = await import("@/lib/telemetry/sender");
     const { swapExpiryService } = await import("@/lib/swap/expiry"); // [fork]
+    const { outlookWorker } = await import("@/lib/outlook/worker"); // [fork]
     try {
       // Preload version during startup to avoid blocking on first request
       const { initializeVersion } = await import("@/lib/version");
@@ -38,6 +39,13 @@ export async function register() {
       console.error("[Instrumentation] Swap expiry scheduler failed:", error);
     }
 
+    // [fork] Outlook: mirror duties into the office@ calendar and send swap mails (spec 12.24–12.27)
+    try {
+      outlookWorker.start();
+    } catch (error) {
+      console.error("[Instrumentation] Outlook worker failed:", error);
+    }
+
     // Register shutdown handlers regardless of whether start() above
     // succeeded — stop() is safe to call even if the service never started.
     // dumb-init (PID 1 in the container) forwards signals to this process,
@@ -57,6 +65,7 @@ export async function register() {
       autoSyncService.stop();
       telemetryService.stop();
       swapExpiryService.stop(); // [fork]
+      outlookWorker.stop(); // [fork]
     };
     process.once("SIGTERM", shutdown);
     process.once("SIGINT", shutdown);
