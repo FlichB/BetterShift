@@ -41,14 +41,22 @@ describe("dispatchNotifications", () => {
     expect(await dispatch()).toMatchObject({ sent: 1, skipped: 0, failed: 0, authError: null });
     const [mail] = graph.mails;
     expect(mail.to).toEqual(["office@firma.at"]);
-    const expected = [...s.team.memberIds.filter((id) => id !== s.m0), s.team.ownerId].map(emailOf).sort();
+    // m0 offers and m1 co-holds the duty: neither can take it over.
+    const expected = [...s.team.memberIds.filter((id) => id !== s.m0 && id !== s.m1), s.team.ownerId].map(emailOf).sort();
     expect([...mail.bcc].sort()).toEqual(expected);
     expect(mail.subject).toContain("Dienst angeboten");
     expect(statusOf(swap.id)).toEqual([{ kind: "offer_to_all", status: "sent" }]);
   });
 
   it("respects switched-off preferences", async () => {
-    setPreferences(s.m1, { offersToAll: false, offersToMe: true, myOffers: true });
+    setPreferences(s.m2, { offersToAll: false, offersToMe: true, myOffers: true });
+    createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    await dispatch();
+    expect(graph.mails[0].bcc).not.toContain(emailOf(s.m2));
+    expect(graph.mails[0].bcc.length).toBeGreaterThan(0);
+  });
+
+  it("does not address a co-holder of the offered duty", async () => {
     createOffer(give(s.duty("2026-11-07")), s.m0, now);
     await dispatch();
     expect(graph.mails[0].bcc).not.toContain(emailOf(s.m1));
@@ -89,6 +97,25 @@ describe("dispatchNotifications", () => {
     expect(await dispatch()).toMatchObject({ failed: 1 });
     expect(statusOf(swap.id)).toEqual([{ kind: "offer_to_all", status: "failed" }]);
     expect(db.select().from(auditLogs).where(eq(auditLogs.action, "notification.failed")).all().length).toBeGreaterThan(0);
+  });
+
+  it("honours Retry-After when Graph throttles a mail", async () => {
+    const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    graph.failures.push(new GraphError(429, "429 TooManyRequests", 120_000));
+    await dispatch();
+    const row = db.select().from(notificationOutbox).where(eq(notificationOutbox.swapId, swap.id)).get()!;
+    expect(row.nextAttemptAt).toEqual(new Date(now.getTime() + 120_000));
+  });
+
+  it("treats a non-Graph exception as a failed attempt and keeps working through the queue", async () => {
+    const first = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    const second = createOffer(give(s.duty("2026-11-14"), s.m4), s.m2, now);
+    const spy = vi.spyOn(graph, "sendMail").mockRejectedValueOnce(new TypeError("boom"));
+    expect(await dispatch()).toMatchObject({ sent: 1, authError: null });
+    spy.mockRestore();
+    const row = db.select().from(notificationOutbox).where(eq(notificationOutbox.swapId, first.id)).get()!;
+    expect(row).toMatchObject({ status: "pending", attempts: 1, lastError: "boom" });
+    expect(statusOf(second.id)).toEqual([{ kind: "offer_to_me", status: "sent" }]);
   });
 
   it("stops at an auth error and keeps the event pending", async () => {

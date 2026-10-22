@@ -2,7 +2,7 @@
 // async and therefore cannot be checked inside the synchronous swap transaction.
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { calendarShares, calendars, user, userCalendarSubscriptions } from "@/lib/db/schema";
+import { calendarShares, calendars, shiftSignups, user,userCalendarSubscriptions } from "@/lib/db/schema";
 import { getPreferences, preferenceFor } from "@/lib/notify/preferences";
 import type { NotificationKind } from "@/lib/notify/schema";
 import { canOtherUserSwap } from "@/lib/swap/permissions";
@@ -39,7 +39,13 @@ export async function resolveRecipients(
   let ids: string[];
   switch (kind) {
     case "offer_to_all":
-      ids = await swapCandidates(calendarId);
+      // R5: current holders of the offered duty cannot take it over, so they are not addressed.
+      {
+        const holders = new Set(
+          db.select({ id: shiftSignups.userId }).from(shiftSignups).where(eq(shiftSignups.shiftId, swap.offeredShiftId)).all().map((r) => r.id)
+        );
+        ids = (await swapCandidates(calendarId)).filter((id) => !holders.has(id));
+      }
       break;
     case "offer_to_me":
       ids = swap.targetUserId ? [swap.targetUserId] : [];

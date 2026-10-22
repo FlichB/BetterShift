@@ -62,40 +62,40 @@ export async function dispatchNotifications(client: GraphClient, config: Outlook
       result[status]++;
     };
 
-    const swap = getSwap(row.swapId);
-    const offered = swap ? loadSlot(db, swap.offeredShiftId) : null;
-    const isOffer = row.kind === "offer_to_all" || row.kind === "offer_to_me";
-    if (!swap || !offered || (isOffer && swap.status !== "open")) {
-      finish("skipped");
-      continue;
-    }
-    const recipients = await resolveRecipients(row.kind, swap, offered.duty.calendarId, row.actorUserId);
-    if (recipients.length === 0) {
-      finish("skipped");
-      continue;
-    }
-
-    const someone = t("notifications.mail.someone");
-    const mail = renderMail(
-      {
-        kind: row.kind,
-        type: swap.type,
-        offered: withTitle(offered.duty),
-        requested: dutyOf(swap.requestedShiftId),
-        accepted: dutyOf(swap.acceptedShiftId),
-        offeredByName: nameOf(swap.offeredByUserId) ?? someone,
-        actorName: nameOf(row.actorUserId) ?? someone,
-        note: swap.note,
-        appUrl: config.appUrl,
-      },
-      t,
-      locale
-    );
-    // One recipient sees their own address; several go to BCC so nobody sees the others.
-    const emails = recipients.map((r) => r.email);
-    const single = emails.length === 1;
-
     try {
+      const swap = getSwap(row.swapId);
+      const offered = swap ? loadSlot(db, swap.offeredShiftId) : null;
+      const isOffer = row.kind === "offer_to_all" || row.kind === "offer_to_me";
+      if (!swap || !offered || (isOffer && swap.status !== "open")) {
+        finish("skipped");
+        continue;
+      }
+      const recipients = await resolveRecipients(row.kind, swap, offered.duty.calendarId, row.actorUserId);
+      if (recipients.length === 0) {
+        finish("skipped");
+        continue;
+      }
+
+      const someone = t("notifications.mail.someone");
+      const mail = renderMail(
+        {
+          kind: row.kind,
+          type: swap.type,
+          offered: withTitle(offered.duty),
+          requested: dutyOf(swap.requestedShiftId),
+          accepted: dutyOf(swap.acceptedShiftId),
+          offeredByName: nameOf(swap.offeredByUserId) ?? someone,
+          actorName: nameOf(row.actorUserId) ?? someone,
+          note: swap.note,
+          appUrl: config.appUrl,
+        },
+        t,
+        locale
+      );
+      // One recipient sees their own address; several go to BCC so nobody sees the others.
+      const emails = recipients.map((r) => r.email);
+      const single = emails.length === 1;
+
       await client.sendMail({ ...mail, to: single ? emails : [config.organizer], bcc: single ? [] : emails });
       finish("sent");
     } catch (error) {
@@ -103,6 +103,7 @@ export async function dispatchNotifications(client: GraphClient, config: Outlook
         result.authError = error.message;
         return result;
       }
+      // Any other error (Graph or local) takes the normal retry path so one bad row cannot block the queue.
       const attempts = row.attempts + 1;
       const message = (error instanceof Error ? error.message : String(error)).slice(0, 500);
       if (attempts >= MAX_MAIL_ATTEMPTS) {
@@ -111,12 +112,13 @@ export async function dispatchNotifications(client: GraphClient, config: Outlook
         await logSystemEvent<NotificationFailedMetadata>({
           action: "notification.failed",
           resourceType: "shift_swap",
-          resourceId: swap.id,
-          metadata: { kind: row.kind, swapId: swap.id, message },
+          resourceId: row.swapId,
+          metadata: { kind: row.kind, swapId: row.swapId, message },
         });
       } else {
+        const wait = error instanceof GraphError && error.retryAfterMs !== null ? error.retryAfterMs : backoffMs(attempts);
         db.update(notificationOutbox)
-          .set({ attempts, nextAttemptAt: new Date(now.getTime() + backoffMs(attempts)), lastError: message })
+          .set({ attempts, nextAttemptAt: new Date(now.getTime() + wait), lastError: message })
           .where(eq(notificationOutbox.id, row.id))
           .run();
       }
