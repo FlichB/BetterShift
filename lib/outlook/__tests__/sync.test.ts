@@ -157,6 +157,49 @@ describe("syncOutlook", () => {
   });
 });
 
+describe("syncOutlook edge cases", () => {
+  it("cancels an event whose create response was lost", async () => {
+    graph.loseNextCreateResponse = true;
+    expect((await run(now, 1)).failures).toHaveLength(1);
+    const shiftId = s.duty("2026-11-07");
+    expect(row(shiftId)).toMatchObject({ eventId: null });
+    expect(graph.events.size).toBe(1);
+    const [storedId] = [...graph.events.keys()];
+
+    enable(false);
+    expect(await run(minutes(2))).toMatchObject({ cancelled: 1 });
+    expect(graph.events.get(storedId)!.isCancelled).toBe(true);
+    expect(row(shiftId)!.state).toBe("cancelled");
+  });
+
+  it("deletes the event when Graph refuses to cancel one without attendees", async () => {
+    await run();
+    const shiftId = s.duty("2026-11-07");
+    const eventId = row(shiftId)!.eventId!;
+    enable(false);
+    graph.calls = [];
+    graph.failures.push(new GraphError(400, "400 ErrorInvalidRequest"));
+    expect(await run(now, 1)).toMatchObject({ cancelled: 1, failures: [] });
+    expect(graph.calls).toEqual([`cancel:${eventId}`, `delete:${eventId}`]);
+    expect(graph.events.has(eventId)).toBe(false);
+    expect(row(shiftId)!.state).toBe("cancelled");
+  });
+
+  it("patches the event on the next run when a reused transaction id may have returned old content", async () => {
+    graph.failures.push(new Error("network down"));
+    await run(now, 1);
+    const shiftId = s.duty("2026-11-07");
+    db.update(shiftSignups).set({ userId: s.m4 }).where(and(eq(shiftSignups.shiftId, shiftId), eq(shiftSignups.userId, s.m1))).run();
+    expect(await run(minutes(2), 1)).toMatchObject({ created: 1 });
+    expect(row(shiftId)!.fingerprint).toBeNull();
+
+    graph.calls = [];
+    expect(await run(minutes(3), 1)).toMatchObject({ updated: 1 });
+    expect(graph.calls).toEqual([`update:${row(shiftId)!.eventId}`]);
+    expect(row(shiftId)!.fingerprint).not.toBeNull();
+  });
+});
+
 describe("backoffMs", () => {
   it("steps 1, 5, 15, 60 minutes and stays at an hour", () => {
     expect([1, 2, 3, 4, 9].map((n) => backoffMs(n) / 60_000)).toEqual([1, 5, 15, 60, 60]);

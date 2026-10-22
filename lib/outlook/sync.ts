@@ -114,16 +114,26 @@ async function upsert(client: GraphClient, job: UpsertJob, now: Date, bodyHtml: 
     .onConflictDoUpdate({ target: outlookEvents.shiftId, set: values })
     .run();
   const created = await client.createEvent(input, transactionId);
-  markSynced(duty.shiftId, { eventId: created.id, icalUid: created.iCalUId, fingerprint: fp, startsAt }, now);
+  // A reused id may have returned an earlier event with old content: leave the fingerprint empty so the next run patches it.
+  markSynced(duty.shiftId, { eventId: created.id, icalUid: created.iCalUId, fingerprint: pending ? null : fp, startsAt }, now);
   result.created++;
 }
 
 async function cancel(client: GraphClient, row: OutlookEvent, now: Date, comment: string, result: SyncResult): Promise<void> {
-  if (row.eventId) {
+  // A create whose response was lost may still have stored the event: find it by its transaction id.
+  const eventId = row.eventId ?? (row.transactionId ? await client.findEventByTransactionId(row.transactionId, row.startsAt) : null);
+  if (eventId) {
     try {
-      await client.cancelEvent(row.eventId, comment);
+      await client.cancelEvent(eventId, comment);
     } catch (error) {
-      if (!(error instanceof GraphError && error.isNotFound)) throw error;
+      if (error instanceof GraphError && error.status === 400) {
+        // Events without attendees are plain appointments, which cannot be cancelled: delete them.
+        try {
+          await client.deleteEvent(eventId);
+        } catch (deleteError) {
+          if (!(deleteError instanceof GraphError && deleteError.isNotFound)) throw deleteError;
+        }
+      } else if (!(error instanceof GraphError && error.isNotFound)) throw error;
     }
   }
   db.update(outlookEvents)
@@ -229,7 +239,7 @@ export async function verifyOutlook(
   client: GraphClient,
   now: Date,
   rotationId?: string
-): Promise<{ drifted: number; authError: string | null }> {
+): Promise<{ drifted: number; authError: string | null; throttled?: boolean }> {
   const wanted = new Map(loadDesiredDuties(now, rotationId).map((d) => [d.shiftId, desiredEvent(d)]));
   const rows = db
     .select()
@@ -254,6 +264,8 @@ export async function verifyOutlook(
       }
     } catch (error) {
       if (error instanceof GraphError && error.isAuth) return { drifted, authError: error.message };
+      // Throttled: stop here and let a later tick repeat the whole verify.
+      if (error instanceof GraphError && error.status === 429) return { drifted, authError: null, throttled: true };
       console.error(`[Outlook] Verifying event of duty ${row.shiftId} failed:`, error);
     }
   }

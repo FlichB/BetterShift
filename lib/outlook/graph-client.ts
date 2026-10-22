@@ -28,6 +28,10 @@ export interface GraphClient {
   createEvent(input: EventInput, transactionId: string): Promise<{ id: string; iCalUId: string | null }>;
   updateEvent(id: string, input: EventInput): Promise<void>;
   cancelEvent(id: string, comment: string): Promise<void>;
+  /** Plain delete; the fallback for events without attendees, which Graph refuses to cancel. */
+  deleteEvent(id: string): Promise<void>;
+  /** Id of the event created with this transaction id around that time, or null (lost create response). */
+  findEventByTransactionId(transactionId: string, around: Date): Promise<string | null>;
   /** null when the event no longer exists. */
   getEvent(id: string): Promise<GraphEvent | null>;
   sendMail(mail: MailInput): Promise<void>;
@@ -146,6 +150,19 @@ export function createGraphClient(config: OutlookConfig, fetchImpl: typeof fetch
     async cancelEvent(id, comment) {
       await call(`/events/${encodeURIComponent(id)}/cancel`, { method: "POST", body: { comment } });
     },
+    async deleteEvent(id) {
+      await call(`/events/${encodeURIComponent(id)}`, { method: "DELETE" });
+    },
+    async findEventByTransactionId(transactionId, around) {
+      const day = 86_400_000;
+      const from = new Date(around.getTime() - day).toISOString();
+      const to = new Date(around.getTime() + 2 * day).toISOString();
+      const response = await call(`/calendarView?startDateTime=${encodeURIComponent(from)}&endDateTime=${encodeURIComponent(to)}&$select=id,transactionId&$top=100`, {
+        method: "GET",
+      });
+      const data = (await response.json()) as { value?: { id: string; transactionId?: string | null }[] };
+      return data.value?.find((e) => e.transactionId === transactionId)?.id ?? null;
+    },
     async getEvent(id) {
       try {
         const response = await call(`/events/${encodeURIComponent(id)}?$select=subject,start,end,isAllDay,isCancelled,attendees`, {
@@ -208,6 +225,14 @@ export function createDryRunClient(log: (message: string) => void = (message) =>
     async cancelEvent(id, comment) {
       events.delete(id);
       log(`[Outlook dry-run] cancel ${id} (${comment})`);
+    },
+    async deleteEvent(id) {
+      events.delete(id);
+      log(`[Outlook dry-run] delete ${id}`);
+    },
+    async findEventByTransactionId(transactionId) {
+      const id = `dry-${transactionId}`;
+      return events.has(id) ? id : null;
     },
     async getEvent(id) {
       return events.get(id) ?? null;

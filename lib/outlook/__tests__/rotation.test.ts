@@ -25,7 +25,7 @@ describe("outlookStatus", () => {
     await syncOutlook(graph, now, { bodyHtml: "", cancelComment: "", rotationId: s.rotation.id });
     const status = outlookStatus(s.rotation.id, true, now);
     expect(status).toMatchObject({ total: 8, synced: 7, failed: 1, pending: 0 });
-    expect(status.errors).toEqual([{ date: "2026-11-07", message: "boom" }]);
+    expect(status.errors).toEqual([{ shiftId: s.duty("2026-11-07"), date: "2026-11-07", message: "boom" }]);
     expect(status.lastSyncedAt).toBe(now.toISOString());
   });
 

@@ -16,7 +16,7 @@ export interface OutlookStatus {
   failed: number;
   pending: number;
   lastSyncedAt: string | null;
-  errors: { date: string; message: string }[];
+  errors: { shiftId: string; date: string; message: string }[];
 }
 
 const MAX_ERRORS = 20;
@@ -54,6 +54,6 @@ export function outlookStatus(rotationId: string, enabled: boolean, now: Date): 
     failed: failing.length,
     pending: Math.max(0, duties.length - synced - failing.length),
     lastSyncedAt: last?.toISOString() ?? null,
-    errors: failing.slice(0, MAX_ERRORS).map((r) => ({ date: formatDateToLocal(r.startsAt), message: r.lastError! })),
+    errors: failing.slice(0, MAX_ERRORS).map((r) => ({ shiftId: r.shiftId, date: formatDateToLocal(r.startsAt), message: r.lastError! })),
   };
 }

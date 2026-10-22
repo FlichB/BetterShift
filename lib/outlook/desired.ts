@@ -42,7 +42,7 @@ export function desiredEvent(duty: DutyForSync): DesiredEvent {
     const address = holder.email?.trim().toLowerCase();
     if (address && !byAddress.has(address)) byAddress.set(address, { address, name: holder.name });
   }
-  const attendees = [...byAddress.values()].sort((a, b) => a.address.localeCompare(b.address));
+  const attendees = [...byAddress.values()].sort((a, b) => (a.address < b.address ? -1 : a.address > b.address ? 1 : 0)); // plain compare: fingerprints must not depend on ICU
 
   if (duty.isAllDay) {
     return { subject: duty.title, start: at(duty.date, "00:00"), end: at(addDays(duty.date, 1), "00:00"), isAllDay: true, attendees };

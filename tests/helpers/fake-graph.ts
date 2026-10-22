@@ -8,6 +8,9 @@ export class FakeGraph implements GraphClient {
   mails: MailInput[] = [];
   transactionIds: string[] = [];
   failures: Error[] = [];
+  /** The next create stores the event but its response is lost (throws afterwards). */
+  loseNextCreateResponse = false;
+  private txIds = new Map<string, string>();
   private seq = 0;
 
   private step(call: string): void {
@@ -34,6 +37,11 @@ export class FakeGraph implements GraphClient {
     this.step(`create:${input.start.dateTime}`);
     const id = `ev-${++this.seq}`;
     this.store(id, input);
+    this.txIds.set(transactionId, id);
+    if (this.loseNextCreateResponse) {
+      this.loseNextCreateResponse = false;
+      throw new Error("response lost");
+    }
     return { id, iCalUId: `uid-${id}` };
   }
 
@@ -48,6 +56,17 @@ export class FakeGraph implements GraphClient {
     const event = this.events.get(id);
     if (!event) throw new GraphError(404, "404 ErrorItemNotFound");
     this.events.set(id, { ...event, isCancelled: true });
+  }
+
+  async deleteEvent(id: string) {
+    this.step(`delete:${id}`);
+    if (!this.events.delete(id)) throw new GraphError(404, "404 ErrorItemNotFound");
+  }
+
+  async findEventByTransactionId(transactionId: string) {
+    this.step(`find:${transactionId}`);
+    const id = this.txIds.get(transactionId);
+    return id && this.events.has(id) ? id : null;
   }
 
   async getEvent(id: string) {

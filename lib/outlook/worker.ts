@@ -73,7 +73,7 @@ async function runOnce(): Promise<void> {
   if (isFullRunDue(state.lastFullRunDate, now)) {
     const verified = await verifyOutlook(client, now);
     if (verified.authError) return pause(verified.authError);
-    state.lastFullRunDate = formatDateToLocal(now);
+    if (!verified.throttled) state.lastFullRunDate = formatDateToLocal(now);
   }
 
   const { t } = await getMailTranslator();
@@ -81,7 +81,8 @@ async function runOnce(): Promise<void> {
     bodyHtml: renderEventBody(t, config.appUrl),
     cancelComment: t("outlook.cancelComment"),
   });
-  await logFailures(sync.failures);
+  // Audit logging must never skip the auth pause below.
+  await logFailures(sync.failures).catch((error) => console.error("[Outlook] Logging sync failures failed:", error));
   if (sync.authError) return pause(sync.authError);
 
   const mails = await dispatchNotifications(client, config, now);

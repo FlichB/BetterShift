@@ -61,4 +61,10 @@ describe("verifyOutlook", () => {
     expect(await verifyOutlook(graph, now, s.rotation.id)).toEqual({ drifted: 0, authError: "403 ErrorAccessDenied" });
     expect(graph.calls).toHaveLength(1);
   });
+
+  it("stops at the first throttled call and reports it", async () => {
+    graph.failures.push(new GraphError(429, "429 TooManyRequests", 30_000));
+    expect(await verifyOutlook(graph, now, s.rotation.id)).toEqual({ drifted: 0, authError: null, throttled: true });
+    expect(graph.calls).toHaveLength(1);
+  });
 });

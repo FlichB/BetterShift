@@ -81,7 +81,7 @@ export function OutlookPanel({ rotationId }: { rotationId: string }) {
       {showErrors && data.errors.length > 0 && (
         <ul className="space-y-1 text-[12.5px] text-fg-secondary">
           {data.errors.map((e) => (
-            <li key={`${e.date}-${e.message}`} className="break-words">
+            <li key={e.shiftId} className="break-words">
               <span className="font-semibold">{format(parseLocalDate(e.date), "P", { locale: dateLocale })}</span>: {e.message}
             </li>
           ))}
