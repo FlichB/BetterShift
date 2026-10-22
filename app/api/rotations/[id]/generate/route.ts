@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth/sessions";
 import { isAuthEnabled } from "@/lib/auth/feature-flags";
 import { logUserAction } from "@/lib/audit-log";
 import { rateLimit } from "@/lib/rate-limiter";
+import { outlookWorker } from "@/lib/outlook/worker";
 import { canManageRotations } from "@/lib/rotation/permissions";
 import { calendarNameOf } from "@/lib/rotation/references";
 import { getRotation, runGeneration } from "@/lib/rotation/service";
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
       request,
     });
+    outlookWorker.kick();
     return NextResponse.json(summary);
   } catch (error) {
     return rotationErrorResponse(error, "Failed to generate rotation duties:");

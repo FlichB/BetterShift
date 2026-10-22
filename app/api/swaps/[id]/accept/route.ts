@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logUserAction } from "@/lib/audit-log";
+import { outlookWorker } from "@/lib/outlook/worker";
 import { readJson } from "@/lib/rotation/http";
 import { logResolved, shiftDate, swapAuditBase, type SwapAcceptedMetadata } from "@/lib/swap/audit";
 import { canOtherUserSwap } from "@/lib/swap/permissions";
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
       request,
     });
+    outlookWorker.kick();
     return NextResponse.json({ moves: result.moves });
   } catch (error) {
     return swapErrorResponse(error, "Failed to accept swap offer:");

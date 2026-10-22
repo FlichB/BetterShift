@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logUserAction } from "@/lib/audit-log";
+import { outlookWorker } from "@/lib/outlook/worker";
 import { swapAuditBase, type SwapResolvedMetadata } from "@/lib/swap/audit";
 import { swapErrorResponse, swapWriteContext } from "@/lib/swap/http";
 import { declineOffer } from "@/lib/swap/service";
@@ -18,6 +19,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       metadata: swapAuditBase(swap),
       request,
     });
+    outlookWorker.kick();
     return NextResponse.json(swap);
   } catch (error) {
     return swapErrorResponse(error, "Failed to decline swap offer:");
