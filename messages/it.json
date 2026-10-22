@@ -1508,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Notifiche",
+      "title": "Notifiche",
+      "description": "E-mail da office@ sulla bacheca degli scambi",
+      "offersToAll": "Nuove offerte per tutti",
+      "offersToAllHint": "Quando qualcuno offre un turno a tutti.",
+      "offersToMe": "Richieste per me",
+      "offersToMeHint": "Quando qualcuno ti chiede direttamente un turno.",
+      "myOffers": "Le mie offerte",
+      "myOffersHint": "Quando la tua offerta viene accettata o la tua richiesta rifiutata.",
+      "notConfigured": "L'invio delle e-mail non è configurato su questo server. La tua scelta varrà non appena lo sarà.",
+      "saveFailed": "Impossibile salvare l'impostazione."
+    },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
     "menu": "Swap board",

@@ -1508,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Notificaciones",
+      "title": "Notificaciones",
+      "description": "Correos de office@ sobre la bolsa de cambios",
+      "offersToAll": "Nuevas ofertas para todos",
+      "offersToAllHint": "Cuando alguien ofrece un turno a todos.",
+      "offersToMe": "Solicitudes para mí",
+      "offersToMeHint": "Cuando alguien te pide directamente un turno.",
+      "myOffers": "Mis ofertas",
+      "myOffersHint": "Cuando se acepta tu oferta o se rechaza tu solicitud.",
+      "notConfigured": "El envío de correos no está configurado en este servidor. Tu elección se aplicará en cuanto lo esté.",
+      "saveFailed": "No se pudo guardar el ajuste."
+    },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
     "menu": "Swap board",

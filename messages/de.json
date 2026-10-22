@@ -1508,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Benachrichtigungen",
+      "title": "Benachrichtigungen",
+      "description": "E-Mails von office@ zur Tauschbörse",
+      "offersToAll": "Neue Angebote an alle",
+      "offersToAllHint": "Wenn jemand einen Dienst für alle anbietet.",
+      "offersToMe": "Anfragen an mich",
+      "offersToMeHint": "Wenn dich jemand gezielt für einen Dienst anfragt.",
+      "myOffers": "Meine Angebote",
+      "myOffersHint": "Wenn dein Angebot angenommen oder deine Anfrage abgelehnt wird.",
+      "notConfigured": "Der E-Mail-Versand ist auf diesem Server nicht eingerichtet. Deine Auswahl gilt, sobald er eingerichtet ist.",
+      "saveFailed": "Einstellung konnte nicht gespeichert werden."
+    },
     "title": "Tauschbörse",
     "subtitle": "Dienste abgeben und tauschen",
     "menu": "Tauschbörse",

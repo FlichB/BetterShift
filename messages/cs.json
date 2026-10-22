@@ -1508,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Oznámení",
+      "title": "Oznámení",
+      "description": "E-maily z office@ k burze výměn",
+      "offersToAll": "Nové nabídky všem",
+      "offersToAllHint": "Když někdo nabídne službu všem.",
+      "offersToMe": "Žádosti pro mě",
+      "offersToMeHint": "Když tě někdo přímo požádá o službu.",
+      "myOffers": "Moje nabídky",
+      "myOffersHint": "Když je tvoje nabídka přijata nebo tvoje žádost odmítnuta.",
+      "notConfigured": "Odesílání e-mailů není na tomto serveru nastaveno. Tvoje volba se uplatní, jakmile bude.",
+      "saveFailed": "Nastavení se nepodařilo uložit."
+    },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
     "menu": "Swap board",

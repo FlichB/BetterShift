@@ -1508,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Notifications",
+      "title": "Notifications",
+      "description": "Emails from office@ about the swap board",
+      "offersToAll": "New offers to everyone",
+      "offersToAllHint": "When someone offers a duty to everyone.",
+      "offersToMe": "Requests to me",
+      "offersToMeHint": "When someone asks you directly about a duty.",
+      "myOffers": "My offers",
+      "myOffersHint": "When your offer is accepted or your request is declined.",
+      "notConfigured": "Email is not set up on this server. Your choice applies once it is.",
+      "saveFailed": "Could not save the setting."
+    },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
     "menu": "Swap board",

@@ -1508,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Notifications",
+      "title": "Notifications",
+      "description": "E-mails de office@ concernant la bourse d'échange",
+      "offersToAll": "Nouvelles offres pour tous",
+      "offersToAllHint": "Lorsque quelqu'un propose un service à tout le monde.",
+      "offersToMe": "Demandes qui me sont adressées",
+      "offersToMeHint": "Lorsque quelqu'un te demande directement un service.",
+      "myOffers": "Mes offres",
+      "myOffersHint": "Lorsque ton offre est acceptée ou ta demande refusée.",
+      "notConfigured": "L'envoi d'e-mails n'est pas configuré sur ce serveur. Ton choix s'appliquera dès qu'il le sera.",
+      "saveFailed": "Le paramètre n'a pas pu être enregistré."
+    },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
     "menu": "Swap board",
