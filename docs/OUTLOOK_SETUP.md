@@ -61,6 +61,8 @@ Die *Objekt-ID der Unternehmensanwendung* steht unter *Identität › Anwendunge
 
 **Danach die mandantenweiten Graph-Anwendungsberechtigungen aus dem vorigen Abschnitt wieder entfernen.** Die RBAC-Zuweisung erteilt die Rechte bereits eingeschränkt; solange die mandantenweite Zustimmung besteht, gilt sie weiterhin für alle Postfächer.
 
+**Wartezeit:** RBAC-Zuweisungen in Exchange brauchen oft bis zu etwa 30 Minuten, bis sie wirken. Ein früher `outlook.auth_failed` direkt nach der Einrichtung ist daher normal; der Sync versucht es nach der Pause von selbst erneut.
+
 Hintergrund: Microsoft-Artikel „Role Based Access Control for Applications in Exchange Online" (learn.microsoft.com).
 
 ## Konfiguration
@@ -100,6 +102,7 @@ Die Anmelde-E-Mail eines Benutzers muss seine Microsoft-365-Adresse sein; sie wi
    - Ein Teilnehmer hat die Einladung im Posteingang.
    - Einen Dienst abgeben und übernehmen lassen: Das Update (neuer Teilnehmer, Absage an den alten) kommt innerhalb etwa einer Minute.
    - Ein Angebot erzeugt eine Mail von office@ an die richtigen Empfänger.
+   - Eine Rotation ausschalten, deren Dienste noch **keinen Teilnehmer** haben (Absage eines Termins ohne Teilnehmer): Der Termin muss aus dem Kalender verschwinden. Graph lehnt die Absage dafür mit 400 ab; die App löscht ihn dann stattdessen.
 3. Erst danach weitere Rotationen aktivieren.
 
 ## Fehlerbilder
@@ -109,12 +112,13 @@ Die Anmelde-E-Mail eines Benutzers muss seine Microsoft-365-Adresse sein; sie wi
 | Audit-Log `outlook.auth_failed`, Sync pausiert 15 Minuten | Graph antwortet mit 401/403: Clientschlüssel abgelaufen oder falsch, Administratorzustimmung fehlt oder der RBAC-Bereich passt nicht zu `OUTLOOK_ORGANIZER`. Ursache beheben; nach der Pause läuft der Sync von selbst weiter. Keine Änderung geht verloren. |
 | Statuszeile der Rotation meldet Fehler bei einzelnen Diensten | Einzelfehler pro Termin; die App versucht es mit wachsendem Abstand (1, 5, 15, 60 Minuten, danach stündlich) erneut. Der Text der Statuszeile nennt die Graph-Meldung. |
 | `ErrorInvalidRecipients` oder unbekannte Adresse | Die Anmelde-E-Mail des Teilnehmers ist keine Microsoft-365-Adresse. Adresse des Benutzers korrigieren. |
-| Termin in office@ wurde von Hand geändert oder gelöscht | Der nächtliche Vollabgleich stellt den Sollzustand wieder her (Änderungen an Zeit, Betreff, Teilnehmern; gelöschte Termine werden neu angelegt). |
+| Termin in office@ wurde von Hand geändert oder gelöscht | Der nächtliche Vollabgleich (täglich um 03:00 Serverzeit) stellt den Sollzustand wieder her (Änderungen an Zeit, Betreff, Teilnehmern; gelöschte Termine werden neu angelegt). |
 | Nichts passiert | Prüfen, dass alle vier Pflichtvariablen gesetzt sind (oder `OUTLOOK_DRY_RUN` mit `OUTLOOK_ORGANIZER`), `AUTH_ENABLED` nicht `false` ist und der Schalter der Rotation an ist. Ohne Konfiguration zeigt die Rotationsseite den Schalter deaktiviert mit „nicht eingerichtet". |
 
 ## Grenzen
 
 - **Eine Serverinstanz.** Der Sync-Worker läuft im Prozess; mehrere Replikas würden doppelt synchronisieren.
+- **Mails werden mindestens einmal zugestellt.** Stürzt der Server zwischen dem Versand und dem Speichern des Status ab, kann eine Mail ein zweites Mal gesendet werden.
 - Mails werden in der Sprache `DEFAULT_LOCALE` verschickt, nicht pro Empfänger.
 - **Keine Übernahme bestehender Termine**: Termine, die schon von Hand in office@ stehen, werden weder erkannt noch verknüpft. Die Rotation sollte in einem Zeitraum ohne manuelle Dienst-Termine starten.
 - Vergangene und bereits begonnene Dienste werden nie angefasst.

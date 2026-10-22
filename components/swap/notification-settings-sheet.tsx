@@ -26,6 +26,7 @@ export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolea
       onOpenChange={onOpenChange}
       title={t("swap.notifications.title")}
       description={t("swap.notifications.description")}
+      showCancelButton={false} // saved on every toggle; the header X closes the sheet
     >
       {data && (
         <div className="flex flex-col gap-3">
