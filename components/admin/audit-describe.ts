@@ -189,6 +189,25 @@ export function useAuditDescription() {
           });
         case "rotation.lock_removed":
           return t("adminAudit.describe.rotationLockRemoved", { name: text(m, "rotationName") });
+        // [fork] Swap events
+        case "swap.offered":
+          return t("adminAudit.describe.swapOffered", { date: text(m, "offeredDate"), calendar });
+        case "swap.accepted":
+          return text(m, "acceptedDate")
+            ? t("adminAudit.describe.swapExchanged", {
+                date: text(m, "offeredDate"),
+                other: text(m, "acceptedDate"),
+                calendar,
+              })
+            : t("adminAudit.describe.swapAccepted", { date: text(m, "offeredDate"), calendar });
+        case "swap.declined":
+          return t("adminAudit.describe.swapDeclined", { date: text(m, "offeredDate") });
+        case "swap.withdrawn":
+          return t("adminAudit.describe.swapWithdrawn", { date: text(m, "offeredDate") });
+        case "swap.expired":
+          return t("adminAudit.describe.swapExpired", { date: text(m, "offeredDate") });
+        case "swap.cancelled":
+          return t("adminAudit.describe.swapCancelled", { date: text(m, "offeredDate") });
       }
       return log.action;
     },
