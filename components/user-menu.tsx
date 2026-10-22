@@ -21,6 +21,7 @@ import {
   LogOut,
   Compass,
   FileText,
+  RefreshCcw,
   Settings,
   Shield,
   SlidersHorizontal,
@@ -111,6 +112,11 @@ export function UserMenu({ onOpenViewSettings, onOpenPhoneMenu }: MenuProps) {
           <DropdownMenuItem onClick={() => router.push("/profile?section=activity")}>
             <FileText className="mr-2 h-4 w-4" />
             {t("activityLog.title")}
+          </DropdownMenuItem>
+          {/* [fork] Rotation generator */}
+          <DropdownMenuItem onClick={() => router.push("/rotations")}>
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            {t("rotation.menu")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setDiscoveryOpen(true)}>
             <Compass className="mr-2 h-4 w-4" />
