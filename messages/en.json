@@ -1620,6 +1620,32 @@
       "notBroadcast": "Only offers to everyone can be hidden.",
       "dutySlotSwapOnly": "Places on duties change hands only through the swap board.",
       "internal": "Unexpected error."
+    },
+    "retry": "Try again",
+    "feed": {
+      "open": "Calendar feed",
+      "title": "My calendar feed",
+      "description": "Subscribe to just your own duties in Google, Apple or Outlook. Swaps show up automatically.",
+      "create": "Create link",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "copyFailed": "Copying is not possible – please select and copy the link.",
+      "regenerate": "Regenerate",
+      "regenerateTitle": "Regenerate link?",
+      "regenerateConfirm": "The current link stops working. Existing subscriptions must be set up again with the new link.",
+      "revoke": "Revoke",
+      "revokeTitle": "Revoke link?",
+      "revokeConfirm": "Subscriptions using this link will no longer receive duties.",
+      "lastUsed": "Last fetched {ago}",
+      "neverUsed": "Not fetched yet",
+      "howTo": "How to subscribe",
+      "google": "Google Calendar (on a computer): Other calendars → From URL → paste the link.",
+      "apple": "Apple Calendar: File → New Calendar Subscription → paste the link.",
+      "outlook": "Outlook: Add calendar → Subscribe from web → paste the link.",
+      "outlookHint": "If you receive Outlook invitations from office@, you don't need the feed in Outlook – otherwise duties appear twice.",
+      "delayHint": "Calendar apps refresh subscriptions with a delay (Google: several hours).",
+      "loadFailed": "The link could not be loaded.",
+      "failed": "That didn't work. Please try again."
     }
   },
   "notifications": {
