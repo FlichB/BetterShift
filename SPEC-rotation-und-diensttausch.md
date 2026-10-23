@@ -127,7 +127,7 @@ shift_swaps (id, type: 'give' | 'exchange', status: 'open' | 'accepted' | 'decli
 | **1** | Rotations-Generator (Schema, Algorithmus + Tests, Admin-UI mit Vorschau) | Plan für 8 Personen generierbar |
 | **2** | Tauschbörse (Schema, Server-Logik + Tests, UI, Audit-Log) | Mitarbeiter tauschen selbständig |
 | **3** | Benachrichtigungen + Outlook-Einladungen | E-Mail bei Angeboten, Dienste im Outlook |
-| **4** | Feinschliff: Übersetzungen, Mobile-Check, persönlicher ICS-Feed, Doku `docs/ROTATION_AND_SWAPS.md` | Release-fertig |
+| **4** | Feinschliff: Übersetzungen, Mobile-Check, persönlicher ICS-Feed, Doku `docs/ROTATION_AND_SWAPS.md` | Release-fertig *(umgesetzt 2026-10-23, Design: docs/superpowers/specs/2026-10-23-phase-4-feinschliff-feed-design.md)* |
 
 Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut GitHub Actions (GHCR).
 
@@ -138,18 +138,18 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 - [x] Mitarbeiter A kann einen Dienst abgeben; B übernimmt; der Kalender zeigt B (spätestens nach 15 s) *(Phase 2: Abgeben/Übernehmen im Dev-Server abgenommen, Kalender-Symbol verschwindet ohne Neuladen, 2026-10-22)*
 - [x] Tausch zweier Dienste funktioniert in einem Schritt und ist atomar *(Phase 2: gezielter Tausch und „Tausch beliebig" per Dev-Server-Abnahme, 2026-10-22)*
 - [x] Doppelbelegung wird verhindert; zwei gleichzeitige Annahmen → nur eine erfolgreich *(Phase 2: zwei parallele Annahmen → 200 und 409 `notOpen`, 2026-10-22)*
-- [ ] Begonnene/vergangene Dienste können weder getauscht noch neu generiert werden
+- [x] Begonnene/vergangene Dienste können weder getauscht noch neu generiert werden *(Phase 4: Tests `alreadyStarted` + Neugenerieren ab früherem Datum, 2026-10-23)*
 - [x] Alle Tauschvorgänge stehen im Audit-Log *(Phase 2: `swap.offered/accepted/declined/withdrawn` mit lesbaren Texten, 2026-10-22)*
-- [ ] ICS-Feed spiegelt Tausche ohne weiteres Zutun wider *(Hinweis: Der Team-Feed enthält keine Platzinhaber; Tausche werden erst mit dem persönlichen Feed sichtbar, Phase 4, 12.20)*
+- [x] ICS-Feed spiegelt Tausche ohne weiteres Zutun wider *(Phase 4: persönlicher Feed, Test „follows a swap", 2026-10-23; Hinweis: Der Team-Feed enthält keine Platzinhaber; Tausche werden erst mit dem persönlichen Feed sichtbar, Phase 4, 12.20)*
 - [x] UI auf Deutsch, auf dem Smartphone bedienbar *(Phase 2: Teil Tauschbörse in 375 px Breite ohne horizontales Scrollen, 2026-10-22)*
 - [x] Nicht-Berechtigte können keine Rotationen anlegen oder generieren *(Phase 1: Teilnehmer mit „Read" → 403, API-Abnahme 2026-10-21)*
 - [x] *(Phase 3)* Rotation mit Outlook-Schalter: pro künftigem Dienst genau ein Termin im office@-Kalender mit den Inhabern als Teilnehmern *(Dry-Run abgenommen 2026-10-22, echter Tenant offen: 19 von 19 `create` mit je zwei Teilnehmern)*
 - [x] *(Phase 3)* Tausch, Abgabe und Umbesetzung durch den Chef ändern die Teilnehmer innerhalb von 60 s *(Dry-Run abgenommen 2026-10-22, echter Tenant offen: `update` binnen eines 15-s-Intervalls nach Tausch und nach Umbesetzung per Signup-Route)*
-- [ ] *(Phase 3)* Ausfalltag oder Ausschalten sagt künftige Termine ab; vergangene bleiben unberührt *(Teilweise: Ausschalten sagt 19 von 19 Terminen ab, Dry-Run 2026-10-22; Ausfalltag und „vergangene bleiben unberührt" noch ungeprüft)*
-- [ ] *(Phase 3)* In office@ gelöschte oder geänderte Termine werden spätestens im Nachtlauf wiederhergestellt
+- [x] *(Phase 3)* Ausfalltag oder Ausschalten sagt künftige Termine ab; vergangene bleiben unberührt *(Ausschalten sagt 19 von 19 Terminen ab, Dry-Run 2026-10-22; Ausfalltag und „vergangene bleiben unberührt" per FakeGraph-Test 2026-10-23, echter Tenant offen)*
+- [x] *(Phase 3)* In office@ gelöschte oder geänderte Termine werden spätestens im Nachtlauf wiederhergestellt *(per FakeGraph-Test 2026-10-23, echter Tenant offen)*
 - [x] *(Phase 3)* Angebots-Mails an die richtigen Empfänger; abgeschaltete Arten werden nicht versendet *(Dry-Run abgenommen 2026-10-22, echter Tenant offen: BCC ohne Anbietenden, abgeschalteter Benutzer fehlt, Annahme-Mail an den Anbietenden)*
 - [x] *(Phase 3)* Ohne Microsoft-365-Konfiguration verhält sich die App wie nach Phase 2 *(API-Abnahme 2026-10-22: `configured:false`, Schalter wird mit 400 abgelehnt)*
-- [ ] *(Phase 3)* Graph-Ausfall verliert keine Änderung
+- [x] *(Phase 3)* Graph-Ausfall verliert keine Änderung *(per FakeGraph-Test 2026-10-23, echter Tenant offen)*
 
 ## 10. Testfälle (Auswahl)
 
@@ -197,3 +197,4 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 25. **Abgleich (2026-10-22):** In-Prozess-Worker vergleicht jede Minute lokale Fingerprints der Sollzustände (erfasst auch Umbesetzungen über Upstream-Routen) und gleicht nur Abweichungen mit Graph ab; nachts zusätzlich Vollabgleich gegen den office@-Kalender. Kein Altbestand im office@-Kalender zu übernehmen.
 26. **Adresse (2026-10-22):** Outlook-Adresse eines Teilnehmers = seine Login-E-Mail.
 27. **Benachrichtigungen (2026-10-22):** E-Mail per Graph von office@ bei neuem Angebot an alle, Direktanfrage an mich, Annahme bzw. Ablehnung meines Angebots; pro Benutzer und Art abschaltbar auf `/swaps`. Einreihen in derselben Transaktion wie die Tauschaktion (Outbox). Angebote an alle gehen nicht an die aktuellen Inhaber des angebotenen Dienstes, da sie ihn nicht übernehmen können. Design: `docs/superpowers/specs/2026-10-22-phase-3-outlook-benachrichtigungen-design.md`.
+28. **Persönlicher Feed (2026-10-23):** ein Link pro Benutzer über alle Kalender, nur Dienste mit eigenem Platz, 60 Tage Rückblick, Partner („Mit: …") und Tausch-Link in der Beschreibung; Verwaltung auf `/swaps` (Knopf „Kalender-Abo"). Design: `docs/superpowers/specs/2026-10-23-phase-4-feinschliff-feed-design.md`.

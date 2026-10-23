@@ -17,6 +17,8 @@ Diese Anleitung beschreibt, wie BetterShift an Microsoft 365 angebunden wird: Di
 
 ## Überblick
 
+Die Bedienung von Rotationen, Tauschbörse und persönlichem Kalender-Feed sowie den Betrieb beschreibt [`ROTATION_AND_SWAPS.md`](ROTATION_AND_SWAPS.md).
+
 - **office@ ist der Organisator.** Die App legt Termine im Kalender dieses Postfachs an, ändert sie und sagt sie ab. Die Teilnehmer eines Termins sind die aktuellen Platzinhaber des Dienstes.
 - **Exchange verschickt den Rest**: Einladungen, Aktualisierungen und Absagen kommen von Exchange selbst, die App sendet sie nicht.
 - **Tausch-Mails** (neues Angebot, Direktanfrage, angenommen, abgelehnt) werden über Graph `sendMail` von office@ verschickt. Jeder Benutzer kann die Arten auf `/swaps` einzeln abschalten.
