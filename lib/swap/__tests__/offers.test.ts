@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { auditLogs, shiftSignups } from "@/lib/db/schema";
 import { shiftSwapHidden } from "@/lib/swap/schema";
 import {
+  acceptOffer,
   cancelOffer,
   createOffer,
   declineOffer,
@@ -94,6 +95,26 @@ describe("offers", () => {
 
     const direct = createOffer(give(s.duty("2026-11-14"), s.m0), s.m2, now);
     expect(code(() => hideOffer(direct.id, s.m0))).toBe("notBroadcast");
+  });
+
+  it("refuses to hide an offer that is no longer open", () => {
+    const swap = createOffer(give(s.duty("2026-11-14")), s.m2, now);
+    withdrawOffer(swap.id, s.m2, now);
+    expect(code(() => hideOffer(swap.id, s.m0))).toBe("notOpen");
+  });
+
+  it("settles a Direktanfrage whose requested duty changed hands", () => {
+    const sat14 = s.duty("2026-11-14"); // m2, m3
+    const direct = createOffer(
+      { shiftId: s.duty("2026-11-07"), type: "exchange", targetUserId: s.m2, requestedShiftId: sat14, note: null },
+      s.m0,
+      now
+    );
+    // m2 gives 11-14 to m4 — the requested duty is no longer m2's
+    const give14 = createOffer(give(sat14), s.m2, now);
+    acceptOffer(give14.id, s.m4, null, now);
+    const resolved = expireDue(now);
+    expect(resolved.find((r) => r.swap.id === direct.id)?.status).toBe("cancelled");
   });
 
   it("expires offers once the duty has begun and logs it", async () => {
