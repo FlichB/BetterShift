@@ -48,6 +48,13 @@ describe("getOutlookConfig", () => {
     expect(getOutlookConfig()).toBeNull();
   });
 
+  it("falls back to the default interval for a malformed number", () => {
+    vi.stubEnv("OUTLOOK_ORGANIZER", "office@example.test");
+    vi.stubEnv("OUTLOOK_DRY_RUN", "true");
+    vi.stubEnv("OUTLOOK_SYNC_INTERVAL_SECONDS", "30abc");
+    expect(getOutlookConfig()?.intervalMs).toBe(60_000);
+  });
+
   it("derives the app URL from BETTER_AUTH_URL without trailing slashes", () => {
     vi.stubEnv("BETTER_AUTH_URL", "https://plan.example//");
     expect(getAppUrl()).toBe("https://plan.example");

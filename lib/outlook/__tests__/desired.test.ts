@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { desiredEvent, dutyStartsAt, fingerprint, GRAPH_TIME_ZONE, type DutyForSync } from "@/lib/outlook/desired";
+import { addDays } from "@/lib/rotation/dates";
 
 const duty = (overrides: Partial<DutyForSync> = {}): DutyForSync => ({
   shiftId: "s1",
@@ -33,6 +34,13 @@ describe("desiredEvent", () => {
   it("ends on the next day when the duty runs past midnight", () => {
     const event = desiredEvent(duty({ startTime: "22:00", endTime: "06:00" }));
     expect(event.end.dateTime).toBe("2026-11-08T06:00:00");
+  });
+
+  it("treats an end equal to the start as a 24-hour duty like the swap rules", () => {
+    const base = duty();
+    const event = desiredEvent({ ...base, startTime: "08:00", endTime: "08:00" });
+    expect(event.start.dateTime).toBe(`${base.date}T08:00:00`);
+    expect(event.end.dateTime).toBe(`${addDays(base.date, 1)}T08:00:00`);
   });
 
   it("spans whole days for all-day duties", () => {
