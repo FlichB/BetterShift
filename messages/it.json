@@ -1492,7 +1492,7 @@
       "name": "Indica un nome (max. 100 caratteri).",
       "calendarId": "Calendario non valido.",
       "presetId": "Scegli un preset attivo di questo calendario.",
-      "members": "Partecipanti non validi: almeno tanti quante le persone per turno, ciascuno con accesso al calendario, senza duplicati.",
+      "members": "Partecipanti non validi: almeno tante quante le persone per turno, ciascuno con accesso al calendario, senza duplicati.",
       "perShift": "Persone per turno: da 1 a 20.",
       "period": "Periodo non valido.",
       "periodDays": "Durata in giorni: da 1 a 365.",

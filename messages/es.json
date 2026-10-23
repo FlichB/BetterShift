@@ -1608,7 +1608,7 @@
     "signupHint": "Las plazas de este turno cambian de manos a través de la bolsa de cambios.",
     "errors": {
       "notFound": "Oferta no encontrada.",
-      "forbidden": "No permitido.",
+      "forbidden": "Sin permiso.",
       "invalid": "Datos no válidos.",
       "notDuty": "Solo se pueden intercambiar turnos de una rotación.",
       "invalidShift": "Este turno no encaja con la oferta.",
@@ -1686,7 +1686,7 @@
   "personalFeed": {
     "calendarName": "Mis turnos",
     "with": "Con: {names}",
-    "swapLink": "Cambiar: {url}"
+    "swapLink": "Intercambiar: {url}"
   },
   "announcements": {
     "dismiss": "Ocultar anuncio"

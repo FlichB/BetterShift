@@ -1484,8 +1484,8 @@
       "disable": "Vypnout",
       "errors": {
         "outlookNotConfigured": "Microsoft 365 není na tomto serveru nastaven.",
-        "rateLimited": "Příliš mnoho synchronizací – zkuste to prosím později.",
-        "generic": "To se nepovedlo. Zkuste to prosím znovu."
+        "rateLimited": "Příliš mnoho synchronizací – zkus to prosím později.",
+        "generic": "To se nepovedlo. Zkus to prosím znovu."
       }
     },
     "errors": {

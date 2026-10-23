@@ -1484,8 +1484,8 @@
       "disable": "Désactiver",
       "errors": {
         "outlookNotConfigured": "Microsoft 365 n'est pas configuré sur ce serveur.",
-        "rateLimited": "Trop de synchronisations – veuillez réessayer plus tard.",
-        "generic": "Cela n'a pas fonctionné. Veuillez réessayer."
+        "rateLimited": "Trop de synchronisations – réessaie plus tard.",
+        "generic": "Cela n'a pas fonctionné. Réessaie."
       }
     },
     "errors": {
