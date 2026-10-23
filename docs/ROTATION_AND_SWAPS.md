@@ -38,7 +38,7 @@ Die wichtigsten Begriffe (das vollständige Glossar steht in [`CONTEXT.md`](../C
 | **Tausch** | Ein Angebot mit Gegenleistung: Der Annehmende gibt einen eigenen künftigen Platz zurück. |
 | **Direktanfrage** | Ein Angebot, das nur eine bestimmte Person annehmen oder ablehnen kann. |
 
-Die Rotationen verwaltest du unter `/rotations` (Menüpunkt „Rotationen"), die Tauschbörse liegt unter `/swaps` (Menüpunkt „Tauschbörse"). Beides gibt es nur mit eingeschalteter Anmeldung (`AUTH_ENABLED` nicht `false`).
+Die Rotationen verwaltest du unter `/rotations` (Menüpunkt „Rotationen"), die Tauschbörse liegt unter `/swaps` (Menüpunkt „Tauschbörse"). Beides ist nur mit eingeschalteter Anmeldung sinnvoll: Bei `AUTH_ENABLED=false` leitet die Tauschbörse auf die Startseite um; die Seite `/rotations` lässt sich zwar öffnen, aber Tausch, Benachrichtigungen, Outlook-Sync und Feed stehen dann nicht zur Verfügung.
 
 ## 2. Rotation anlegen
 
@@ -100,7 +100,7 @@ Unter `/swaps` sieht jeder Teilnehmer zwei Reiter: „Für mich" (offene Angebot
 Mit „Anbieten" wird das Angebot erstellt. Es gibt vier Fälle:
 
 - **Abgabe:** Wer „Übernehmen" anklickt und bestätigt, übernimmt den Dienst. Das gilt sofort.
-- **Tausch gegen einen konkreten Dienst** („Tausch gegen {Datum}"): „Tauschen" anklicken und bestätigen. Beide Plätze wechseln in einem Schritt.
+- **Tausch gegen einen konkreten Dienst** (im Angebot steht „Tausch gegen" mit dem Datum des Gegendienstes): „Tauschen" anklicken und bestätigen. Beide Plätze wechseln in einem Schritt.
 - **Tausch gegen beliebigen Dienst:** Der Annehmende wählt unter „Welchen deiner Dienste gibst du dafür ab?" einen eigenen künftigen Dienst.
 - **Direktanfrage** („an {Name}"): Nur diese Person kann annehmen oder „Ablehnen".
 
@@ -117,11 +117,11 @@ Regeln, die die App durchsetzt:
 - **Sofort wirksam.** Annehmen braucht keine Freigabe; der Kalender zeigt die neue Besetzung ohne Neuladen.
 - **Atomar.** Beim Tausch wechseln beide Plätze zusammen oder gar nicht. Nehmen zwei Personen gleichzeitig an, gelingt nur eine; die andere erhält „Das Angebot ist nicht mehr offen."
 - **Verfallen.** Ein offenes Angebot endet von selbst, sobald der angebotene Dienst begonnen hat. Begonnene und vergangene Dienste lassen sich weder anbieten noch annehmen („Der Dienst hat bereits begonnen.").
-- **Hinfällig.** Ein Tausch gegen einen konkreten Gegendienst wird automatisch auf „Hinfällig" gesetzt, wenn dieser Gegendienst nicht mehr abgegeben werden kann: Der Anbieter besitzt ihn selbst, oder bei einer Direktanfrage gehört er der angefragten Person nicht mehr. Verliert der Anbieter das Recht zum Tauschen, wird sein offener Tausch beim Annehmen ebenfalls hinfällig; eine Abgabe bleibt annehmbar.
+- **Hinfällig.** Ein Tausch gegen einen konkreten Gegendienst wird automatisch auf „Hinfällig" gesetzt, wenn dieser Gegendienst nicht mehr abgegeben werden kann: Der Anbieter besitzt ihn selbst, oder bei einer Direktanfrage gehört er der angefragten Person nicht mehr. Ebenso wird ein Angebot hinfällig, wenn der Anbieter den angebotenen Platz nicht mehr innehat oder wenn der angebotene oder der gewünschte Dienst nicht mehr existiert. Verliert der Anbieter das Recht zum Tauschen, wird sein offener Tausch beim Annehmen ebenfalls hinfällig; eine Abgabe bleibt annehmbar.
 - **Keine Doppelbelegung.** Würde der Annehmende zur selben Zeit schon Dienst haben, lehnt die App ab („Das ergäbe eine Doppelbelegung.").
 - **Ein Angebot je Platz.** Für denselben Platz kann es nur ein offenes Angebot geben.
 - **Getauschte Plätze sind gesperrt** und bleiben beim Neugenerieren der Rotation erhalten (siehe [Generieren](#3-generieren)).
-- **Plätze von Diensten wechseln nur über die Tauschbörse.** Eintragen oder Austragen im Dienst selbst ist für Rotationsdienste gesperrt.
+- **Plätze von Diensten wechseln nur über die Tauschbörse.** Sich selbst im Dienst ein- oder auszutragen ist für Rotationsdienste gesperrt. Ausnahme: Wer das Recht „Andere eintragen" (`signUpOthers`) hat, kann Plätze weiterhin von Hand umbesetzen.
 - Alle Tauschvorgänge stehen im Audit-Log (`swap.offered`, `swap.accepted`, `swap.declined`, `swap.withdrawn`).
 
 ## 5. Rechte
@@ -160,9 +160,9 @@ Der Link hat die Form `<BETTER_AUTH_URL>/api/feed/me/<Token>.ics`. Er gilt für 
 **Inhalt.**
 
 - **Ein Link pro Benutzer** über alle Kalender und Rotationen hinweg.
-- Es erscheinen **nur Dienste, auf denen du aktuell einen eigenen Platz hast**, aus Kalendern, die du sehen darfst.
+- Es erscheinen **nur Rotationsdienste, auf denen du aktuell einen eigenen Platz hast**, aus Kalendern, die du sehen darfst. Von Hand angelegte Schichten mit Anmeldungen sind nicht enthalten.
 - Zeitraum: die **letzten 60 Tage** und **alle künftigen** Dienste.
-- Der Kalender heißt „Meine Dienste". Titel und Zeit stammen vom Dienst; die Beschreibung enthält Notizen und benutzerdefinierte Felder des Dienstes, dazu „Mit: …" (die anderen Platzinhaber, entfällt bei Einzeldiensten) und „Tauschen: `<BETTER_AUTH_URL>`/swaps".
+- Der Kalender heißt „Meine Dienste". Titel und Zeit stammen vom Dienst; die Beschreibung enthält der Reihe nach Notizen und benutzerdefinierte Felder des Dienstes, dann „Mit: …" (die anderen Platzinhaber, entfällt, wenn du allein im Dienst bist) und „Tauschen: `<BETTER_AUTH_URL>`/swaps".
 - Die festen Texte („Mit", „Tauschen", „Meine Dienste") stehen in `DEFAULT_LOCALE`.
 
 **Neu erzeugen und widerrufen.**
@@ -258,5 +258,5 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
 - **Mails und Feed-Texte nur in `DEFAULT_LOCALE`**, nicht pro Empfänger.
 - **Mails mindestens einmal zugestellt.** Bei einem Absturz zwischen Versand und Statuswechsel kann eine Mail ein zweites Mal gehen.
 - **Keine Übernahme bestehender Outlook-Termine** von Hand angelegter Dienste.
-- **Der persönliche Feed zeigt nur eigene Plätze** der letzten 60 Tage und der Zukunft, keine älteren Dienste.
+- **Der persönliche Feed zeigt nur eigene Plätze in Rotationsdiensten** der letzten 60 Tage und der Zukunft, keine älteren Dienste.
 - Ohne Anmeldung (`AUTH_ENABLED=false`) gibt es weder Tausch-Mails noch Outlook-Sync noch einen persönlichen Feed.
