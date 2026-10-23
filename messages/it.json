@@ -1134,6 +1134,11 @@
       "swapWithdrawn": "Withdrew the offer for the duty on {date}",
       "swapExpired": "Offer for the duty on {date} expired",
       "swapCancelled": "Offer for the duty on {date} became void",
+      "outlookEnabled": "Sincronizzazione Outlook attivata per la rotazione \"{name}\" in {calendar}",
+      "outlookDisabled": "Sincronizzazione Outlook disattivata per la rotazione \"{name}\" in {calendar}",
+      "outlookSyncFailed": "Impossibile sincronizzare l'evento Outlook del turno del {date}: {message}",
+      "outlookAuthFailed": "Microsoft 365 ha rifiutato le credenziali, sincronizzazione in pausa: {message}",
+      "notificationFailed": "Impossibile inviare una notifica: {message}",
       "userBanned": "{user} bloccato",
       "userBannedPermanently": "{user} bloccato in modo permanente",
       "userUnbanned": "Blocco di {user} rimosso",
@@ -1461,6 +1466,24 @@
       },
       "unlock": "Remove lock"
     },
+    "outlook": {
+      "toggle": "Inserisci in Outlook (office@)",
+      "toggleHint": "Ogni turno diventa un evento nel calendario office@; i titolari ricevono inviti e aggiornamenti.",
+      "notConfigured": "Microsoft 365 non è configurato su questo server (vedi docs/OUTLOOK_SETUP.md).",
+      "status": "{synced} di {total} turni in Outlook",
+      "failed": "{count, plural, one {# errore} other {# errori}}",
+      "lastSync": "ultima sincronizzazione {ago}",
+      "syncNow": "Sincronizza ora",
+      "syncStarted": "Sincronizzazione avviata",
+      "disableTitle": "Disattivare la sincronizzazione con Outlook?",
+      "disableConfirm": "Tutti i prossimi eventi di questa rotazione verranno annullati nel calendario office@; i partecipanti riceveranno un annullamento.",
+      "disable": "Disattiva",
+      "errors": {
+        "outlookNotConfigured": "Microsoft 365 non è configurato su questo server.",
+        "rateLimited": "Troppe sincronizzazioni: riprova più tardi.",
+        "generic": "Non ha funzionato. Riprova."
+      }
+    },
     "errors": {
       "name": "Please enter a name (max. 100 characters).",
       "calendarId": "Invalid calendar.",
@@ -1485,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Notifiche",
+      "title": "Notifiche",
+      "description": "E-mail da office@ sulla bacheca degli scambi",
+      "offersToAll": "Nuove offerte per tutti",
+      "offersToAllHint": "Quando qualcuno offre un turno a tutti.",
+      "offersToMe": "Richieste per me",
+      "offersToMeHint": "Quando qualcuno ti chiede direttamente un turno.",
+      "myOffers": "Le mie offerte",
+      "myOffersHint": "Quando la tua offerta viene accettata o la tua richiesta rifiutata.",
+      "notConfigured": "L'invio delle e-mail non è configurato su questo server. La tua scelta varrà non appena lo sarà.",
+      "saveFailed": "Impossibile salvare l'impostazione."
+    },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
     "menu": "Swap board",
@@ -1582,6 +1618,37 @@
       "dutySlotSwapOnly": "Places on duties change hands only through the swap board.",
       "internal": "Unexpected error."
     }
+  },
+  "notifications": {
+    "mail": {
+      "subject": {
+        "offerToAll": "Turno offerto: {duty}",
+        "offerToMe": "Richiesta per te: {duty}",
+        "offerAccepted": "La tua offerta è stata accettata: {duty}",
+        "offerDeclined": "La tua richiesta è stata rifiutata: {duty}"
+      },
+      "lead": {
+        "offerToAll": "{name} offre il turno del {duty}.",
+        "offerToMe": "{name} ti chiede direttamente il turno del {duty}.",
+        "offerAccepted": "{name} ha accettato la tua offerta per il turno del {duty}.",
+        "offerDeclined": "{name} ha rifiutato la tua richiesta per il turno del {duty}."
+      },
+      "kind": {
+        "give": "Cessione – chi accetta prende il turno.",
+        "exchangeFor": "Scambio con il turno del {duty}.",
+        "exchangeAny": "Scambio – chi accetta restituisce uno dei propri turni futuri."
+      },
+      "youGet": "In cambio prendi il turno del {duty}.",
+      "note": "Nota: {note}",
+      "allDay": "tutto il giorno",
+      "button": "Apri la bacheca degli scambi",
+      "footer": "Modifica le notifiche",
+      "someone": "Qualcuno"
+    }
+  },
+  "outlook": {
+    "eventBody": "Questo evento è gestito da BetterShift. I turni si scambiano nella bacheca degli scambi.",
+    "cancelComment": "Questo turno non si svolge più."
   },
   "announcements": {
     "dismiss": "Nascondi annuncio"

@@ -1134,6 +1134,11 @@
       "swapWithdrawn": "Angebot für den Dienst am {date} zurückgezogen",
       "swapExpired": "Angebot für den Dienst am {date} verfallen",
       "swapCancelled": "Angebot für den Dienst am {date} hinfällig",
+      "outlookEnabled": "Outlook-Abgleich für Rotation „{name}“ in {calendar} eingeschaltet",
+      "outlookDisabled": "Outlook-Abgleich für Rotation „{name}“ in {calendar} ausgeschaltet",
+      "outlookSyncFailed": "Outlook-Termin für den Dienst am {date} konnte nicht abgeglichen werden: {message}",
+      "outlookAuthFailed": "Microsoft 365 hat die Zugangsdaten abgelehnt, Abgleich pausiert: {message}",
+      "notificationFailed": "Benachrichtigung konnte nicht versendet werden: {message}",
       "userBanned": "{user} gesperrt",
       "userBannedPermanently": "{user} dauerhaft gesperrt",
       "userUnbanned": "Sperre für {user} aufgehoben",
@@ -1461,6 +1466,24 @@
       },
       "unlock": "Sperre aufheben"
     },
+    "outlook": {
+      "toggle": "In Outlook (office@) eintragen",
+      "toggleHint": "Jeder Dienst wird ein Termin im office@-Kalender; die Platzinhaber erhalten Einladungen und Aktualisierungen.",
+      "notConfigured": "Microsoft 365 ist auf diesem Server nicht eingerichtet (siehe docs/OUTLOOK_SETUP.md).",
+      "status": "{synced} von {total} Diensten in Outlook",
+      "failed": "{count, plural, one {# Fehler} other {# Fehler}}",
+      "lastSync": "letzter Abgleich {ago}",
+      "syncNow": "Jetzt abgleichen",
+      "syncStarted": "Abgleich gestartet",
+      "disableTitle": "Outlook-Abgleich ausschalten?",
+      "disableConfirm": "Alle künftigen Termine dieser Rotation werden im office@-Kalender abgesagt; die Teilnehmer erhalten eine Absage.",
+      "disable": "Ausschalten",
+      "errors": {
+        "outlookNotConfigured": "Microsoft 365 ist auf diesem Server nicht eingerichtet.",
+        "rateLimited": "Zu viele Abgleiche – bitte später erneut versuchen.",
+        "generic": "Das hat nicht geklappt. Bitte erneut versuchen."
+      }
+    },
     "errors": {
       "name": "Bitte einen Namen (max. 100 Zeichen) angeben.",
       "calendarId": "Kalender ungültig.",
@@ -1485,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Benachrichtigungen",
+      "title": "Benachrichtigungen",
+      "description": "E-Mails von office@ zur Tauschbörse",
+      "offersToAll": "Neue Angebote an alle",
+      "offersToAllHint": "Wenn jemand einen Dienst für alle anbietet.",
+      "offersToMe": "Anfragen an mich",
+      "offersToMeHint": "Wenn dich jemand gezielt für einen Dienst anfragt.",
+      "myOffers": "Meine Angebote",
+      "myOffersHint": "Wenn dein Angebot angenommen oder deine Anfrage abgelehnt wird.",
+      "notConfigured": "Der E-Mail-Versand ist auf diesem Server nicht eingerichtet. Deine Auswahl gilt, sobald er eingerichtet ist.",
+      "saveFailed": "Einstellung konnte nicht gespeichert werden."
+    },
     "title": "Tauschbörse",
     "subtitle": "Dienste abgeben und tauschen",
     "menu": "Tauschbörse",
@@ -1582,6 +1618,37 @@
       "dutySlotSwapOnly": "Plätze von Diensten wechseln nur über die Tauschbörse.",
       "internal": "Unerwarteter Fehler."
     }
+  },
+  "notifications": {
+    "mail": {
+      "subject": {
+        "offerToAll": "Dienst angeboten: {duty}",
+        "offerToMe": "Anfrage an dich: {duty}",
+        "offerAccepted": "Dein Angebot wurde angenommen: {duty}",
+        "offerDeclined": "Deine Anfrage wurde abgelehnt: {duty}"
+      },
+      "lead": {
+        "offerToAll": "{name} bietet den Dienst am {duty} an.",
+        "offerToMe": "{name} fragt dich gezielt für den Dienst am {duty} an.",
+        "offerAccepted": "{name} hat dein Angebot für den Dienst am {duty} angenommen.",
+        "offerDeclined": "{name} hat deine Anfrage für den Dienst am {duty} abgelehnt."
+      },
+      "kind": {
+        "give": "Abgabe – wer annimmt, übernimmt den Dienst.",
+        "exchangeFor": "Tausch gegen den Dienst am {duty}.",
+        "exchangeAny": "Tausch – wer annimmt, gibt einen eigenen künftigen Dienst zurück."
+      },
+      "youGet": "Du übernimmst im Gegenzug den Dienst am {duty}.",
+      "note": "Notiz: {note}",
+      "allDay": "ganztägig",
+      "button": "Zur Tauschbörse",
+      "footer": "Benachrichtigungen ändern",
+      "someone": "Jemand"
+    }
+  },
+  "outlook": {
+    "eventBody": "Dieser Termin wird von BetterShift verwaltet. Dienste tauschst du in der Tauschbörse.",
+    "cancelComment": "Dieser Dienst findet nicht mehr statt."
   },
   "announcements": {
     "dismiss": "Ankündigung ausblenden"

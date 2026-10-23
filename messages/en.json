@@ -1134,6 +1134,11 @@
       "swapWithdrawn": "Withdrew the offer for the duty on {date}",
       "swapExpired": "Offer for the duty on {date} expired",
       "swapCancelled": "Offer for the duty on {date} became void",
+      "outlookEnabled": "Turned on Outlook sync for rotation \"{name}\" in {calendar}",
+      "outlookDisabled": "Turned off Outlook sync for rotation \"{name}\" in {calendar}",
+      "outlookSyncFailed": "Could not sync the Outlook event for the duty on {date}: {message}",
+      "outlookAuthFailed": "Microsoft 365 rejected the credentials, sync paused: {message}",
+      "notificationFailed": "Could not send a notification: {message}",
       "userBanned": "{user} banned",
       "userBannedPermanently": "{user} banned permanently",
       "userUnbanned": "Ban lifted for {user}",
@@ -1461,6 +1466,24 @@
       },
       "unlock": "Remove lock"
     },
+    "outlook": {
+      "toggle": "Add to Outlook (office@)",
+      "toggleHint": "Each duty becomes an event in the office@ calendar; holders receive invitations and updates.",
+      "notConfigured": "Microsoft 365 is not set up on this server (see docs/OUTLOOK_SETUP.md).",
+      "status": "{synced} of {total} duties in Outlook",
+      "failed": "{count, plural, one {# error} other {# errors}}",
+      "lastSync": "last sync {ago}",
+      "syncNow": "Sync now",
+      "syncStarted": "Sync started",
+      "disableTitle": "Turn off Outlook sync?",
+      "disableConfirm": "All upcoming events of this rotation will be cancelled in the office@ calendar; participants receive a cancellation.",
+      "disable": "Turn off",
+      "errors": {
+        "outlookNotConfigured": "Microsoft 365 is not set up on this server.",
+        "rateLimited": "Too many syncs – please try again later.",
+        "generic": "That did not work. Please try again."
+      }
+    },
     "errors": {
       "name": "Please enter a name (max. 100 characters).",
       "calendarId": "Invalid calendar.",
@@ -1485,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Notifications",
+      "title": "Notifications",
+      "description": "Emails from office@ about the swap board",
+      "offersToAll": "New offers to everyone",
+      "offersToAllHint": "When someone offers a duty to everyone.",
+      "offersToMe": "Requests to me",
+      "offersToMeHint": "When someone asks you directly about a duty.",
+      "myOffers": "My offers",
+      "myOffersHint": "When your offer is accepted or your request is declined.",
+      "notConfigured": "Email is not set up on this server. Your choice applies once it is.",
+      "saveFailed": "Could not save the setting."
+    },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
     "menu": "Swap board",
@@ -1582,6 +1618,37 @@
       "dutySlotSwapOnly": "Places on duties change hands only through the swap board.",
       "internal": "Unexpected error."
     }
+  },
+  "notifications": {
+    "mail": {
+      "subject": {
+        "offerToAll": "Duty offered: {duty}",
+        "offerToMe": "Request for you: {duty}",
+        "offerAccepted": "Your offer was accepted: {duty}",
+        "offerDeclined": "Your request was declined: {duty}"
+      },
+      "lead": {
+        "offerToAll": "{name} is offering the duty on {duty}.",
+        "offerToMe": "{name} is asking you directly about the duty on {duty}.",
+        "offerAccepted": "{name} accepted your offer for the duty on {duty}.",
+        "offerDeclined": "{name} declined your request for the duty on {duty}."
+      },
+      "kind": {
+        "give": "Hand-over – whoever accepts takes the duty.",
+        "exchangeFor": "Swap for the duty on {duty}.",
+        "exchangeAny": "Swap – whoever accepts gives back one of their own upcoming duties."
+      },
+      "youGet": "In return you take the duty on {duty}.",
+      "note": "Note: {note}",
+      "allDay": "all day",
+      "button": "Open swap board",
+      "footer": "Change notifications",
+      "someone": "Someone"
+    }
+  },
+  "outlook": {
+    "eventBody": "This event is managed by BetterShift. Swap duties on the swap board.",
+    "cancelComment": "This duty no longer takes place."
   },
   "announcements": {
     "dismiss": "Dismiss announcement"

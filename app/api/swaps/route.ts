@@ -5,6 +5,7 @@ import { calendars } from "@/lib/db/schema";
 import { getSessionUser } from "@/lib/auth/sessions";
 import { logUserAction } from "@/lib/audit-log";
 import { rateLimit } from "@/lib/rate-limiter";
+import { outlookWorker } from "@/lib/outlook/worker";
 import { readJson } from "@/lib/rotation/http";
 import { shiftDate, swapAuditBase, type SwapOfferedMetadata } from "@/lib/swap/audit";
 import { swapError, swapErrorResponse, swapsDisabled } from "@/lib/swap/http";
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
       metadata: { ...swapAuditBase(swap), targetUserId: swap.targetUserId, requestedDate: shiftDate(swap.requestedShiftId) },
       request,
     });
+    outlookWorker.kick();
     return NextResponse.json(swap, { status: 201 });
   } catch (error) {
     return swapErrorResponse(error, "Failed to create swap offer:");

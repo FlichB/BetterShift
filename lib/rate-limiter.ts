@@ -31,6 +31,8 @@
  * - RATE_LIMIT_BUNDLE_MUTATIONS_WINDOW
  * - RATE_LIMIT_SWAP_MUTATIONS_REQUESTS - [fork] Swap board offers/accepts (per user)
  * - RATE_LIMIT_SWAP_MUTATIONS_WINDOW
+ * - RATE_LIMIT_OUTLOOK_SYNC_REQUESTS - [fork] "Jetzt abgleichen" on the rotations page (per user)
+ * - RATE_LIMIT_OUTLOOK_SYNC_WINDOW
  * - RATE_LIMIT_TELEMETRY_PAYLOAD_REQUESTS - Admin telemetry payload preview
  * - RATE_LIMIT_TELEMETRY_PAYLOAD_WINDOW
  * - RATE_LIMIT_TELEMETRY_SEND_REQUESTS - Admin "send telemetry now" button
@@ -218,6 +220,11 @@ const config = {
     requests: parseInt(process.env.RATE_LIMIT_SWAP_MUTATIONS_REQUESTS || "60", 10),
     windowMs: parseInt(process.env.RATE_LIMIT_SWAP_MUTATIONS_WINDOW || "600", 10) * 1000, // 10 minutes
   },
+  // [fork] Manual Outlook sync ("Jetzt abgleichen"), per user.
+  outlookSync: {
+    requests: parseInt(process.env.RATE_LIMIT_OUTLOOK_SYNC_REQUESTS || "10", 10),
+    windowMs: parseInt(process.env.RATE_LIMIT_OUTLOOK_SYNC_WINDOW || "600", 10) * 1000, // 10 minutes
+  },
   // Read-only, unauthenticated: every page load on /login and the dashboard hits
   // it, so the ceiling is high -- it exists to stop scraping loops, not traffic.
   announcements: {
@@ -274,6 +281,7 @@ const limitsByType = {
   "bundle-mutations": config.bundleMutations,
   "custom-field-mutations": config.customFieldMutations,
   "swap-mutations": config.swapMutations, // [fork]
+  "outlook-sync": config.outlookSync, // [fork]
   announcements: config.announcements,
   "admin-announcement-mutations": config.adminAnnouncementMutations,
   "telemetry-payload": config.telemetryPayload,

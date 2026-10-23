@@ -1134,6 +1134,11 @@
       "swapWithdrawn": "Withdrew the offer for the duty on {date}",
       "swapExpired": "Offer for the duty on {date} expired",
       "swapCancelled": "Offer for the duty on {date} became void",
+      "outlookEnabled": "Synchronizace s Outlookem zapnuta pro rotaci „{name}“ v kalendáři {calendar}",
+      "outlookDisabled": "Synchronizace s Outlookem vypnuta pro rotaci „{name}“ v kalendáři {calendar}",
+      "outlookSyncFailed": "Událost v Outlooku pro službu dne {date} se nepodařilo synchronizovat: {message}",
+      "outlookAuthFailed": "Microsoft 365 odmítl přihlašovací údaje, synchronizace pozastavena: {message}",
+      "notificationFailed": "Oznámení se nepodařilo odeslat: {message}",
       "userBanned": "{user} zablokován",
       "userBannedPermanently": "{user} trvale zablokován",
       "userUnbanned": "Blokace {user} zrušena",
@@ -1461,6 +1466,24 @@
       },
       "unlock": "Remove lock"
     },
+    "outlook": {
+      "toggle": "Zapsat do Outlooku (office@)",
+      "toggleHint": "Každá služba se stane událostí v kalendáři office@; držitelé míst dostanou pozvánky a aktualizace.",
+      "notConfigured": "Microsoft 365 není na tomto serveru nastaven (viz docs/OUTLOOK_SETUP.md).",
+      "status": "{synced} z {total} služeb v Outlooku",
+      "failed": "{count, plural, one {# chyba} few {# chyby} many {# chyby} other {# chyb}}",
+      "lastSync": "poslední synchronizace {ago}",
+      "syncNow": "Synchronizovat nyní",
+      "syncStarted": "Synchronizace zahájena",
+      "disableTitle": "Vypnout synchronizaci s Outlookem?",
+      "disableConfirm": "Všechny budoucí události této rotace budou v kalendáři office@ zrušeny; účastníci obdrží zrušení.",
+      "disable": "Vypnout",
+      "errors": {
+        "outlookNotConfigured": "Microsoft 365 není na tomto serveru nastaven.",
+        "rateLimited": "Příliš mnoho synchronizací – zkuste to prosím později.",
+        "generic": "To se nepovedlo. Zkuste to prosím znovu."
+      }
+    },
     "errors": {
       "name": "Please enter a name (max. 100 characters).",
       "calendarId": "Invalid calendar.",
@@ -1485,6 +1508,19 @@
     }
   },
   "swap": {
+    "notifications": {
+      "open": "Oznámení",
+      "title": "Oznámení",
+      "description": "E-maily z office@ k burze výměn",
+      "offersToAll": "Nové nabídky všem",
+      "offersToAllHint": "Když někdo nabídne službu všem.",
+      "offersToMe": "Žádosti pro mě",
+      "offersToMeHint": "Když tě někdo přímo požádá o službu.",
+      "myOffers": "Moje nabídky",
+      "myOffersHint": "Když je tvoje nabídka přijata nebo tvoje žádost odmítnuta.",
+      "notConfigured": "Odesílání e-mailů není na tomto serveru nastaveno. Tvoje volba se uplatní, jakmile bude.",
+      "saveFailed": "Nastavení se nepodařilo uložit."
+    },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
     "menu": "Swap board",
@@ -1582,6 +1618,37 @@
       "dutySlotSwapOnly": "Places on duties change hands only through the swap board.",
       "internal": "Unexpected error."
     }
+  },
+  "notifications": {
+    "mail": {
+      "subject": {
+        "offerToAll": "Nabídnutá služba: {duty}",
+        "offerToMe": "Žádost pro tebe: {duty}",
+        "offerAccepted": "Tvoje nabídka byla přijata: {duty}",
+        "offerDeclined": "Tvoje žádost byla odmítnuta: {duty}"
+      },
+      "lead": {
+        "offerToAll": "{name} nabízí službu dne {duty}.",
+        "offerToMe": "{name} se tě přímo ptá na službu dne {duty}.",
+        "offerAccepted": "{name} přijal(a) tvoji nabídku na službu dne {duty}.",
+        "offerDeclined": "{name} odmítl(a) tvoji žádost o službu dne {duty}."
+      },
+      "kind": {
+        "give": "Předání – kdo přijme, převezme službu.",
+        "exchangeFor": "Výměna za službu dne {duty}.",
+        "exchangeAny": "Výměna – kdo přijme, vrátí jednu ze svých budoucích služeb."
+      },
+      "youGet": "Na oplátku přebíráš službu dne {duty}.",
+      "note": "Poznámka: {note}",
+      "allDay": "celý den",
+      "button": "Otevřít burzu výměn",
+      "footer": "Změnit upozornění",
+      "someone": "Někdo"
+    }
+  },
+  "outlook": {
+    "eventBody": "Tuto událost spravuje BetterShift. Služby se vyměňují na burze výměn.",
+    "cancelComment": "Tato služba se již nekoná."
   },
   "announcements": {
     "dismiss": "Skrýt oznámení"

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/sessions";
 import { logUserAction } from "@/lib/audit-log";
 import { rateLimit } from "@/lib/rate-limiter";
+import { outlookWorker } from "@/lib/outlook/worker";
 import { canManageRotations } from "@/lib/rotation/permissions";
 import { calendarNameOf, checkRotationReferences } from "@/lib/rotation/references";
 import { deleteRotation, getRotation, updateRotation } from "@/lib/rotation/service";
@@ -62,6 +63,7 @@ export async function PUT(request: NextRequest, { params }: Context) {
       },
       request,
     });
+    outlookWorker.kick();
     return NextResponse.json(rotation);
   } catch (error) {
     return rotationErrorResponse(error, "Failed to update rotation:");
@@ -95,6 +97,7 @@ export async function DELETE(request: NextRequest, { params }: Context) {
       },
       request,
     });
+    outlookWorker.kick();
     return NextResponse.json({ deletedDuties });
   } catch (error) {
     return rotationErrorResponse(error, "Failed to delete rotation:");

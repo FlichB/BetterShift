@@ -25,6 +25,8 @@ export const rotations = sqliteTable(
     startOffset: integer("start_offset").notNull().default(0),
     weekdays: text("weekdays", { mode: "json" }).$type<number[]>().notNull().default(sql`'[]'`),
     skipDates: text("skip_dates", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
+    // [fork phase 3] Mirror this rotation's duties into the office@ calendar (spec 12.24).
+    outlookEnabled: integer("outlook_enabled", { mode: "boolean" }).notNull().default(false),
     createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()

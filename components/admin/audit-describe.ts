@@ -208,6 +208,17 @@ export function useAuditDescription() {
           return t("adminAudit.describe.swapExpired", { date: text(m, "offeredDate") });
         case "swap.cancelled":
           return t("adminAudit.describe.swapCancelled", { date: text(m, "offeredDate") });
+        // [fork] Outlook / notification events
+        case "outlook.enabled":
+          return t("adminAudit.describe.outlookEnabled", { name: text(m, "rotationName"), calendar });
+        case "outlook.disabled":
+          return t("adminAudit.describe.outlookDisabled", { name: text(m, "rotationName"), calendar });
+        case "outlook.sync_failed":
+          return t("adminAudit.describe.outlookSyncFailed", { date: text(m, "date"), message: text(m, "message") });
+        case "outlook.auth_failed":
+          return t("adminAudit.describe.outlookAuthFailed", { message: text(m, "message") });
+        case "notification.failed":
+          return t("adminAudit.describe.notificationFailed", { message: text(m, "message") });
       }
       return log.action;
     },

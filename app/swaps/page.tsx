@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeftRight, Plus } from "lucide-react";
+import { ArrowLeftRight, Bell, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthFeatures } from "@/hooks/useAuthFeatures";
@@ -13,6 +13,7 @@ import { FullscreenLoader } from "@/components/fullscreen-loader";
 import { ChoiceChips, InfoNote } from "@/components/form-kit";
 import { accountWideContentClass, AccountPageHeader } from "@/components/profile/account-layout";
 import { AcceptDialog } from "@/components/swap/accept-dialog";
+import { NotificationSettingsSheet } from "@/components/swap/notification-settings-sheet";
 import { OfferSheet } from "@/components/swap/offer-sheet";
 import { SwapCard, toastSwapError, type SwapCardAction } from "@/components/swap/swap-card";
 import type { BoardEntry } from "@/lib/swap/types";
@@ -39,6 +40,7 @@ function SwapsContent() {
   const [accepting, setAccepting] = useState<BoardEntry | null>(null);
   const offerShiftId = searchParams.get("offer") ?? undefined;
   const [offerOpen, setOfferOpen] = useState(Boolean(offerShiftId));
+  const [settingsOpen, setSettingsOpen] = useState(searchParams.get("settings") === "notifications");
 
   const board = useSwapBoard(showHidden);
   const accept = useAcceptSwap();
@@ -97,12 +99,18 @@ function SwapsContent() {
         subtitle={t("swap.subtitle")}
         backHref="/"
         actions={
-          data.calendars.length > 0 && (
-            <Button size="sm" aria-label={t("swap.offer")} onClick={() => setOfferOpen(true)}>
-              <Plus className="size-4" />
-              <span className="hidden sm:inline">{t("swap.offer")}</span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" aria-label={t("swap.notifications.open")} onClick={() => setSettingsOpen(true)}>
+              <Bell className="size-4" />
+              <span className="hidden sm:inline">{t("swap.notifications.open")}</span>
             </Button>
-          )
+            {data.calendars.length > 0 && (
+              <Button size="sm" aria-label={t("swap.offer")} onClick={() => setOfferOpen(true)}>
+                <Plus className="size-4" />
+                <span className="hidden sm:inline">{t("swap.offer")}</span>
+              </Button>
+            )}
+          </div>
         }
       />
       <main className={cn(accountWideContentClass, "mx-auto space-y-4 px-4 py-5")}>
@@ -172,6 +180,7 @@ function SwapsContent() {
           initial={{ calendarId: searchParams.get("calendar") ?? undefined, shiftId: offerShiftId }}
         />
       )}
+      <NotificationSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 }
