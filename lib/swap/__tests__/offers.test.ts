@@ -46,6 +46,11 @@ describe("offers", () => {
     expect(swap).toMatchObject({ status: "open", type: "give", offeredByUserId: s.m0, targetUserId: null });
   });
 
+  it("refuses to offer a duty that has begun", () => {
+    const running = new Date(2026, 10, 7, 10, 0); // 11-07 09:30 has begun
+    expect(code(() => createOffer(give(s.duty("2026-11-07")), s.m0, running))).toBe("alreadyStarted");
+  });
+
   it("rejects plain shifts, foreign Plätze and a second open offer", () => {
     expect(code(() => createOffer(give("no-such-shift"), s.m0, now))).toBe("notDuty");
     expect(code(() => createOffer(give(s.duty("2026-11-14")), s.m0, now))).toBe("slotNotOwned");

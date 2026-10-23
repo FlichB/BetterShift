@@ -112,6 +112,16 @@ describe("rotation service", () => {
     expect(dutiesOf(rotation.id)[1].userIds).toEqual([team.memberIds[6], team.memberIds[7]].sort());
   });
 
+  it("leaves past duties, their Plätze and locks alone when generating from an earlier date", async () => {
+    const rotation = createRotation(input, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, now);
+    const later = new Date(2026, 10, 16, 12, 0); // 11-07 and 11-14 are past
+    const before = dutiesOf(rotation.id).filter((d) => d.date <= "2026-11-14");
+    updateRotation(rotation.id, { ...input, startOffset: 3, skipDates: ["2026-11-07"] });
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, later);
+    expect(dutiesOf(rotation.id).filter((d) => d.date <= "2026-11-14")).toEqual(before);
+  });
+
   it("restart from X after a Teilnehmer leaves: suggestion continues after the last duty", async () => {
     const rotation = createRotation(input, team.ownerId);
     await runGeneration(rotation.id, "2026-11-02", "2026-12-31", team.ownerId, now);
