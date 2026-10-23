@@ -102,7 +102,7 @@ Mit „Anbieten" wird das Angebot erstellt. Es gibt vier Fälle:
 - **Abgabe:** Wer „Übernehmen" anklickt und bestätigt, übernimmt den Dienst. Das gilt sofort.
 - **Tausch gegen einen konkreten Dienst** (im Angebot steht „Tausch gegen" mit dem Datum des Gegendienstes): „Tauschen" anklicken und bestätigen. Beide Plätze wechseln in einem Schritt.
 - **Tausch gegen beliebigen Dienst:** Der Annehmende wählt unter „Welchen deiner Dienste gibst du dafür ab?" einen eigenen künftigen Dienst.
-- **Direktanfrage** („an {Name}"): Nur diese Person kann annehmen oder „Ablehnen".
+- **Direktanfrage** (im Angebot steht „an" mit dem Namen der Person): Nur diese Person kann annehmen oder „Ablehnen".
 
 Weitere Aktionen:
 
