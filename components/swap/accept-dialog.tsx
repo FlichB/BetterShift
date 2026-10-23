@@ -52,6 +52,7 @@ export function AcceptDialog({
     >
       {pickCounter && (
         <div role="radiogroup" aria-label={t("swap.confirm.pickCounter")} className="flex flex-col gap-1.5">
+          {duties.isLoading && <p className="text-[13px] text-fg-secondary">{t("swap.confirm.loadingDuties")}</p>}
           {mySlots.length === 0 && !duties.isLoading && (
             <p className="text-[13px] text-fg-secondary">{t("swap.confirm.noCounter")}</p>
           )}

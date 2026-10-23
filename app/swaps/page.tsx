@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeftRight, Bell, CalendarSync, Plus } from "lucide-react";
+import { AlertTriangle, ArrowLeftRight, Bell, CalendarSync, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthFeatures } from "@/hooks/useAuthFeatures";
@@ -41,6 +41,12 @@ function SwapsContent() {
   const [accepting, setAccepting] = useState<BoardEntry | null>(null);
   const offerShiftId = searchParams.get("offer") ?? undefined;
   const [offerOpen, setOfferOpen] = useState(Boolean(offerShiftId));
+  // A fresh key per opening resets the sheet's form without remounting it while it closes.
+  const [offerKey, setOfferKey] = useState(0);
+  const openOffer = () => {
+    setOfferKey((k) => k + 1);
+    setOfferOpen(true);
+  };
   const settingsParam = searchParams.get("settings");
   const [settingsOpen, setSettingsOpen] = useState(settingsParam === "notifications");
   const [feedOpen, setFeedOpen] = useState(settingsParam === "feed");
@@ -112,7 +118,7 @@ function SwapsContent() {
               <span className="hidden sm:inline">{t("swap.notifications.open")}</span>
             </Button>
             {data.calendars.length > 0 && (
-              <Button size="sm" aria-label={t("swap.offer")} onClick={() => setOfferOpen(true)}>
+              <Button size="sm" aria-label={t("swap.offer")} onClick={openOffer}>
                 <Plus className="size-4" />
                 <span className="hidden sm:inline">{t("swap.offer")}</span>
               </Button>
@@ -121,7 +127,14 @@ function SwapsContent() {
         }
       />
       <main className={cn(accountWideContentClass, "mx-auto space-y-4 px-4 py-5")}>
-        {data.calendars.length === 0 ? (
+        {board.isError && !board.data ? (
+          <div className="flex flex-col items-start gap-2.5">
+            <InfoNote icon={AlertTriangle}>{t("swap.loadFailed")}</InfoNote>
+            <Button size="sm" variant="outline" onClick={() => board.refetch()}>
+              {t("swap.retry")}
+            </Button>
+          </div>
+        ) : data.calendars.length === 0 ? (
           <InfoNote icon={ArrowLeftRight}>{t("swap.noCalendars")}</InfoNote>
         ) : (
           <>
@@ -180,7 +193,7 @@ function SwapsContent() {
       )}
       {data.calendars.length > 0 && (
         <OfferSheet
-          key={String(offerOpen)}
+          key={offerKey}
           open={offerOpen}
           onOpenChange={setOfferOpen}
           calendars={data.calendars}

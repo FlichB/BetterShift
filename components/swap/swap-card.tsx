@@ -14,7 +14,8 @@ type T = ReturnType<typeof useTranslations>;
 
 export function toastSwapError(error: unknown, t: T): void {
   if (error instanceof SwapApiError && error.status === 429) {
-    void handleRateLimitError(new Response(null, { status: 429 }), t);
+    const body = JSON.stringify({ retryAfter: error.retryAfter ?? undefined });
+    void handleRateLimitError(new Response(body, { status: 429 }), t);
   } else if (error instanceof SwapApiError) {
     toast.error(t(`swap.errors.${error.code}`));
   } else {

@@ -1474,6 +1474,7 @@
       "toggleHint": "Each duty becomes an event in the office@ calendar; holders receive invitations and updates.",
       "notConfigured": "Microsoft 365 is not set up on this server (see docs/OUTLOOK_SETUP.md).",
       "status": "{synced} of {total} duties in Outlook",
+      "loadFailed": "The Outlook status could not be loaded.",
       "failed": "{count, plural, one {# error} other {# errors}}",
       "lastSync": "last sync {ago}",
       "syncNow": "Sync now",
@@ -1522,7 +1523,8 @@
       "myOffers": "My offers",
       "myOffersHint": "When your offer is accepted or your request is declined.",
       "notConfigured": "Email is not set up on this server. Your choice applies once it is.",
-      "saveFailed": "Could not save the setting."
+      "saveFailed": "Could not save the setting.",
+      "loadFailed": "The settings could not be loaded."
     },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
@@ -1536,6 +1538,7 @@
     "emptyForMe": "There are no open offers for you right now.",
     "emptyMine": "You haven't made any offers in the last 30 days.",
     "noCalendars": "You have no duties you're allowed to swap in any calendar.",
+    "loadFailed": "The swap board could not be loaded.",
     "showHidden": "Show hidden",
     "hideHidden": "Hide hidden",
     "kind": {
@@ -1570,7 +1573,8 @@
       "swapTitle": "Swap duties?",
       "swapText": "You take over {date}, {time} and give away {counter}. This applies immediately.",
       "pickCounter": "Which of your duties do you give in return?",
-      "noCounter": "You have no upcoming duty in this calendar to give in return."
+      "noCounter": "You have no upcoming duty in this calendar to give in return.",
+      "loadingDuties": "Loading your duties …"
     },
     "done": {
       "taken": "Duty taken over.",
