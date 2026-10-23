@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { acceptOffer, calendarState, createOffer, hideOffer, listBoard, listDuties } from "@/lib/swap/service";
+import { acceptOffer, calendarState, createOffer, declineOffer, hideOffer, listBoard, listDuties, withdrawOffer } from "@/lib/swap/service";
 import { now, seedDuties } from "./fixtures";
 
 let s: Awaited<ReturnType<typeof seedDuties>>;
@@ -54,6 +54,50 @@ describe("listBoard", () => {
     acceptOffer(swap.id, s.m2, null, now);
     const [entry] = listBoard(s.m0, [s.team.calendarId], now, false).mine;
     expect(entry).toMatchObject({ status: "accepted", acceptedBy: { id: s.m2 } });
+  });
+});
+
+describe("listBoard history and settling", () => {
+  const cal = () => [s.team.calendarId];
+
+  it("drops own resolved offers from mine after 30 days", () => {
+    const swap = give(s.duty("2026-11-07"), s.m0);
+    withdrawOffer(swap.id, s.m0, now);
+    expect(listBoard(s.m0, cal(), now, false).mine.map((e) => [e.id, e.status])).toEqual([[swap.id, "withdrawn"]]);
+    expect(listBoard(s.m0, cal(), new Date(now.getTime() + 31 * 86_400_000), false).mine).toHaveLength(0);
+  });
+
+  it("settles due offers on read", () => {
+    const swap = give(s.duty("2026-11-07"), s.m0);
+    const afterStart = new Date(2026, 10, 7, 10, 0);
+    const board = listBoard(s.m0, cal(), afterStart, false);
+    expect(board.mine.map((e) => [e.id, e.status])).toEqual([[swap.id, "expired"]]);
+    expect(listBoard(s.m4, cal(), afterStart, false).forMe).toHaveLength(0);
+  });
+
+  it("shows a declined Direktanfrage to the offerer only", () => {
+    const direct = give(s.duty("2026-11-07"), s.m0, s.m2);
+    expect(listBoard(s.m2, cal(), now, false).forMe.map((e) => e.id)).toEqual([direct.id]);
+    declineOffer(direct.id, s.m2, now);
+    expect(listBoard(s.m0, cal(), now, false).mine.map((e) => [e.id, e.status])).toEqual([[direct.id, "declined"]]);
+    expect(listBoard(s.m2, cal(), now, false).forMe).toHaveLength(0);
+  });
+
+  it("fills requested and accepted for an accepted exchange", () => {
+    const a = s.duty("2026-11-07");
+    const b = s.duty("2026-11-14");
+    const swap = createOffer({ shiftId: a, type: "exchange", targetUserId: null, requestedShiftId: b, note: null }, s.m0, now);
+    const open = listBoard(s.m0, cal(), now, false).mine[0];
+    expect(open).toMatchObject({ requested: { date: "2026-11-14" }, accepted: null });
+    acceptOffer(swap.id, s.m2, null, now);
+    const [entry] = listBoard(s.m0, cal(), now, false).mine;
+    expect(entry).toMatchObject({
+      status: "accepted",
+      offered: { shiftId: a, date: "2026-11-07" },
+      requested: { shiftId: b, date: "2026-11-14" },
+      accepted: { shiftId: b, date: "2026-11-14" },
+      acceptedBy: { id: s.m2 },
+    });
   });
 });
 

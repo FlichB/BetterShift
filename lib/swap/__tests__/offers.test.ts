@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { auditLogs, shiftSignups } from "@/lib/db/schema";
+import { auditLogs, shiftSignups, shifts } from "@/lib/db/schema";
+import { parseLocalDate } from "@/lib/date-utils";
 import { shiftSwapHidden } from "@/lib/swap/schema";
 import {
   acceptOffer,
@@ -131,6 +132,34 @@ describe("offers", () => {
     await new Promise((r) => setTimeout(r, 20)); // logResolved is fire-and-forget
     const logs = db.select().from(auditLogs).where(eq(auditLogs.resourceId, swap.id)).all();
     expect(logs.map((l) => l.action)).toContain("swap.expired");
+  });
+
+  it("audit-logs an offer cancelled because its Platz moved as swap.cancelled", async () => {
+    const shiftId = s.duty("2026-11-07");
+    const swap = createOffer(give(shiftId), s.m0, now);
+    db.update(shiftSignups)
+      .set({ userId: s.m4 })
+      .where(and(eq(shiftSignups.shiftId, shiftId), eq(shiftSignups.userId, s.m0)))
+      .run();
+    expireDue(now);
+    await new Promise((r) => setTimeout(r, 20)); // logResolved is fire-and-forget
+    const logs = db.select().from(auditLogs).where(eq(auditLogs.resourceId, swap.id)).all();
+    expect(logs.map((l) => l.action)).toContain("swap.cancelled");
+  });
+
+  it("rejects a plain shift as the requested duty of an exchange", () => {
+    const plain = db
+      .insert(shifts)
+      .values({ calendarId: s.team.calendarId, date: parseLocalDate("2026-11-10"), startTime: "08:00", endTime: "12:00", title: "Normal" })
+      .returning()
+      .get();
+    const input = { shiftId: s.duty("2026-11-07"), type: "exchange" as const, targetUserId: null, requestedShiftId: plain.id, note: null };
+    expect(code(() => createOffer(input, s.m0, now))).toBe("invalidShift");
+  });
+
+  it("rejects a give with a requested duty as invalid (not stored as null)", () => {
+    const input = { ...give(s.duty("2026-11-07")), requestedShiftId: s.duty("2026-11-14") };
+    expect(code(() => createOffer(input, s.m0, now))).toBe("invalid");
   });
 
   it("cancels offers whose Platz was reassigned by hand", () => {

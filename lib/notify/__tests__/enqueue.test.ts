@@ -47,7 +47,10 @@ describe("enqueueSwapEvent via the swap service", () => {
 
     const asked = createOffer(give(s.duty("2026-11-14"), s.m4), s.m2, now);
     declineOffer(asked.id, s.m4, now);
-    expect(outbox(asked.id).map((r) => r.kind)).toEqual(["offer_to_me", "offer_declined"]);
+    expect(outbox(asked.id).map((r) => [r.kind, r.actorUserId])).toEqual([
+      ["offer_to_me", s.m2],
+      ["offer_declined", s.m4],
+    ]);
   });
 
   it("writes nothing when the action fails", () => {
