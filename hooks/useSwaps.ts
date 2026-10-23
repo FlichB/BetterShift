@@ -10,7 +10,11 @@ import type { SlotMove } from "@/lib/swap/rules";
 import type { Board, CalendarSwapState, DutiesResponse, SwapType } from "@/lib/swap/types";
 
 export class SwapApiError extends Error {
-  constructor(public readonly code: string, public readonly status: number) {
+  constructor(
+    public readonly code: string,
+    public readonly status: number,
+    public readonly retryAfter: number | null = null
+  ) {
     super(code);
   }
 }
@@ -22,7 +26,10 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   });
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new SwapApiError(typeof data.error === "string" ? data.error : "internal", response.status);
+  if (!response.ok) {
+    const code = typeof data.error === "string" ? data.error : "internal";
+    throw new SwapApiError(code, response.status, typeof data.retryAfter === "number" ? data.retryAfter : null);
+  }
   return data as T;
 }
 

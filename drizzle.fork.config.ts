@@ -5,7 +5,7 @@ import { resolveDatabasePath } from "./lib/db/db-path.mjs";
 
 export default defineConfig({
   out: "./drizzle/fork",
-  schema: ["./lib/rotation/schema.ts", "./lib/swap/schema.ts", "./lib/outlook/schema.ts", "./lib/notify/schema.ts"],
+  schema: ["./lib/rotation/schema.ts", "./lib/swap/schema.ts", "./lib/outlook/schema.ts", "./lib/notify/schema.ts", "./lib/feed/schema.ts"],
   dialect: "sqlite",
   dbCredentials: {
     url: resolveDatabasePath(),

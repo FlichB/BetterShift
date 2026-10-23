@@ -4,6 +4,7 @@
 import { useTranslations } from "next-intl";
 import { MailX } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { BaseSheet } from "@/components/ui/base-sheet";
 import { InfoNote, ToggleRow } from "@/components/form-kit";
 import { useNotificationSettings, useSaveNotificationPreferences } from "@/hooks/useNotificationPreferences";
@@ -28,6 +29,15 @@ export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolea
       description={t("swap.notifications.description")}
       showCancelButton={false} // saved on every toggle; the header X closes the sheet
     >
+      {settings.isLoading && <p className="text-[13px] text-fg-secondary">{t("common.loading")}</p>}
+      {settings.isError && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[13px] text-danger">{t("swap.notifications.loadFailed")}</p>
+          <Button size="sm" variant="outline" onClick={() => settings.refetch()}>
+            {t("swap.retry")}
+          </Button>
+        </div>
+      )}
       {data && (
         <div className="flex flex-col gap-3">
           {!data.configured && <InfoNote icon={MailX}>{t("swap.notifications.notConfigured")}</InfoNote>}

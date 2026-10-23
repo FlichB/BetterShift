@@ -1139,6 +1139,9 @@
       "outlookSyncFailed": "Outlook-Termin für den Dienst am {date} konnte nicht abgeglichen werden: {message}",
       "outlookAuthFailed": "Microsoft 365 hat die Zugangsdaten abgelehnt, Abgleich pausiert: {message}",
       "notificationFailed": "Benachrichtigung konnte nicht versendet werden: {message}",
+      "personalFeedCreated": "Persönlichen Kalender-Feed erstellt",
+      "personalFeedRotated": "Persönlichen Kalender-Feed neu erzeugt",
+      "personalFeedRevoked": "Persönlichen Kalender-Feed widerrufen",
       "userBanned": "{user} gesperrt",
       "userBannedPermanently": "{user} dauerhaft gesperrt",
       "userUnbanned": "Sperre für {user} aufgehoben",
@@ -1471,6 +1474,7 @@
       "toggleHint": "Jeder Dienst wird ein Termin im office@-Kalender; die Platzinhaber erhalten Einladungen und Aktualisierungen.",
       "notConfigured": "Microsoft 365 ist auf diesem Server nicht eingerichtet (siehe docs/OUTLOOK_SETUP.md).",
       "status": "{synced} von {total} Diensten in Outlook",
+      "loadFailed": "Der Outlook-Status konnte nicht geladen werden.",
       "failed": "{count, plural, one {# Fehler} other {# Fehler}}",
       "lastSync": "letzter Abgleich {ago}",
       "syncNow": "Jetzt abgleichen",
@@ -1519,7 +1523,8 @@
       "myOffers": "Meine Angebote",
       "myOffersHint": "Wenn dein Angebot angenommen oder deine Anfrage abgelehnt wird.",
       "notConfigured": "Der E-Mail-Versand ist auf diesem Server nicht eingerichtet. Deine Auswahl gilt, sobald er eingerichtet ist.",
-      "saveFailed": "Einstellung konnte nicht gespeichert werden."
+      "saveFailed": "Einstellung konnte nicht gespeichert werden.",
+      "loadFailed": "Die Einstellungen konnten nicht geladen werden."
     },
     "title": "Tauschbörse",
     "subtitle": "Dienste abgeben und tauschen",
@@ -1533,6 +1538,7 @@
     "emptyForMe": "Gerade gibt es keine offenen Angebote für dich.",
     "emptyMine": "Du hast in den letzten 30 Tagen keine Angebote erstellt.",
     "noCalendars": "Du hast in keinem Kalender Dienste, die du tauschen darfst.",
+    "loadFailed": "Die Tauschbörse konnte nicht geladen werden.",
     "showHidden": "Ausgeblendete zeigen",
     "hideHidden": "Ausgeblendete verbergen",
     "kind": {
@@ -1567,7 +1573,8 @@
       "swapTitle": "Dienste tauschen?",
       "swapText": "Du übernimmst {date}, {time} und gibst {counter} ab. Das gilt sofort.",
       "pickCounter": "Welchen deiner Dienste gibst du dafür ab?",
-      "noCounter": "Du hast keinen künftigen Dienst in diesem Kalender, den du abgeben kannst."
+      "noCounter": "Du hast keinen künftigen Dienst in diesem Kalender, den du abgeben kannst.",
+      "loadingDuties": "Deine Dienste werden geladen …"
     },
     "done": {
       "taken": "Dienst übernommen.",
@@ -1617,6 +1624,32 @@
       "notBroadcast": "Nur Angebote an alle können ausgeblendet werden.",
       "dutySlotSwapOnly": "Plätze von Diensten wechseln nur über die Tauschbörse.",
       "internal": "Unerwarteter Fehler."
+    },
+    "retry": "Erneut versuchen",
+    "feed": {
+      "open": "Kalender-Abo",
+      "title": "Mein Kalender-Abo",
+      "description": "Abonniere nur deine eigenen Dienste in Google, Apple oder Outlook. Tausche erscheinen automatisch.",
+      "create": "Link erstellen",
+      "copy": "Link kopieren",
+      "copied": "Link kopiert",
+      "copyFailed": "Kopieren nicht möglich – bitte den Link markieren und kopieren.",
+      "regenerate": "Neu erzeugen",
+      "regenerateTitle": "Link neu erzeugen?",
+      "regenerateConfirm": "Der bisherige Link funktioniert danach nicht mehr. Bestehende Abos musst du mit dem neuen Link neu einrichten.",
+      "revoke": "Widerrufen",
+      "revokeTitle": "Link widerrufen?",
+      "revokeConfirm": "Abos mit diesem Link erhalten danach keine Dienste mehr.",
+      "lastUsed": "Zuletzt abgerufen {ago}",
+      "neverUsed": "Noch nicht abgerufen",
+      "howTo": "So abonnierst du",
+      "google": "Google Kalender (am Computer): Weitere Kalender → Per URL → Link einfügen.",
+      "apple": "Apple Kalender: Ablage → Neues Kalenderabonnement → Link einfügen.",
+      "outlook": "Outlook: Kalender hinzufügen → Aus dem Internet abonnieren → Link einfügen.",
+      "outlookHint": "Wer Outlook-Einladungen von office@ bekommt, braucht den Feed nicht in Outlook – sonst stehen Dienste doppelt drin.",
+      "delayHint": "Kalender-Apps aktualisieren Abos verzögert (Google: mehrere Stunden).",
+      "loadFailed": "Der Link konnte nicht geladen werden.",
+      "failed": "Das hat nicht geklappt. Bitte erneut versuchen."
     }
   },
   "notifications": {
@@ -1649,6 +1682,11 @@
   "outlook": {
     "eventBody": "Dieser Termin wird von BetterShift verwaltet. Dienste tauschst du in der Tauschbörse.",
     "cancelComment": "Dieser Dienst findet nicht mehr statt."
+  },
+  "personalFeed": {
+    "calendarName": "Meine Dienste",
+    "with": "Mit: {names}",
+    "swapLink": "Tauschen: {url}"
   },
   "announcements": {
     "dismiss": "Ankündigung ausblenden"

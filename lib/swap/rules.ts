@@ -159,11 +159,14 @@ export function nextLock(move: SlotMove, existing: LockRow | null): LockRow | nu
 
 /**
  * Whether an open offer has ended by itself: its duty (or its concrete
- * counter duty) has begun, or the offered Platz is no longer the offerer's.
+ * counter duty) has begun, the offered Platz is no longer the offerer's, or
+ * the concrete counter duty can no longer be handed over — the offerer holds
+ * it already, or for a Direktanfrage it is no longer the target's.
  * `offered`/`requested` are null when the shift is no longer a duty.
  */
 export function dueStatus(
   offererId: string,
+  targetUserId: string | null,
   offered: SlotView | null,
   requested: SlotView | null,
   requestedShiftId: string | null,
@@ -175,6 +178,8 @@ export function dueStatus(
   if (requestedShiftId) {
     if (!requested) return "cancelled";
     if (started(requested.duty, now)) return "expired";
+    if (requested.holderIds.includes(offererId)) return "cancelled";
+    if (targetUserId && !requested.holderIds.includes(targetUserId)) return "cancelled";
   }
   return null;
 }

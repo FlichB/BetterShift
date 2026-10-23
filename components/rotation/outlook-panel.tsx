@@ -24,6 +24,9 @@ export function OutlookPanel({ rotationId }: { rotationId: string }) {
   const [showErrors, setShowErrors] = useState(false);
 
   const data = status.data;
+  if (status.isError && !data) {
+    return <p className="text-[13px] text-danger">{t("rotation.outlook.loadFailed")}</p>;
+  }
   if (!data) return null;
 
   const onError = (error: unknown) => {

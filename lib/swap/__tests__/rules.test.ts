@@ -3,6 +3,7 @@ import {
   checkAccept,
   checkOffer,
   dueStatus,
+  dutySpan,
   nextLock,
   overlaps,
   type AcceptCheckInput,
@@ -54,6 +55,13 @@ describe("overlaps", () => {
   it("treats all-day duties as the whole day", () => {
     expect(overlaps(duty("d", "2026-11-07", { isAllDay: true, startTime: "00:00", endTime: "23:59" }), sat1)).toBe(true);
     expect(overlaps(duty("d", "2026-11-08", { isAllDay: true }), sat1)).toBe(false);
+  });
+});
+
+describe("dutySpan", () => {
+  it("treats an equal start and end as a 24-hour duty", () => {
+    const [start, end] = dutySpan(duty("d", "2026-11-07", { startTime: "08:00", endTime: "08:00" }));
+    expect(end - start).toBe(1440);
   });
 });
 
@@ -109,6 +117,16 @@ describe("checkAccept", () => {
     expect(checkAccept(accept({ offered: slot(sat1, ["X", "B"]) }))).toEqual({ ok: false, error: "slotNotOwned" });
     expect(checkAccept(accept({ now: new Date(2026, 10, 7, 9, 30) }))).toEqual({ ok: false, error: "alreadyStarted" });
     expect(checkAccept(accept({ acceptorId: "B" }))).toEqual({ ok: false, error: "alreadyOnDuty" });
+  });
+
+  it("refuses an exchange whose counter duty has begun", () => {
+    const input = accept({
+      offer: { type: "exchange", status: "open", offeredByUserId: "A", targetUserId: null, requestedShiftId: "s1" },
+      offered: slot(sat2, ["A", "B"]), // not begun yet
+      counter: slot(sat1, ["C", "D"]), // begun
+      now: new Date(2026, 10, 7, 10, 0),
+    });
+    expect(checkAccept(input)).toEqual({ ok: false, error: "alreadyStarted" });
   });
 
   it("prevents a Doppelbelegung for the acceptor", () => {
@@ -190,17 +208,33 @@ describe("nextLock", () => {
 
 describe("dueStatus", () => {
   it("expires offers whose duty has begun", () => {
-    expect(dueStatus("A", slot(sat1, ["A"]), null, null, new Date(2026, 10, 7, 9, 30))).toBe("expired");
-    expect(dueStatus("A", slot(sat1, ["A"]), slot(sat2, ["C"]), "s2", new Date(2026, 10, 14, 9, 30))).toBe("expired");
+    expect(dueStatus("A", null, slot(sat1, ["A"]), null, null, new Date(2026, 10, 7, 9, 30))).toBe("expired");
+    expect(dueStatus("A", null, slot(sat1, ["A"]), slot(sat2, ["C"]), "s2", new Date(2026, 10, 14, 9, 30))).toBe("expired");
+  });
+
+  it("expires a begun duty even when its Platz is already gone", () => {
+    expect(dueStatus("A", null, slot(sat1, ["B", "C"]), null, null, new Date(2026, 10, 7, 9, 30))).toBe("expired");
   });
 
   it("cancels offers whose Platz is gone", () => {
-    expect(dueStatus("A", slot(sat1, ["B", "C"]), null, null, now)).toBe("cancelled");
-    expect(dueStatus("A", null, null, null, now)).toBe("cancelled");
-    expect(dueStatus("A", slot(sat1, ["A"]), null, "s2", now)).toBe("cancelled");
+    expect(dueStatus("A", null, slot(sat1, ["B", "C"]), null, null, now)).toBe("cancelled");
+    expect(dueStatus("A", null, null, null, null, now)).toBe("cancelled");
+    expect(dueStatus("A", null, slot(sat1, ["A"]), null, "s2", now)).toBe("cancelled");
   });
 
   it("leaves valid offers open", () => {
-    expect(dueStatus("A", slot(sat1, ["A", "B"]), slot(sat2, ["C"]), "s2", now)).toBeNull();
+    expect(dueStatus("A", null, slot(sat1, ["A", "B"]), slot(sat2, ["C"]), "s2", now)).toBeNull();
+  });
+
+  it("cancels a Direktanfrage whose requested duty is no longer the target's", () => {
+    expect(dueStatus("A", "B", slot(sat1, ["A"]), slot(sat2, ["C"]), "s2", now)).toBe("cancelled");
+  });
+
+  it("cancels an exchange whose requested duty the offerer now holds", () => {
+    expect(dueStatus("A", null, slot(sat1, ["A"]), slot(sat2, ["A", "C"]), "s2", now)).toBe("cancelled");
+  });
+
+  it("keeps a broadcast exchange open while someone holds the requested duty", () => {
+    expect(dueStatus("A", null, slot(sat1, ["A"]), slot(sat2, ["C"]), "s2", now)).toBeNull();
   });
 });

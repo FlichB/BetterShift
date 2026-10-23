@@ -50,6 +50,29 @@ describe("acceptOffer", () => {
     expect(s.holders(s.duty("2026-12-12"))).toContain(s.m0);
   });
 
+  it("locks the counter Platz for the offerer against the acceptor on a concrete exchange", () => {
+    const a = s.duty("2026-11-07");
+    const b = s.duty("2026-11-14"); // m2, m3
+    const swap = offer(a, s.m0, { type: "exchange", requestedShiftId: b });
+    acceptOffer(swap.id, s.m2, null, now);
+    expect(s.locks(b)).toMatchObject([{ userId: s.m0, replacesUserId: s.m2 }]);
+    expect(s.locks(a)).toMatchObject([{ userId: s.m2, replacesUserId: s.m0 }]);
+  });
+
+  it("stores the chosen counter duty of a Tausch beliebig as accepted", () => {
+    const counter = s.duty("2026-12-12");
+    const swap = offer(s.duty("2026-11-07"), s.m0, { type: "exchange" });
+    acceptOffer(swap.id, s.m2, counter, now);
+    expect(getSwap(swap.id)).toMatchObject({ status: "accepted", acceptedShiftId: counter });
+  });
+
+  it("refuses an acceptor already on the offered duty and the offerer accepting their own offer", () => {
+    const swap = offer(s.duty("2026-11-07"), s.m0); // m0, m1
+    expect(code(() => acceptOffer(swap.id, s.m1, null, now))).toBe("alreadyOnDuty");
+    expect(code(() => acceptOffer(swap.id, s.m0, null, now))).toBe("ownOffer");
+    expect(getSwap(swap.id)?.status).toBe("open");
+  });
+
   it("lets only one of two acceptances win", () => {
     const swap = offer(s.duty("2026-11-07"), s.m0);
     acceptOffer(swap.id, s.m2, null, now);

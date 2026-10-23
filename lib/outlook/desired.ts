@@ -47,8 +47,8 @@ export function desiredEvent(duty: DutyForSync): DesiredEvent {
   if (duty.isAllDay) {
     return { subject: duty.title, start: at(duty.date, "00:00"), end: at(addDays(duty.date, 1), "00:00"), isAllDay: true, attendees };
   }
-  // Spec 12.3: an end before the start means the duty runs past midnight.
-  const endDate = duty.endTime < duty.startTime ? addDays(duty.date, 1) : duty.date;
+  // Spec 12.3: an end at or before the start means the duty runs past midnight (same as lib/swap/rules.ts dutySpan).
+  const endDate = duty.endTime <= duty.startTime ? addDays(duty.date, 1) : duty.date;
   return { subject: duty.title, start: at(duty.date, duty.startTime), end: at(endDate, duty.endTime), isAllDay: false, attendees };
 }
 

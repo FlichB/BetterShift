@@ -1139,6 +1139,9 @@
       "outlookSyncFailed": "Could not sync the Outlook event for the duty on {date}: {message}",
       "outlookAuthFailed": "Microsoft 365 rejected the credentials, sync paused: {message}",
       "notificationFailed": "Could not send a notification: {message}",
+      "personalFeedCreated": "Created personal calendar feed",
+      "personalFeedRotated": "Regenerated personal calendar feed",
+      "personalFeedRevoked": "Revoked personal calendar feed",
       "userBanned": "{user} banned",
       "userBannedPermanently": "{user} banned permanently",
       "userUnbanned": "Ban lifted for {user}",
@@ -1471,6 +1474,7 @@
       "toggleHint": "Each duty becomes an event in the office@ calendar; holders receive invitations and updates.",
       "notConfigured": "Microsoft 365 is not set up on this server (see docs/OUTLOOK_SETUP.md).",
       "status": "{synced} of {total} duties in Outlook",
+      "loadFailed": "The Outlook status could not be loaded.",
       "failed": "{count, plural, one {# error} other {# errors}}",
       "lastSync": "last sync {ago}",
       "syncNow": "Sync now",
@@ -1519,7 +1523,8 @@
       "myOffers": "My offers",
       "myOffersHint": "When your offer is accepted or your request is declined.",
       "notConfigured": "Email is not set up on this server. Your choice applies once it is.",
-      "saveFailed": "Could not save the setting."
+      "saveFailed": "Could not save the setting.",
+      "loadFailed": "The settings could not be loaded."
     },
     "title": "Swap board",
     "subtitle": "Give away and swap duties",
@@ -1533,6 +1538,7 @@
     "emptyForMe": "There are no open offers for you right now.",
     "emptyMine": "You haven't made any offers in the last 30 days.",
     "noCalendars": "You have no duties you're allowed to swap in any calendar.",
+    "loadFailed": "The swap board could not be loaded.",
     "showHidden": "Show hidden",
     "hideHidden": "Hide hidden",
     "kind": {
@@ -1567,7 +1573,8 @@
       "swapTitle": "Swap duties?",
       "swapText": "You take over {date}, {time} and give away {counter}. This applies immediately.",
       "pickCounter": "Which of your duties do you give in return?",
-      "noCounter": "You have no upcoming duty in this calendar to give in return."
+      "noCounter": "You have no upcoming duty in this calendar to give in return.",
+      "loadingDuties": "Loading your duties …"
     },
     "done": {
       "taken": "Duty taken over.",
@@ -1617,6 +1624,32 @@
       "notBroadcast": "Only offers to everyone can be hidden.",
       "dutySlotSwapOnly": "Places on duties change hands only through the swap board.",
       "internal": "Unexpected error."
+    },
+    "retry": "Try again",
+    "feed": {
+      "open": "Calendar feed",
+      "title": "My calendar feed",
+      "description": "Subscribe to just your own duties in Google, Apple or Outlook. Swaps show up automatically.",
+      "create": "Create link",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "copyFailed": "Copying is not possible – please select and copy the link.",
+      "regenerate": "Regenerate",
+      "regenerateTitle": "Regenerate link?",
+      "regenerateConfirm": "The current link stops working. Existing subscriptions must be set up again with the new link.",
+      "revoke": "Revoke",
+      "revokeTitle": "Revoke link?",
+      "revokeConfirm": "Subscriptions using this link will no longer receive duties.",
+      "lastUsed": "Last fetched {ago}",
+      "neverUsed": "Not fetched yet",
+      "howTo": "How to subscribe",
+      "google": "Google Calendar (on a computer): Other calendars → From URL → paste the link.",
+      "apple": "Apple Calendar: File → New Calendar Subscription → paste the link.",
+      "outlook": "Outlook: Add calendar → Subscribe from web → paste the link.",
+      "outlookHint": "If you receive Outlook invitations from office@, you don't need the feed in Outlook – otherwise duties appear twice.",
+      "delayHint": "Calendar apps refresh subscriptions with a delay (Google: several hours).",
+      "loadFailed": "The link could not be loaded.",
+      "failed": "That didn't work. Please try again."
     }
   },
   "notifications": {
@@ -1649,6 +1682,11 @@
   "outlook": {
     "eventBody": "This event is managed by BetterShift. Swap duties on the swap board.",
     "cancelComment": "This duty no longer takes place."
+  },
+  "personalFeed": {
+    "calendarName": "My duties",
+    "with": "With: {names}",
+    "swapLink": "Swap: {url}"
   },
   "announcements": {
     "dismiss": "Dismiss announcement"

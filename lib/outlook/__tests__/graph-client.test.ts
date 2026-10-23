@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { OutlookConfig } from "@/lib/outlook/config";
-import { createGraphClient, GraphError, type EventInput } from "@/lib/outlook/graph-client";
+import { createDryRunClient, createGraphClient, GraphError, graphClientFor, type EventInput } from "@/lib/outlook/graph-client";
 import { GRAPH_TIME_ZONE } from "@/lib/outlook/desired";
 
 const config: OutlookConfig = {
@@ -123,5 +123,78 @@ describe("createGraphClient", () => {
       },
       saveToSentItems: false,
     });
+  });
+
+  it("patches an event by id in the organizer mailbox", async () => {
+    const { calls, fetchImpl } = fakeFetch([token(), json(200, {})]);
+    await createGraphClient(config, fetchImpl).updateEvent("ev/1", input);
+    expect(calls[1].url).toBe("https://graph.microsoft.com/v1.0/users/office%40firma.at/events/ev%2F1");
+    expect(calls[1].init.method).toBe("PATCH");
+    expect(JSON.parse(String(calls[1].init.body))).toMatchObject({ subject: "Samstagsdienst", isAllDay: false });
+  });
+
+  it("cancels an event with the comment in the body", async () => {
+    const { calls, fetchImpl } = fakeFetch([token(), new Response(null, { status: 202 })]);
+    await createGraphClient(config, fetchImpl).cancelEvent("ev1", "Dienst entfällt");
+    expect(calls[1].url).toBe("https://graph.microsoft.com/v1.0/users/office%40firma.at/events/ev1/cancel");
+    expect(calls[1].init.method).toBe("POST");
+    expect(JSON.parse(String(calls[1].init.body))).toEqual({ comment: "Dienst entfällt" });
+  });
+
+  it("drops the cached token after a 401 and fetches a new one for the next call", async () => {
+    const { calls, fetchImpl } = fakeFetch([
+      token(),
+      json(401, { error: { code: "InvalidAuthenticationToken", message: "expired" } }),
+      json(200, { access_token: "tok2", expires_in: 3600 }),
+      json(200, {}),
+    ]);
+    const client = createGraphClient(config, fetchImpl);
+    const error = await client.updateEvent("ev1", input).catch((e) => e);
+    expect(error).toMatchObject({ status: 401, isAuth: true });
+    await client.updateEvent("ev1", input);
+
+    const tokenRequests = calls.filter((c) => c.url.includes("/oauth2/v2.0/token"));
+    expect(tokenRequests).toHaveLength(2);
+    expect((calls[3].init.headers as Record<string, string>).Authorization).toBe("Bearer tok2");
+  });
+
+  it("returns the requested id from getEvent even if the payload carries another one", async () => {
+    const { fetchImpl } = fakeFetch([
+      token(),
+      json(200, {
+        id: "other",
+        subject: "S",
+        start: { dateTime: "2026-11-07T09:30:00.0000000", timeZone: GRAPH_TIME_ZONE },
+        end: { dateTime: "2026-11-07T15:00:00.0000000", timeZone: GRAPH_TIME_ZONE },
+        isAllDay: false,
+        isCancelled: false,
+        attendees: [],
+      }),
+    ]);
+    expect((await createGraphClient(config, fetchImpl).getEvent("abc"))?.id).toBe("abc");
+  });
+});
+
+describe("dry-run client", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("resolves every call without touching the network", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const log = vi.fn();
+    vi.spyOn(console, "info").mockImplementation(() => {}); // graphClientFor logs through console.info
+    for (const client of [createDryRunClient(log), graphClientFor({ ...config, dryRun: true })]) {
+      const { id } = await client.createEvent(input, "tx-1");
+      await expect(client.updateEvent(id, input)).resolves.toBeUndefined();
+      await expect(client.cancelEvent(id, "x")).resolves.toBeUndefined();
+      await expect(client.deleteEvent(id)).resolves.toBeUndefined();
+      await expect(client.sendMail({ subject: "S", html: "<p>h</p>", to: ["a@firma.at"], bcc: [] })).resolves.toBeUndefined();
+      expect(await client.getEvent(id)).toBeNull();
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(log).toHaveBeenCalled();
   });
 });

@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { auditLogs, shiftSignups } from "@/lib/db/schema";
+import { auditLogs, shiftSignups, shifts } from "@/lib/db/schema";
+import { parseLocalDate } from "@/lib/date-utils";
 import { shiftSwapHidden } from "@/lib/swap/schema";
 import {
+  acceptOffer,
   cancelOffer,
   createOffer,
   declineOffer,
@@ -43,6 +45,11 @@ describe("offers", () => {
   it("creates an open offer for an own future Platz", () => {
     const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
     expect(swap).toMatchObject({ status: "open", type: "give", offeredByUserId: s.m0, targetUserId: null });
+  });
+
+  it("refuses to offer a duty that has begun", () => {
+    const running = new Date(2026, 10, 7, 10, 0); // 11-07 09:30 has begun
+    expect(code(() => createOffer(give(s.duty("2026-11-07")), s.m0, running))).toBe("alreadyStarted");
   });
 
   it("rejects plain shifts, foreign Plätze and a second open offer", () => {
@@ -96,6 +103,26 @@ describe("offers", () => {
     expect(code(() => hideOffer(direct.id, s.m0))).toBe("notBroadcast");
   });
 
+  it("refuses to hide an offer that is no longer open", () => {
+    const swap = createOffer(give(s.duty("2026-11-14")), s.m2, now);
+    withdrawOffer(swap.id, s.m2, now);
+    expect(code(() => hideOffer(swap.id, s.m0))).toBe("notOpen");
+  });
+
+  it("settles a Direktanfrage whose requested duty changed hands", () => {
+    const sat14 = s.duty("2026-11-14"); // m2, m3
+    const direct = createOffer(
+      { shiftId: s.duty("2026-11-07"), type: "exchange", targetUserId: s.m2, requestedShiftId: sat14, note: null },
+      s.m0,
+      now
+    );
+    // m2 gives 11-14 to m4 — the requested duty is no longer m2's
+    const give14 = createOffer(give(sat14), s.m2, now);
+    acceptOffer(give14.id, s.m4, null, now);
+    const resolved = expireDue(now);
+    expect(resolved.find((r) => r.swap.id === direct.id)?.status).toBe("cancelled");
+  });
+
   it("expires offers once the duty has begun and logs it", async () => {
     const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
     expect(expireDue(now).find((r) => r.swap.id === swap.id)).toBeUndefined();
@@ -105,6 +132,34 @@ describe("offers", () => {
     await new Promise((r) => setTimeout(r, 20)); // logResolved is fire-and-forget
     const logs = db.select().from(auditLogs).where(eq(auditLogs.resourceId, swap.id)).all();
     expect(logs.map((l) => l.action)).toContain("swap.expired");
+  });
+
+  it("audit-logs an offer cancelled because its Platz moved as swap.cancelled", async () => {
+    const shiftId = s.duty("2026-11-07");
+    const swap = createOffer(give(shiftId), s.m0, now);
+    db.update(shiftSignups)
+      .set({ userId: s.m4 })
+      .where(and(eq(shiftSignups.shiftId, shiftId), eq(shiftSignups.userId, s.m0)))
+      .run();
+    expireDue(now);
+    await new Promise((r) => setTimeout(r, 20)); // logResolved is fire-and-forget
+    const logs = db.select().from(auditLogs).where(eq(auditLogs.resourceId, swap.id)).all();
+    expect(logs.map((l) => l.action)).toContain("swap.cancelled");
+  });
+
+  it("rejects a plain shift as the requested duty of an exchange", () => {
+    const plain = db
+      .insert(shifts)
+      .values({ calendarId: s.team.calendarId, date: parseLocalDate("2026-11-10"), startTime: "08:00", endTime: "12:00", title: "Normal" })
+      .returning()
+      .get();
+    const input = { shiftId: s.duty("2026-11-07"), type: "exchange" as const, targetUserId: null, requestedShiftId: plain.id, note: null };
+    expect(code(() => createOffer(input, s.m0, now))).toBe("invalidShift");
+  });
+
+  it("rejects a give with a requested duty as invalid (not stored as null)", () => {
+    const input = { ...give(s.duty("2026-11-07")), requestedShiftId: s.duty("2026-11-14") };
+    expect(code(() => createOffer(input, s.m0, now))).toBe("invalid");
   });
 
   it("cancels offers whose Platz was reassigned by hand", () => {

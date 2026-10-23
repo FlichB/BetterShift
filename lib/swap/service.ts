@@ -111,7 +111,7 @@ export function expireDue(now: Date): ResolvedSwap[] {
     for (const swap of tx.select().from(shiftSwaps).where(eq(shiftSwaps.status, "open")).all()) {
       const offered = loadSlot(tx, swap.offeredShiftId);
       const requested = swap.requestedShiftId ? loadSlot(tx, swap.requestedShiftId) : null;
-      const status = dueStatus(swap.offeredByUserId, offered, requested, swap.requestedShiftId, now);
+      const status = dueStatus(swap.offeredByUserId, swap.targetUserId, offered, requested, swap.requestedShiftId, now);
       if (status) out.push({ swap: resolve(tx, swap.id, status, now), status });
     }
     return out;
@@ -194,6 +194,7 @@ export function declineOffer(id: string, userId: string, now: Date): ShiftSwap {
 export function hideOffer(id: string, userId: string): void {
   db.transaction((tx) => {
     const swap = loadOpen(tx, id);
+    if (swap.status !== "open") throw new SwapServiceError("notOpen");
     if (swap.targetUserId) throw new SwapServiceError("notBroadcast");
     if (swap.offeredByUserId === userId) throw new SwapServiceError("ownOffer");
     tx.insert(shiftSwapHidden).values({ swapId: id, userId }).onConflictDoNothing().run();

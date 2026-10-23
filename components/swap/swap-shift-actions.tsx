@@ -14,9 +14,11 @@ export function SwapShiftActions({ shiftId, calendarId }: { shiftId: string; cal
   const router = useRouter();
   const { user } = useAuth();
   const { dutyShiftIds, openOfferShiftIds } = useSwapCalendarState(calendarId);
-  const { signups } = useShiftSignups(shiftId);
+  const isDuty = dutyShiftIds.has(shiftId);
+  // Plain shifts never show swap actions, so do not fetch their signups.
+  const { signups } = useShiftSignups(isDuty ? shiftId : undefined);
 
-  if (!user || !dutyShiftIds.has(shiftId)) return null;
+  if (!user || !isDuty) return null;
   const mine = signups.some((s) => s.id === user.id);
   const hasOffer = openOfferShiftIds.has(shiftId);
   if (!mine && !hasOffer) return null;
