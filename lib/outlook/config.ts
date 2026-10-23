@@ -17,6 +17,9 @@ const MIN_INTERVAL_SECONDS = 15;
 
 const env = (name: string) => process.env[name]?.trim() ?? "";
 
+/** Public base URL without trailing slashes; links in mails, Outlook events and feeds use it. */
+export const getAppUrl = (): string => (env("BETTER_AUTH_URL") || "http://localhost:3000").replace(/\/+$/, "");
+
 /** null when the sync is off: auth disabled, no organizer, or credentials missing outside dry-run. */
 export function getOutlookConfig(): OutlookConfig | null {
   if (!isAuthEnabled()) return null;
@@ -37,7 +40,7 @@ export function getOutlookConfig(): OutlookConfig | null {
     organizer,
     intervalMs: interval * 1000,
     dryRun,
-    appUrl: (env("BETTER_AUTH_URL") || "http://localhost:3000").replace(/\/+$/, ""),
+    appUrl: getAppUrl(),
   };
 }
 

@@ -1,5 +1,5 @@
 import ICAL from "ical.js";
-import { inArray } from "drizzle-orm";
+import { and, inArray } from "drizzle-orm"; // [fork] and
 import { db } from "@/lib/db";
 import { shifts, type Calendar } from "@/lib/db/schema";
 import { getServerTimezone, formatDateToLocal } from "@/lib/date-utils";
@@ -9,21 +9,35 @@ import { formatValueForDisplay } from "@/lib/custom-fields";
 
 export type IcsCalendar = Pick<Calendar, "id" | "name" | "splitShiftsEnabled">;
 
+// [fork] Personal feed (spec 12.20): restrict to these shifts, append lines, keep UIDs distinct from the team feed.
+export interface IcsOnly {
+  shiftIds: string[];
+  /** appended after notes and custom fields */
+  extraLines: Map<string, string[]>;
+  uidSuffix: string;
+  calendarName: string;
+}
+
 export async function buildIcsCalendar({
   calendars,
   locale,
   feed = false,
+  only, // [fork]
 }: {
   calendars: IcsCalendar[];
   locale: string;
   feed?: boolean;
+  only?: IcsOnly; // [fork]
 }): Promise<string> {
   // Get all shifts for accessible calendars
   let allShifts = await db.query.shifts.findMany({
-    where: inArray(
-      shifts.calendarId,
-      calendars.map((c) => c.id)
-    ),
+    // [fork] only: restrict to the personal feed's shifts
+    where: only
+      ? and(inArray(shifts.calendarId, calendars.map((c) => c.id)), inArray(shifts.id, only.shiftIds))
+      : inArray(
+          shifts.calendarId,
+          calendars.map((c) => c.id)
+        ),
     orderBy: (shifts, { asc }) => [asc(shifts.date)],
     with: { segments: true },
   });
@@ -75,9 +89,11 @@ export async function buildIcsCalendar({
   cal.updatePropertyWithValue("method", "PUBLISH");
   cal.updatePropertyWithValue(
     "x-wr-calname",
-    isMultiCalendar
-      ? "BetterShift Multi-Calendar"
-      : calendars[0].name
+    only // [fork] personal feed has its own name (and may have zero calendars)
+      ? only.calendarName
+      : isMultiCalendar
+        ? "BetterShift Multi-Calendar"
+        : calendars[0].name
   );
   cal.updatePropertyWithValue("x-wr-timezone", serverTimezone);
 
@@ -91,7 +107,7 @@ export async function buildIcsCalendar({
   for (const shift of allShifts) {
     const shiftDate = shift.date as Date;
     const calendarName = calendarMap.get(shift.calendarId);
-    const summary = isMultiCalendar
+    const summary = isMultiCalendar && !only // [fork] personal feed shows plain titles
       ? `[${calendarName}] ${shift.title}`
       : shift.title;
 
@@ -106,13 +122,16 @@ export async function buildIcsCalendar({
         return `${d.label}: ${formatValueForDisplay(d, String(raw), locale)}`;
       })
       .filter((line): line is string => line !== null);
-    const description = [shift.notes, ...fieldLines].filter(Boolean).join("\n");
+    const description = [shift.notes, ...fieldLines, ...(only?.extraLines.get(shift.id) ?? [])] // [fork] extraLines
+      .filter(Boolean)
+      .join("\n");
+    const uid = only ? `${shift.id}${only.uidSuffix}` : shift.id; // [fork]
 
     ranges.forEach((range, index) => {
       const vevent = new ICAL.Component("vevent");
       const event = new ICAL.Event(vevent);
 
-      event.uid = index === 0 ? shift.id : `${shift.id}-seg-${index}`;
+      event.uid = index === 0 ? uid : `${uid}-seg-${index}`;
       event.summary = summary;
       if (description) {
         event.description = description;

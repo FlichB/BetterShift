@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getOutlookConfig, isOutlookConfigured } from "@/lib/outlook/config";
+import { getAppUrl, getOutlookConfig, isOutlookConfigured } from "@/lib/outlook/config";
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -46,5 +46,12 @@ describe("getOutlookConfig", () => {
   it("is off without an organizer even in dry-run", () => {
     vi.stubEnv("OUTLOOK_DRY_RUN", "true");
     expect(getOutlookConfig()).toBeNull();
+  });
+
+  it("derives the app URL from BETTER_AUTH_URL without trailing slashes", () => {
+    vi.stubEnv("BETTER_AUTH_URL", "https://plan.example//");
+    expect(getAppUrl()).toBe("https://plan.example");
+    vi.stubEnv("BETTER_AUTH_URL", "");
+    expect(getAppUrl()).toBe("http://localhost:3000");
   });
 });
