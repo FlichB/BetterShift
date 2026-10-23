@@ -29,9 +29,14 @@ async function sessionUserId(request: NextRequest): Promise<string | NextRespons
 }
 
 export async function GET(request: NextRequest) {
-  const userId = await sessionUserId(request);
-  if (userId instanceof NextResponse) return userId;
-  return NextResponse.json(toInfo(getPersonalFeedToken(userId)));
+  try {
+    const userId = await sessionUserId(request);
+    if (userId instanceof NextResponse) return userId;
+    return NextResponse.json(toInfo(getPersonalFeedToken(userId)));
+  } catch (error) {
+    console.error("[API] GET /api/swaps/feed-token error:", error);
+    return NextResponse.json({ error: "internal" }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {

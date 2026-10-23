@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { BaseSheet } from "@/components/ui/base-sheet";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { InfoNote } from "@/components/form-kit";
-import { usePersonalFeed, useRevokePersonalFeed, useRotatePersonalFeed } from "@/hooks/usePersonalFeed";
+import { PersonalFeedApiError, usePersonalFeed, useRevokePersonalFeed, useRotatePersonalFeed } from "@/hooks/usePersonalFeed";
 import { getDateLocale } from "@/lib/locales";
+import { handleRateLimitError } from "@/lib/rate-limit-client";
 
 export function PersonalFeedSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const t = useTranslations();
@@ -19,10 +20,23 @@ export function PersonalFeedSheet({ open, onOpenChange }: { open: boolean; onOpe
   const feed = usePersonalFeed(open);
   const rotate = useRotatePersonalFeed();
   const revoke = useRevokePersonalFeed();
-  const [confirm, setConfirm] = useState<"regenerate" | "revoke" | null>(null);
+  // The chosen action outlives the dialog so its wording does not flip while it fades out.
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"regenerate" | "revoke">("regenerate");
   const info = feed.data;
   const busy = rotate.isPending || revoke.isPending;
-  const onError = () => toast.error(t("swap.feed.failed"));
+  const onError = (error: unknown) => {
+    if (error instanceof PersonalFeedApiError && error.status === 429) {
+      const body = JSON.stringify({ retryAfter: error.retryAfter ?? undefined });
+      void handleRateLimitError(new Response(body, { status: 429 }), t);
+    } else {
+      toast.error(t("swap.feed.failed"));
+    }
+  };
+  const askConfirm = (action: "regenerate" | "revoke") => {
+    setConfirmAction(action);
+    setConfirmOpen(true);
+  };
 
   const copy = async () => {
     if (!info?.url) return;
@@ -79,11 +93,11 @@ export function PersonalFeedSheet({ open, onOpenChange }: { open: boolean; onOpe
                 <Copy className="size-4" />
                 {t("swap.feed.copy")}
               </Button>
-              <Button size="sm" variant="outline" disabled={busy} onClick={() => setConfirm("regenerate")}>
+              <Button size="sm" variant="outline" disabled={busy} onClick={() => askConfirm("regenerate")}>
                 <RefreshCw className="size-4" />
                 {t("swap.feed.regenerate")}
               </Button>
-              <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirm("revoke")}>
+              <Button size="sm" variant="ghost" disabled={busy} onClick={() => askConfirm("revoke")}>
                 <Trash2 className="size-4" />
                 {t("swap.feed.revoke")}
               </Button>
@@ -100,16 +114,15 @@ export function PersonalFeedSheet({ open, onOpenChange }: { open: boolean; onOpe
         <p className="text-[12.5px] text-fg-tertiary">{t("swap.feed.delayHint")}</p>
       </div>
       <ConfirmationDialog
-        open={confirm !== null}
-        onOpenChange={(o) => !o && setConfirm(null)}
-        title={confirm === "revoke" ? t("swap.feed.revokeTitle") : t("swap.feed.regenerateTitle")}
-        description={confirm === "revoke" ? t("swap.feed.revokeConfirm") : t("swap.feed.regenerateConfirm")}
-        confirmText={confirm === "revoke" ? t("swap.feed.revoke") : t("swap.feed.regenerate")}
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={confirmAction === "revoke" ? t("swap.feed.revokeTitle") : t("swap.feed.regenerateTitle")}
+        description={confirmAction === "revoke" ? t("swap.feed.revokeConfirm") : t("swap.feed.regenerateConfirm")}
+        confirmText={confirmAction === "revoke" ? t("swap.feed.revoke") : t("swap.feed.regenerate")}
         confirmVariant="destructive"
         onConfirm={() => {
-          const action = confirm;
-          setConfirm(null);
-          if (action === "revoke") revoke.mutate(undefined, { onError });
+          setConfirmOpen(false);
+          if (confirmAction === "revoke") revoke.mutate(undefined, { onError });
           else rotate.mutate(undefined, { onError });
         }}
       />
