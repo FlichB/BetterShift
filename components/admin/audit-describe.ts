@@ -219,6 +219,13 @@ export function useAuditDescription() {
           return t("adminAudit.describe.outlookAuthFailed", { message: text(m, "message") });
         case "notification.failed":
           return t("adminAudit.describe.notificationFailed", { message: text(m, "message") });
+        // [fork] Personal feed link
+        case "personal_feed.created":
+          return t("adminAudit.describe.personalFeedCreated");
+        case "personal_feed.rotated":
+          return t("adminAudit.describe.personalFeedRotated");
+        case "personal_feed.revoked":
+          return t("adminAudit.describe.personalFeedRevoked");
       }
       return log.action;
     },
