@@ -1650,6 +1650,11 @@
     "eventBody": "Questo evento è gestito da BetterShift. I turni si scambiano nella bacheca degli scambi.",
     "cancelComment": "Questo turno non si svolge più."
   },
+  "personalFeed": {
+    "calendarName": "My duties",
+    "with": "With: {names}",
+    "swapLink": "Swap: {url}"
+  },
   "announcements": {
     "dismiss": "Nascondi annuncio"
   }

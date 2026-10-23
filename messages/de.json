@@ -1650,6 +1650,11 @@
     "eventBody": "Dieser Termin wird von BetterShift verwaltet. Dienste tauschst du in der Tauschbörse.",
     "cancelComment": "Dieser Dienst findet nicht mehr statt."
   },
+  "personalFeed": {
+    "calendarName": "Meine Dienste",
+    "with": "Mit: {names}",
+    "swapLink": "Tauschen: {url}"
+  },
   "announcements": {
     "dismiss": "Ankündigung ausblenden"
   }

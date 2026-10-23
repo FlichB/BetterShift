@@ -1650,6 +1650,11 @@
     "eventBody": "Cet événement est géré par BetterShift. Les services s'échangent dans le tableau d'échanges.",
     "cancelComment": "Ce service n'a plus lieu."
   },
+  "personalFeed": {
+    "calendarName": "My duties",
+    "with": "With: {names}",
+    "swapLink": "Swap: {url}"
+  },
   "announcements": {
     "dismiss": "Masquer l'annonce"
   }

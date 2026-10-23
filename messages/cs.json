@@ -1650,6 +1650,11 @@
     "eventBody": "Tuto událost spravuje BetterShift. Služby se vyměňují na burze výměn.",
     "cancelComment": "Tato služba se již nekoná."
   },
+  "personalFeed": {
+    "calendarName": "My duties",
+    "with": "With: {names}",
+    "swapLink": "Swap: {url}"
+  },
   "announcements": {
     "dismiss": "Skrýt oznámení"
   }

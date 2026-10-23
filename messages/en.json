@@ -1650,6 +1650,11 @@
     "eventBody": "This event is managed by BetterShift. Swap duties on the swap board.",
     "cancelComment": "This duty no longer takes place."
   },
+  "personalFeed": {
+    "calendarName": "My duties",
+    "with": "With: {names}",
+    "swapLink": "Swap: {url}"
+  },
   "announcements": {
     "dismiss": "Dismiss announcement"
   }
