@@ -49,6 +49,8 @@ describe("Outlook acceptance", () => {
     expect(graph.events.get(skipped)!.isCancelled).toBe(true);
     expect(graph.calls.filter((c) => c.startsWith("cancel:"))).toEqual([`cancel:${skipped}`]);
     expect(graph.calls.some((c) => c.endsWith(begun))).toBe(false);
+    expect(graph.events.get(begun)!.isCancelled).toBe(false);
+    expect(row(s.duty("2026-11-07"))!.state).toBe("active");
   });
 
   it("the nightly verify restores a deleted event and repairs an edited one", async () => {
