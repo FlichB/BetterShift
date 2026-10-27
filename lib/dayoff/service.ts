@@ -447,7 +447,8 @@ export function declineProposal(proposalId: string, reason: string | null, actor
 export function moveOptions(id: string, now: Date): MoveOption[] {
   return db.transaction((tx) => {
     const row = loadRow(tx, id);
-    if (!row.standardDate) return [];
+    // Only a standard or moved Dienstfrei can be moved; locked/agreed ones go through proposals.
+    if ((row.status !== "standard" && row.status !== "moved") || !row.standardDate) return [];
     const today = formatDateToLocal(now);
     const isOff = isOffFor(tx, row, today);
     const dates = weekOf(row.standardDate).filter((date) => date === row.date || checkMove(row, date, isOff, today).ok);

@@ -16,14 +16,33 @@ export interface DayOffAuditBase {
   holderUserId: string;
 }
 
-export type DayOffMovedMetadata = DayOffAuditBase & { from: string | null; to: string };
-export type DayOffLockedMetadata = DayOffAuditBase & { note: string | null };
-export type DayOffProposedMetadata = DayOffAuditBase & { dates: string[] };
-export type DayOffCounteredMetadata = DayOffAuditBase & { date: string };
-export type DayOffAcceptedMetadata = DayOffAuditBase & { date: string; side: ProposalSide };
-export type DayOffDeclinedMetadata = DayOffAuditBase & { date: string; side: ProposalSide; reason: string | null };
+export interface DayOffMovedMetadata extends DayOffAuditBase {
+  from: string | null;
+  to: string;
+}
+export interface DayOffLockedMetadata extends DayOffAuditBase {
+  note: string | null;
+}
+export interface DayOffProposedMetadata extends DayOffAuditBase {
+  dates: string[];
+}
+export interface DayOffCounteredMetadata extends DayOffAuditBase {
+  date: string;
+}
+export interface DayOffAcceptedMetadata extends DayOffAuditBase {
+  date: string;
+  side: ProposalSide;
+}
+export interface DayOffDeclinedMetadata extends DayOffAuditBase {
+  date: string;
+  side: ProposalSide;
+  reason: string | null;
+}
 /** dayoff.reset / dayoff.dropped, written by reconcile; the system is the actor. */
-export type DayOffSystemMetadata = DayOffAuditBase & { kind: "reset" | "dropped"; reason?: DropReason };
+export interface DayOffSystemMetadata extends DayOffAuditBase {
+  kind: "reset" | "dropped";
+  reason?: DropReason;
+}
 
 export function dayOffAuditBase(row: DayOff): DayOffAuditBase {
   const cal = db

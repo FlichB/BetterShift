@@ -89,6 +89,17 @@ describe("checkCounter / checkAcceptDate", () => {
   });
 });
 
+describe("an agreed Dienstfrei that has begun", () => {
+  const begun = row({ status: "agreed", date: "2026-11-18" });
+  const onTheDay = "2026-11-18";
+  it("can no longer get new dates proposed", () =>
+    expect(checkProposeDates(begun, ["2026-11-25"], [], none, onTheDay)).toEqual({ ok: false, code: "alreadyStarted" }));
+  it("can no longer be countered", () =>
+    expect(checkCounter(begun, "2026-11-25", [], none, onTheDay)).toEqual({ ok: false, code: "alreadyStarted" }));
+  it("can no longer have a proposal accepted", () =>
+    expect(checkAcceptDate(begun, "2026-11-25", none, onTheDay)).toEqual({ ok: false, code: "alreadyStarted" }));
+});
+
 describe("transferStatus", () => {
   it("maps per SPEC 12.38", () => {
     expect(transferStatus("standard")).toBe("standard");

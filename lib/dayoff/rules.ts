@@ -71,6 +71,8 @@ export function checkLock(row: DayOffState, today: string): RuleResult<null> {
 
 export function checkProposeDates(row: DayOffState, dates: string[], openDates: string[], isOff: IsOff, today: string): RuleResult<string[]> {
   if (row.status !== "locked" && row.status !== "agreed") return fail("wrongStatus");
+  // A consumed agreed Dienstfrei is history; it cannot be renegotiated.
+  if (row.status === "agreed" && row.date && row.date <= today) return fail("alreadyStarted");
   const unique = [...new Set(dates)].sort();
   if (unique.length === 0) return fail("invalid");
   if (unique.length > MAX_DATES_PER_PROPOSAL || openDates.length + unique.length > MAX_OPEN_PROPOSALS) return fail("tooMany");
@@ -86,6 +88,8 @@ export function checkProposeDates(row: DayOffState, dates: string[], openDates: 
 
 export function checkCounter(row: DayOffState, date: string, openDates: string[], isOff: IsOff, today: string): RuleResult<string> {
   if (row.status !== "locked" && row.status !== "agreed") return fail("wrongStatus");
+  // A consumed agreed Dienstfrei is history; it cannot be renegotiated.
+  if (row.status === "agreed" && row.date && row.date <= today) return fail("alreadyStarted");
   if (openDates.includes(date) || date === row.date) return fail("duplicate");
   const error = dateError(date, closedPart(isOff), isOff, today);
   return error ? fail(error) : ok(date);
@@ -93,6 +97,8 @@ export function checkCounter(row: DayOffState, date: string, openDates: string[]
 
 export function checkAcceptDate(row: DayOffState, date: string, isOff: IsOff, today: string): RuleResult<string> {
   if (row.status !== "locked" && row.status !== "agreed") return fail("wrongStatus");
+  // A consumed agreed Dienstfrei is history; it cannot be renegotiated.
+  if (row.status === "agreed" && row.date && row.date <= today) return fail("alreadyStarted");
   const error = dateError(date, closedPart(isOff), isOff, today);
   return error ? fail(error) : ok(date);
 }

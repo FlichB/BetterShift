@@ -70,6 +70,22 @@ describe("Dienstfrei actions", () => {
     expect(lockDayOff(id, null, s.team.ownerId, now)).toMatchObject({ status: "locked", date: null });
   });
 
+  it("an agreed Dienstfrei that has begun cannot be renegotiated", async () => {
+    const s = await setup();
+    const id = s.of("2026-11-07", s.m0)!.id;
+    lockDayOff(id, null, s.team.ownerId, now);
+    acceptProposal(proposeDates(id, ["2026-11-18"], s.m0, now)[0].id, s.team.ownerId, true, now);
+    const onTheDay = new Date(2026, 10, 18, 8, 0); // Wed 2026-11-18
+    expect(() => proposeDates(id, ["2026-11-25"], s.m0, onTheDay)).toThrow(expect.objectContaining({ code: "alreadyStarted" }));
+  });
+
+  it("move options are empty unless the Dienstfrei is standard or moved", async () => {
+    const s = await setup();
+    const id = s.of("2026-11-07", s.m0)!.id;
+    lockDayOff(id, null, s.team.ownerId, now);
+    expect(moveOptions(id, now)).toEqual([]);
+  });
+
   it("board lists own and managed Dienstfreie", async () => {
     const s = await setup();
     const board = listDayOffBoard(s.m0, [], now);
@@ -82,8 +98,10 @@ describe("Dienstfrei actions", () => {
     const id = s.of("2026-11-07", s.m0)!.id;
     db.update(rotations).set({ dayOffEnabled: false }).where(eq(rotations.id, s.rotation.id)).run();
     reconcileAll(now);
-    await new Promise((r) => setTimeout(r, 20)); // logReconcileEvents is fire-and-forget
-    const log = db.select().from(auditLogs).where(eq(auditLogs.resourceId, id)).get();
+    // logReconcileEvents is fire-and-forget: poll until the row is written (max ~1 s).
+    const findLog = () => db.select().from(auditLogs).where(eq(auditLogs.resourceId, id)).get();
+    for (let i = 0; i < 100 && !findLog(); i++) await new Promise((r) => setTimeout(r, 10));
+    const log = findLog();
     expect(log).toMatchObject({ action: "dayoff.dropped", resourceType: "day_off" });
     expect(JSON.parse(log!.metadata!)).toMatchObject({ dutyDate: "2026-11-07", holderUserId: s.m0, kind: "dropped", reason: "disabled" });
   });
