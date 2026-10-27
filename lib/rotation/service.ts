@@ -9,6 +9,7 @@ import {
   replaceShiftCustomFieldValues,
 } from "@/lib/shift-custom-fields";
 import type { TimeRange } from "@/lib/time-ranges";
+import { reconcileRotation } from "@/lib/dayoff/service"; // [fork] Dienstfrei
 import { CLOSURE_FIELDS, resolveClosedDates } from "@/lib/rotation/closures";
 import { hasStarted } from "@/lib/rotation/dates";
 import { generateDays, suggestStartOffset } from "@/lib/rotation/generate";
@@ -153,6 +154,8 @@ function configValues(input: RotationInput) {
     holidayOpenDates: input.holidayOpenDates,
     entryTitle: input.entryTitle,
     reinforcedDates: input.reinforcedDates,
+    dayOffEnabled: input.dayOffEnabled, // [fork] Dienstfrei
+    dayOffTitle: input.dayOffTitle, // [fork] Dienstfrei
   };
 }
 
@@ -184,16 +187,17 @@ export function createRotation(input: RotationInput, actorId: string | null): Ro
 }
 
 /** calendarId is fixed after creation; input.calendarId is ignored here. */
-export function updateRotation(id: string, input: RotationInput): RotationDetail {
+export function updateRotation(id: string, input: RotationInput, now: Date = new Date()): RotationDetail {
   return db.transaction((tx) => {
     const row = tx
       .update(rotations)
-      .set({ ...configValues(input), updatedAt: new Date() })
+      .set({ ...configValues(input), updatedAt: now })
       .where(eq(rotations.id, id))
       .returning()
       .get();
     if (!row) throw new RotationServiceError("notFound");
     writeMembers(tx, id, input.memberIds);
+    reconcileRotation(tx, id, now); // [fork] Dienstfrei
     return withMembers(tx, row);
   });
 }
@@ -470,6 +474,7 @@ export async function runGeneration(
           break;
       }
     }
+    reconcileRotation(tx, id, now); // [fork] Dienstfrei
     return summary;
   });
 }

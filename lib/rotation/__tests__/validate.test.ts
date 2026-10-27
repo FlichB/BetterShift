@@ -17,6 +17,8 @@ const valid = {
   holidayCalendarId: "holidays",
   holidayOpenDates: ["2026-12-08"],
   entryTitle: "{Vorname} Dienst",
+  dayOffEnabled: false,
+  dayOffTitle: "{Vorname} dienstfrei",
   reinforcedDates: [] as { date: string; perShift: number }[],
 };
 
@@ -186,5 +188,21 @@ describe("checkPastReinforcedDates", () => {
 
   it("accepts unchanged past entries with new or changed future ones", () => {
     expect(checkPastReinforcedDates(stored, [stored[0], stored[1], { date: "2026-11-01", perShift: 3 }], today)).toBeNull();
+  });
+});
+
+// [fork] Dienstfrei
+describe("dayOff fields", () => {
+  it("default to off with the standard template", () => {
+    const body: Record<string, unknown> = { ...valid };
+    delete body.dayOffEnabled;
+    delete body.dayOffTitle;
+    const result = validateRotationInput(body);
+    expect(result.ok && [result.value.dayOffEnabled, result.value.dayOffTitle]).toEqual([false, "{Vorname} dienstfrei"]);
+  });
+
+  it("rejects an empty template and a non-boolean switch", () => {
+    expect(validateRotationInput({ ...valid, dayOffTitle: "" })).toEqual({ ok: false, error: "dayOffTitle" });
+    expect(validateRotationInput({ ...valid, dayOffEnabled: "yes" })).toEqual({ ok: false, error: "dayOffEnabled" });
   });
 });

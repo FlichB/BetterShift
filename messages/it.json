@@ -1545,6 +1545,7 @@
       "holidayCalendarSame": "Il calendario delle festività deve essere un altro calendario.",
       "holidayOpenDates": "Festività con turno non valide.",
       "entryTitle": "Modello di voce non valido: serve '{Vorname}' o '{Name}' e può contenere solo '{Vorname}', '{Name}' e '{Dienst}' (max. 100 caratteri).",
+      "dayOffTitle": "Il modello di voce del giorno libero non è valido.",
       "reinforcedDates": "Giorni rinforzati non validi: una voce per data; i giorni futuri richiedono più persone di «Persone per turno» e al massimo quanti sono i partecipanti."
     }
   },

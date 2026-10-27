@@ -1545,6 +1545,7 @@
       "holidayCalendarSame": "Kalendář svátků musí být jiný kalendář.",
       "holidayOpenDates": "Neplatné svátky se službou.",
       "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků).",
+      "dayOffTitle": "Šablona záznamu volného dne je neplatná.",
       "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků."
     }
   },

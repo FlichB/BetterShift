@@ -1545,6 +1545,7 @@
       "holidayCalendarSame": "Le calendrier des jours fériés doit être un autre calendrier.",
       "holidayOpenDates": "Jours fériés travaillés invalides.",
       "entryTitle": "Modèle d'entrée invalide : il te faut '{Vorname}' ou '{Name}', et seuls '{Vorname}', '{Name}' et '{Dienst}' sont autorisés (100 caractères max.).",
+      "dayOffTitle": "Le modèle d'entrée du jour de repos est invalide.",
       "reinforcedDates": "Jours renforcés invalides : une entrée par date ; les jours à venir ont besoin de plus de personnes que « Personnes par service », au maximum autant que de participants."
     }
   },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/sessions";
 import { getShiftSignupPermission, hasCapability } from "@/lib/auth/permissions"; // [fork] getShiftSignupPermission
 import { blocksSelfSignup, isClosedDuty } from "@/lib/swap/guard"; // [fork]
+import { reconcileForShift } from "@/lib/dayoff/service"; // [fork]
 import { addShiftSignup, getShiftOrNull, getShiftSignupUsers } from "@/lib/shift-signups";
 
 // GET all signups for a shift
@@ -86,6 +87,7 @@ export async function POST(
     if (!result.ok) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
+    reconcileForShift(shiftId, new Date()); // [fork] Dienstfrei follows the Platz
 
     const signups = await getShiftSignupUsers(shiftId);
     return NextResponse.json(signups, { status: 201 });
