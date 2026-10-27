@@ -272,6 +272,7 @@ function PlanRow({
           <span className="text-sm text-fg-secondary">
             {[...entry.add.map((id) => `+${name(id)}`), ...entry.remove.map((id) => `−${name(id)}`)].join(" ")}
             {entry.fieldsChanged && ` ${t("rotation.generator.fieldsChanged")}`}
+            {entry.capacityChanged && ` ${t("rotation.generator.capacityChanged", { count: entry.capacity })}`}
           </span>
         )}
         {holiday && entry.kind !== "delete" && (

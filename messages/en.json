@@ -1481,6 +1481,7 @@
       },
       "locked": "Swapped (locked)",
       "fieldsChanged": "Time/title from preset",
+      "capacityChanged": "Slots set to {count}",
       "overwriteNotice": "{count, plural, one {# slot will be reassigned} other {# slots will be reassigned}}",
       "markSkip": "Skipped",
       "openHoliday": "Holiday: {name}",

@@ -36,7 +36,10 @@ export type PlanEntry =
       locked: string[];
       add: string[];
       remove: string[];
+      /** Title, times, colour, notes or preset differ from the template. */
       fieldsChanged: boolean;
+      /** Only the number of Plätze differs (e.g. a Verstärkter Tag was added or removed). */
+      capacityChanged: boolean;
       capacity: number;
     }
   | { kind: "unchanged"; shiftId: string; date: string; userIds: string[]; locked: string[]; capacity: number }
@@ -135,10 +138,10 @@ export function planGeneration(input: PlanInput): DutyPlan {
     const actual = current.slots.map((s) => s.userId);
     const add = target.filter((id) => !actual.includes(id));
     const remove = actual.filter((id) => !target.includes(id));
-    const fieldsChanged =
-      fieldsDiffer(current, template) || current.presetId !== presetId || current.signupCapacity !== seats;
+    const fieldsChanged = fieldsDiffer(current, template) || current.presetId !== presetId;
+    const capacityChanged = current.signupCapacity !== seats;
 
-    if (add.length === 0 && remove.length === 0 && !fieldsChanged) {
+    if (add.length === 0 && remove.length === 0 && !fieldsChanged && !capacityChanged) {
       entries.push({ kind: "unchanged", shiftId: current.shiftId, date: current.date, userIds: target, locked, capacity: seats });
     } else {
       entries.push({
@@ -150,6 +153,7 @@ export function planGeneration(input: PlanInput): DutyPlan {
         add,
         remove,
         fieldsChanged,
+        capacityChanged,
         capacity: seats,
       });
     }

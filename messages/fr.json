@@ -1481,6 +1481,7 @@
       },
       "locked": "Échangé (verrouillé)",
       "fieldsChanged": "Horaire/titre issus du modèle",
+      "capacityChanged": "Places ajustées à {count}",
       "overwriteNotice": "{count, plural, one {# place sera réattribuée} other {# places seront réattribuées}}",
       "markSkip": "Sans service",
       "openHoliday": "Jour férié : {name}",

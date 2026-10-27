@@ -1481,6 +1481,7 @@
       },
       "locked": "Scambiato (bloccato)",
       "fieldsChanged": "Orario/titolo dal preset",
+      "capacityChanged": "Posti portati a {count}",
       "overwriteNotice": "{count, plural, one {# posto verrà riassegnato} other {# posti verranno riassegnati}}",
       "markSkip": "Saltato",
       "openHoliday": "Festività: {name}",

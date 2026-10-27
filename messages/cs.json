@@ -1481,6 +1481,7 @@
       },
       "locked": "Vyměněno (zamčeno)",
       "fieldsChanged": "Čas/název z předvolby",
+      "capacityChanged": "Počet míst upraven na {count}",
       "overwriteNotice": "{count, plural, one {# místo bude obsazeno znovu} few {# místa budou obsazena znovu} many {# místa bude obsazeno znovu} other {# míst bude obsazeno znovu}}",
       "markSkip": "Odpadá",
       "openHoliday": "Svátek: {name}",

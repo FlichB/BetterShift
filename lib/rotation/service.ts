@@ -419,6 +419,8 @@ export async function runGeneration(
               .run();
             replaceShiftSegments(tx, entry.shiftId, loaded.segments);
             replaceShiftCustomFieldValues(tx, entry.shiftId, loaded.customFieldValues);
+          } else if (entry.capacityChanged) {
+            tx.update(shifts).set({ signupCapacity: entry.capacity, updatedAt: now }).where(eq(shifts.id, entry.shiftId)).run();
           }
           summary.updated++;
           break;

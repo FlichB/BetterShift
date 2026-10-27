@@ -1481,6 +1481,7 @@
       },
       "locked": "Getauscht (gesperrt)",
       "fieldsChanged": "Zeit/Titel aus Preset",
+      "capacityChanged": "Plätze angepasst auf {count}",
       "overwriteNotice": "{count, plural, one {# Platz wird neu besetzt} other {# Plätze werden neu besetzt}}",
       "markSkip": "Fällt aus",
       "openHoliday": "Feiertag: {name}",

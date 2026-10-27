@@ -1481,6 +1481,7 @@
       },
       "locked": "Intercambiado (bloqueado)",
       "fieldsChanged": "Hora/título del preajuste",
+      "capacityChanged": "Plazas ajustadas a {count}",
       "overwriteNotice": "{count, plural, one {# plaza se reasignará} other {# plazas se reasignarán}}",
       "markSkip": "No hay servicio",
       "openHoliday": "Festivo: {name}",

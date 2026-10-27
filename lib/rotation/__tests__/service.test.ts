@@ -407,3 +407,21 @@ it("writes the capacity of a verstärkter Tag into the duty", async () => {
     { date: "2026-11-21", capacity: 2 },
   ]);
 });
+
+it("raises the capacity of an existing duty as a capacity change, not a field change", async () => {
+  const rotation = createRotation(input, team.ownerId);
+  await runGeneration(rotation.id, "2026-11-14", "2026-11-14", team.ownerId, now);
+
+  updateRotation(rotation.id, { ...input, reinforcedDates: [{ date: "2026-11-14", perShift: 3 }] });
+  const plan = await previewGeneration(rotation.id, "2026-11-14", "2026-11-14", now);
+  expect(plan.entries[0]).toMatchObject({ kind: "update", capacityChanged: true, fieldsChanged: false });
+
+  await runGeneration(rotation.id, "2026-11-14", "2026-11-14", team.ownerId, now);
+  const duty = db
+    .select({ capacity: shifts.signupCapacity })
+    .from(rotationDuties)
+    .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .where(and(eq(rotationDuties.rotationId, rotation.id), eq(rotationDuties.date, "2026-11-14")))
+    .get();
+  expect(duty).toEqual({ capacity: 3 });
+});
