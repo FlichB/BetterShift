@@ -25,6 +25,7 @@ export const CAPABILITIES = [
   // Signups
   "signUpSelf",
   "signUpOthers",
+  "moveOwnDayOff", // [fork] Dienstfrei (SPEC 12.36)
   // Presets
   "createPreset",
   "manageOwnPresets",
@@ -68,7 +69,7 @@ export const CAPABILITY_GROUPS: ReadonlyArray<{
     ],
   },
   { key: "notesEvents", capabilities: ["manageOwnNotesEvents", "manageAnyNotesEvents"] },
-  { key: "signups", capabilities: ["signUpSelf", "signUpOthers"] },
+  { key: "signups", capabilities: ["signUpSelf", "signUpOthers", "moveOwnDayOff"] },
   { key: "presets", capabilities: ["createPreset", "manageOwnPresets", "manageAnyPresets"] },
   { key: "externalSync", capabilities: ["manageExternalSync", "deleteSyncLogs"] },
   {
@@ -160,6 +161,7 @@ const CAPABILITY_DEPENDENCIES: Partial<Record<Capability, Capability[]>> = {
   manageAnyNotesEvents: ["manageOwnNotesEvents"],
   signUpSelf: ["viewShifts"],
   signUpOthers: ["viewShifts"],
+  moveOwnDayOff: ["viewShifts"], // [fork]
   createPreset: ["viewShifts"],
   manageOwnPresets: ["viewShifts"],
   manageAnyPresets: ["manageOwnPresets"],
@@ -230,6 +232,7 @@ const READ_BASE: Capability[] = [
   // E5: new calendars' Read bundle grants self-signup out of the box,
   // matching the old default of allowSelfSignup = true.
   "signUpSelf",
+  "moveOwnDayOff", // [fork] Dienstfrei (SPEC 12.36)
 ];
 const CONTRIBUTE_BASE: Capability[] = [
   ...READ_BASE,

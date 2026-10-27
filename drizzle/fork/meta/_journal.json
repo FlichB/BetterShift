@@ -64,6 +64,13 @@
       "when": 1793122373928,
       "tag": "0008_bitter_smiling_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1793138651326,
+      "tag": "0009_easy_vance_astro",
+      "breakpoints": true
     }
   ]
 }

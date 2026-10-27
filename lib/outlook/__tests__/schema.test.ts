@@ -70,6 +70,8 @@ describe("phase 3 schema", () => {
       offersToAll: true,
       offersToMe: true,
       myOffers: true,
+      myDayOffs: true,
+      dayOffRequests: true,
     });
   });
 });
