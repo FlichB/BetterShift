@@ -17,6 +17,7 @@ const valid = {
   holidayCalendarId: "holidays",
   holidayOpenDates: ["2026-12-08"],
   entryTitle: "{Vorname} Dienst",
+  reinforcedDates: [] as { date: string; perShift: number }[],
 };
 
 describe("validateRotationInput", () => {
@@ -124,5 +125,37 @@ describe("entryTitle", () => {
     for (const entryTitle of ["{Dienst}", "{Datum} {Name}", "", 42]) {
       expect(validateRotationInput({ ...valid, entryTitle })).toEqual({ ok: false, error: "entryTitle" });
     }
+  });
+});
+
+describe("reinforcedDates", () => {
+  const today = "2026-11-01";
+  const check = (reinforcedDates: unknown, patch: object = {}) =>
+    validateRotationInput({ ...valid, memberIds: ["u1", "u2", "u3", "u4"], perShift: 2, ...patch, reinforcedDates }, today);
+
+  it("defaults to none and sorts by date", () => {
+    const body: Record<string, unknown> = { ...valid };
+    delete body.reinforcedDates;
+    const none = validateRotationInput(body, today);
+    expect(none.ok && none.value.reinforcedDates).toEqual([]);
+    const sorted = check([{ date: "2026-12-19", perShift: 3 }, { date: "2026-12-05", perShift: 4 }]);
+    expect(sorted.ok && sorted.value.reinforcedDates).toEqual([{ date: "2026-12-05", perShift: 4 }, { date: "2026-12-19", perShift: 3 }]);
+  });
+
+  it("rejects future entries that are not above perShift or above the Teilnehmer count", () => {
+    expect(check([{ date: "2026-12-19", perShift: 2 }])).toEqual({ ok: false, error: "reinforcedDates" });
+    expect(check([{ date: "2026-12-19", perShift: 5 }])).toEqual({ ok: false, error: "reinforcedDates" });
+    expect(check([{ date: "2026-12-19", perShift: 3 }], { perShift: 3 })).toEqual({ ok: false, error: "reinforcedDates" });
+  });
+
+  it("rejects malformed and duplicate entries", () => {
+    for (const bad of [[{ date: "2026-13-01", perShift: 3 }], [{ date: "2026-12-19", perShift: 2.5 }], ["2026-12-19"], [{ date: "2026-12-19", perShift: 3 }, { date: "2026-12-19", perShift: 4 }]]) {
+      expect(check(bad)).toEqual({ ok: false, error: "reinforcedDates" });
+    }
+  });
+
+  it("keeps past entries even when they no longer fit", () => {
+    const result = check([{ date: "2026-10-03", perShift: 6 }]);
+    expect(result.ok && result.value.reinforcedDates).toEqual([{ date: "2026-10-03", perShift: 6 }]);
   });
 });

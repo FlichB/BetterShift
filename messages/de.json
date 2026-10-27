@@ -1482,7 +1482,8 @@
       "warnings": "Hinweise",
       "warning": {
         "lockedNonMember": "{date}: {user} ist kein Teilnehmer mehr, hat aber einen getauschten Platz.",
-        "lockedWithoutDuty": "{date}: Kein Dienst mehr geplant, aber getauschte Plätze vorhanden – der Dienst bleibt bestehen."
+        "lockedWithoutDuty": "{date}: Kein Dienst mehr geplant, aber getauschte Plätze vorhanden – der Dienst bleibt bestehen.",
+        "lockedOverCapacity": "{date}: Mehr getauschte Plätze ({count}) als jetzt geplant – der Dienst behält alle getauschten Plätze."
       },
       "unlock": "Sperre aufheben",
       "skipReason": "Grund des Ausfalls",
@@ -1532,7 +1533,8 @@
       "holidayCalendar": "Feiertagskalender ungültig oder ohne Zugriff.",
       "holidayCalendarSame": "Der Feiertagskalender muss ein anderer Kalender sein.",
       "holidayOpenDates": "Geöffnete Feiertage ungültig.",
-      "entryTitle": "Eintragsvorlage ungültig: Sie braucht '{Vorname}' oder '{Name}' und darf nur '{Vorname}', '{Name}' und '{Dienst}' enthalten (max. 100 Zeichen)."
+      "entryTitle": "Eintragsvorlage ungültig: Sie braucht '{Vorname}' oder '{Name}' und darf nur '{Vorname}', '{Name}' und '{Dienst}' enthalten (max. 100 Zeichen).",
+      "reinforcedDates": "Verstärkte Tage ungültig: Je Datum ein Eintrag, und künftige Tage brauchen mehr Personen als „Personen pro Dienst“, höchstens so viele wie Teilnehmer."
     }
   },
   "swap": {

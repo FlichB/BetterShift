@@ -1482,7 +1482,8 @@
       "warnings": "Upozornění",
       "warning": {
         "lockedNonMember": "{date}: {user} už není účastník, ale má vyměněné místo.",
-        "lockedWithoutDuty": "{date}: Žádná služba už není naplánovaná, ale existují vyměněná místa – služba zůstane."
+        "lockedWithoutDuty": "{date}: Žádná služba už není naplánovaná, ale existují vyměněná místa – služba zůstane.",
+        "lockedOverCapacity": "{date}: Víc vyměněných míst ({count}) než je teď plánováno – služba si ponechá všechna vyměněná místa."
       },
       "unlock": "Odstranit zámek",
       "skipReason": "Důvod zavření",
@@ -1532,7 +1533,8 @@
       "holidayCalendar": "Kalendář svátků je neplatný nebo nepřístupný.",
       "holidayCalendarSame": "Kalendář svátků musí být jiný kalendář.",
       "holidayOpenDates": "Neplatné svátky se službou.",
-      "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků)."
+      "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků).",
+      "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků."
     }
   },
   "swap": {

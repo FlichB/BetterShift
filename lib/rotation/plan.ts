@@ -27,7 +27,7 @@ export interface ExistingDuty extends DutyTemplate {
 }
 
 export type PlanEntry =
-  | { kind: "create"; date: string; userIds: string[] }
+  | { kind: "create"; date: string; userIds: string[]; capacity: number }
   | {
       kind: "update";
       shiftId: string;
@@ -37,13 +37,15 @@ export type PlanEntry =
       add: string[];
       remove: string[];
       fieldsChanged: boolean;
+      capacity: number;
     }
-  | { kind: "unchanged"; shiftId: string; date: string; userIds: string[]; locked: string[] }
+  | { kind: "unchanged"; shiftId: string; date: string; userIds: string[]; locked: string[]; capacity: number }
   | { kind: "delete"; shiftId: string; date: string; userIds: string[] };
 
 export type PlanWarning =
   | { kind: "lockedNonMember"; shiftId: string; date: string; userId: string }
-  | { kind: "lockedWithoutDuty"; shiftId: string; date: string; userIds: string[] };
+  | { kind: "lockedWithoutDuty"; shiftId: string; date: string; userIds: string[] }
+  | { kind: "lockedOverCapacity"; shiftId: string; date: string; userIds: string[]; capacity: number };
 
 export interface ExistingClosure extends DutyTemplate {
   shiftId: string;
@@ -99,12 +101,13 @@ export function planGeneration(input: PlanInput): DutyPlan {
   const warnings: PlanWarning[] = [];
 
   for (const duty of desired) {
+    const capacity = duty.capacity ?? perShift;
     const current = existingByDate.get(duty.date);
     existingByDate.delete(duty.date);
 
     if (!current) {
       if (!hasStarted(duty.date, template.startTime, now)) {
-        entries.push({ kind: "create", date: duty.date, userIds: duty.userIds });
+        entries.push({ kind: "create", date: duty.date, userIds: duty.userIds, capacity });
       }
       continue;
     }
@@ -114,10 +117,14 @@ export function planGeneration(input: PlanInput): DutyPlan {
     const replaced = new Set(
       current.slots.filter((s) => s.locked && s.replacesUserId).map((s) => s.replacesUserId as string)
     );
+    const seats = Math.max(capacity, locked.length); // locked Plätze always stay (spec 12.8)
     const target = [
       ...locked,
       ...duty.userIds.filter((id) => !replaced.has(id) && !locked.includes(id)),
-    ].slice(0, Math.max(perShift, locked.length));
+    ].slice(0, seats);
+    if (locked.length > capacity) {
+      warnings.push({ kind: "lockedOverCapacity", shiftId: current.shiftId, date: current.date, userIds: locked, capacity });
+    }
 
     for (const userId of locked) {
       if (!members.has(userId)) {
@@ -129,10 +136,10 @@ export function planGeneration(input: PlanInput): DutyPlan {
     const add = target.filter((id) => !actual.includes(id));
     const remove = actual.filter((id) => !target.includes(id));
     const fieldsChanged =
-      fieldsDiffer(current, template) || current.presetId !== presetId || current.signupCapacity !== perShift;
+      fieldsDiffer(current, template) || current.presetId !== presetId || current.signupCapacity !== seats;
 
     if (add.length === 0 && remove.length === 0 && !fieldsChanged) {
-      entries.push({ kind: "unchanged", shiftId: current.shiftId, date: current.date, userIds: target, locked });
+      entries.push({ kind: "unchanged", shiftId: current.shiftId, date: current.date, userIds: target, locked, capacity: seats });
     } else {
       entries.push({
         kind: "update",
@@ -143,6 +150,7 @@ export function planGeneration(input: PlanInput): DutyPlan {
         add,
         remove,
         fieldsChanged,
+        capacity: seats,
       });
     }
   }

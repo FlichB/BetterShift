@@ -172,6 +172,7 @@ export function RotationGenerator({
                 {t(`rotation.generator.warning.${w.kind}`, {
                   date: day(w.date),
                   user: w.kind === "lockedNonMember" ? name(w.userId) : "",
+                  count: "userIds" in w ? w.userIds.length : 0,
                 })}
               </span>
               {w.kind === "lockedNonMember" && (

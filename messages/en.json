@@ -1482,7 +1482,8 @@
       "warnings": "Notes",
       "warning": {
         "lockedNonMember": "{date}: {user} is no longer a participant but has a swapped slot.",
-        "lockedWithoutDuty": "{date}: No duty planned any more, but swapped slots exist – the duty stays."
+        "lockedWithoutDuty": "{date}: No duty planned any more, but swapped slots exist – the duty stays.",
+        "lockedOverCapacity": "{date}: More swapped Plätze ({count}) than now planned – the duty keeps all swapped Plätze."
       },
       "unlock": "Remove lock",
       "skipReason": "Reason for closing",
@@ -1532,7 +1533,8 @@
       "holidayCalendar": "Holiday calendar invalid or not accessible.",
       "holidayCalendarSame": "The holiday calendar must be a different calendar.",
       "holidayOpenDates": "Invalid holidays with duty.",
-      "entryTitle": "Invalid entry template: it needs '{Vorname}' or '{Name}' and may only contain '{Vorname}', '{Name}' and '{Dienst}' (max. 100 characters)."
+      "entryTitle": "Invalid entry template: it needs '{Vorname}' or '{Name}' and may only contain '{Vorname}', '{Name}' and '{Dienst}' (max. 100 characters).",
+      "reinforcedDates": "Invalid reinforced days: one entry per date; future days need more people than \"People per duty\" and at most as many as there are participants."
     }
   },
   "swap": {

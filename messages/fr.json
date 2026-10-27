@@ -1482,7 +1482,8 @@
       "warnings": "Remarques",
       "warning": {
         "lockedNonMember": "{date} : {user} ne participe plus, mais a une place échangée.",
-        "lockedWithoutDuty": "{date} : plus aucun service prévu, mais des places échangées existent – le service est conservé."
+        "lockedWithoutDuty": "{date} : plus aucun service prévu, mais des places échangées existent – le service est conservé.",
+        "lockedOverCapacity": "{date} : plus de places échangées ({count}) que prévu maintenant – le service garde toutes les places échangées."
       },
       "unlock": "Lever le verrouillage",
       "skipReason": "Motif de la fermeture",
@@ -1532,7 +1533,8 @@
       "holidayCalendar": "Calendrier des jours fériés invalide ou inaccessible.",
       "holidayCalendarSame": "Le calendrier des jours fériés doit être un autre calendrier.",
       "holidayOpenDates": "Jours fériés travaillés invalides.",
-      "entryTitle": "Modèle d'entrée invalide : il te faut '{Vorname}' ou '{Name}', et seuls '{Vorname}', '{Name}' et '{Dienst}' sont autorisés (100 caractères max.)."
+      "entryTitle": "Modèle d'entrée invalide : il te faut '{Vorname}' ou '{Name}', et seuls '{Vorname}', '{Name}' et '{Dienst}' sont autorisés (100 caractères max.).",
+      "reinforcedDates": "Jours renforcés invalides : une entrée par date ; les jours à venir ont besoin de plus de personnes que « Personnes par service », au maximum autant que de participants."
     }
   },
   "swap": {

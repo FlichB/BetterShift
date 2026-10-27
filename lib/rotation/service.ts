@@ -121,7 +121,7 @@ function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date
     weekdays: r.weekdays,
     closedDates,
     openHolidays,
-    reinforcedDates: [],
+    reinforcedDates: r.reinforcedDates,
   };
 }
 
@@ -147,6 +147,7 @@ function configValues(input: RotationInput) {
     holidayCalendarId: input.holidayCalendarId,
     holidayOpenDates: input.holidayOpenDates,
     entryTitle: input.entryTitle,
+    reinforcedDates: input.reinforcedDates,
   };
 }
 
@@ -379,7 +380,7 @@ export async function runGeneration(
               presetId: loaded.presetId,
               date: parseLocalDate(entry.date),
               ...template,
-              signupCapacity: rotation.perShift,
+              signupCapacity: entry.capacity,
               createdBy: actorId,
               createdAt: now,
               updatedAt: now,
@@ -408,7 +409,7 @@ export async function runGeneration(
           }
           if (entry.fieldsChanged) {
             tx.update(shifts)
-              .set({ ...template, presetId: loaded.presetId, signupCapacity: rotation.perShift, updatedAt: now })
+              .set({ ...template, presetId: loaded.presetId, signupCapacity: entry.capacity, updatedAt: now })
               .where(eq(shifts.id, entry.shiftId))
               .run();
             replaceShiftSegments(tx, entry.shiftId, loaded.segments);

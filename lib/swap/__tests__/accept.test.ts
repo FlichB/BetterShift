@@ -110,6 +110,7 @@ describe("acceptOffer", () => {
         skipDates: [],
         closedTitle: "Geschlossen",
         entryTitle: "{Vorname} Dienst",
+        reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],
       },

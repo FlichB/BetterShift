@@ -27,6 +27,7 @@ export async function seedDuties() {
       skipDates: [],
       closedTitle: "Geschlossen",
       entryTitle: "{Vorname} Dienst",
+      reinforcedDates: [],
       holidayCalendarId: null,
       holidayOpenDates: [],
     },

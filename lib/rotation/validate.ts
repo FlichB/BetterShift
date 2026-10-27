@@ -1,6 +1,7 @@
 import { ENTRY_TITLE_DEFAULT, validateEntryTitle } from "@/lib/rotation/entry-title";
+import { formatDateToLocal } from "@/lib/date-utils";
 import { isValidLocalDate, toDayNumber } from "@/lib/rotation/dates";
-import { ROTATION_PERIODS, type RotationPeriod, type SkipDate } from "@/lib/rotation/types";
+import { ROTATION_PERIODS, type ReinforcedDate, type RotationPeriod, type SkipDate } from "@/lib/rotation/types";
 
 export interface RotationInput {
   name: string;
@@ -18,6 +19,7 @@ export interface RotationInput {
   holidayCalendarId: string | null;
   holidayOpenDates: string[];
   entryTitle: string;
+  reinforcedDates: ReinforcedDate[];
 }
 
 export type RotationValidationError =
@@ -36,6 +38,7 @@ export type RotationValidationError =
   | "holidayCalendar"
   | "holidayOpenDates"
   | "entryTitle"
+  | "reinforcedDates"
   | "range";
 
 export type ValidationResult<T> =
@@ -53,7 +56,7 @@ const fail = (error: RotationValidationError) => ({ ok: false as const, error })
 const isInt = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v);
 const isNonEmptyString = (v: unknown): v is string => typeof v === "string" && v.trim() !== "";
 
-export function validateRotationInput(body: unknown): ValidationResult<RotationInput> {
+export function validateRotationInput(body: unknown, today: string = formatDateToLocal(new Date())): ValidationResult<RotationInput> {
   if (typeof body !== "object" || body === null) return fail("name");
   const b = body as Record<string, unknown>;
 
@@ -121,6 +124,20 @@ export function validateRotationInput(body: unknown): ValidationResult<RotationI
   const entryTitle = b.entryTitle ?? ENTRY_TITLE_DEFAULT;
   if (typeof entryTitle !== "string" || validateEntryTitle(entryTitle) !== "ok") return fail("entryTitle");
 
+  // Past entries are kept untouched: the plan is counted from startDate, so dropping one would
+  // shift the future Besetzung. Only future entries must fit the current rotation.
+  const rawReinforced = b.reinforcedDates ?? [];
+  if (!Array.isArray(rawReinforced)) return fail("reinforcedDates");
+  const reinforcedByDate = new Map<string, number>();
+  for (const entry of rawReinforced) {
+    if (typeof entry !== "object" || entry === null) return fail("reinforcedDates");
+    const { date, perShift: size } = entry as Record<string, unknown>;
+    if (typeof date !== "string" || !isValidLocalDate(date) || reinforcedByDate.has(date)) return fail("reinforcedDates");
+    if (!isInt(size) || size < 1 || size > MAX_PER_SHIFT) return fail("reinforcedDates");
+    if (date >= today && (size <= b.perShift || size > memberIds.length)) return fail("reinforcedDates");
+    reinforcedByDate.set(date, size);
+  }
+
   return {
     ok: true,
     value: {
@@ -139,6 +156,7 @@ export function validateRotationInput(body: unknown): ValidationResult<RotationI
       holidayCalendarId,
       holidayOpenDates: [...new Set(holidayOpenDates as string[])].sort(),
       entryTitle: entryTitle.trim(),
+      reinforcedDates: [...reinforcedByDate].map(([date, perShift]) => ({ date, perShift })).sort((x, y) => x.date.localeCompare(y.date)),
     },
   };
 }

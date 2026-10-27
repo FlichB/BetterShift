@@ -1482,7 +1482,8 @@
       "warnings": "Avisos",
       "warning": {
         "lockedNonMember": "{date}: {user} ya no participa, pero tiene una plaza intercambiada.",
-        "lockedWithoutDuty": "{date}: Ya no hay ningún turno previsto, pero existen plazas intercambiadas: el turno se mantiene."
+        "lockedWithoutDuty": "{date}: Ya no hay ningún turno previsto, pero existen plazas intercambiadas: el turno se mantiene.",
+        "lockedOverCapacity": "{date}: Más plazas intercambiadas ({count}) de las previstas ahora; el turno conserva todas las plazas intercambiadas."
       },
       "unlock": "Quitar bloqueo",
       "skipReason": "Motivo del cierre",
@@ -1532,7 +1533,8 @@
       "holidayCalendar": "Calendario de festivos no válido o sin acceso.",
       "holidayCalendarSame": "El calendario de festivos debe ser otro calendario.",
       "holidayOpenDates": "Festivos con servicio no válidos.",
-      "entryTitle": "Plantilla de entrada no válida: necesita '{Vorname}' o '{Name}' y solo puede contener '{Vorname}', '{Name}' y '{Dienst}' (máx. 100 caracteres)."
+      "entryTitle": "Plantilla de entrada no válida: necesita '{Vorname}' o '{Name}' y solo puede contener '{Vorname}', '{Name}' y '{Dienst}' (máx. 100 caracteres).",
+      "reinforcedDates": "Días reforzados no válidos: una entrada por fecha; los días futuros necesitan más personas que «Personas por turno» y como máximo tantas como participantes."
     }
   },
   "swap": {
