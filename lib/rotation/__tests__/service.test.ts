@@ -312,6 +312,38 @@ describe("Schließtage", () => {
     expect(deleteRotation(rotation.id, { deleteFutureDuties: true }, now)).toEqual({ deletedDuties: 4 });
   });
 
+  it("keeps a past Feiertag counting after it left the Feiertagskalender", async () => {
+    const holidays = seedHolidays(team.ownerId, [{ date: "2026-11-14", title: "Testfeiertag" }]);
+    const rotation = createRotation({ ...input, holidayCalendarId: holidays }, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2027-01-24", team.ownerId, now);
+    const before = dutiesOf(rotation.id);
+    const later = new Date(2026, 10, 20, 12, 0); // 11-14 is past
+    // The external sync drops old events: the Feiertag is gone from the calendar.
+    db.delete(shifts).where(eq(shifts.calendarId, holidays)).run();
+    const summary = await runGeneration(rotation.id, "2026-11-02", "2027-01-24", team.ownerId, later);
+    expect(summary).toMatchObject({ created: 0, updated: 0, deleted: 0 });
+    expect(dutiesOf(rotation.id)).toEqual(before);
+  });
+
+  it("unlinking the Feiertagskalender keeps past Schließtage counting and drops future ones", async () => {
+    const holidays = seedHolidays(team.ownerId, [
+      { date: "2026-11-14", title: "Testfeiertag" },
+      { date: "2026-12-05", title: "Späterer Feiertag" },
+    ]);
+    const rotation = createRotation({ ...input, holidayCalendarId: holidays }, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-12-31", team.ownerId, now);
+    const before = dutiesOf(rotation.id);
+    const later = new Date(2026, 10, 20, 12, 0);
+    updateRotation(rotation.id, { ...input, holidayCalendarId: null });
+    await runGeneration(rotation.id, "2026-11-02", "2026-12-31", team.ownerId, later);
+    const after = dutiesOf(rotation.id);
+    const on = (list: typeof after, date: string) => list.find((d) => d.date === date)!;
+    expect(on(after, "2026-11-14").kind).toBe("closed");
+    for (const date of ["2026-11-21", "2026-11-28"]) expect(on(after, date)).toEqual(on(before, date));
+    expect(on(after, "2026-12-05")).toMatchObject({ kind: "duty" });
+    expect(on(after, "2026-12-05").userIds).toHaveLength(2);
+  });
+
   it("ignores Schließeinträge when suggesting a restart offset", async () => {
     const rotation = createRotation({ ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] }, team.ownerId);
     await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);

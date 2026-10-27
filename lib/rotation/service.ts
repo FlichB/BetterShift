@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, lt, lte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendars, shiftPresets, shiftSignups, shifts } from "@/lib/db/schema";
-import { parseLocalDate } from "@/lib/date-utils";
+import { formatDateToLocal, parseLocalDate } from "@/lib/date-utils";
 import { replaceShiftSegments, withPresetSegments } from "@/lib/shift-time-ranges";
 import {
   readPresetCustomFieldValues,
@@ -28,7 +28,7 @@ import {
   rotations,
   type Rotation,
 } from "@/lib/rotation/schema";
-import type { RotationRule } from "@/lib/rotation/types";
+import type { ClosedDate, RotationRule } from "@/lib/rotation/types";
 import type { RotationInput } from "@/lib/rotation/validate";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -77,9 +77,39 @@ function loadRotation(tx: Tx | typeof db, id: string): RotationDetail {
   return withMembers(tx, rotation);
 }
 
-function toRule(reader: Tx | typeof db, r: RotationDetail, to: string): RotationRule {
+/**
+ * Schließeinträge this rotation already wrote before today. They keep counting
+ * as Schließtage even after their Feiertag left the Feiertagskalender (the sync
+ * only keeps a window around now), so the round count of future duties stays put.
+ */
+function pastClosures(reader: Tx | typeof db, r: RotationDetail, today: string): ClosedDate[] {
+  return reader
+    .select({ date: rotationDuties.date, title: shifts.title })
+    .from(rotationDuties)
+    .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .where(
+      and(
+        eq(rotationDuties.rotationId, r.id),
+        eq(rotationDuties.kind, "closed"),
+        gte(rotationDuties.date, r.startDate),
+        lt(rotationDuties.date, today)
+      )
+    )
+    .all()
+    .map((row) => ({ date: row.date, reason: row.title, source: "holiday" }));
+}
+
+function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date): RotationRule {
   const holidays = r.holidayCalendarId && to >= r.startDate ? loadHolidays(reader, r.holidayCalendarId, r.startDate, to) : [];
-  const { closedDates, openHolidays } = resolveClosedDates(r.skipDates, holidays, r.holidayOpenDates);
+  const resolved = resolveClosedDates(r.skipDates, holidays, r.holidayOpenDates);
+  // Before today the written Schließeinträge are authoritative; the calendar only decides from today on.
+  const past = pastClosures(reader, r, formatDateToLocal(now));
+  const pastDates = new Set(past.map((c) => c.date));
+  const resolvedDates = new Set(resolved.closedDates.map((c) => c.date));
+  const closedDates = [...resolved.closedDates, ...past.filter((c) => !resolvedDates.has(c.date))].sort((a, b) =>
+    a.date.localeCompare(b.date)
+  );
+  const openHolidays = resolved.openHolidays.filter((h) => !pastDates.has(h.date));
   return {
     memberIds: r.memberIds,
     perShift: r.perShift,
@@ -278,7 +308,7 @@ function buildPlan(
   // Duties before startDate belong to an earlier configuration and are left alone.
   const windowStart = from > rotation.startDate ? from : rotation.startDate;
   if (windowStart > to) return { entries: [], warnings: [], closures: [], openHolidays: [] };
-  const rule = toRule(tx, rotation, to);
+  const rule = toRule(tx, rotation, to, now);
   const days = generateDays(rule, windowStart, to);
   const duties = planGeneration({
     desired: days.duties,
