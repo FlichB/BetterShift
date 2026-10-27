@@ -89,9 +89,10 @@ An einem **Schließtag** legt die Rotation statt des Dienstes einen ganztägigen
 
 **Feiertage einrichten (Österreich):**
 
-1. Neuen Kalender „Feiertage AT“ anlegen.
-2. In dessen Einstellungen eine externe Synchronisierung mit `webcal://www.wien.gv.at/spezial/daten/ics/feiertage.ics` hinzufügen. Der Feed enthält alle 13 gesetzlichen Feiertage mit Namen, derzeit bis 2035.
-3. In der Rotation diesen Kalender als „Feiertagskalender“ wählen und speichern.
+1. Neuen Kalender „Feiertage AT“ anlegen. Anmeldungen braucht er nicht, und teilen musst du ihn mit niemandem: Die Rotation liest ihn auf dem Server, das Team sieht die Schließtage im Teamkalender.
+2. Die Einstellungen dieses Kalenders öffnen, dort „Import & Export“, Reiter „Importieren“, dann „Adresse abonnieren“. Bei „Adresse der ICS-Datei“ `webcal://www.wien.gv.at/spezial/daten/ics/feiertage.ics` eintragen, „Automatisch abrufen“ einschalten und mit „Abo hinzufügen“ speichern. Der Feed enthält alle 13 gesetzlichen Feiertage mit Namen, derzeit bis 2035.
+3. Einmal „Jetzt abrufen“ klicken. Danach stehen die Feiertage als ganztägige Einträge im Kalender.
+4. In der Rotation diesen Kalender als „Feiertagskalender“ wählen, den „Text bei Schließung“ eintragen (z. B. „HeimkinoWelt geschlossen“) und speichern. In der „Vorschau“ erscheinen Feiertage an Diensttagen dann als Schließtag.
 
 Fällt ein Feiertag auf einen Diensttag, steht in der Vorschau „<Text bei Schließung> (Name des Feiertags)“, z. B. „HeimkinoWelt geschlossen (Mariä Empfängnis)“. Mit „Trotzdem Dienst“ wird an diesem einen Datum normal geplant (z. B. am 8. Dezember); „Doch schließen“ macht das rückgängig. Feiertage an anderen Wochentagen haben keine Wirkung.
 
@@ -375,10 +376,11 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
 2. **Teamkalender anlegen** und in den Kalendereinstellungen die **Anmeldungen einschalten**.
 3. **Preset „Samstagsdienst"** anlegen: 09:30 bis 15:00 Uhr.
 4. **Teilnehmer einladen** bzw. registrieren lassen und den Kalender mit ihnen teilen, mit dem Bündel **„Read"** (siehe [Rechte](#5-rechte)).
-5. Unter `/rotations` die **Rotation anlegen** (siehe [Rotation anlegen](#2-rotation-anlegen)): Preset wählen, Teilnehmer in Reihenfolge, 2 pro Dienst, Periode Woche, Diensttag Sa.
-6. Zeitraum wählen, „Vorschau" ansehen, dann „Übernehmen".
-7. Optional: **Outlook** nach [`OUTLOOK_SETUP.md`](OUTLOOK_SETUP.md) einrichten und den Schalter der Rotation einschalten, zuerst im Trockenlauf.
-8. Das Team auf den persönlichen [Kalender-Feed](#7-persönlicher-kalender-feed) und die Tauschbörse hinweisen.
+5. **Feiertagskalender anlegen**: Kalender „Feiertage AT“ mit dem Abo `webcal://www.wien.gv.at/spezial/daten/ics/feiertage.ics` (siehe [Feiertage und Schließtage](#feiertage-und-schließtage)).
+6. Unter `/rotations` die **Rotation anlegen** (siehe [Rotation anlegen](#2-rotation-anlegen)): Preset wählen, Teilnehmer in Reihenfolge, 2 pro Dienst, Periode Woche, Diensttag Sa, „Feiertagskalender“ „Feiertage AT“ und „Text bei Schließung“ „HeimkinoWelt geschlossen“.
+7. Zeitraum wählen, „Vorschau" ansehen, dann „Übernehmen".
+8. Optional: **Outlook** nach [`OUTLOOK_SETUP.md`](OUTLOOK_SETUP.md) einrichten und den Schalter der Rotation einschalten, zuerst im Trockenlauf.
+9. Das Team auf den persönlichen [Kalender-Feed](#7-persönlicher-kalender-feed) und die Tauschbörse hinweisen.
 
 ## 9. Grenzen und bekannte Punkte
 
