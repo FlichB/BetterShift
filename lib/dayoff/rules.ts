@@ -111,7 +111,10 @@ export function revalidate(row: DayOffState, isOff: IsOff, today: string): Reval
     case "standard":
       return { status: "standard", date: std, standardDate: std, notify: null };
     case "moved":
-      return invalid(row.date) ? { status: "standard", date: std, standardDate: std, notify: "reset" } : { status: "moved", date: row.date, standardDate: std, notify: null };
+      if (invalid(row.date)) return { status: "standard", date: std, standardDate: std, notify: "reset" };
+      // Still valid but now the standard day itself: same day for the holder, so it is standard again.
+      if (row.date === std) return { status: "standard", date: std, standardDate: std, notify: null };
+      return { status: "moved", date: row.date, standardDate: std, notify: null };
     case "agreed":
       return invalid(row.date) ? { status: "locked", date: null, standardDate: std, notify: "reset" } : { status: "agreed", date: row.date, standardDate: std, notify: null };
     default:

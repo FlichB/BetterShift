@@ -82,6 +82,11 @@ describe("checkCounter / checkAcceptDate", () => {
     expect(checkAcceptDate(locked, "2026-11-18", makeIsOff(new Set(["2026-11-18"]), new Set()), today)).toEqual({ ok: false, code: "notWorkday" });
     expect(checkAcceptDate(locked, "2026-11-18", none, "2026-11-18")).toEqual({ ok: false, code: "alreadyStarted" });
   });
+  it("counter rejects the current date as duplicate and a standard row as wrongStatus", () => {
+    const agreed = row({ status: "agreed", date: "2026-11-18" });
+    expect(checkCounter(agreed, "2026-11-18", [], none, today)).toEqual({ ok: false, code: "duplicate" });
+    expect(checkCounter(row(), "2026-11-11", [], none, today)).toEqual({ ok: false, code: "wrongStatus" });
+  });
 });
 
 describe("transferStatus", () => {
@@ -103,6 +108,10 @@ describe("revalidate", () => {
   it("agreed becomes locked with a notice", () =>
     expect(revalidate(row({ status: "agreed", date: "2026-11-18" }), makeIsOff(new Set(["2026-11-18"]), new Set()), today)).toEqual({ status: "locked", date: null, standardDate: "2026-11-09", notify: "reset" }));
   it("locked stays locked", () => expect(revalidate(row({ status: "locked", date: null }), none, today)).toEqual({ status: "locked", date: null, standardDate: "2026-11-09", notify: null }));
+  it("moved on the re-derived standard day becomes standard silently", () =>
+    expect(revalidate(row({ status: "moved", date: "2026-11-10" }), makeIsOff(new Set(["2026-11-09"]), new Set()), today)).toEqual({ status: "standard", date: "2026-11-10", standardDate: "2026-11-10", notify: null }));
+  it("moved whose day has begun falls back to standard with a notice", () =>
+    expect(revalidate(row({ status: "moved", date: "2026-11-11" }), none, "2026-11-11")).toEqual({ status: "standard", date: "2026-11-09", standardDate: "2026-11-09", notify: "reset" }));
 });
 
 describe("isFrozen", () => {
