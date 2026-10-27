@@ -1470,6 +1470,9 @@
       "fieldsChanged": "Orario/titolo dal preset",
       "overwriteNotice": "{count, plural, one {# posto verrà riassegnato} other {# posti verranno riassegnati}}",
       "markSkip": "Saltato",
+      "openHoliday": "Festività: {name}",
+      "keepOpen": "Turno comunque",
+      "closeAgain": "Chiudi comunque",
       "warnings": "Avvisi",
       "warning": {
         "lockedNonMember": "{date}: {user} non è più un partecipante ma ha un posto scambiato.",

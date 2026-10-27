@@ -1470,6 +1470,9 @@
       "fieldsChanged": "Zeit/Titel aus Preset",
       "overwriteNotice": "{count, plural, one {# Platz wird neu besetzt} other {# Plätze werden neu besetzt}}",
       "markSkip": "Fällt aus",
+      "openHoliday": "Feiertag: {name}",
+      "keepOpen": "Trotzdem Dienst",
+      "closeAgain": "Doch schließen",
       "warnings": "Hinweise",
       "warning": {
         "lockedNonMember": "{date}: {user} ist kein Teilnehmer mehr, hat aber einen getauschten Platz.",

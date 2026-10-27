@@ -1470,6 +1470,9 @@
       "fieldsChanged": "Horaire/titre issus du modèle",
       "overwriteNotice": "{count, plural, one {# place sera réattribuée} other {# places seront réattribuées}}",
       "markSkip": "Sans service",
+      "openHoliday": "Jour férié : {name}",
+      "keepOpen": "Service quand même",
+      "closeAgain": "Fermer finalement",
       "warnings": "Remarques",
       "warning": {
         "lockedNonMember": "{date} : {user} ne participe plus, mais a une place échangée.",

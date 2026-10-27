@@ -1470,6 +1470,9 @@
       "fieldsChanged": "Hora/título del preajuste",
       "overwriteNotice": "{count, plural, one {# plaza se reasignará} other {# plazas se reasignarán}}",
       "markSkip": "No hay servicio",
+      "openHoliday": "Festivo: {name}",
+      "keepOpen": "Servicio igualmente",
+      "closeAgain": "Cerrar de todos modos",
       "warnings": "Avisos",
       "warning": {
         "lockedNonMember": "{date}: {user} ya no participa, pero tiene una plaza intercambiada.",

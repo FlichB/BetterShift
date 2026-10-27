@@ -1470,6 +1470,9 @@
       "fieldsChanged": "Čas/název z předvolby",
       "overwriteNotice": "{count, plural, one {# místo bude obsazeno znovu} few {# místa budou obsazena znovu} many {# místa bude obsazeno znovu} other {# míst bude obsazeno znovu}}",
       "markSkip": "Odpadá",
+      "openHoliday": "Svátek: {name}",
+      "keepOpen": "Přesto služba",
+      "closeAgain": "Přece zavřít",
       "warnings": "Upozornění",
       "warning": {
         "lockedNonMember": "{date}: {user} už není účastník, ale má vyměněné místo.",

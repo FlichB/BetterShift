@@ -20,7 +20,7 @@ import { formatDateToLocal, formatLongDate, parseLocalDate } from "@/lib/date-ut
 import { handleRateLimitError } from "@/lib/rate-limit-client";
 import { addDays } from "@/lib/rotation/dates";
 import { inputFromRotation } from "@/lib/rotation/input";
-import type { GenerationPlan, PlanEntry } from "@/lib/rotation/plan";
+import type { ClosureEntry, GenerationPlan, PlanEntry } from "@/lib/rotation/plan";
 import type { RotationDetail } from "@/lib/rotation/service";
 import { cn } from "@/lib/utils";
 
@@ -85,17 +85,21 @@ export function RotationGenerator({
   // Re-previews the range the user is currently looking at
   const reload = () => load({ from: shown?.from ?? from, to: shown?.to ?? to });
 
-  const pending = plan?.entries.filter((e) => e.kind !== "unchanged") ?? [];
+  const allKinds = [...(plan?.entries ?? []), ...(plan?.closures ?? [])].map((e) => e.kind);
+  const pending = allKinds.filter((kind) => kind !== "unchanged");
   const overwritten = plan?.entries.reduce((n, e) => n + (e.kind === "update" ? e.remove.length : 0), 0) ?? 0;
-  const counts = KINDS.map((kind) => ({ kind, n: plan?.entries.filter((e) => e.kind === kind).length ?? 0 })).filter(
-    (c) => c.n > 0
-  );
+  const counts = KINDS.map((kind) => ({ kind, n: allKinds.filter((k) => k === kind).length })).filter((c) => c.n > 0);
+  const openHoliday = new Map(plan?.openHolidays.map((h) => [h.date, h.name]) ?? []);
 
   const markSkip = (date: string, reason: string) =>
     save.mutate(
       { id: rotation.id, input: { ...inputFromRotation(rotation), skipDates: [...rotation.skipDates, { date, reason }] } },
       { onSuccess: reload, onError }
     );
+  const saveOpenDates = (holidayOpenDates: string[]) =>
+    save.mutate({ id: rotation.id, input: { ...inputFromRotation(rotation), holidayOpenDates } }, { onSuccess: reload, onError });
+  const keepOpen = (date: string) => saveOpenDates([...rotation.holidayOpenDates, date]);
+  const closeAgain = (date: string) => saveOpenDates(rotation.holidayOpenDates.filter((d) => d !== date));
 
   return (
     <section className="space-y-5">
@@ -188,7 +192,7 @@ export function RotationGenerator({
         </div>
       )}
 
-      {plan && plan.entries.length > 0 && (
+      {plan && allKinds.length > 0 && (
         <div className="rounded-[9px] border border-line">
           <div className="hidden gap-4 border-b border-line px-3 py-2 text-xs font-semibold text-fg-secondary md:flex">
             <span className="w-48">{t("rotation.generator.date")}</span>
@@ -196,9 +200,27 @@ export function RotationGenerator({
             <span>{t("rotation.generator.change")}</span>
           </div>
           <ul className="divide-y divide-line">
-            {plan.entries.map((entry) => (
-              <PlanRow key={entry.date} entry={entry} name={name} date={day(entry.date)} busy={save.isPending} onSkip={(reason) => markSkip(entry.date, reason)} />
-            ))}
+            {[
+              ...plan.entries.map((entry) => ({ date: entry.date, key: `duty-${entry.date}`, entry, closure: null })),
+              ...plan.closures.map((closure) => ({ date: closure.date, key: `closed-${closure.date}`, entry: null, closure })),
+            ]
+              .sort((a, b) => a.date.localeCompare(b.date) || a.key.localeCompare(b.key))
+              .map((row) =>
+                row.entry ? (
+                  <PlanRow
+                    key={row.key}
+                    entry={row.entry}
+                    name={name}
+                    date={day(row.date)}
+                    busy={save.isPending}
+                    holiday={openHoliday.get(row.date) ?? null}
+                    onSkip={(reason) => markSkip(row.date, reason)}
+                    onCloseAgain={() => closeAgain(row.date)}
+                  />
+                ) : (
+                  <ClosureRow key={row.key} closure={row.closure!} date={day(row.date)} busy={save.isPending} onKeepOpen={() => keepOpen(row.date)} />
+                )
+              )}
           </ul>
         </div>
       )}
@@ -211,13 +233,17 @@ function PlanRow({
   name,
   date,
   busy,
+  holiday,
   onSkip,
+  onCloseAgain,
 }: {
   entry: PlanEntry;
   name: (id: string) => string;
   date: string;
   busy: boolean;
+  holiday: string | null;
   onSkip: (reason: string) => void;
+  onCloseAgain: () => void;
 }) {
   const t = useTranslations();
   const [reason, setReason] = useState<string | null>(null);
@@ -240,6 +266,14 @@ function PlanRow({
             {[...entry.add.map((id) => `+${name(id)}`), ...entry.remove.map((id) => `−${name(id)}`)].join(" ")}
             {entry.fieldsChanged && ` ${t("rotation.generator.fieldsChanged")}`}
           </span>
+        )}
+        {holiday && entry.kind !== "delete" && (
+          <>
+            <Badge variant="outline">{t("rotation.generator.openHoliday", { name: holiday })}</Badge>
+            <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={onCloseAgain}>
+              {t("rotation.generator.closeAgain")}
+            </Button>
+          </>
         )}
         {entry.kind !== "delete" &&
           (reason === null ? (
@@ -265,6 +299,34 @@ function PlanRow({
               </Button>
             </span>
           ))}
+      </span>
+    </li>
+  );
+}
+
+function ClosureRow({
+  closure,
+  date,
+  busy,
+  onKeepOpen,
+}: {
+  closure: ClosureEntry;
+  date: string;
+  busy: boolean;
+  onKeepOpen: () => void;
+}) {
+  const t = useTranslations();
+  return (
+    <li className="flex flex-col gap-1.5 bg-surface-panel/60 px-3 py-2.5 md:flex-row md:items-center md:gap-4">
+      <span className="font-medium md:w-48">{date}</span>
+      <span className="min-w-0 flex-1 text-fg-secondary">{closure.title}</span>
+      <span className="flex flex-wrap items-center gap-2">
+        <Badge variant={closure.kind === "unchanged" ? "secondary" : "default"}>{t(`rotation.generator.kind.${closure.kind}`)}</Badge>
+        {closure.kind !== "delete" && closure.source === "holiday" && (
+          <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={onKeepOpen}>
+            {t("rotation.generator.keepOpen")}
+          </Button>
+        )}
       </span>
     </li>
   );

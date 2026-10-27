@@ -1470,6 +1470,9 @@
       "fieldsChanged": "Time/title from preset",
       "overwriteNotice": "{count, plural, one {# slot will be reassigned} other {# slots will be reassigned}}",
       "markSkip": "Skipped",
+      "openHoliday": "Holiday: {name}",
+      "keepOpen": "Duty anyway",
+      "closeAgain": "Close after all",
       "warnings": "Notes",
       "warning": {
         "lockedNonMember": "{date}: {user} is no longer a participant but has a swapped slot.",
