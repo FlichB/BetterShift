@@ -248,7 +248,8 @@ function buildPlan(tx: Tx, rotation: RotationDetail, from: string, to: string, t
 export async function previewGeneration(id: string, from: string, to: string, now: Date): Promise<GenerationPlan> {
   const rotation = loadRotation(db, id);
   const { template, presetId } = await loadTemplate(rotation);
-  return db.transaction((tx) => buildPlan(tx, rotation, from, to, template, presetId, now));
+  // Temporary wrapper; replaced when buildPlan learns about closures.
+  return db.transaction((tx) => ({ ...buildPlan(tx, rotation, from, to, template, presetId, now), closures: [], openHolidays: [] }));
 }
 
 export async function runGeneration(
