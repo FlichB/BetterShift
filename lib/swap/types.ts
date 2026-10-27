@@ -51,6 +51,10 @@ export interface BoardEntry {
   offeredBy: Person;
   target: Person | null;
   acceptedBy: Person | null;
+  forcedBy: Person | null;
+  counterStatus: CounterStatus | null;
+  counterWindowEnd: string | null;
+  waiveReason: string | null;
   note: string | null;
   createdAt: string;
   resolvedAt: string | null;
@@ -61,6 +65,11 @@ export interface Board {
   forMe: BoardEntry[];
   mine: BoardEntry[];
   hidden: BoardEntry[];
+  /** forced swaps where the user is the Einspringer and still has to pick a counter duty */
+  pendingCounters: BoardEntry[];
+  /** open forced offers and pending Ausgleiche in calendars the user manages rotations in */
+  manage: BoardEntry[];
+  manageCalendarIds: string[];
 }
 
 export interface DutyListEntry extends DutyInfo {

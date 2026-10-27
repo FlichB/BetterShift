@@ -65,7 +65,7 @@ function SwapsContent() {
 
   if (authLoading || !user || board.isLoading) return <FullscreenLoader />;
 
-  const data = board.data ?? { calendars: [], forMe: [], mine: [], hidden: [] };
+  const data = board.data ?? { calendars: [], forMe: [], mine: [], hidden: [], pendingCounters: [], manage: [], manageCalendarIds: [] };
   const onError = (error: unknown) => toastSwapError(error, t);
 
   const act = (entry: BoardEntry, action: SwapCardAction) => {

@@ -433,6 +433,7 @@ export function chooseCounter(id: string, shiftId: string, actorId: string, now:
       .where(and(eq(shiftSwaps.id, id), eq(shiftSwaps.counterStatus, "pending")))
       .returning()
       .get();
+    if (!updated) throw new SwapServiceError("counterNotDue");
     enqueueSwapEvent(tx, "counter_chosen", updated, actorId, now);
     const cancelled = cancelOffersOf(
       tx,
@@ -451,12 +452,14 @@ export function waiveCounter(id: string, reason: string, actorId: string): Shift
   return db.transaction((tx) => {
     const swap = loadOpen(tx, id);
     if (swap.type !== "forced" || swap.counterStatus !== "pending") throw new SwapServiceError("counterNotDue");
-    return tx
+    const updated = tx
       .update(shiftSwaps)
       .set({ counterStatus: "waived", waiveReason: reason, counterResolvedByUserId: actorId })
-      .where(eq(shiftSwaps.id, id))
+      .where(and(eq(shiftSwaps.id, id), eq(shiftSwaps.counterStatus, "pending")))
       .returning()
       .get();
+    if (!updated) throw new SwapServiceError("counterNotDue");
+    return updated;
   });
 }
 
@@ -485,7 +488,7 @@ export function listCounterCandidates(id: string, now: Date): CounterCandidatesR
   };
 }
 
-const HISTORY_MS =30 * 86_400_000;
+const HISTORY_MS = 30 * 86_400_000;
 
 function dutyInfos(shiftIds: string[]): Map<string, DutyInfo> {
   if (shiftIds.length === 0) return new Map();
@@ -508,18 +511,22 @@ export function listBoard(
   userId: string,
   calendarIds: string[],
   now: Date,
-  includeHidden: boolean
-): Omit<Board, "calendars"> {
+  includeHidden: boolean,
+  manageCalendarIds: string[] = []
+): Omit<Board, "calendars" | "manageCalendarIds"> {
   expireDue(now);
-  const empty = { forMe: [], mine: [], hidden: [] };
-  if (calendarIds.length === 0) return empty;
+  const board: Omit<Board, "calendars" | "manageCalendarIds"> = { forMe: [], mine: [], hidden: [], pendingCounters: [], manage: [] };
+  const scope = [...new Set([...calendarIds, ...manageCalendarIds])];
+  if (scope.length === 0) return board;
+  const swapCalendars = new Set(calendarIds);
+  const managed = new Set(manageCalendarIds);
 
   const rows = db
-    .select({ swap: shiftSwaps, calendarName: calendars.name })
+    .select({ swap: shiftSwaps, calendarName: calendars.name, calendarId: shifts.calendarId })
     .from(shiftSwaps)
     .innerJoin(shifts, eq(shifts.id, shiftSwaps.offeredShiftId))
     .innerJoin(calendars, eq(calendars.id, shifts.calendarId))
-    .where(inArray(shifts.calendarId, calendarIds))
+    .where(inArray(shifts.calendarId, scope))
     .all();
   const hiddenIds = new Set(
     db
@@ -534,14 +541,13 @@ export function listBoard(
     [swap.offeredShiftId, swap.requestedShiftId, swap.acceptedShiftId].filter((id): id is string => Boolean(id))
   );
   const userIds = rows.flatMap(({ swap }) =>
-    [swap.offeredByUserId, swap.targetUserId, swap.acceptedByUserId].filter((id): id is string => Boolean(id))
+    [swap.offeredByUserId, swap.targetUserId, swap.acceptedByUserId, swap.forcedByUserId].filter((id): id is string => Boolean(id))
   );
   const duties = dutyInfos([...new Set(shiftIds)]);
   const users = people([...new Set(userIds)]);
   const person = (id: string | null) => (id ? (users.get(id) ?? { id, name: null }) : null);
 
-  const board: Omit<Board, "calendars"> = { forMe: [], mine: [], hidden: [] };
-  for (const { swap, calendarName } of rows) {
+  for (const { swap, calendarName, calendarId } of rows) {
     const offered = duties.get(swap.offeredShiftId);
     if (!offered) continue; // shift is no duty anymore
     const entry: BoardEntry = {
@@ -555,13 +561,24 @@ export function listBoard(
       offeredBy: person(swap.offeredByUserId)!,
       target: person(swap.targetUserId),
       acceptedBy: person(swap.acceptedByUserId),
+      forcedBy: person(swap.forcedByUserId),
+      counterStatus: swap.counterStatus,
+      counterWindowEnd: swap.counterWindowEnd,
+      waiveReason: swap.waiveReason,
       note: swap.note,
       createdAt: swap.createdAt.toISOString(),
       resolvedAt: swap.resolvedAt?.toISOString() ?? null,
     };
 
-    if (swap.offeredByUserId === userId) {
-      const recent = swap.status === "open" || (swap.resolvedAt && now.getTime() - swap.resolvedAt.getTime() < HISTORY_MS);
+    const forced = swap.type === "forced";
+    const pending = forced && swap.counterStatus === "pending";
+    if (forced && managed.has(calendarId) && (swap.status === "open" || pending)) board.manage.push(entry);
+    if (!swapCalendars.has(calendarId)) continue;
+
+    const recent = swap.status === "open" || pending || (swap.resolvedAt && now.getTime() - swap.resolvedAt.getTime() < HISTORY_MS);
+    if (pending && swap.acceptedByUserId === userId) {
+      board.pendingCounters.push(entry);
+    } else if (swap.offeredByUserId === userId || (forced && swap.acceptedByUserId === userId)) {
       if (recent) board.mine.push(entry);
     } else if (swap.status === "open" && (!swap.targetUserId || swap.targetUserId === userId)) {
       if (!swap.targetUserId && hiddenIds.has(swap.id)) {
@@ -574,6 +591,8 @@ export function listBoard(
   const byDate = (a: BoardEntry, b: BoardEntry) => a.offered.date.localeCompare(b.offered.date);
   board.forMe.sort(byDate);
   board.hidden.sort(byDate);
+  board.pendingCounters.sort(byDate);
+  board.manage.sort(byDate);
   board.mine.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   return board;
 }
