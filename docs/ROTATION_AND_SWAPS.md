@@ -81,9 +81,9 @@ An einem **Schließtag** legt die Rotation statt des Dienstes einen ganztägigen
 2. In dessen Einstellungen eine externe Synchronisierung mit `webcal://www.wien.gv.at/spezial/daten/ics/feiertage.ics` hinzufügen. Der Feed enthält alle 13 gesetzlichen Feiertage mit Namen, derzeit bis 2035.
 3. In der Rotation diesen Kalender als „Feiertagskalender“ wählen und speichern.
 
-Fällt ein Feiertag auf einen Diensttag, steht in der Vorschau „Geschlossen (Name des Feiertags)“. Mit „Trotzdem Dienst“ wird an diesem einen Datum normal geplant (z. B. am 8. Dezember); „Doch schließen“ macht das rückgängig. Feiertage an anderen Wochentagen haben keine Wirkung.
+Fällt ein Feiertag auf einen Diensttag, steht in der Vorschau „<Text bei Schließung> (Name des Feiertags)“, z. B. „HeimkinoWelt geschlossen (Mariä Empfängnis)“. Mit „Trotzdem Dienst“ wird an diesem einen Datum normal geplant (z. B. am 8. Dezember); „Doch schließen“ macht das rückgängig. Feiertage an anderen Wochentagen haben keine Wirkung.
 
-Der 24. und 31. Dezember sind keine gesetzlichen Feiertage und fehlen im Feed. Wenn ihr dort schließt, trage sie als Ausfalltag mit Grund ein. Ein Ausfalltag hat Vorrang vor einem Feiertag am selben Tag.
+Der 24. und 31. Dezember sind keine gesetzlichen Feiertage und fehlen im Feed. Wenn du dort schließt, trage sie als Ausfalltag mit Grund ein. Ein Ausfalltag hat Vorrang vor einem Feiertag am selben Tag.
 
 ## 3. Generieren
 
