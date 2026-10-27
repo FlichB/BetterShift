@@ -1629,6 +1629,7 @@
     "openOffer": "Pro tuto službu existuje otevřená nabídka výměny.",
     "openOfferLink": "Přejít na burzu výměn",
     "marker": "Otevřená nabídka výměny",
+    "openPlace": "Volné místo",
     "signupHint": "Místa této služby se předávají přes burzu výměn.",
     "errors": {
       "notFound": "Nabídka nenalezena.",

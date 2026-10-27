@@ -23,6 +23,7 @@ import {
   useDayPress,
   useSignupsEnabled,
 } from "@/components/day-cell-entries";
+import { useDutyPlaces } from "@/hooks/useDutyPlaces"; // [fork]
 import { hasVisibleCustomFields } from "@/components/custom-field-summary";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import { cellFont, cellMonoFont, countWrappedLines, textWidth } from "@/lib/text-measure";
@@ -259,6 +260,8 @@ export function MonthGrid({
       ? countWrappedLines(title, fonts.field, colWidth - PHONE_FIELD_PAD, MAX_TITLE_LINES)
       : 1;
 
+  const calendarIds = useMemo(() => [...new Set(shifts.map((s) => s.calendarId))], [shifts]); // [fork]
+  const places = useDutyPlaces(calendarIds); // [fork]
   // One pass over the month instead of scanning every shift and note per cell
   const { maxShifts, maxExternalShifts, sortType, sortOrder, combinedSort } = layout;
   const dayContents = useMemo(() => {
@@ -270,7 +273,8 @@ export function MonthGrid({
       externalSyncs,
       { maxShifts, maxExternalShifts, sortType, sortOrder, combinedSort },
       // Leading and trailing days of other months stay empty
-      (day) => day.getMonth() === month
+      (day) => day.getMonth() === month,
+      places // [fork]
     );
   }, [
     calendarDays,
@@ -283,6 +287,7 @@ export function MonthGrid({
     sortType,
     sortOrder,
     combinedSort,
+    places, // [fork]
   ]);
 
   /**

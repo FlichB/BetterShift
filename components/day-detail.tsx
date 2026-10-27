@@ -33,6 +33,8 @@ import { useShiftSignupPermission } from "@/hooks/useShiftSignups";
 import { QuickSignupButton } from "@/components/day-cell-entries";
 import { CustomFieldSummary } from "@/components/custom-field-summary";
 import { useCustomFields } from "@/hooks/useCustomFields";
+import { useSwapCalendarState } from "@/hooks/useSwaps"; // [fork]
+import { placeTitles } from "@/lib/rotation/places"; // [fork]
 
 /** Compact avatar stack for who signed up; renders nothing when unused. */
 function ShiftSignupBadge({
@@ -138,6 +140,7 @@ export function ShiftDetailRow({
   const minutes = getShiftMinutes(shift);
 
   const { signupsEnabled } = useShiftSignupPermission(shift.calendarId);
+  const { entryTemplates } = useSwapCalendarState(shift.calendarId); // [fork]
   const { customFields: customFieldDefinitions } = useCustomFields(shift.calendarId);
 
   return (
@@ -151,7 +154,13 @@ export function ShiftDetailRow({
       />
       <div className="min-w-0 flex-1">
         <div className={cn("text-[13.5px] font-semibold text-fg-strong", fullTitle ? "break-words" : "truncate")}>
-          {shift.title}
+          {entryTemplates.has(shift.id) // [fork] one line per Platz (spec 12.32)
+            ? placeTitles(shift, entryTemplates.get(shift.id)!, t("swap.openPlace")).map((p, i) => (
+                <span key={p.userId ?? `open-${i}`} className="block">
+                  {p.title}
+                </span>
+              ))
+            : shift.title}
         </div>
         <div className="mt-0.5 font-mono text-xs text-fg-tertiary">
           {shift.isAllDay ? t("shift.allDayShift") : formatTimeRange(shift)}
@@ -167,7 +176,7 @@ export function ShiftDetailRow({
           variant="detail"
         />
       </div>
-      <ShiftSignupBadge shift={shift} signupsEnabled={signupsEnabled} />
+      {!entryTemplates.has(shift.id) && <ShiftSignupBadge shift={shift} signupsEnabled={signupsEnabled} />} {/* [fork] */}
       <QuickSignupButton shift={shift} />
       {synced && (
         <span

@@ -1629,6 +1629,7 @@
     "openOffer": "Per questo turno c'è un'offerta di scambio aperta.",
     "openOfferLink": "Vai alla bacheca scambi",
     "marker": "Offerta di scambio aperta",
+    "openPlace": "Posto libero",
     "signupHint": "I posti di questo turno cambiano di mano tramite la bacheca scambi.",
     "errors": {
       "notFound": "Offerta non trovata.",

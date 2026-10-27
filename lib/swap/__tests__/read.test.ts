@@ -123,3 +123,13 @@ describe("calendarState", () => {
     expect(state.openOfferShiftIds).toEqual([s.duty("2026-11-07")]);
   });
 });
+
+describe("calendarState templates and offers", () => {
+  it("carries the entry template per duty and open offers per holder", () => {
+    const shiftId = s.duty("2026-11-07");
+    give(shiftId, s.m0);
+    const state = calendarState(s.team.calendarId, now);
+    expect(state.entryTemplates[shiftId]).toBe("{Vorname} Dienst");
+    expect(state.openOffers).toContainEqual({ shiftId, userId: s.m0 });
+  });
+});

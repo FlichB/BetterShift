@@ -1629,6 +1629,7 @@
     "openOffer": "Hay una oferta de cambio abierta para este turno.",
     "openOfferLink": "Ir a la bolsa de cambios",
     "marker": "Oferta de cambio abierta",
+    "openPlace": "Plaza libre",
     "signupHint": "Las plazas de este turno cambian de manos a través de la bolsa de cambios.",
     "errors": {
       "notFound": "Oferta no encontrada.",

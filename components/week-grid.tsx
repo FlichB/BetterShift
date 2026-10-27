@@ -20,6 +20,7 @@ import {
   useDayPress,
   useSignupsEnabled,
 } from "@/components/day-cell-entries";
+import { useDutyPlaces } from "@/hooks/useDutyPlaces"; // [fork]
 import { useCustomFields } from "@/hooks/useCustomFields";
 
 interface WeekGridProps {
@@ -68,6 +69,8 @@ export function WeekGrid({
   const { customFields: customFieldDefinitions } = useCustomFields(shifts[0]?.calendarId ?? null);
   const desktop = variant === "desktop";
 
+  const calendarIds = useMemo(() => [...new Set(shifts.map((s) => s.calendarId))], [shifts]); // [fork]
+  const places = useDutyPlaces(calendarIds); // [fork]
   const { sortType, sortOrder, combinedSort } = layout;
   // The per-day caps exist to fit month cells; a week day shows everything
   const contents = useMemo(
@@ -78,9 +81,10 @@ export function WeekGrid({
         notes,
         externalSyncs,
         { sortType, sortOrder, combinedSort },
-        () => true
+        () => true,
+        places // [fork]
       ),
-    [days, shifts, notes, externalSyncs, sortType, sortOrder, combinedSort]
+    [days, shifts, notes, externalSyncs, sortType, sortOrder, combinedSort, places] // [fork]
   );
 
   const formatters = useMemo(

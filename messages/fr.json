@@ -1629,6 +1629,7 @@
     "openOffer": "Il existe une offre d'échange ouverte pour ce service.",
     "openOfferLink": "Aller à la bourse d'échange",
     "marker": "Offre d'échange ouverte",
+    "openPlace": "Place libre",
     "signupHint": "Les places de ce service changent de mains via la bourse d'échange.",
     "errors": {
       "notFound": "Offre introuvable.",

@@ -1629,6 +1629,7 @@
     "openOffer": "Für diesen Dienst gibt es ein offenes Tauschangebot.",
     "openOfferLink": "Zur Tauschbörse",
     "marker": "Offenes Tauschangebot",
+    "openPlace": "Offener Platz",
     "signupHint": "Plätze dieses Dienstes wechseln über die Tauschbörse.",
     "errors": {
       "notFound": "Angebot nicht gefunden.",

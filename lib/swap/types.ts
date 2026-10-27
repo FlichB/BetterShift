@@ -72,4 +72,8 @@ export interface DutiesResponse {
 export interface CalendarSwapState {
   dutyShiftIds: string[];
   openOfferShiftIds: string[];
+  /** Eintragsvorlage per duty (Schließeinträge excluded), spec 12.32. */
+  entryTemplates: Record<string, string>;
+  /** Who offers which Platz, so the calendar marks only that holder's entry. */
+  openOffers: { shiftId: string; userId: string }[];
 }

@@ -1629,6 +1629,7 @@
     "openOffer": "There is an open swap offer for this duty.",
     "openOfferLink": "Go to swap board",
     "marker": "Open swap offer",
+    "openPlace": "Open slot",
     "signupHint": "Places on this duty change hands through the swap board.",
     "errors": {
       "notFound": "Offer not found.",

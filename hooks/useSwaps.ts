@@ -19,7 +19,7 @@ export class SwapApiError extends Error {
   }
 }
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
+export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
     headers: init?.body ? { "Content-Type": "application/json" } : undefined,
@@ -63,6 +63,8 @@ export function useSwapCalendarState(calendarId: string | undefined) {
     () => ({
       dutyShiftIds: new Set(data?.dutyShiftIds ?? []),
       openOfferShiftIds: new Set(data?.openOfferShiftIds ?? []),
+      entryTemplates: new Map(Object.entries(data?.entryTemplates ?? {})),
+      openOfferKeys: new Set((data?.openOffers ?? []).map((o) => `${o.shiftId}:${o.userId}`)),
     }),
     [data]
   );

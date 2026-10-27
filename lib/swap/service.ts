@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
 import { enqueueSwapEvent, offerKind } from "@/lib/notify/enqueue";
 import { hasStarted } from "@/lib/rotation/dates";
-import { rotationDuties, rotationSlotLocks } from "@/lib/rotation/schema";
+import { rotationDuties, rotationSlotLocks, rotations } from "@/lib/rotation/schema";
 import { logResolved } from "@/lib/swap/audit";
 import { checkAccept, checkOffer, dueStatus, nextLock, type DutyTiming, type SlotMove, type SlotView } from "@/lib/swap/rules";
 import { shiftSwapHidden, shiftSwaps, type ShiftSwap } from "@/lib/swap/schema";
@@ -419,19 +419,24 @@ export function listDuties(calendarId: string, userId: string, now: Date): DutyL
 
 export function calendarState(calendarId: string, now: Date): CalendarSwapState {
   expireDue(now);
-  const dutyShiftIds = db
-    .select({ shiftId: rotationDuties.shiftId })
+  // Schließeinträge (kind != 'duty') are neither swappable duties nor split into Plätze.
+  const duties = db
+    .select({ shiftId: rotationDuties.shiftId, entryTitle: rotations.entryTitle })
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId))
     .where(and(eq(shifts.calendarId, calendarId), eq(rotationDuties.kind, "duty")))
-    .all()
-    .map((d) => d.shiftId);
-  const openOfferShiftIds = db
-    .selectDistinct({ shiftId: shiftSwaps.offeredShiftId })
+    .all();
+  const openOffers = db
+    .select({ shiftId: shiftSwaps.offeredShiftId, userId: shiftSwaps.offeredByUserId })
     .from(shiftSwaps)
     .innerJoin(shifts, eq(shifts.id, shiftSwaps.offeredShiftId))
     .where(and(eq(shiftSwaps.status, "open"), eq(shifts.calendarId, calendarId)))
-    .all()
-    .map((s) => s.shiftId);
-  return { dutyShiftIds, openOfferShiftIds };
+    .all();
+  return {
+    dutyShiftIds: duties.map((d) => d.shiftId),
+    openOfferShiftIds: [...new Set(openOffers.map((o) => o.shiftId))],
+    entryTemplates: Object.fromEntries(duties.map((d) => [d.shiftId, d.entryTitle])),
+    openOffers,
+  };
 }
