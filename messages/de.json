@@ -1708,7 +1708,22 @@
       "waiveText": "{name} muss für den Dienst am {date} keinen Gegendienst abgeben.",
       "reason": "Begründung"
     },
-    "emptyManage": "Keine offenen erzwungenen Tausche."
+    "emptyManage": "Keine offenen erzwungenen Tausche.",
+    "force": {
+      "hint": "Verwaltung: Platz eines Ausfallenden an einen Einspringer übertragen.",
+      "forUser": "Tausch erzwingen: {name}",
+      "title": "Tausch erzwingen",
+      "absent": "Ausfallend",
+      "substitute": "Einspringer",
+      "person": "Bestimmte Person",
+      "everyone": "Offen an alle",
+      "target": "Einspringer wählen",
+      "notePlaceholder": "z. B. Krankenstand",
+      "submit": "Erzwingen",
+      "confirmTitle": "Tausch erzwingen?",
+      "confirmPerson": "Der Platz von {absent} geht sofort an {name}. {name} wählt danach einen eigenen Dienst der nächsten 3 Monate, der an {absent} geht.",
+      "confirmEveryone": "Der Dienst von {absent} erscheint als „Einspringen gesucht“. Wer übernimmt, bekommt den Platz sofort und wählt danach einen eigenen Dienst der nächsten 3 Monate als Ausgleich."
+    }
   },
   "notifications": {
     "mail": {

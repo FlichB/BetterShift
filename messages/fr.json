@@ -1708,7 +1708,22 @@
       "waiveText": "{name} n’a pas à rendre de service pour celui du {date}.",
       "reason": "Motif"
     },
-    "emptyManage": "Aucun échange forcé en cours."
+    "emptyManage": "Aucun échange forcé en cours.",
+    "force": {
+      "hint": "Administration : transférer la place d'une personne absente à quelqu'un qui la remplace.",
+      "forUser": "Forcer l'échange : {name}",
+      "title": "Forcer l'échange",
+      "absent": "Absent·e",
+      "substitute": "Remplaçant·e",
+      "person": "Personne précise",
+      "everyone": "Ouvert à tous",
+      "target": "Choisis qui remplace",
+      "notePlaceholder": "p. ex. arrêt maladie",
+      "submit": "Forcer",
+      "confirmTitle": "Forcer cet échange ?",
+      "confirmPerson": "La place de {absent} passe immédiatement à {name}. {name} choisit ensuite l'un de ses propres services des 3 prochains mois, qui ira à {absent}.",
+      "confirmEveryone": "Le service de {absent} apparaît comme « Remplaçant recherché ». Celui ou celle qui le prend reçoit la place immédiatement, puis choisit en échange l'un de ses propres services des 3 prochains mois."
+    }
   },
   "notifications": {
     "mail": {

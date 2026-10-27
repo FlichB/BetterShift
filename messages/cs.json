@@ -1708,7 +1708,22 @@
       "waiveText": "{name} nemusí za službu dne {date} vracet žádnou službu.",
       "reason": "Důvod"
     },
-    "emptyManage": "Žádné otevřené vynucené výměny."
+    "emptyManage": "Žádné otevřené vynucené výměny.",
+    "force": {
+      "hint": "Správa: přenést místo nepřítomného na toho, kdo zaskočí.",
+      "forUser": "Vynutit výměnu: {name}",
+      "title": "Vynutit výměnu",
+      "absent": "Nepřítomný",
+      "substitute": "Zástup",
+      "person": "Konkrétní osoba",
+      "everyone": "Otevřeno všem",
+      "target": "Vyber, kdo zaskočí",
+      "notePlaceholder": "např. nemocenská",
+      "submit": "Vynutit",
+      "confirmTitle": "Vynutit tuto výměnu?",
+      "confirmPerson": "Místo uživatele {absent} okamžitě přebírá {name}. {name} si poté vybere jednu vlastní službu z následujících 3 měsíců, která připadne uživateli {absent}.",
+      "confirmEveryone": "Služba uživatele {absent} se zobrazí jako „Hledá se zástup“. Kdo ji převezme, získá místo okamžitě a poté si jako náhradu vybere jednu vlastní službu z následujících 3 měsíců."
+    }
   },
   "notifications": {
     "mail": {

@@ -1708,7 +1708,22 @@
       "waiveText": "{name} non deve restituire nessun turno per quello del {date}.",
       "reason": "Motivo"
     },
-    "emptyManage": "Nessuno scambio forzato aperto."
+    "emptyManage": "Nessuno scambio forzato aperto.",
+    "force": {
+      "hint": "Amministrazione: trasferisci il posto di una persona assente a chi la sostituisce.",
+      "forUser": "Forza scambio: {name}",
+      "title": "Forza scambio",
+      "absent": "Assente",
+      "substitute": "Sostituto",
+      "person": "Persona specifica",
+      "everyone": "Aperto a tutti",
+      "target": "Scegli chi sostituisce",
+      "notePlaceholder": "es. malattia",
+      "submit": "Forza",
+      "confirmTitle": "Forzare questo scambio?",
+      "confirmPerson": "Il posto di {absent} passa subito a {name}. Poi {name} sceglie uno dei propri turni dei prossimi 3 mesi, che andrà a {absent}.",
+      "confirmEveryone": "Il turno di {absent} compare come «Cercasi sostituto». Chi lo prende riceve subito il posto e poi sceglie in cambio uno dei propri turni dei prossimi 3 mesi."
+    }
   },
   "notifications": {
     "mail": {

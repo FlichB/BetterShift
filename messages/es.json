@@ -1708,7 +1708,22 @@
       "waiveText": "{name} no tiene que devolver ningún turno por el turno del {date}.",
       "reason": "Motivo"
     },
-    "emptyManage": "No hay intercambios forzosos pendientes."
+    "emptyManage": "No hay intercambios forzosos pendientes.",
+    "force": {
+      "hint": "Administración: pasa el puesto de una persona ausente a alguien que la cubra.",
+      "forUser": "Forzar intercambio: {name}",
+      "title": "Forzar intercambio",
+      "absent": "Ausente",
+      "substitute": "Suplente",
+      "person": "Persona concreta",
+      "everyone": "Abierto a todos",
+      "target": "Elige quién cubre",
+      "notePlaceholder": "p. ej. baja por enfermedad",
+      "submit": "Forzar",
+      "confirmTitle": "¿Forzar este intercambio?",
+      "confirmPerson": "El puesto de {absent} pasa de inmediato a {name}. Después, {name} elige uno de sus propios turnos de los próximos 3 meses, que pasará a {absent}.",
+      "confirmEveryone": "El turno de {absent} aparece como «Se busca suplente». Quien lo asuma recibe el puesto de inmediato y después elige a cambio uno de sus propios turnos de los próximos 3 meses."
+    }
   },
   "notifications": {
     "mail": {

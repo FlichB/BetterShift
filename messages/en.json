@@ -1708,7 +1708,22 @@
       "waiveText": "{name} does not have to give a duty back for the duty on {date}.",
       "reason": "Reason"
     },
-    "emptyManage": "No open forced swaps."
+    "emptyManage": "No open forced swaps.",
+    "force": {
+      "hint": "Management: hand an absent person's place to someone covering.",
+      "forUser": "Force swap: {name}",
+      "title": "Force swap",
+      "absent": "Absent",
+      "substitute": "Covering",
+      "person": "Specific person",
+      "everyone": "Open to everyone",
+      "target": "Choose who covers",
+      "notePlaceholder": "e.g. sick leave",
+      "submit": "Force",
+      "confirmTitle": "Force this swap?",
+      "confirmPerson": "{absent}'s place goes to {name} immediately. {name} then picks one of their own duties in the next 3 months, which goes to {absent}.",
+      "confirmEveryone": "{absent}'s duty appears as “Cover needed”. Whoever takes it gets the place immediately and then picks one of their own duties in the next 3 months in return."
+    }
   },
   "notifications": {
     "mail": {
