@@ -1552,7 +1552,7 @@
       "offersToMe": "Demandes qui me sont adressées",
       "offersToMeHint": "Lorsque quelqu'un te demande directement un service.",
       "myOffers": "Mes offres",
-      "myOffersHint": "Lorsque ton offre est acceptée ou ta demande refusée.",
+      "myOffersHint": "Lorsque ton offre est acceptée, ta demande refusée ou ton service transféré.",
       "notConfigured": "L'envoi d'e-mails n'est pas configuré sur ce serveur. Ton choix s'appliquera dès qu'il le sera.",
       "saveFailed": "Le paramètre n'a pas pu être enregistré.",
       "loadFailed": "Impossible de charger les paramètres."
@@ -1693,19 +1693,28 @@
         "offerToAll": "Service proposé : {duty}",
         "offerToMe": "Demande pour toi : {duty}",
         "offerAccepted": "Ton offre a été acceptée : {duty}",
-        "offerDeclined": "Ta demande a été refusée : {duty}"
+        "offerDeclined": "Ta demande a été refusée : {duty}",
+        "forcedToAll": "Remplaçant recherché : {duty}",
+        "forcedToMe": "Tu remplaces : {duty}",
+        "dutyTransferred": "Ton service a été transféré : {duty}",
+        "counterChosen": "Service de compensation pour ton service : {duty}"
       },
       "lead": {
         "offerToAll": "{name} propose le service du {duty}.",
         "offerToMe": "{name} te sollicite directement pour le service du {duty}.",
         "offerAccepted": "{name} a accepté ton offre pour le service du {duty}.",
-        "offerDeclined": "{name} a refusé ta demande pour le service du {duty}."
+        "offerDeclined": "{name} a refusé ta demande pour le service du {duty}.",
+        "forcedToAll": "On cherche quelqu'un pour assurer le service de {name} le {duty}. Celui ou celle qui le prend choisit en échange l'un de ses propres services des 3 prochains mois.",
+        "forcedToMe": "{actor} t'a désigné comme remplaçant de {name} le {duty}.",
+        "dutyTransferred": "Ton service du {duty} a été transféré à {name}.",
+        "counterChosen": "En compensation de ton service du {duty}, tu reprends le service du {counter}."
       },
       "kind": {
         "give": "Cession – celui qui accepte reprend le service.",
         "exchangeFor": "Échange contre le service du {duty}.",
         "exchangeAny": "Échange – celui qui accepte rend l'un de ses propres services à venir."
       },
+      "chooseCounter": "Choisis sur le tableau d'échanges, d'ici le {end}, l'un de tes services en compensation.",
       "youGet": "En échange, tu reprends le service du {duty}.",
       "note": "Note : {note}",
       "allDay": "toute la journée",

@@ -23,8 +23,10 @@ export interface MailContext {
   requested: MailDuty | null;
   accepted: MailDuty | null;
   offeredByName: string;
+  acceptedByName: string;
   actorName: string;
   note: string | null;
+  counterWindowEnd: string | null;
   appUrl: string;
 }
 
@@ -52,10 +54,18 @@ function subjectOf(kind: NotificationKind, t: MailTranslator, duty: string): str
       return t("notifications.mail.subject.offerAccepted", { duty });
     case "offer_declined":
       return t("notifications.mail.subject.offerDeclined", { duty });
+    case "forced_to_all":
+      return t("notifications.mail.subject.forcedToAll", { duty });
+    case "forced_to_me":
+      return t("notifications.mail.subject.forcedToMe", { duty });
+    case "duty_transferred":
+      return t("notifications.mail.subject.dutyTransferred", { duty });
+    case "counter_chosen":
+      return t("notifications.mail.subject.counterChosen", { duty });
   }
 }
 
-function leadOf(ctx: MailContext, t: MailTranslator, duty: string): string {
+function leadOf(ctx: MailContext, t: MailTranslator, duty: string, locale: string): string {
   switch (ctx.kind) {
     case "offer_to_all":
       return t("notifications.mail.lead.offerToAll", { name: ctx.offeredByName, duty });
@@ -65,6 +75,17 @@ function leadOf(ctx: MailContext, t: MailTranslator, duty: string): string {
       return t("notifications.mail.lead.offerAccepted", { name: ctx.actorName, duty });
     case "offer_declined":
       return t("notifications.mail.lead.offerDeclined", { name: ctx.actorName, duty });
+    case "forced_to_all":
+      return t("notifications.mail.lead.forcedToAll", { name: ctx.offeredByName, duty });
+    case "forced_to_me":
+      return t("notifications.mail.lead.forcedToMe", { actor: ctx.actorName, name: ctx.offeredByName, duty });
+    case "duty_transferred":
+      return t("notifications.mail.lead.dutyTransferred", { name: ctx.acceptedByName, duty });
+    case "counter_chosen":
+      return t("notifications.mail.lead.counterChosen", {
+        duty,
+        counter: ctx.accepted ? formatDuty(ctx.accepted, t, locale) : "",
+      });
   }
 }
 
@@ -81,12 +102,17 @@ const link = (href: string, text: string, style: string) =>
 export function renderMail(ctx: MailContext, t: MailTranslator, locale: string): { subject: string; html: string } {
   const duty = formatDuty(ctx.offered, t, locale);
   const isOffer = ctx.kind === "offer_to_all" || ctx.kind === "offer_to_me";
-  const lines = [leadOf(ctx, t, duty)];
+  const lines = [leadOf(ctx, t, duty, locale)];
+  const forcedOffer = ctx.kind === "forced_to_all" || ctx.kind === "forced_to_me";
+  if (ctx.kind === "forced_to_me" && ctx.counterWindowEnd) {
+    const end = format(parseLocalDate(ctx.counterWindowEnd), "P", { locale: getDateLocale(locale) });
+    lines.push(t("notifications.mail.chooseCounter", { end }));
+  }
   if (isOffer) lines.push(kindOf(ctx, t, locale));
   if (ctx.kind === "offer_accepted" && ctx.accepted) {
     lines.push(t("notifications.mail.youGet", { duty: formatDuty(ctx.accepted, t, locale) }));
   }
-  if (isOffer && ctx.note) lines.push(t("notifications.mail.note", { note: ctx.note }));
+  if ((isOffer || forcedOffer) && ctx.note) lines.push(t("notifications.mail.note", { note: ctx.note }));
 
   const html = [
     `<div style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5;color:#1f2937">`,

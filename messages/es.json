@@ -1552,7 +1552,7 @@
       "offersToMe": "Solicitudes para mí",
       "offersToMeHint": "Cuando alguien te pide directamente un turno.",
       "myOffers": "Mis ofertas",
-      "myOffersHint": "Cuando se acepta tu oferta o se rechaza tu solicitud.",
+      "myOffersHint": "Cuando se acepta tu oferta, se rechaza tu solicitud o se traspasa tu turno.",
       "notConfigured": "El envío de correos no está configurado en este servidor. Tu elección se aplicará en cuanto lo esté.",
       "saveFailed": "No se pudo guardar el ajuste.",
       "loadFailed": "No se pudieron cargar los ajustes."
@@ -1693,19 +1693,28 @@
         "offerToAll": "Turno ofrecido: {duty}",
         "offerToMe": "Solicitud para ti: {duty}",
         "offerAccepted": "Tu oferta fue aceptada: {duty}",
-        "offerDeclined": "Tu solicitud fue rechazada: {duty}"
+        "offerDeclined": "Tu solicitud fue rechazada: {duty}",
+        "forcedToAll": "Se busca sustituto: {duty}",
+        "forcedToMe": "Vas a sustituir: {duty}",
+        "dutyTransferred": "Tu turno ha sido traspasado: {duty}",
+        "counterChosen": "Turno de compensación para tu turno: {duty}"
       },
       "lead": {
         "offerToAll": "{name} ofrece el turno del {duty}.",
         "offerToMe": "{name} te pregunta directamente por el turno del {duty}.",
         "offerAccepted": "{name} aceptó tu oferta para el turno del {duty}.",
-        "offerDeclined": "{name} rechazó tu solicitud para el turno del {duty}."
+        "offerDeclined": "{name} rechazó tu solicitud para el turno del {duty}.",
+        "forcedToAll": "Se busca a alguien para cubrir el turno de {name} del {duty}. Quien lo asuma elige a cambio uno de sus propios turnos de los próximos 3 meses.",
+        "forcedToMe": "{actor} te ha asignado para sustituir a {name} el {duty}.",
+        "dutyTransferred": "Tu turno del {duty} ha sido traspasado a {name}.",
+        "counterChosen": "A cambio de tu turno del {duty}, asumes el turno del {counter}."
       },
       "kind": {
         "give": "Cesión – quien acepta se queda con el turno.",
         "exchangeFor": "Intercambio por el turno del {duty}.",
         "exchangeAny": "Intercambio – quien acepta devuelve uno de sus propios turnos futuros."
       },
+      "chooseCounter": "Elige en el tablón de intercambios hasta el {end} uno de tus turnos como compensación.",
       "youGet": "A cambio te quedas con el turno del {duty}.",
       "note": "Nota: {note}",
       "allDay": "todo el día",

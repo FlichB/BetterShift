@@ -1552,7 +1552,7 @@
       "offersToMe": "Anfragen an mich",
       "offersToMeHint": "Wenn dich jemand gezielt für einen Dienst anfragt.",
       "myOffers": "Meine Angebote",
-      "myOffersHint": "Wenn dein Angebot angenommen oder deine Anfrage abgelehnt wird.",
+      "myOffersHint": "Wenn dein Angebot angenommen, deine Anfrage abgelehnt oder dein Dienst übertragen wird.",
       "notConfigured": "Der E-Mail-Versand ist auf diesem Server nicht eingerichtet. Deine Auswahl gilt, sobald er eingerichtet ist.",
       "saveFailed": "Einstellung konnte nicht gespeichert werden.",
       "loadFailed": "Die Einstellungen konnten nicht geladen werden."
@@ -1693,19 +1693,28 @@
         "offerToAll": "Dienst angeboten: {duty}",
         "offerToMe": "Anfrage an dich: {duty}",
         "offerAccepted": "Dein Angebot wurde angenommen: {duty}",
-        "offerDeclined": "Deine Anfrage wurde abgelehnt: {duty}"
+        "offerDeclined": "Deine Anfrage wurde abgelehnt: {duty}",
+        "forcedToAll": "Einspringer gesucht: {duty}",
+        "forcedToMe": "Du springst ein: {duty}",
+        "dutyTransferred": "Dein Dienst wurde übertragen: {duty}",
+        "counterChosen": "Ausgleich für deinen Dienst: {duty}"
       },
       "lead": {
         "offerToAll": "{name} bietet den Dienst am {duty} an.",
         "offerToMe": "{name} fragt dich gezielt für den Dienst am {duty} an.",
         "offerAccepted": "{name} hat dein Angebot für den Dienst am {duty} angenommen.",
-        "offerDeclined": "{name} hat deine Anfrage für den Dienst am {duty} abgelehnt."
+        "offerDeclined": "{name} hat deine Anfrage für den Dienst am {duty} abgelehnt.",
+        "forcedToAll": "Für den Dienst am {duty} wird ein Einspringer für {name} gesucht. Wer übernimmt, wählt danach einen eigenen Dienst der nächsten 3 Monate als Ausgleich.",
+        "forcedToMe": "{actor} hat dich als Einspringer für {name} am {duty} eingeteilt.",
+        "dutyTransferred": "Dein Dienst am {duty} wurde an {name} übertragen.",
+        "counterChosen": "Als Ausgleich für deinen Dienst am {duty} übernimmst du den Dienst am {counter}."
       },
       "kind": {
         "give": "Abgabe – wer annimmt, übernimmt den Dienst.",
         "exchangeFor": "Tausch gegen den Dienst am {duty}.",
         "exchangeAny": "Tausch – wer annimmt, gibt einen eigenen künftigen Dienst zurück."
       },
+      "chooseCounter": "Wähle auf der Tauschbörse bis {end} einen deiner Dienste als Ausgleich.",
       "youGet": "Du übernimmst im Gegenzug den Dienst am {duty}.",
       "note": "Notiz: {note}",
       "allDay": "ganztägig",

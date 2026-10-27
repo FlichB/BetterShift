@@ -1552,7 +1552,7 @@
       "offersToMe": "Žádosti pro mě",
       "offersToMeHint": "Když tě někdo přímo požádá o službu.",
       "myOffers": "Moje nabídky",
-      "myOffersHint": "Když je tvoje nabídka přijata nebo tvoje žádost odmítnuta.",
+      "myOffersHint": "Když je tvoje nabídka přijata, tvoje žádost odmítnuta nebo tvoje služba převedena.",
       "notConfigured": "Odesílání e-mailů není na tomto serveru nastaveno. Tvoje volba se uplatní, jakmile bude.",
       "saveFailed": "Nastavení se nepodařilo uložit.",
       "loadFailed": "Nastavení se nepodařilo načíst."
@@ -1693,19 +1693,28 @@
         "offerToAll": "Nabídnutá služba: {duty}",
         "offerToMe": "Žádost pro tebe: {duty}",
         "offerAccepted": "Tvoje nabídka byla přijata: {duty}",
-        "offerDeclined": "Tvoje žádost byla odmítnuta: {duty}"
+        "offerDeclined": "Tvoje žádost byla odmítnuta: {duty}",
+        "forcedToAll": "Hledá se zástup: {duty}",
+        "forcedToMe": "Zaskakuješ: {duty}",
+        "dutyTransferred": "Tvoje služba byla převedena: {duty}",
+        "counterChosen": "Vyrovnání za tvoji službu: {duty}"
       },
       "lead": {
         "offerToAll": "{name} nabízí službu dne {duty}.",
         "offerToMe": "{name} se tě přímo ptá na službu dne {duty}.",
         "offerAccepted": "{name} přijal(a) tvoji nabídku na službu dne {duty}.",
-        "offerDeclined": "{name} odmítl(a) tvoji žádost o službu dne {duty}."
+        "offerDeclined": "{name} odmítl(a) tvoji žádost o službu dne {duty}.",
+        "forcedToAll": "Hledá se někdo, kdo převezme službu {name} dne {duty}. Kdo ji převezme, vybere si na oplátku jednu vlastní službu z následujících 3 měsíců.",
+        "forcedToMe": "{actor} tě určil(a) jako zástup za {name} dne {duty}.",
+        "dutyTransferred": "Tvoje služba dne {duty} byla převedena na {name}.",
+        "counterChosen": "Jako vyrovnání za tvoji službu dne {duty} přebíráš službu dne {counter}."
       },
       "kind": {
         "give": "Předání – kdo přijme, převezme službu.",
         "exchangeFor": "Výměna za službu dne {duty}.",
         "exchangeAny": "Výměna – kdo přijme, vrátí jednu ze svých budoucích služeb."
       },
+      "chooseCounter": "Vyber si na burze výměn do {end} jednu ze svých služeb jako vyrovnání.",
       "youGet": "Na oplátku přebíráš službu dne {duty}.",
       "note": "Poznámka: {note}",
       "allDay": "celý den",

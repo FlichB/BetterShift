@@ -5,7 +5,15 @@ import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "@/lib/db/schema";
 import { shiftSwaps } from "@/lib/swap/schema";
 
-export type NotificationKind = "offer_to_all" | "offer_to_me" | "offer_accepted" | "offer_declined";
+export type NotificationKind =
+  | "offer_to_all"
+  | "offer_to_me"
+  | "offer_accepted"
+  | "offer_declined"
+  | "forced_to_all"
+  | "forced_to_me"
+  | "duty_transferred"
+  | "counter_chosen";
 export type NotificationStatus = "pending" | "sent" | "skipped" | "failed";
 
 /** One event per swap action; recipients are resolved when the mail is sent. */

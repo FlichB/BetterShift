@@ -10,6 +10,8 @@ const ctx = (overrides: Partial<MailContext> = {}): MailContext => ({
   requested: null,
   accepted: null,
   offeredByName: "Anna",
+  acceptedByName: "Bea",
+  counterWindowEnd: null,
   actorName: "Anna",
   note: null,
   appUrl: "https://shift.firma.at",
@@ -36,6 +38,16 @@ describe("render", async () => {
     expect(accepted.html).toContain("Berta hat dein Angebot");
     expect(accepted.html).toContain("Samstag, 14.11.2026");
     expect(renderMail(ctx({ kind: "offer_declined", actorName: "Berta" }), t, locale).html).toContain("Berta hat deine Anfrage");
+  });
+
+  it("renders the forced swap mails", () => {
+    const toMe = renderMail(ctx({ kind: "forced_to_me", type: "forced", counterWindowEnd: "2027-02-07" }), t, locale);
+    expect(toMe.subject).toContain("Du springst ein");
+    expect(toMe.html).toContain("07.02.2027");
+    expect(renderMail(ctx({ kind: "forced_to_all", type: "forced" }), t, locale).subject).toContain("Einspringer gesucht");
+    expect(renderMail(ctx({ kind: "duty_transferred", type: "forced" }), t, locale).html).toContain("Bea");
+    const chosen = renderMail(ctx({ kind: "counter_chosen", type: "forced", accepted: duty }), t, locale);
+    expect(chosen.subject).toContain("Ausgleich");
   });
 
   it("describes the swap kind and the note only for offers", () => {

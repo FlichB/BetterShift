@@ -9,11 +9,15 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = { offersToAll: true,
 export function preferenceFor(kind: NotificationKind): keyof NotificationPreferences {
   switch (kind) {
     case "offer_to_all":
+    case "forced_to_all":
       return "offersToAll";
     case "offer_to_me":
+    case "forced_to_me":
       return "offersToMe";
     case "offer_accepted":
     case "offer_declined":
+    case "duty_transferred":
+    case "counter_chosen":
       return "myOffers";
   }
 }
