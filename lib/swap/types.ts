@@ -68,6 +68,11 @@ export interface DutyListEntry extends DutyInfo {
   myOpenSwapId: string | null;
 }
 
+export interface CounterCandidatesResponse {
+  duties: DutyInfo[];
+  windowEnd: string;
+}
+
 export interface DutiesResponse {
   duties: DutyListEntry[];
   members: Person[];

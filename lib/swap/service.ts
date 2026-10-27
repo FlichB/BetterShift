@@ -8,9 +8,32 @@ import { enqueueSwapEvent, offerKind } from "@/lib/notify/enqueue";
 import { hasStarted } from "@/lib/rotation/dates";
 import { rotationDuties, rotationSlotLocks, rotations } from "@/lib/rotation/schema";
 import { logResolved } from "@/lib/swap/audit";
-import { checkAccept, checkOffer, dueStatus, nextLock, type DutyTiming, type SlotMove, type SlotView } from "@/lib/swap/rules";
+import {
+  checkAccept,
+  checkCounterChoice,
+  checkForce,
+  checkOffer,
+  counterCandidates,
+  counterWindowEnd,
+  dueStatus,
+  forcedDueStatus,
+  nextLock,
+  type DutyTiming,
+  type SlotMove,
+  type SlotView,
+} from "@/lib/swap/rules";
 import { shiftSwapHidden, shiftSwaps, type ShiftSwap } from "@/lib/swap/schema";
-import type { Board, BoardEntry, CalendarSwapState, DutyInfo, DutyListEntry, Person, SwapErrorCode, SwapType } from "@/lib/swap/types";
+import type {
+  Board,
+  BoardEntry,
+  CalendarSwapState,
+  CounterCandidatesResponse,
+  DutyInfo,
+  DutyListEntry,
+  Person,
+  SwapErrorCode,
+  SwapType,
+} from "@/lib/swap/types";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Reader = Tx | typeof db;
@@ -26,6 +49,14 @@ export interface OfferInput {
   type: SwapType;
   targetUserId: string | null;
   requestedShiftId: string | null;
+  note: string | null;
+}
+
+export interface ForceInput {
+  shiftId: string;
+  absentUserId: string;
+  /** null = offen an alle */
+  substituteUserId: string | null;
   note: string | null;
 }
 
@@ -115,7 +146,9 @@ export function expireDue(now: Date): ResolvedSwap[] {
       const status =
         swap.type === "give"
           ? "cancelled"
-          : dueStatus(swap.offeredByUserId, swap.targetUserId, offered, requested, swap.requestedShiftId, now);
+          : swap.type === "forced"
+            ? forcedDueStatus(swap.offeredByUserId, offered, now)
+            : dueStatus(swap.offeredByUserId, swap.targetUserId, offered, requested, swap.requestedShiftId, now);
       if (status) out.push({ swap: resolve(tx, swap.id, status, now), status });
     }
     return out;
@@ -172,11 +205,14 @@ export function createOffer(input: OfferInput, offererId: string, now: Date): Sh
   });
 }
 
-export function withdrawOffer(id: string, userId: string, now: Date): ShiftSwap {
+/** `asManager`: the caller may manage rotations in the duty's calendar (checked by the route). */
+export function withdrawOffer(id: string, userId: string, now: Date, asManager = false): ShiftSwap {
   expireDue(now);
   return db.transaction((tx) => {
     const swap = loadOpen(tx, id);
-    if (swap.offeredByUserId !== userId) throw new SwapServiceError("forbidden");
+    // A forced offer belongs to the management, not to the absent user (spec §5).
+    const allowed = swap.type === "forced" ? asManager : swap.offeredByUserId === userId;
+    if (!allowed) throw new SwapServiceError("forbidden");
     if (swap.status !== "open") throw new SwapServiceError("notOpen");
     return resolve(tx, id, "withdrawn", now);
   });
@@ -199,6 +235,7 @@ export function hideOffer(id: string, userId: string): void {
   db.transaction((tx) => {
     const swap = loadOpen(tx, id);
     if (swap.status !== "open") throw new SwapServiceError("notOpen");
+    if (swap.type === "forced") throw new SwapServiceError("invalid");
     if (swap.targetUserId) throw new SwapServiceError("notBroadcast");
     if (swap.offeredByUserId === userId) throw new SwapServiceError("ownOffer");
     tx.insert(shiftSwapHidden).values({ swapId: id, userId }).onConflictDoNothing().run();
@@ -238,6 +275,33 @@ function applyMove(tx: Tx, move: SlotMove, actorId: string, now: Date): void {
   }
 }
 
+/** Cancels the open offers of Plätze their holder no longer has (or is about to lose). */
+function cancelOffersOf(
+  tx: Tx,
+  slots: { shiftId: string; userId: string }[],
+  exceptId: string | null,
+  now: Date
+): ResolvedSwap[] {
+  const out: ResolvedSwap[] = [];
+  for (const slot of slots) {
+    const rows = tx
+      .update(shiftSwaps)
+      .set({ status: "cancelled", resolvedAt: now })
+      .where(
+        and(
+          eq(shiftSwaps.status, "open"),
+          eq(shiftSwaps.offeredShiftId, slot.shiftId),
+          eq(shiftSwaps.offeredByUserId, slot.userId),
+          exceptId ? ne(shiftSwaps.id, exceptId) : undefined
+        )
+      )
+      .returning()
+      .all();
+    out.push(...rows.map((swap) => ({ swap, status: "cancelled" as const })));
+  }
+  return out;
+}
+
 export function acceptOffer(id: string, acceptorId: string, counterShiftId: string | null, now: Date): AcceptResult {
   expireDue(now);
   const result = db.transaction((tx): AcceptResult => {
@@ -246,6 +310,8 @@ export function acceptOffer(id: string, acceptorId: string, counterShiftId: stri
     const offered = loadSlot(tx, swap.offeredShiftId);
     if (!offered) throw new SwapServiceError("notOpen");
 
+    // A forced offer is taken over plainly; the Ausgleich follows via chooseCounter.
+    if (swap.type === "forced" && counterShiftId) throw new SwapServiceError("invalid");
     const counterId = swap.type === "exchange" ? (swap.requestedShiftId ?? counterShiftId) : null;
     const counter = counterId ? loadSlot(tx, counterId) : null;
     if (counterId && !counter) throw new SwapServiceError("invalidShift");
@@ -262,39 +328,164 @@ export function acceptOffer(id: string, acceptorId: string, counterShiftId: stri
     if (!check.ok) throw new SwapServiceError(check.error);
 
     for (const move of check.moves) applyMove(tx, move, acceptorId, now);
+    const forced = swap.type === "forced";
     const accepted = tx
       .update(shiftSwaps)
-      .set({ status: "accepted", acceptedByUserId: acceptorId, acceptedShiftId: counterId, resolvedAt: now })
+      .set({
+        status: "accepted",
+        acceptedByUserId: acceptorId,
+        acceptedShiftId: counterId,
+        resolvedAt: now,
+        ...(forced ? { counterStatus: "pending" as const, counterWindowEnd: counterWindowEnd(offered.duty.date) } : {}),
+      })
       .where(eq(shiftSwaps.id, id))
       .returning()
       .get();
-    enqueueSwapEvent(tx, "offer_accepted", accepted, acceptorId, now);
+    enqueueSwapEvent(tx, forced ? "duty_transferred" : "offer_accepted", accepted, acceptorId, now);
 
     // Open offers of a Platz that just changed hands can no longer be honoured.
-    const cancelled: ResolvedSwap[] = [];
-    for (const move of check.moves) {
-      const rows = tx
-        .update(shiftSwaps)
-        .set({ status: "cancelled", resolvedAt: now })
-        .where(
-          and(
-            eq(shiftSwaps.status, "open"),
-            eq(shiftSwaps.offeredShiftId, move.shiftId),
-            eq(shiftSwaps.offeredByUserId, move.fromUserId),
-            ne(shiftSwaps.id, id)
-          )
-        )
-        .returning()
-        .all();
-      cancelled.push(...rows.map((swap) => ({ swap, status: "cancelled" as const })));
-    }
+    const cancelled = cancelOffersOf(
+      tx,
+      check.moves.map((m) => ({ shiftId: m.shiftId, userId: m.fromUserId })),
+      id,
+      now
+    );
     return { swap: accepted, moves: check.moves, cancelled };
   });
   if (result.cancelled.length > 0) void logResolved(result.cancelled).catch(logFailed);
   return result;
 }
 
-const HISTORY_MS = 30 * 86_400_000;
+const offeredCalendarId = (tx: Reader, shiftId: string) =>
+  tx.select({ calendarId: shifts.calendarId }).from(shifts).where(eq(shifts.id, shiftId)).get()!.calendarId;
+
+/** Spec D4/D5: a named Einspringer gets the Platz at once; offen an alle waits for acceptOffer. */
+export function forceSwap(input: ForceInput, actorId: string, now: Date): AcceptResult {
+  expireDue(now);
+  const result = db.transaction((tx): AcceptResult => {
+    const offered = loadSlot(tx, input.shiftId);
+    if (!offered) throw new SwapServiceError("notDuty");
+    const substitute = input.substituteUserId;
+    const check = checkForce({
+      absentId: input.absentUserId,
+      substituteId: substitute,
+      offered,
+      substituteDuties: substitute ? dutiesOf(tx, substitute) : [],
+      now,
+    });
+    if (!check.ok) throw new SwapServiceError(check.error);
+
+    // The forced swap takes precedence over an offer the absent user made for this Platz;
+    // cancel first so the open forced offer does not collide with it on the open-slot index.
+    const cancelled = cancelOffersOf(tx, [{ shiftId: input.shiftId, userId: input.absentUserId }], null, now);
+    const direct = substitute !== null;
+    const swap = tx
+      .insert(shiftSwaps)
+      .values({
+        type: "forced",
+        status: direct ? "accepted" : "open",
+        offeredShiftId: input.shiftId,
+        offeredByUserId: input.absentUserId,
+        targetUserId: substitute,
+        acceptedByUserId: substitute,
+        forcedByUserId: actorId,
+        counterStatus: direct ? "pending" : null,
+        counterWindowEnd: direct ? counterWindowEnd(offered.duty.date) : null,
+        note: input.note,
+        createdAt: now,
+        resolvedAt: direct ? now : null,
+      })
+      .returning()
+      .get();
+    for (const move of check.moves) applyMove(tx, move, actorId, now);
+    if (direct) {
+      enqueueSwapEvent(tx, "forced_to_me", swap, actorId, now);
+      enqueueSwapEvent(tx, "duty_transferred", swap, actorId, now);
+    } else {
+      enqueueSwapEvent(tx, "forced_to_all", swap, actorId, now);
+    }
+    return { swap, moves: check.moves, cancelled };
+  });
+  if (result.cancelled.length > 0) void logResolved(result.cancelled).catch(logFailed);
+  return result;
+}
+
+/** Spec D6: the Einspringer (or the management on their behalf) hands a duty to the absent user. */
+export function chooseCounter(id: string, shiftId: string, actorId: string, now: Date): AcceptResult {
+  expireDue(now);
+  const result = db.transaction((tx): AcceptResult => {
+    const swap = loadOpen(tx, id);
+    const chosen = loadSlot(tx, shiftId);
+    if (!chosen) throw new SwapServiceError("invalidShift");
+    const check = checkCounterChoice({
+      offer: swap,
+      offered: { shiftId: swap.offeredShiftId, calendarId: offeredCalendarId(tx, swap.offeredShiftId) },
+      chosen,
+      absentDuties: dutiesOf(tx, swap.offeredByUserId),
+      now,
+    });
+    if (!check.ok) throw new SwapServiceError(check.error);
+
+    for (const move of check.moves) applyMove(tx, move, actorId, now);
+    const updated = tx
+      .update(shiftSwaps)
+      .set({ acceptedShiftId: shiftId, counterStatus: "chosen", counterResolvedByUserId: actorId })
+      .where(and(eq(shiftSwaps.id, id), eq(shiftSwaps.counterStatus, "pending")))
+      .returning()
+      .get();
+    enqueueSwapEvent(tx, "counter_chosen", updated, actorId, now);
+    const cancelled = cancelOffersOf(
+      tx,
+      check.moves.map((m) => ({ shiftId: m.shiftId, userId: m.fromUserId })),
+      null,
+      now
+    );
+    return { swap: updated, moves: check.moves, cancelled };
+  });
+  if (result.cancelled.length > 0) void logResolved(result.cancelled).catch(logFailed);
+  return result;
+}
+
+/** Spec D8: the management releases the Einspringer from the Ausgleich. */
+export function waiveCounter(id: string, reason: string, actorId: string): ShiftSwap {
+  return db.transaction((tx) => {
+    const swap = loadOpen(tx, id);
+    if (swap.type !== "forced" || swap.counterStatus !== "pending") throw new SwapServiceError("counterNotDue");
+    return tx
+      .update(shiftSwaps)
+      .set({ counterStatus: "waived", waiveReason: reason, counterResolvedByUserId: actorId })
+      .where(eq(shiftSwaps.id, id))
+      .returning()
+      .get();
+  });
+}
+
+export function listCounterCandidates(id: string, now: Date): CounterCandidatesResponse {
+  const swap = getSwap(id);
+  if (!swap) throw new SwapServiceError("notFound");
+  if (swap.type !== "forced" || swap.counterStatus !== "pending" || !swap.acceptedByUserId || !swap.counterWindowEnd) {
+    throw new SwapServiceError("counterNotDue");
+  }
+  const calendarId = offeredCalendarId(db, swap.offeredShiftId);
+  const slots = dutiesOf(db, swap.acceptedByUserId)
+    .filter((d) => d.calendarId === calendarId)
+    .map((d) => loadSlot(db, d.shiftId))
+    .filter((slot): slot is SlotView => slot !== null);
+  const ok = counterCandidates({
+    offer: swap,
+    offered: { shiftId: swap.offeredShiftId, calendarId },
+    slots,
+    absentDuties: dutiesOf(db, swap.offeredByUserId),
+    now,
+  });
+  const infos = dutyInfos(ok.map((d) => d.shiftId));
+  return {
+    duties: ok.map((d) => infos.get(d.shiftId)).filter((d): d is DutyInfo => Boolean(d)),
+    windowEnd: swap.counterWindowEnd,
+  };
+}
+
+const HISTORY_MS =30 * 86_400_000;
 
 function dutyInfos(shiftIds: string[]): Map<string, DutyInfo> {
   if (shiftIds.length === 0) return new Map();
