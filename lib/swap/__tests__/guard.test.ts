@@ -6,7 +6,7 @@ import { blocksSelfSignup, isClosedDuty, isRotationDuty } from "@/lib/swap/guard
 import { createRotation, runGeneration } from "@/lib/rotation/service";
 import { rotationDuties } from "@/lib/rotation/schema";
 import { and, eq } from "drizzle-orm";
-import { loadSlot } from "@/lib/swap/service";
+import { dutiesOf, loadSlot } from "@/lib/swap/service";
 import { seedDuties } from "./fixtures";
 
 let s: Awaited<ReturnType<typeof seedDuties>>;
@@ -66,5 +66,11 @@ describe("Schließeinträge", () => {
     expect(isClosedDuty(closed)).toBe(true);
     expect(isClosedDuty(s.duty("2026-11-07"))).toBe(false);
     expect(loadSlot(db, closed)).toBeNull();
+  });
+
+  it("never count as a duty in the double-booking check, even with a hand-added Platz", () => {
+    const shiftId = s.duty("2026-11-07"); // holders m0, m1
+    db.update(rotationDuties).set({ kind: "closed" }).where(eq(rotationDuties.shiftId, shiftId)).run();
+    expect(dutiesOf(db, s.m0).map((d) => d.shiftId)).not.toContain(shiftId);
   });
 });

@@ -69,7 +69,7 @@ export function dutiesOf(tx: Reader, userId: string): DutyTiming[] {
     .from(shiftSignups)
     .innerJoin(rotationDuties, eq(rotationDuties.shiftId, shiftSignups.shiftId))
     .innerJoin(shifts, eq(shifts.id, shiftSignups.shiftId))
-    .where(eq(shiftSignups.userId, userId))
+    .where(and(eq(shiftSignups.userId, userId), eq(rotationDuties.kind, "duty")))
     .all();
 }
 
