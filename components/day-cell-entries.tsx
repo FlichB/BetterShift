@@ -24,7 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuickSelfSignup, useShiftSignupPermission } from "@/hooks/useShiftSignups";
 import { SwapMarker } from "@/components/swap/swap-marker"; // [fork]
 import { useSwapCalendarState } from "@/hooks/useSwaps"; // [fork]
-import { dayOffEntries, expandDutyPlaces, type DutyPlaceIndex } from "@/lib/rotation/places"; // [fork]
+import { dayOffEntriesForDays, expandDutyPlaces, type CalendarRef, type DutyPlaceIndex } from "@/lib/rotation/places"; // [fork]
 
 const LONG_PRESS_MS = 500;
 
@@ -37,14 +37,6 @@ export interface DayContent {
   notes: CalendarNote[];
 }
 
-/** [fork] The Dienstfreie of every calendar whose own shifts are shown, as rendering entries. */
-function calendarDayOffs(shifts: ShiftWithCalendar[], index: DutyPlaceIndex): ShiftWithCalendar[] {
-  if (index.dayOffs.size === 0) return [];
-  const bases = new Map<string, ShiftWithCalendar>();
-  for (const shift of shifts) if (!bases.has(shift.calendarId)) bases.set(shift.calendarId, shift);
-  return [...bases.values()].flatMap((base) => [...index.dayOffs.keys()].flatMap((date) => dayOffEntries(date, base, index)));
-}
-
 /** One pass over the shifts instead of scanning every shift and note per day. */
 export function buildDayContents(
   days: Date[],
@@ -53,9 +45,13 @@ export function buildDayContents(
   externalSyncs: ExternalSync[],
   layout: DayLayoutOptions,
   includeDay: (day: Date) => boolean,
-  places?: { index: DutyPlaceIndex; openLabel: string } // [fork]
+  places?: { index: DutyPlaceIndex; openLabel: string; dayOffCalendars?: CalendarRef[] } // [fork]
 ): Map<string, DayContent> {
-  const shown = places ? [...expandDutyPlaces(shifts, places.index, places.openLabel), ...calendarDayOffs(shifts, places.index)] : shifts; // [fork] one entry per Platz, plus Dienstfreie
+  // [fork] one entry per Platz, plus the Dienstfreie of the rendered days
+  const dayOffs = places?.dayOffCalendars?.length
+    ? dayOffEntriesForDays(days.filter(includeDay).map(formatDateToLocal), places.dayOffCalendars, places.index)
+    : [];
+  const shown = places ? [...expandDutyPlaces(shifts, places.index, places.openLabel), ...dayOffs] : shifts; // [fork]
   const shiftsByDay = new Map<string, ShiftWithCalendar[]>();
   for (const shift of shown) { // [fork]
     if (!shift.date) continue;

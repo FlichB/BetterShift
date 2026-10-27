@@ -43,6 +43,8 @@ interface WeekGridProps {
     onTouchStart: (e: React.TouchEvent) => void;
     onTouchEnd: (e: React.TouchEvent) => void;
   };
+  /** [fork] The calendar shown, whose Dienstfreie appear even without a shift in view */
+  calendarId?: string;
 }
 
 export function WeekGrid({
@@ -60,6 +62,7 @@ export function WeekGrid({
   onDayClick,
   onDayContextMenu,
   swipeHandlers,
+  calendarId, // [fork]
 }: WeekGridProps) {
   const t = useTranslations();
   const locale = useLocale();
@@ -70,7 +73,7 @@ export function WeekGrid({
   const desktop = variant === "desktop";
 
   const calendarIds = useMemo(() => [...new Set(shifts.map((s) => s.calendarId))], [shifts]); // [fork]
-  const places = useDutyPlaces(calendarIds); // [fork]
+  const places = useDutyPlaces(calendarIds, calendarId); // [fork]
   const { sortType, sortOrder, combinedSort } = layout;
   // The per-day caps exist to fit month cells; a week day shows everything
   const contents = useMemo(

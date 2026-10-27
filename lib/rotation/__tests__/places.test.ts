@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { DAY_OFF_COLOR, dayOffEntries, expandDutyPlaces, placeTitles } from "@/lib/rotation/places";
+import { DAY_OFF_COLOR, dayOffEntries, dayOffEntriesForDays, expandDutyPlaces, placeTitles } from "@/lib/rotation/places";
 import { formatDateToLocal } from "@/lib/date-utils";
+import { sortShifts } from "@/lib/shift-display";
 import type { ShiftWithCalendar } from "@/lib/types";
 
 const duty = {
@@ -85,5 +86,33 @@ describe("dayOffEntries", () => {
   it("returns every calendar's entries without a base and none on other dates", () => {
     expect(dayOffEntries("2026-11-09", null, dayOffIndex).map((e) => e.dayOff?.id)).toEqual(["d1", "d2"]);
     expect(dayOffEntries("2026-11-10", base, dayOffIndex)).toEqual([]);
+  });
+});
+
+describe("dayOffEntriesForDays", () => {
+  const dayOffIndex = {
+    templates: new Map<string, string>(),
+    dayOffs: new Map([
+      ["2026-11-09", [
+        { id: "d1", calendarId: "c1", title: "Günther dienstfrei" },
+        { id: "d2", calendarId: "c2", title: "Anna dienstfrei" },
+      ]],
+      ["2026-12-01", [{ id: "d3", calendarId: "c1", title: "Günther dienstfrei" }]],
+    ]),
+  };
+  const team = { id: "c1", name: "Team", color: "#123456" };
+
+  it("builds entries for the shown calendar on the rendered dates without any shift in view", () => {
+    const result = dayOffEntriesForDays(["2026-11-09", "2026-11-10"], [team], dayOffIndex);
+    expect(result.map((e) => [e.id, e.calendarId, e.calendar])).toEqual([["dayoff:d1", "c1", team]]);
+    expect(dayOffEntriesForDays(["2026-11-09"], [], dayOffIndex)).toEqual([]);
+  });
+
+  it("sorts after real shifts whatever the sort order", () => {
+    const [entry] = dayOffEntriesForDays(["2026-11-09"], [team], dayOffIndex);
+    for (const order of ["asc", "desc"] as const) {
+      expect(sortShifts([entry, duty], "startTime", order).map((s) => s.id)).toEqual(["s1", "dayoff:d1"]);
+      expect(sortShifts([entry, duty], "title", order).map((s) => s.id)).toEqual(["s1", "dayoff:d1"]);
+    }
   });
 });

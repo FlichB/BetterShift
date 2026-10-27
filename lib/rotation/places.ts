@@ -19,11 +19,6 @@ export interface DutyPlaceIndex {
   dayOffs: Map<string, DayOffIndexEntry[]>;
 }
 
-/** The same index without Dienstfreie, for views that show them nowhere (compare mode). */
-export function withoutDayOffs(index: DutyPlaceIndex): DutyPlaceIndex {
-  return { ...index, dayOffs: new Map() };
-}
-
 export function placeTitles(shift: ShiftWithCalendar, template: string, openLabel: string): { userId: string | null; title: string }[] {
   const holders = (shift.signups ?? []).map((s) => ({ userId: s.id as string | null, title: entryTitle(template, { name: s.name, email: s.email }, shift.title) }));
   const open = Math.max(0, (shift.signupCapacity ?? 0) - holders.length);
@@ -76,4 +71,20 @@ export function dayOffEntries(date: string, base: ShiftWithCalendar | null, inde
     createdAt: null,
     updatedAt: null,
   }));
+}
+
+export type CalendarRef = NonNullable<ShiftWithCalendar["calendar"]>;
+
+/**
+ * The Dienstfreie of `calendars` on `dates`, independent of any shift in view: a week without
+ * a single shift of the calendar still shows them. Each entry carries its calendar object.
+ */
+export function dayOffEntriesForDays(dates: string[], calendars: CalendarRef[], index: DutyPlaceIndex): ShiftWithCalendar[] {
+  if (calendars.length === 0 || index.dayOffs.size === 0) return [];
+  const byId = new Map(calendars.map((c) => [c.id, c]));
+  return dates.flatMap((date) =>
+    dayOffEntries(date, null, index)
+      .filter((entry) => byId.has(entry.calendarId))
+      .map((entry) => ({ ...entry, calendar: byId.get(entry.calendarId) }))
+  );
 }

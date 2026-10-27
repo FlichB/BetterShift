@@ -9,12 +9,22 @@ import { request } from "@/hooks/useSwaps";
 import { LIVE_REFETCH_INTERVAL } from "@/lib/query-client";
 import { swapQueryKeys } from "@/lib/swap/query-keys";
 import type { CalendarSwapState } from "@/lib/swap/types";
-import type { DayOffIndexEntry, DutyPlaceIndex } from "@/lib/rotation/places";
+import { useCalendars } from "@/hooks/useCalendars";
+import type { CalendarRef, DayOffIndexEntry, DutyPlaceIndex } from "@/lib/rotation/places";
 
-export function useDutyPlaces(calendarIds: string[]): { index: DutyPlaceIndex; openLabel: string } {
+export interface DutyPlaces {
+  index: DutyPlaceIndex;
+  openLabel: string;
+  /** Calendars whose Dienstfreie the grid shows, whether or not any of their shifts is in view. */
+  dayOffCalendars: CalendarRef[];
+}
+
+/** `dayOffCalendarId`: the calendar the workspace shows; omitted (compare mode) means no Dienstfreie. */
+export function useDutyPlaces(calendarIds: string[], dayOffCalendarId?: string): DutyPlaces {
   const t = useTranslations();
   const { isAuthEnabled } = useAuthFeatures();
-  const unique = [...new Set(calendarIds)].sort();
+  const { calendars } = useCalendars();
+  const unique = [...new Set(dayOffCalendarId ? [...calendarIds, dayOffCalendarId] : calendarIds)].sort();
   const results = useQueries({
     queries: unique.map((calendarId) => ({
       queryKey: swapQueryKeys.calendarState(calendarId),
@@ -47,5 +57,12 @@ export function useDutyPlaces(calendarIds: string[]): { index: DutyPlaceIndex; o
     // eslint-disable-next-line react-hooks/exhaustive-deps -- see templates above; uniqueKey orders the same results
   }, [dataVersion, uniqueKey]);
   const index = useMemo(() => ({ templates, dayOffs }), [templates, dayOffs]);
-  return useMemo(() => ({ index, openLabel: t("swap.openPlace") }), [index, t]);
+  const dayOffCalendar = calendars.find((c) => c.id === dayOffCalendarId);
+  const dayOffName = dayOffCalendar?.name ?? "";
+  const dayOffColor = dayOffCalendar?.color ?? "";
+  const dayOffCalendars = useMemo<CalendarRef[]>(
+    () => (dayOffCalendarId ? [{ id: dayOffCalendarId, name: dayOffName, color: dayOffColor }] : []),
+    [dayOffCalendarId, dayOffName, dayOffColor]
+  );
+  return useMemo(() => ({ index, openLabel: t("swap.openPlace"), dayOffCalendars }), [index, t, dayOffCalendars]);
 }
