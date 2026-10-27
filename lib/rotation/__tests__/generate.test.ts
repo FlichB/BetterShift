@@ -161,6 +161,19 @@ describe("generateDuties", () => {
     expect(days.duties.map((d) => d.date)).toEqual(["2026-12-05", "2026-12-12"]);
   });
 
+  it("adds a Schließeintrag for an Ausfalltag on a non-Diensttag, but not for a weekday holiday", () => {
+    const rule: RotationRule = {
+      ...saturdays,
+      closedDates: [
+        { date: "2026-11-11", reason: "Betriebsurlaub", source: "skip" },
+        { date: "2026-11-12", reason: "Feiertag", source: "holiday" },
+      ],
+    };
+    const days = generateDays(rule, "2026-11-09", "2026-11-15");
+    expect(days.closures.map((c) => c.date)).toEqual(["2026-11-11"]);
+    expect(days.duties.map((d) => d.date)).toEqual(["2026-11-14"]);
+  });
+
   it("a Schließtag before the window still shifts the Besetzung inside it", () => {
     const closed: RotationRule = { ...saturdays, closedDates: [{ date: "2026-11-07", reason: "Inventur", source: "skip" }] };
     expect(generateDuties(closed, "2026-11-14", "2026-11-14")).toEqual([{ date: "2026-11-14", userIds: ["a", "b"], capacity: 2 }]);
