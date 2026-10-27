@@ -121,6 +121,7 @@ function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date
     weekdays: r.weekdays,
     closedDates,
     openHolidays,
+    reinforcedDates: [],
   };
 }
 

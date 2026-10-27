@@ -15,6 +15,7 @@ const base: RotationRule = {
   weekdays: [6],
   closedDates: [],
   openHolidays: [],
+  reinforcedDates: [],
 };
 
 const cases: [string, RotationRule][] = [
