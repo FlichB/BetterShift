@@ -6,6 +6,7 @@ import { shiftSignups } from "@/lib/db/schema";
 import { GraphError } from "@/lib/outlook/graph-client";
 import { outlookEvents } from "@/lib/outlook/schema";
 import { syncOutlook, verifyOutlook } from "@/lib/outlook/sync";
+import { inputFromRotation } from "@/lib/rotation/input";
 import { rotations } from "@/lib/rotation/schema";
 import { getRotation, runGeneration, updateRotation } from "@/lib/rotation/service";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
@@ -30,19 +31,7 @@ describe("Outlook acceptance", () => {
     const skipped = row(s.duty("2026-11-21"))!.eventId!;
     const later = new Date(2026, 10, 7, 10, 0); // 11-07 is running
     const r = getRotation(s.rotation.id)!;
-    updateRotation(s.rotation.id, {
-      name: r.name,
-      calendarId: r.calendarId,
-      presetId: r.presetId!,
-      memberIds: r.memberIds,
-      perShift: r.perShift,
-      period: r.period,
-      periodDays: r.periodDays,
-      startDate: r.startDate,
-      startOffset: r.startOffset,
-      weekdays: r.weekdays,
-      skipDates: ["2026-11-21"],
-    });
+    updateRotation(s.rotation.id, { ...inputFromRotation(r), skipDates: [{ date: "2026-11-21", reason: "Inventur" }] });
     await runGeneration(s.rotation.id, "2026-11-02", "2026-12-27", s.team.ownerId, later);
     graph.calls = [];
     await run(later);

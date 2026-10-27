@@ -1411,7 +1411,15 @@
       "startOffset": "Commence par",
       "weekdays": "Jours de service",
       "skipDates": "Jours sans service",
-      "members": "Participants (ordre)"
+      "members": "Participants (ordre)",
+      "skipReason": "Motif",
+      "closedTitle": "Texte en cas de fermeture",
+      "closedTitleDefault": "Fermé",
+      "closedTitleHint": "S'affiche les jours de fermeture sous la forme « Texte (motif) », p. ex. « Fermé (Noël) ».",
+      "holidayCalendar": "Calendrier des jours fériés",
+      "holidayCalendarNone": "Aucun",
+      "holidayCalendarHint": "Chaque entrée de ce calendrier un jour de service ferme ce jour-là. Idéalement un calendrier synchronisé avec un flux de jours fériés.",
+      "holidayOpenDates": "Jours fériés travaillés"
     },
     "period": {
       "day": "Jour",
@@ -1467,7 +1475,9 @@
         "lockedNonMember": "{date} : {user} ne participe plus, mais a une place échangée.",
         "lockedWithoutDuty": "{date} : plus aucun service prévu, mais des places échangées existent – le service est conservé."
       },
-      "unlock": "Lever le verrouillage"
+      "unlock": "Lever le verrouillage",
+      "skipReason": "Motif de la fermeture",
+      "skipConfirm": "Marquer fermé"
     },
     "outlook": {
       "toggle": "Ajouter à Outlook (office@)",
@@ -1499,7 +1509,7 @@
       "startDate": "Date non valide.",
       "startOffset": "« Commence par » non valide.",
       "weekdays": "Jours de service non valides.",
-      "skipDates": "Jours sans service non valides.",
+      "skipDates": "Jours de fermeture invalides : chacun a besoin d'une date et d'un motif (100 caractères max.).",
       "range": "Plage non valide (366 jours au maximum).",
       "notFound": "Rotation introuvable.",
       "presetMissing": "Le modèle de la rotation n'existe plus.",
@@ -1508,7 +1518,11 @@
       "forbidden": "Non autorisé.",
       "actor": "Impossible de générer sans utilisateur connecté.",
       "locks": "Verrouillage non valide.",
-      "internal": "Erreur inattendue."
+      "internal": "Erreur inattendue.",
+      "closedTitle": "Indique un texte pour les jours de fermeture (100 caractères max.).",
+      "holidayCalendar": "Calendrier des jours fériés invalide ou inaccessible.",
+      "holidayCalendarSame": "Le calendrier des jours fériés doit être un autre calendrier.",
+      "holidayOpenDates": "Jours fériés travaillés invalides."
     }
   },
   "swap": {

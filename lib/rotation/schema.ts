@@ -4,7 +4,7 @@
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { calendars, shiftPresets, shifts, user } from "@/lib/db/schema";
-import type { RotationPeriod } from "@/lib/rotation/types";
+import type { RotationDutyKind, RotationPeriod, SkipDate } from "@/lib/rotation/types";
 
 export const rotations = sqliteTable(
   "rotations",
@@ -24,7 +24,11 @@ export const rotations = sqliteTable(
     startDate: text("start_date").notNull(),
     startOffset: integer("start_offset").notNull().default(0),
     weekdays: text("weekdays", { mode: "json" }).$type<number[]>().notNull().default(sql`'[]'`),
-    skipDates: text("skip_dates", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
+    skipDates: text("skip_dates", { mode: "json" }).$type<SkipDate[]>().notNull().default(sql`'[]'`),
+    // [fork] Schließtage (spec 2026-10-27): Feiertagskalender, Text bei Schließung, geöffnete Feiertage.
+    holidayCalendarId: text("holiday_calendar_id").references(() => calendars.id, { onDelete: "set null" }),
+    closedTitle: text("closed_title").notNull().default("Geschlossen"),
+    holidayOpenDates: text("holiday_open_dates", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
     // [fork phase 3] Mirror this rotation's duties into the office@ calendar (spec 12.24).
     outlookEnabled: integer("outlook_enabled", { mode: "boolean" }).notNull().default(false),
     createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
@@ -63,6 +67,7 @@ export const rotationDuties = sqliteTable(
       .notNull()
       .references(() => rotations.id, { onDelete: "cascade" }),
     date: text("date").notNull(),
+    kind: text("kind").$type<RotationDutyKind>().notNull().default("duty"),
   },
   (table) => [uniqueIndex("rotation_duties_rotationId_date_idx").on(table.rotationId, table.date)]
 );

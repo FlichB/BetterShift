@@ -82,7 +82,7 @@ function toRule(r: RotationDetail): RotationRule {
     startDate: r.startDate,
     startOffset: r.startOffset,
     weekdays: r.weekdays,
-    skipDates: r.skipDates,
+    skipDates: r.skipDates.map((s) => s.date),
   };
 }
 
@@ -104,6 +104,9 @@ function configValues(input: RotationInput) {
     startOffset: input.startOffset,
     weekdays: input.weekdays,
     skipDates: input.skipDates,
+    closedTitle: input.closedTitle,
+    holidayCalendarId: input.holidayCalendarId,
+    holidayOpenDates: input.holidayOpenDates,
   };
 }
 

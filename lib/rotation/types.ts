@@ -1,6 +1,15 @@
 export const ROTATION_PERIODS = ["day", "week", "days"] as const;
 export type RotationPeriod = (typeof ROTATION_PERIODS)[number];
 
+/** An Ausfalltag: a Schließtag for a reason of the Verantwortlicher. */
+export interface SkipDate {
+  date: string;
+  reason: string;
+}
+
+/** "duty" = Dienst with Plätze, "closed" = Schließeintrag without Plätze. */
+export type RotationDutyKind = "duty" | "closed";
+
 /** Everything the round-robin needs; no database identifiers beyond user ids. */
 export interface RotationRule {
   /** Teilnehmer in rotation order (index = position). */

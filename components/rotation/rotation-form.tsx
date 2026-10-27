@@ -11,6 +11,7 @@ import { ChoiceChips, Field, inputClass } from "@/components/form-kit";
 import { MemberOrderList } from "@/components/rotation/member-order-list";
 import { useRotationForm } from "@/components/rotation/use-rotation-form";
 import { fetchSuggestedOffset, RotationApiError, useSaveRotation, type RotationCalendar } from "@/hooks/useRotations";
+import { useCalendars } from "@/hooks/useCalendars";
 import { handleRateLimitError } from "@/lib/rate-limit-client";
 import type { RotationDetail } from "@/lib/rotation/service";
 import type { RotationPeriod } from "@/lib/rotation/types";
@@ -28,10 +29,9 @@ export function RotationForm({
   onDone: () => void;
 }) {
   const t = useTranslations();
-  const { state, set, toggleWeekday, addSkipDate, updateSkipDate, removeSkipDate, toInput } = useRotationForm(
-    calendar,
-    rotation
-  );
+  const { state, set, toggleWeekday, addSkipDate, updateSkipDate, removeSkipDate, removeOpenDate, toInput } =
+    useRotationForm(calendar, rotation, { closedTitle: t("rotation.fields.closedTitleDefault") });
+  const { calendars } = useCalendars();
   const save = useSaveRotation();
   const [restartDate, setRestartDate] = useState(state.startDate);
 
@@ -174,15 +174,25 @@ export function RotationForm({
 
       <Field label={t("rotation.fields.skipDates")}>
         <div className="space-y-2">
-          {state.skipDates.map((date, index) => (
+          {state.skipDates.map((entry, index) => (
             <div key={index} className="flex items-center gap-2">
-              <Input
-                type="date"
-                aria-label={t("rotation.fields.skipDates")}
-                className={cn(inputClass, "min-w-0 flex-1")}
-                value={date}
-                onChange={(e) => updateSkipDate(index, e.target.value)}
-              />
+              <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
+                <Input
+                  type="date"
+                  aria-label={t("rotation.fields.skipDates")}
+                  className={cn(inputClass, "min-w-0 flex-1")}
+                  value={entry.date}
+                  onChange={(e) => updateSkipDate(index, { date: e.target.value })}
+                />
+                <Input
+                  aria-label={t("rotation.fields.skipReason")}
+                  placeholder={t("rotation.fields.skipReason")}
+                  className={cn(inputClass, "min-w-0 flex-1")}
+                  maxLength={100}
+                  value={entry.reason}
+                  onChange={(e) => updateSkipDate(index, { reason: e.target.value })}
+                />
+              </div>
               <Button type="button" variant="ghost" size="icon" aria-label={t("rotation.removeMember")} onClick={() => removeSkipDate(index)}>
                 <X className="size-4" />
               </Button>
@@ -194,6 +204,43 @@ export function RotationForm({
           </Button>
         </div>
       </Field>
+
+      <Field label={t("rotation.fields.closedTitle")} hint={t("rotation.fields.closedTitleHint")}>
+        <Input className={inputClass} maxLength={100} value={state.closedTitle} onChange={(e) => set("closedTitle", e.target.value)} />
+      </Field>
+
+      <Field label={t("rotation.fields.holidayCalendar")} hint={t("rotation.fields.holidayCalendarHint")}>
+        <Select value={state.holidayCalendarId ?? "none"} onValueChange={(v) => set("holidayCalendarId", v === "none" ? null : v)}>
+          <SelectTrigger className={cn(inputClass, "w-full")}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">{t("rotation.fields.holidayCalendarNone")}</SelectItem>
+            {calendars
+              .filter((c) => c.id !== calendar.id)
+              .map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </Field>
+
+      {state.holidayOpenDates.length > 0 && (
+        <Field label={t("rotation.fields.holidayOpenDates")}>
+          <ul className="space-y-1">
+            {state.holidayOpenDates.map((date) => (
+              <li key={date} className="flex items-center gap-2 text-sm">
+                <span className="flex-1">{date}</span>
+                <Button type="button" variant="ghost" size="icon" aria-label={t("rotation.removeMember")} onClick={() => removeOpenDate(date)}>
+                  <X className="size-4" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Field>
+      )}
 
       <Field label={t("rotation.fields.members")}>
         <MemberOrderList members={calendar.members} value={state.memberIds} onChange={(ids) => set("memberIds", ids)} />

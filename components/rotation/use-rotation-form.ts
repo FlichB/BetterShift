@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { RotationDetail } from "@/lib/rotation/service";
-import type { RotationPeriod } from "@/lib/rotation/types";
+import type { RotationPeriod, SkipDate } from "@/lib/rotation/types";
 import type { RotationInput } from "@/lib/rotation/validate";
 import type { RotationCalendar } from "@/hooks/useRotations";
 import { formatDateToLocal } from "@/lib/date-utils";
@@ -16,7 +16,10 @@ export interface RotationFormState {
   startDate: string;
   startOffset: number;
   weekdays: number[];
-  skipDates: string[];
+  skipDates: SkipDate[];
+  closedTitle: string;
+  holidayCalendarId: string | null;
+  holidayOpenDates: string[];
   memberIds: string[];
 }
 
@@ -26,7 +29,7 @@ function nextMonday(): string {
   return formatDateToLocal(d);
 }
 
-export function useRotationForm(calendar: RotationCalendar, rotation?: RotationDetail) {
+export function useRotationForm(calendar: RotationCalendar, rotation: RotationDetail | undefined, defaults: { closedTitle: string }) {
   const [state, setState] = useState<RotationFormState>(() =>
     rotation
       ? {
@@ -39,6 +42,9 @@ export function useRotationForm(calendar: RotationCalendar, rotation?: RotationD
           startOffset: rotation.startOffset,
           weekdays: rotation.weekdays,
           skipDates: rotation.skipDates,
+          closedTitle: rotation.closedTitle,
+          holidayCalendarId: rotation.holidayCalendarId,
+          holidayOpenDates: rotation.holidayOpenDates,
           memberIds: rotation.memberIds,
         }
       : {
@@ -51,6 +57,9 @@ export function useRotationForm(calendar: RotationCalendar, rotation?: RotationD
           startOffset: 0,
           weekdays: [6],
           skipDates: [],
+          closedTitle: defaults.closedTitle,
+          holidayCalendarId: null,
+          holidayOpenDates: [],
           memberIds: [],
         }
   );
@@ -71,11 +80,16 @@ export function useRotationForm(calendar: RotationCalendar, rotation?: RotationD
         : [...state.weekdays, day].sort((a, b) => a - b)
     );
 
-  const addSkipDate = () => set("skipDates", [...state.skipDates, state.startDate]);
-  const updateSkipDate = (index: number, date: string) =>
+  const addSkipDate = () => set("skipDates", [...state.skipDates, { date: state.startDate, reason: "" }]);
+  const updateSkipDate = (index: number, patch: Partial<SkipDate>) =>
     set(
       "skipDates",
-      state.skipDates.map((d, i) => (i === index ? date : d))
+      state.skipDates.map((d, i) => (i === index ? { ...d, ...patch } : d))
+    );
+  const removeOpenDate = (date: string) =>
+    set(
+      "holidayOpenDates",
+      state.holidayOpenDates.filter((d) => d !== date)
     );
   const removeSkipDate = (index: number) =>
     set(
@@ -95,7 +109,10 @@ export function useRotationForm(calendar: RotationCalendar, rotation?: RotationD
     startOffset: state.startOffset,
     weekdays: state.weekdays,
     skipDates: state.skipDates,
+    closedTitle: state.closedTitle,
+    holidayCalendarId: state.holidayCalendarId,
+    holidayOpenDates: state.holidayOpenDates,
   });
 
-  return { state, set, toggleWeekday, addSkipDate, updateSkipDate, removeSkipDate, toInput };
+  return { state, set, toggleWeekday, addSkipDate, updateSkipDate, removeSkipDate, removeOpenDate, toInput };
 }

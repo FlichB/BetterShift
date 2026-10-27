@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const rateLimitResponse = rateLimit(request, user?.id, "bundle-mutations", input.calendarId);
     if (rateLimitResponse) return rateLimitResponse;
 
-    const referenceError = await checkRotationReferences(input);
+    const referenceError = await checkRotationReferences(input, user?.id);
     if (referenceError) return NextResponse.json({ error: referenceError }, { status: 400 });
 
     const rotation = createRotation(input, user?.id ?? null);

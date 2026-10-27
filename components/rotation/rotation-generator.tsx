@@ -19,8 +19,10 @@ import {
 import { formatDateToLocal, formatLongDate, parseLocalDate } from "@/lib/date-utils";
 import { handleRateLimitError } from "@/lib/rate-limit-client";
 import { addDays } from "@/lib/rotation/dates";
+import { inputFromRotation } from "@/lib/rotation/input";
 import type { GenerationPlan, PlanEntry } from "@/lib/rotation/plan";
 import type { RotationDetail } from "@/lib/rotation/service";
+import { cn } from "@/lib/utils";
 
 const WEEK_CHOICES = [4, 12, 26, 52];
 const KINDS = ["create", "update", "unchanged", "delete"] as const;
@@ -89,24 +91,9 @@ export function RotationGenerator({
     (c) => c.n > 0
   );
 
-  const markSkip = (date: string) =>
+  const markSkip = (date: string, reason: string) =>
     save.mutate(
-      {
-        id: rotation.id,
-        input: {
-          name: rotation.name,
-          calendarId: rotation.calendarId,
-          presetId: rotation.presetId ?? "",
-          memberIds: rotation.memberIds,
-          perShift: rotation.perShift,
-          period: rotation.period,
-          periodDays: rotation.periodDays,
-          startDate: rotation.startDate,
-          startOffset: rotation.startOffset,
-          weekdays: rotation.weekdays,
-          skipDates: [...rotation.skipDates, date],
-        },
-      },
+      { id: rotation.id, input: { ...inputFromRotation(rotation), skipDates: [...rotation.skipDates, { date, reason }] } },
       { onSuccess: reload, onError }
     );
 
@@ -210,7 +197,7 @@ export function RotationGenerator({
           </div>
           <ul className="divide-y divide-line">
             {plan.entries.map((entry) => (
-              <PlanRow key={entry.date} entry={entry} name={name} date={day(entry.date)} busy={save.isPending} onSkip={() => markSkip(entry.date)} />
+              <PlanRow key={entry.date} entry={entry} name={name} date={day(entry.date)} busy={save.isPending} onSkip={(reason) => markSkip(entry.date, reason)} />
             ))}
           </ul>
         </div>
@@ -230,9 +217,10 @@ function PlanRow({
   name: (id: string) => string;
   date: string;
   busy: boolean;
-  onSkip: () => void;
+  onSkip: (reason: string) => void;
 }) {
   const t = useTranslations();
+  const [reason, setReason] = useState<string | null>(null);
   const locked = entry.kind === "update" || entry.kind === "unchanged" ? entry.locked : [];
   return (
     <li className="flex flex-col gap-1.5 px-3 py-2.5 md:flex-row md:items-center md:gap-4">
@@ -253,11 +241,30 @@ function PlanRow({
             {entry.fieldsChanged && ` ${t("rotation.generator.fieldsChanged")}`}
           </span>
         )}
-        {entry.kind !== "delete" && (
-          <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={onSkip}>
-            {t("rotation.generator.markSkip")}
-          </Button>
-        )}
+        {entry.kind !== "delete" &&
+          (reason === null ? (
+            <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={() => setReason("")}>
+              {t("rotation.generator.markSkip")}
+            </Button>
+          ) : (
+            <span className="flex w-full items-center gap-2 md:w-auto">
+              <Input
+                autoFocus
+                aria-label={t("rotation.generator.skipReason")}
+                placeholder={t("rotation.generator.skipReason")}
+                className={cn(inputClass, "h-8 min-w-0 flex-1 md:w-48")}
+                maxLength={100}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+              <Button type="button" size="sm" disabled={busy || reason.trim() === ""} onClick={() => onSkip(reason.trim())}>
+                {t("rotation.generator.skipConfirm")}
+              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => setReason(null)}>
+                {t("rotation.cancel")}
+              </Button>
+            </span>
+          ))}
       </span>
     </li>
   );

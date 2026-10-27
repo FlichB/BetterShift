@@ -34,6 +34,9 @@ beforeEach(() => {
     startOffset: 0,
     weekdays: [6],
     skipDates: [],
+    closedTitle: "Geschlossen",
+    holidayCalendarId: null,
+    holidayOpenDates: [],
   };
 });
 
@@ -127,7 +130,7 @@ describe("rotation service", () => {
         .from(rotationSlotLocks)
         .where(eq(rotationSlotLocks.shiftId, first.shiftId))
         .all();
-    updateRotation(rotation.id, { ...input, startOffset: 3, skipDates: ["2026-11-07"] });
+    updateRotation(rotation.id, { ...input, startOffset: 3, skipDates: [{ date: "2026-11-07", reason: "Inventur" }] });
     await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, later);
     expect(dutiesOf(rotation.id).filter((d) => d.date <= "2026-11-14")).toEqual(before);
     expect(locksOf()).toEqual([lock]);
@@ -157,7 +160,7 @@ describe("rotation service", () => {
   it("removes duties that became Ausfalltage", async () => {
     const rotation = createRotation(input, team.ownerId);
     await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, now);
-    updateRotation(rotation.id, { ...input, skipDates: ["2026-11-14"] });
+    updateRotation(rotation.id, { ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] });
     const summary = await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, now);
     expect(summary.deleted).toBe(1);
     expect(dutiesOf(rotation.id).map((d) => d.date)).toEqual(["2026-11-07", "2026-11-21", "2026-11-28"]);

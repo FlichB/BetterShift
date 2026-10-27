@@ -5,7 +5,7 @@ import { canViewCalendar } from "@/lib/auth/permissions";
 import type { RotationInput } from "@/lib/rotation/validate";
 
 /** Checks that need the database; returns an error code for rotation.errors.<code> or null. */
-export async function checkRotationReferences(input: RotationInput): Promise<string | null> {
+export async function checkRotationReferences(input: RotationInput, actorId: string | undefined): Promise<string | null> {
   const calendar = db.select().from(calendars).where(eq(calendars.id, input.calendarId)).get();
   if (!calendar) return "calendarId";
   if (!calendar.signupsEnabled) return "signupsDisabled";
@@ -23,6 +23,11 @@ export async function checkRotationReferences(input: RotationInput): Promise<str
   if (!preset) return "presetId";
   for (const memberId of input.memberIds) {
     if (!(await canViewCalendar(memberId, input.calendarId))) return "members";
+  }
+  if (input.holidayCalendarId !== null) {
+    if (input.holidayCalendarId === input.calendarId) return "holidayCalendarSame";
+    const holidays = db.select({ id: calendars.id }).from(calendars).where(eq(calendars.id, input.holidayCalendarId)).get();
+    if (!holidays || !(await canViewCalendar(actorId, input.holidayCalendarId))) return "holidayCalendar";
   }
   return null;
 }
