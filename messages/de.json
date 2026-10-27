@@ -1656,6 +1656,8 @@
       "notBroadcast": "Nur Angebote an alle können ausgeblendet werden.",
       "dutySlotSwapOnly": "Plätze von Diensten wechseln nur über die Tauschbörse.",
       "closedDuty": "An einem Schließtag gibt es keine Plätze.",
+      "counterNotDue": "Für diesen Tausch ist kein Ausgleich offen.",
+      "outsideWindow": "Dieser Dienst liegt außerhalb des Ausgleichsfensters.",
       "internal": "Unerwarteter Fehler."
     },
     "retry": "Erneut versuchen",

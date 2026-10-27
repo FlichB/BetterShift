@@ -1,6 +1,8 @@
 // [fork] Swap board types shared by server and client; no DB imports here.
-export type SwapType = "give" | "exchange";
+export type SwapType = "give" | "exchange" | "forced";
 export type SwapStatus = "open" | "accepted" | "declined" | "withdrawn" | "expired" | "cancelled";
+/** Ausgleich of a forced swap; null on other types and on a forced offer nobody took yet. */
+export type CounterStatus = "pending" | "chosen" | "waived";
 
 export type SwapErrorCode =
   | "notFound"
@@ -19,7 +21,9 @@ export type SwapErrorCode =
   | "notDirect"
   | "notBroadcast"
   | "dutySlotSwapOnly"
-  | "closedDuty";
+  | "closedDuty"
+  | "counterNotDue"
+  | "outsideWindow";
 
 export interface DutyInfo {
   shiftId: string;

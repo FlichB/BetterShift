@@ -1656,6 +1656,8 @@
       "notBroadcast": "Solo se pueden ocultar las ofertas dirigidas a todos.",
       "dutySlotSwapOnly": "Las plazas de los turnos solo cambian de manos a través de la bolsa de cambios.",
       "closedDuty": "En un día de cierre no hay plazas.",
+      "counterNotDue": "Para este intercambio no hay ninguna compensación pendiente.",
+      "outsideWindow": "Este turno está fuera del plazo de compensación.",
       "internal": "Error inesperado."
     },
     "retry": "Reintentar",

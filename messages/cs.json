@@ -1656,6 +1656,8 @@
       "notBroadcast": "Skrýt lze jen nabídky určené všem.",
       "dutySlotSwapOnly": "Místa ve službách se předávají jen přes burzu výměn.",
       "closedDuty": "V den zavření nejsou žádná místa.",
+      "counterNotDue": "Pro tuto výměnu není otevřená žádná kompenzace.",
+      "outsideWindow": "Tato služba leží mimo okno pro kompenzaci.",
       "internal": "Neočekávaná chyba."
     },
     "retry": "Zkusit znovu",

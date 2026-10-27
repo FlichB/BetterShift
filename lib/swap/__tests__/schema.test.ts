@@ -81,6 +81,28 @@ describe("swap schema", () => {
     expect(getSwap(any.id)).toMatchObject({ status: "accepted", acceptedShiftId: null, acceptedByUserId: null });
   });
 
+  it("stores a forced swap with its Ausgleich and keeps it when the forcing user is deleted", () => {
+    const team = seedTeam({ members: 2 });
+    const shift = seedShift(team.calendarId);
+    const swap = db
+      .insert(shiftSwaps)
+      .values({
+        type: "forced",
+        status: "accepted",
+        offeredShiftId: shift.id,
+        offeredByUserId: team.memberIds[0],
+        acceptedByUserId: team.memberIds[1],
+        forcedByUserId: team.memberIds[1],
+        counterStatus: "pending",
+        counterWindowEnd: "2027-02-07",
+      })
+      .returning()
+      .get();
+    expect(swap).toMatchObject({ counterStatus: "pending", counterWindowEnd: "2027-02-07", waiveReason: null });
+    db.delete(user).where(eq(user.id, team.memberIds[1])).run();
+    expect(getSwap(swap.id)).toMatchObject({ forcedByUserId: null, acceptedByUserId: null });
+  });
+
   it("names the unique open-offer index", () => {
     const row = db.$client
       .prepare("select sql from sqlite_master where name = 'shift_swaps_open_slot_idx'")

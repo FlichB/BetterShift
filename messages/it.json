@@ -1656,6 +1656,8 @@
       "notBroadcast": "Si possono nascondere solo le offerte rivolte a tutti.",
       "dutySlotSwapOnly": "I posti dei turni cambiano di mano solo tramite la bacheca scambi.",
       "closedDuty": "In un giorno di chiusura non ci sono posti.",
+      "counterNotDue": "Per questo scambio non c'è nessuna compensazione in sospeso.",
+      "outsideWindow": "Questo turno è fuori dalla finestra di compensazione.",
       "internal": "Errore imprevisto."
     },
     "retry": "Riprova",

@@ -4,9 +4,9 @@
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { shifts, user } from "@/lib/db/schema";
-import type { SwapStatus, SwapType } from "@/lib/swap/types";
+import type { CounterStatus, SwapStatus, SwapType } from "@/lib/swap/types";
 
-/** An Angebot: one Platz (offered shift + offering user) given away or swapped. */
+/** An Angebot: one Platz (offered shift + offering user) swapped, or handed over by force. */
 export const shiftSwaps = sqliteTable(
   "shift_swaps",
   {
@@ -28,6 +28,13 @@ export const shiftSwaps = sqliteTable(
     acceptedByUserId: text("accepted_by_user_id").references(() => user.id, { onDelete: "set null" }),
     acceptedShiftId: text("accepted_shift_id").references(() => shifts.id, { onDelete: "set null" }),
     note: text("note"),
+    // forced only (spec D3-D8)
+    forcedByUserId: text("forced_by_user_id").references(() => user.id, { onDelete: "set null" }),
+    counterStatus: text("counter_status").$type<CounterStatus>(),
+    // last day of the Ausgleichsfenster, local YYYY-MM-DD
+    counterWindowEnd: text("counter_window_end"),
+    counterResolvedByUserId: text("counter_resolved_by_user_id").references(() => user.id, { onDelete: "set null" }),
+    waiveReason: text("waive_reason"),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
@@ -39,6 +46,9 @@ export const shiftSwaps = sqliteTable(
       .where(sql`status = 'open'`),
     index("shift_swaps_status_idx").on(table.status),
     index("shift_swaps_targetUserId_idx").on(table.targetUserId),
+    index("shift_swaps_counter_pending_idx")
+      .on(table.acceptedByUserId)
+      .where(sql`counter_status = 'pending'`),
   ]
 );
 

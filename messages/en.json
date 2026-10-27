@@ -1656,6 +1656,8 @@
       "notBroadcast": "Only offers to everyone can be hidden.",
       "dutySlotSwapOnly": "Places on duties change hands only through the swap board.",
       "closedDuty": "There are no places on a closure day.",
+      "counterNotDue": "There is no open counter duty for this swap.",
+      "outsideWindow": "This duty is outside the counter-duty window.",
       "internal": "Unexpected error."
     },
     "retry": "Try again",

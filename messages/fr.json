@@ -1656,6 +1656,8 @@
       "notBroadcast": "Seules les offres destinées à tous peuvent être masquées.",
       "dutySlotSwapOnly": "Les places des services ne changent de mains que via la bourse d'échange.",
       "closedDuty": "Il n'y a pas de places un jour de fermeture.",
+      "counterNotDue": "Aucune compensation n'est en attente pour cet échange.",
+      "outsideWindow": "Ce service se situe en dehors de la période de compensation.",
       "internal": "Erreur inattendue."
     },
     "retry": "Réessayer",
