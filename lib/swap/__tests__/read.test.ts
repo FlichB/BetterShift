@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { acceptOffer, calendarState, chooseCounter, createOffer, declineOffer, forceSwap, hideOffer, listBoard, listDuties, withdrawOffer } from "@/lib/swap/service";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { user } from "@/lib/db/schema";
+import { reconcileRotation } from "@/lib/dayoff/service";
+import { rotations } from "@/lib/rotation/schema";
 import { now, seedDuties } from "./fixtures";
 
 let s: Awaited<ReturnType<typeof seedDuties>>;
@@ -131,6 +136,27 @@ describe("calendarState templates and offers", () => {
     const state = calendarState(s.team.calendarId, now);
     expect(state.entryTemplates[shiftId]).toBe("{Vorname} Dienst");
     expect(state.openOffers).toContainEqual({ shiftId, userId: s.m0 });
+  });
+});
+
+describe("calendarState Dienstfreie", () => {
+  const enable = (on: boolean) => {
+    db.update(rotations).set({ dayOffEnabled: on }).where(eq(rotations.id, s.rotation.id)).run();
+    db.transaction((tx) => reconcileRotation(tx, s.rotation.id, now));
+  };
+
+  it("lists one dated Dienstfrei per Platz while the rotation has them on", () => {
+    enable(true);
+    const state = calendarState(s.team.calendarId, now);
+    expect(state.dayOffs).toHaveLength(16);
+    const first = db.select({ name: user.name }).from(user).where(eq(user.id, s.m0)).get()!.name!.split(" ")[0];
+    expect(state.dayOffs).toContainEqual(expect.objectContaining({ userId: s.m0, date: "2026-11-09", title: `${first} dienstfrei` }));
+  });
+
+  it("lists none after switching them off", () => {
+    enable(true);
+    enable(false);
+    expect(calendarState(s.team.calendarId, now).dayOffs).toHaveLength(0);
   });
 });
 

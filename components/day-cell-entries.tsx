@@ -24,7 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuickSelfSignup, useShiftSignupPermission } from "@/hooks/useShiftSignups";
 import { SwapMarker } from "@/components/swap/swap-marker"; // [fork]
 import { useSwapCalendarState } from "@/hooks/useSwaps"; // [fork]
-import { expandDutyPlaces, type DutyPlaceIndex } from "@/lib/rotation/places"; // [fork]
+import { dayOffEntries, expandDutyPlaces, type DutyPlaceIndex } from "@/lib/rotation/places"; // [fork]
 
 const LONG_PRESS_MS = 500;
 
@@ -37,6 +37,14 @@ export interface DayContent {
   notes: CalendarNote[];
 }
 
+/** [fork] The Dienstfreie of every calendar whose own shifts are shown, as rendering entries. */
+function calendarDayOffs(shifts: ShiftWithCalendar[], index: DutyPlaceIndex): ShiftWithCalendar[] {
+  if (index.dayOffs.size === 0) return [];
+  const bases = new Map<string, ShiftWithCalendar>();
+  for (const shift of shifts) if (!bases.has(shift.calendarId)) bases.set(shift.calendarId, shift);
+  return [...bases.values()].flatMap((base) => [...index.dayOffs.keys()].flatMap((date) => dayOffEntries(date, base, index)));
+}
+
 /** One pass over the shifts instead of scanning every shift and note per day. */
 export function buildDayContents(
   days: Date[],
@@ -47,7 +55,7 @@ export function buildDayContents(
   includeDay: (day: Date) => boolean,
   places?: { index: DutyPlaceIndex; openLabel: string } // [fork]
 ): Map<string, DayContent> {
-  const shown = places ? expandDutyPlaces(shifts, places.index, places.openLabel) : shifts; // [fork] one entry per Platz
+  const shown = places ? [...expandDutyPlaces(shifts, places.index, places.openLabel), ...calendarDayOffs(shifts, places.index)] : shifts; // [fork] one entry per Platz, plus Dienstfreie
   const shiftsByDay = new Map<string, ShiftWithCalendar[]>();
   for (const shift of shown) { // [fork]
     if (!shift.date) continue;
@@ -186,7 +194,7 @@ export function QuickSignupButton({
   const capacity = shift.signupCapacity ?? null;
   const alreadySignedUp = !!currentUser && signups.some((s) => s.id === currentUser.id);
   const isFull = capacity != null && signups.length >= capacity;
-  if (shift.dutyPlace) return null; // [fork] rendering copy of a Platz
+  if (shift.dutyPlace || shift.dayOff) return null; // [fork] rendering copy of a Platz or a Dienstfrei
   if (!canManageOwn || alreadySignedUp || isFull || (dutyShiftIds.has(shift.id) && !canManageOthers)) return null; // [fork]
 
   return (
@@ -294,7 +302,7 @@ export function ShiftChip({
             <span className={cn(lineClass(wrap), "min-w-0 flex-1 text-[11.5px] font-medium leading-4")}>
               {shift.title}
             </span>
-            <SwapMarker shiftId={shift.dutyPlace?.shiftId ?? shift.id} userId={shift.dutyPlace ? (shift.dutyPlace.userId ?? "") : null} calendarId={shift.calendarId} /> {/* [fork] */}
+            {!shift.dayOff && <SwapMarker shiftId={shift.dutyPlace?.shiftId ?? shift.id} userId={shift.dutyPlace ? (shift.dutyPlace.userId ?? "") : null} calendarId={shift.calendarId} />} {/* [fork] no marker on a Dienstfrei */}
             <SignupBadge shift={shift} enabled={signupsEnabled} />
             {interactive && <QuickSignupButton shift={shift} />}
           </span>
@@ -332,7 +340,7 @@ export function ShiftChip({
           variant="compact"
         />
       </span>
-      <SwapMarker shiftId={shift.dutyPlace?.shiftId ?? shift.id} userId={shift.dutyPlace ? (shift.dutyPlace.userId ?? "") : null} calendarId={shift.calendarId} /> {/* [fork] */}
+      {!shift.dayOff && <SwapMarker shiftId={shift.dutyPlace?.shiftId ?? shift.id} userId={shift.dutyPlace ? (shift.dutyPlace.userId ?? "") : null} calendarId={shift.calendarId} />} {/* [fork] no marker on a Dienstfrei */}
       <SignupBadge shift={shift} enabled={signupsEnabled} />
       {interactive && <QuickSignupButton shift={shift} />}
       <ChipTime shift={shift} full={wrap} />

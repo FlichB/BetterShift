@@ -8,6 +8,7 @@ import { queryKeys } from "@/lib/query-keys";
 import { swapQueryKeys } from "@/lib/swap/query-keys";
 import type { SlotMove } from "@/lib/swap/rules";
 import type { Board, CalendarSwapState, CounterCandidatesResponse, DutiesResponse } from "@/lib/swap/types";
+import type { DayOffIndexEntry } from "@/lib/rotation/places"; // [fork]
 
 export class SwapApiError extends Error {
   constructor(
@@ -50,6 +51,19 @@ export function useSwapDuties(calendarId: string | undefined) {
   });
 }
 
+// [fork] Dienstfreie of one calendar by date, in the shape of DutyPlaceIndex.dayOffs
+function dayOffsByDate(calendarId: string | undefined, rows: CalendarSwapState["dayOffs"]): Map<string, DayOffIndexEntry[]> {
+  const map = new Map<string, DayOffIndexEntry[]>();
+  if (!calendarId) return map;
+  for (const d of rows) {
+    const entry = { id: d.id, calendarId, title: d.title };
+    const list = map.get(d.date);
+    if (list) list.push(entry);
+    else map.set(d.date, [entry]);
+  }
+  return map;
+}
+
 /** Which shifts are duties and which carry an open offer; empty when auth is off. */
 export function useSwapCalendarState(calendarId: string | undefined) {
   const { isAuthEnabled } = useAuthFeatures();
@@ -66,8 +80,9 @@ export function useSwapCalendarState(calendarId: string | undefined) {
       openOfferShiftIds: new Set(data?.openOfferShiftIds ?? []),
       entryTemplates: new Map(Object.entries(data?.entryTemplates ?? {})),
       openOfferKeys: new Set((data?.openOffers ?? []).map((o) => `${o.shiftId}:${o.userId}`)),
+      dayOffs: dayOffsByDate(calendarId, data?.dayOffs ?? []), // [fork]
     }),
-    [data]
+    [data, calendarId] // [fork] calendarId tags the Dienstfreie
   );
 }
 

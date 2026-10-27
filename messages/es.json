@@ -1747,6 +1747,7 @@
     }
   },
   "dayOff": {
+    "calendarHint": "Día libre – detalles en el tablón de intercambios",
     "errors": {
       "notFound": "Este día libre ya no existe.",
       "forbidden": "No tienes permiso para hacer eso.",

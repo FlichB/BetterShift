@@ -15,6 +15,7 @@ import {
   NoteDetailCard,
   PeriodSummaryView,
   ShiftDetailRow,
+  useDayOffEntries, // [fork]
 } from "@/components/day-detail";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,8 @@ export interface DayActions {
 }
 
 export interface DayViewModel {
+  /** [fork] The calendar shown, for its Dienstfreie */
+  calendarId?: string;
   selectedDay: Date;
   currentDate: Date;
   dayShifts: ShiftWithCalendar[];
@@ -85,6 +88,7 @@ export function DayInspector({
     canDeleteShift,
   } = model;
   const labels = useDayLabels(selectedDay);
+  const dayOffRows = useDayOffEntries(model.calendarId, selectedDay); // [fork]
   const monthName = format(currentDate, "LLLL", { locale: getDateLocale(locale) });
 
   return (
@@ -134,6 +138,10 @@ export function DayInspector({
             onDelete={actions.onDeleteShift}
           />
         ))}
+        {/* [fork] Dienstfreie link to the swap board, never to the shift sheet */}
+        {dayOffRows.map((entry) => (
+          <ShiftDetailRow key={entry.id} shift={entry} canEdit={false} canDelete={false} actions="menu" onEdit={() => {}} onDelete={() => {}} />
+        ))}
         {dayNotes.map((note) => (
           <NoteDetailCard
             key={note.id}
@@ -141,7 +149,7 @@ export function DayInspector({
             onOpen={canAddNote ? actions.onOpenNote : undefined}
           />
         ))}
-        {dayShifts.length === 0 && dayNotes.length === 0 && (
+        {dayShifts.length === 0 && dayNotes.length === 0 && dayOffRows.length === 0 && ( // [fork] dayOffRows
           <p className="px-1 py-2 text-[13px] text-fg-tertiary">
             {t("calendarView.dayEmpty")}
           </p>

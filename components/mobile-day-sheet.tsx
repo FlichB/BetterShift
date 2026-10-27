@@ -24,6 +24,7 @@ import {
   NoteDetailCard,
   PeriodSummaryView,
   ShiftDetailRow,
+  useDayOffEntries, // [fork]
 } from "@/components/day-detail";
 import { DayActions, DayViewModel, useDayLabels } from "@/components/day-inspector";
 import { PeriodSummary, StatsPeriod } from "@/hooks/useDaySummary";
@@ -223,6 +224,7 @@ export function MobileDaySheet({
   const { selectedDay, dayShifts, dayNotes, canAddShift, canAddNote, canEditShift, canDeleteShift } =
     model;
   const labels = useDayLabels(selectedDay);
+  const dayOffRows = useDayOffEntries(model.calendarId, selectedDay); // [fork]
 
   const windowHeight = useWindowHeight();
   const [topRef, topHeight] = useElementHeight<HTMLDivElement>();
@@ -317,6 +319,10 @@ export function MobileDaySheet({
                   onDelete={actions.onDeleteShift}
                 />
               ))}
+              {/* [fork] Dienstfreie link to the swap board, never to the shift sheet */}
+              {dayOffRows.map((entry) => (
+                <ShiftDetailRow key={entry.id} shift={entry} canEdit={false} canDelete={false} actions="inline" onEdit={() => {}} onDelete={() => {}} />
+              ))}
               {dayNotes.map((note) => (
                 <NoteDetailCard
                   key={note.id}
@@ -324,7 +330,7 @@ export function MobileDaySheet({
                   onOpen={canAddNote ? (n) => { close(); actions.onOpenNote(n); } : undefined}
                 />
               ))}
-              {dayShifts.length === 0 && dayNotes.length === 0 && (
+              {dayShifts.length === 0 && dayNotes.length === 0 && dayOffRows.length === 0 && ( // [fork] dayOffRows
                 <p className="py-3 text-center text-[13px] text-fg-tertiary">
                   {t("calendarView.dayEmpty")}
                 </p>

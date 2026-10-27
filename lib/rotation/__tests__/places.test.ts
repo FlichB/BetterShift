@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { expandDutyPlaces, placeTitles } from "@/lib/rotation/places";
+import { DAY_OFF_COLOR, dayOffEntries, expandDutyPlaces, placeTitles } from "@/lib/rotation/places";
+import { formatDateToLocal } from "@/lib/date-utils";
 import type { ShiftWithCalendar } from "@/lib/types";
 
 const duty = {
@@ -16,7 +17,7 @@ const duty = {
   ],
 } as unknown as ShiftWithCalendar;
 const other = { ...duty, id: "s2", title: "Inventur", signups: [] } as unknown as ShiftWithCalendar;
-const index = { templates: new Map([["s1", "{Vorname} Dienst"]]) };
+const index = { templates: new Map([["s1", "{Vorname} Dienst"]]), dayOffs: new Map() };
 
 describe("placeTitles", () => {
   it("one title per holder, then one per free Platz", () => {
@@ -44,7 +45,45 @@ describe("expandDutyPlaces", () => {
 
   it("keeps a templated duty without holders and capacity visible", () => {
     const empty = { ...duty, id: "s3", signups: [], signupCapacity: null } as unknown as ShiftWithCalendar;
-    const result = expandDutyPlaces([empty], { templates: new Map([["s3", "{Vorname} Dienst"]]) }, "Offener Platz");
+    const result = expandDutyPlaces([empty], { templates: new Map([["s3", "{Vorname} Dienst"]]), dayOffs: new Map() }, "Offener Platz");
     expect(result).toEqual([empty]);
+  });
+});
+
+describe("dayOffEntries", () => {
+  const dayOffIndex = {
+    templates: new Map<string, string>(),
+    dayOffs: new Map([
+      ["2026-11-09", [
+        { id: "d1", calendarId: "c1", title: "Günther dienstfrei" },
+        { id: "d2", calendarId: "c2", title: "Anna dienstfrei" },
+      ]],
+    ]),
+  };
+  const base = { ...duty, calendar: { id: "c1", name: "Team", color: "#123456" } } as ShiftWithCalendar;
+
+  it("builds an all-day rendering entry per Dienstfrei of the base's calendar on that date", () => {
+    const result = dayOffEntries("2026-11-09", base, dayOffIndex);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      id: "dayoff:d1",
+      calendarId: "c1",
+      calendar: { id: "c1", name: "Team", color: "#123456" },
+      title: "Günther dienstfrei",
+      isAllDay: true,
+      startTime: "00:00",
+      endTime: "23:59",
+      color: DAY_OFF_COLOR,
+      signups: [],
+      signupCapacity: null,
+      dayOff: { id: "d1" },
+    });
+    expect(formatDateToLocal(result[0].date!)).toBe("2026-11-09");
+    expect(result[0].dutyPlace).toBeUndefined();
+  });
+
+  it("returns every calendar's entries without a base and none on other dates", () => {
+    expect(dayOffEntries("2026-11-09", null, dayOffIndex).map((e) => e.dayOff?.id)).toEqual(["d1", "d2"]);
+    expect(dayOffEntries("2026-11-10", base, dayOffIndex)).toEqual([]);
   });
 });

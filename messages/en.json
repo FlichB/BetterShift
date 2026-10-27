@@ -1747,6 +1747,7 @@
     }
   },
   "dayOff": {
+    "calendarHint": "Day off – details on the swap board",
     "errors": {
       "notFound": "This day off no longer exists.",
       "forbidden": "You are not allowed to do that.",

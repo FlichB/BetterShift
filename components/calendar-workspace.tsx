@@ -210,6 +210,7 @@ export function CalendarWorkspace({
 
   const model: DayViewModel = {
     selectedDay,
+    calendarId, // [fork]
     currentDate,
     ...dayData,
     summary: monthSummary,

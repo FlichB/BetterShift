@@ -1,11 +1,27 @@
 // [fork] One calendar entry per Platz (spec 12.32): rendering copies of a duty, titled by the Eintragsvorlage.
-// Pure; the copies are display-only and never sent back to the server.
+// Dienstfreie join them as all-day rendering entries. Pure; the copies are display-only and never sent back to the server.
+import { parseLocalDate } from "@/lib/date-utils";
 import { entryTitle } from "@/lib/rotation/entry-title";
 import type { ShiftWithCalendar } from "@/lib/types";
+
+export const DAY_OFF_COLOR = "#0d9488";
+
+export interface DayOffIndexEntry {
+  id: string;
+  calendarId: string;
+  title: string;
+}
 
 export interface DutyPlaceIndex {
   /** shiftId → Eintragsvorlage, for duties (not Schließeinträge) only. */
   templates: Map<string, string>;
+  /** date (YYYY-MM-DD) → the Dienstfreie on that day. */
+  dayOffs: Map<string, DayOffIndexEntry[]>;
+}
+
+/** The same index without Dienstfreie, for views that show them nowhere (compare mode). */
+export function withoutDayOffs(index: DutyPlaceIndex): DutyPlaceIndex {
+  return { ...index, dayOffs: new Map() };
 }
 
 export function placeTitles(shift: ShiftWithCalendar, template: string, openLabel: string): { userId: string | null; title: string }[] {
@@ -31,4 +47,33 @@ export function expandDutyPlaces(shifts: ShiftWithCalendar[], index: DutyPlaceIn
       dutyPlace: { shiftId: shift.id, userId },
     }));
   });
+}
+
+/**
+ * Rendering entries for the Dienstfreie on `date`. With a base shift only those of its calendar,
+ * which also lends them its calendar object; without one every calendar's.
+ */
+export function dayOffEntries(date: string, base: ShiftWithCalendar | null, index: DutyPlaceIndex): ShiftWithCalendar[] {
+  const entries = (index.dayOffs.get(date) ?? []).filter((d) => !base || d.calendarId === base.calendarId);
+  return entries.map((d) => ({
+    id: `dayoff:${d.id}`,
+    calendarId: d.calendarId,
+    calendar: base?.calendar,
+    presetId: null,
+    date: parseLocalDate(date),
+    startTime: "00:00",
+    endTime: "23:59",
+    title: d.title,
+    color: DAY_OFF_COLOR,
+    notes: null,
+    isAllDay: true,
+    syncedFromExternal: false,
+    externalSyncId: null,
+    signupCapacity: null,
+    signups: [],
+    dayOff: { id: d.id },
+    createdBy: null,
+    createdAt: null,
+    updatedAt: null,
+  }));
 }

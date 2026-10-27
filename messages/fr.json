@@ -1747,6 +1747,7 @@
     }
   },
   "dayOff": {
+    "calendarHint": "Jour de repos – détails sur la bourse d'échange",
     "errors": {
       "notFound": "Ce jour de repos n'existe plus.",
       "forbidden": "Tu n'as pas la permission de faire cela.",

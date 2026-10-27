@@ -24,6 +24,7 @@ import {
   useSignupsEnabled,
 } from "@/components/day-cell-entries";
 import { useDutyPlaces } from "@/hooks/useDutyPlaces"; // [fork]
+import { withoutDayOffs } from "@/lib/rotation/places"; // [fork]
 import { hasVisibleCustomFields } from "@/components/custom-field-summary";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import { cellFont, cellMonoFont, countWrappedLines, textWidth } from "@/lib/text-measure";
@@ -261,7 +262,12 @@ export function MonthGrid({
       : 1;
 
   const calendarIds = useMemo(() => [...new Set(shifts.map((s) => s.calendarId))], [shifts]); // [fork]
-  const places = useDutyPlaces(calendarIds); // [fork]
+  const dutyPlaces = useDutyPlaces(calendarIds); // [fork]
+  // [fork] Compare mode shows the calendars side by side without Dienstfreie
+  const places = useMemo(
+    () => (variant === "compare" ? { ...dutyPlaces, index: withoutDayOffs(dutyPlaces.index) } : dutyPlaces),
+    [variant, dutyPlaces]
+  );
   // One pass over the month instead of scanning every shift and note per cell
   const { maxShifts, maxExternalShifts, sortType, sortOrder, combinedSort } = layout;
   const dayContents = useMemo(() => {
