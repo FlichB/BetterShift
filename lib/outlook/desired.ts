@@ -48,7 +48,7 @@ export interface DesiredEvent {
   start: GraphDateTime;
   end: GraphDateTime;
   isAllDay: boolean;
-  showAs: "free" | "busy";
+  showAs: "free" | "busy" | "oof"; // [fork] oof = Dienstfrei
   attendees: Attendee[];
   details: EventDetails;
 }
@@ -113,6 +113,41 @@ export function desiredEvents(duty: DutyForSync): PlaceEvent[] {
     });
   }
   return result;
+}
+
+/** A dated Dienstfrei of one holder, as the Outlook sync sees it. */
+export interface DayOffForSync {
+  id: string;
+  shiftId: string;
+  rotationId: string;
+  userId: string;
+  date: string;
+  title: string;
+  holder: PlaceHolder;
+}
+
+export const dayOffKey = (id: string, userId: string): string => `dayoff:${id}:${userId}`;
+
+/** One all-day out-of-office event per Dienstfrei with only the holder invited. */
+export function desiredDayOffEvent(d: DayOffForSync): PlaceEvent {
+  const address = d.holder.email?.trim().toLowerCase() ?? "";
+  return {
+    key: dayOffKey(d.id, d.userId),
+    shiftId: d.shiftId,
+    userId: d.userId,
+    rotationId: d.rotationId,
+    date: d.date,
+    startTime: "00:00",
+    event: {
+      subject: d.title,
+      start: at(d.date, "00:00"),
+      end: at(addDays(d.date, 1), "00:00"),
+      isAllDay: true,
+      showAs: "oof",
+      attendees: [{ address, name: d.holder.name }],
+      details: { time: null, partners: [] },
+    },
+  };
 }
 
 /** Covers what Outlook shows; the invitee's own name is left out so renaming them does not re-send the invitation. */
