@@ -344,7 +344,8 @@ describe("checkCounterChoice", () => {
   });
 
   it("lists exactly the choosable duties, sorted by date", () => {
-    const { chosen: _, ...rest } = input();
+    const base = input();
+    const rest = { offer: base.offer, offered: base.offered, absentDuties: base.absentDuties, now: base.now };
     const slots = [slot(sat4, ["C"]), slot(sat3, ["C"]), slot(sat2, ["C"]), slot(sat1, ["C"])];
     expect(counterCandidates({ ...rest, slots }).map((d) => d.shiftId)).toEqual(["s2", "s3"]);
   });
