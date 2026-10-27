@@ -44,6 +44,8 @@ export function outlookStatus(rotationId: string, enabled: boolean, now: Date): 
   const failing = rows
     .filter((r) => r.lastError && r.startsAt.getTime() > now.getTime())
     .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+  // One line per duty: the panel keys by shiftId and both Plätze of a duty usually fail together.
+  const failingDuties = failing.filter((r, i) => failing.findIndex((o) => o.shiftId === r.shiftId) === i);
   const last = rows.reduce<Date | null>((max, r) => (r.syncedAt && (!max || r.syncedAt > max) ? r.syncedAt : max), null);
 
   return {
@@ -54,6 +56,6 @@ export function outlookStatus(rotationId: string, enabled: boolean, now: Date): 
     failed: failing.length,
     pending: Math.max(0, places.length - synced - failing.length),
     lastSyncedAt: last?.toISOString() ?? null,
-    errors: failing.slice(0, MAX_ERRORS).map((r) => ({ shiftId: r.shiftId, date: formatDateToLocal(r.startsAt), message: r.lastError! })),
+    errors: failingDuties.slice(0, MAX_ERRORS).map((r) => ({ shiftId: r.shiftId, date: formatDateToLocal(r.startsAt), message: r.lastError! })),
   };
 }

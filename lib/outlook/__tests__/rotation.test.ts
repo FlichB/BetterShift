@@ -29,6 +29,16 @@ describe("outlookStatus", () => {
     expect(status.lastSyncedAt).toBe(now.toISOString());
   });
 
+  it("lists a duty once when both of its Plätze fail", async () => {
+    setOutlookEnabled(s.rotation.id, true);
+    const graph = new FakeGraph();
+    graph.failures.push(new Error("outage"), new Error("outage"));
+    await syncOutlook(graph, now, { renderBody: () => "", cancelComment: "", rotationId: s.rotation.id });
+    const status = outlookStatus(s.rotation.id, true, now);
+    expect(status.failed).toBe(2); // events, not duties
+    expect(status.errors).toEqual([{ shiftId: s.duty("2026-11-07"), date: "2026-11-07", message: "outage" }]);
+  });
+
   it("reports an unknown rotation as not updated", () => {
     expect(setOutlookEnabled("nope", true)).toBe(false);
   });
