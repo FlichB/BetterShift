@@ -30,7 +30,19 @@ export function RotationForm({
   onDone: () => void;
 }) {
   const t = useTranslations();
-  const { state, set, toggleWeekday, addSkipDate, updateSkipDate, removeSkipDate, removeOpenDate, toInput } =
+  const {
+    state,
+    set,
+    toggleWeekday,
+    addSkipDate,
+    updateSkipDate,
+    removeSkipDate,
+    addReinforcedDate,
+    updateReinforcedDate,
+    removeReinforcedDate,
+    removeOpenDate,
+    toInput,
+  } =
     useRotationForm(calendar, rotation, { closedTitle: t("rotation.fields.closedTitleDefault") });
   const { calendars } = useCalendars();
   const save = useSaveRotation();
@@ -204,6 +216,41 @@ export function RotationForm({
           <Button type="button" variant="outline" size="sm" onClick={addSkipDate}>
             <Plus className="size-3.5" />
             {t("rotation.addSkipDate")}
+          </Button>
+        </div>
+      </Field>
+
+      <Field label={t("rotation.fields.reinforcedDates")} hint={t("rotation.fields.reinforcedHint")}>
+        <div className="space-y-2">
+          {state.reinforcedDates.map((entry, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
+                <Input
+                  type="date"
+                  aria-label={t("rotation.fields.reinforcedDates")}
+                  className={cn(inputClass, "min-w-0 flex-1")}
+                  value={entry.date}
+                  onChange={(e) => updateReinforcedDate(index, { date: e.target.value })}
+                />
+                <Input
+                  type="number"
+                  min={state.perShift + 1}
+                  max={state.memberIds.length}
+                  aria-label={t("rotation.fields.reinforcedPeople")}
+                  placeholder={t("rotation.fields.reinforcedPeople")}
+                  className={cn(inputClass, "min-w-0 sm:w-40")}
+                  value={entry.perShift}
+                  onChange={(e) => updateReinforcedDate(index, { perShift: Number(e.target.value) })}
+                />
+              </div>
+              <Button type="button" variant="ghost" size="icon" aria-label={t("rotation.removeMember")} onClick={() => removeReinforcedDate(index)}>
+                <X className="size-4" />
+              </Button>
+            </div>
+          ))}
+          <Button type="button" variant="outline" size="sm" onClick={addReinforcedDate}>
+            <Plus className="size-3.5" />
+            {t("rotation.addReinforcedDate")}
           </Button>
         </div>
       </Field>

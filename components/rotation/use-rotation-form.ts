@@ -104,7 +104,20 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
       state.skipDates.filter((_, i) => i !== index)
     );
 
-  const toInput = (): RotationInput => ({
+  const addReinforcedDate = () =>
+    set("reinforcedDates", [...state.reinforcedDates, { date: state.startDate, perShift: state.perShift + 1 }]);
+  const updateReinforcedDate = (index: number, patch: Partial<ReinforcedDate>) =>
+    set(
+      "reinforcedDates",
+      state.reinforcedDates.map((d, i) => (i === index ? { ...d, ...patch } : d))
+    );
+  const removeReinforcedDate = (index: number) =>
+    set(
+      "reinforcedDates",
+      state.reinforcedDates.filter((_, i) => i !== index)
+    );
+
+  const toInput =(): RotationInput => ({
     name: state.name,
     calendarId: calendar.id,
     presetId: state.presetId,
@@ -123,5 +136,17 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
     reinforcedDates: state.reinforcedDates,
   });
 
-  return { state, set, toggleWeekday, addSkipDate, updateSkipDate, removeSkipDate, removeOpenDate, toInput };
+  return {
+    state,
+    set,
+    toggleWeekday,
+    addSkipDate,
+    updateSkipDate,
+    removeSkipDate,
+    addReinforcedDate,
+    updateReinforcedDate,
+    removeReinforcedDate,
+    removeOpenDate,
+    toInput,
+  };
 }
