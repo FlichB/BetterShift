@@ -491,17 +491,23 @@ export function deleteRotation(
   return db.transaction((tx) => {
     let deletedDuties = 0;
     if (deleteFutureDuties) {
-      const duties = tx
-        .select({ shiftId: rotationDuties.shiftId, date: rotationDuties.date, startTime: shifts.startTime })
+      const entries = tx
+        .select({
+          shiftId: rotationDuties.shiftId,
+          date: rotationDuties.date,
+          kind: rotationDuties.kind,
+          startTime: shifts.startTime,
+        })
         .from(rotationDuties)
         .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
         .where(eq(rotationDuties.rotationId, id))
         .all()
         .filter((d) => !hasStarted(d.date, d.startTime, now));
-      if (duties.length > 0) {
-        tx.delete(shifts).where(inArray(shifts.id, duties.map((d) => d.shiftId))).run();
+      if (entries.length > 0) {
+        tx.delete(shifts).where(inArray(shifts.id, entries.map((d) => d.shiftId))).run();
       }
-      deletedDuties = duties.length;
+      // Schließeinträge go too, but only duties are reported.
+      deletedDuties = entries.filter((d) => d.kind === "duty").length;
     }
     // Remaining (past) shifts stay as plain shifts once their rotation_duties rows cascade away.
     const removed = tx.delete(rotations).where(eq(rotations.id, id)).returning().all();

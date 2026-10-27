@@ -309,7 +309,10 @@ describe("Schließtage", () => {
   it("deletes future Schließeinträge with the rotation", async () => {
     const rotation = createRotation({ ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] }, team.ownerId);
     await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
-    expect(deleteRotation(rotation.id, { deleteFutureDuties: true }, now)).toEqual({ deletedDuties: 4 });
+    const closure = dutiesOf(rotation.id).find((d) => d.kind === "closed")!;
+    // 3 duties + 1 Schließeintrag; only the duties are counted.
+    expect(deleteRotation(rotation.id, { deleteFutureDuties: true }, now)).toEqual({ deletedDuties: 3 });
+    expect(db.select().from(shifts).where(eq(shifts.id, closure.shiftId)).get()).toBeUndefined();
   });
 
   it("keeps a past Feiertag counting after it left the Feiertagskalender", async () => {
