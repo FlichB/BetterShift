@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logUserAction } from "@/lib/audit-log";
 import { swapAuditBase, type SwapResolvedMetadata } from "@/lib/swap/audit";
-import { swapErrorResponse, swapWriteContext } from "@/lib/swap/http";
-import { withdrawOffer } from "@/lib/swap/service";
+import { swapErrorResponse, swapManageContext, swapWriteContext } from "@/lib/swap/http";
+import { getSwap, withdrawOffer } from "@/lib/swap/service";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const ctx = await swapWriteContext(request, id, { allowOfferer: true });
+    // A forced offer is withdrawn by the management, not by its offerer.
+    const forced = getSwap(id)?.type === "forced";
+    const ctx = forced ? await swapManageContext(request, id) : await swapWriteContext(request, id, { allowOfferer: true });
     if (!ctx.ok) return ctx.response;
-    const swap = withdrawOffer(id, ctx.userId, new Date());
+    const swap = withdrawOffer(id, ctx.userId, new Date(), forced);
     await logUserAction<SwapResolvedMetadata>({
       action: "swap.withdrawn",
       userId: ctx.userId,

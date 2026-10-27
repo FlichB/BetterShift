@@ -206,6 +206,12 @@ export function useAuditDescription() {
           return t("adminAudit.describe.swapWithdrawn", { date: text(m, "offeredDate") });
         case "swap.expired":
           return t("adminAudit.describe.swapExpired", { date: text(m, "offeredDate") });
+        case "swap.forced":
+          return t("adminAudit.describe.swapForced", { date: text(m, "offeredDate"), calendar });
+        case "swap.counter_chosen":
+          return t("adminAudit.describe.swapCounterChosen", { date: text(m, "offeredDate"), other: text(m, "counterDate") });
+        case "swap.counter_waived":
+          return t("adminAudit.describe.swapCounterWaived", { date: text(m, "offeredDate"), reason: text(m, "reason") });
         case "swap.cancelled":
           return t("adminAudit.describe.swapCancelled", { date: text(m, "offeredDate") });
         // [fork] Outlook / notification events

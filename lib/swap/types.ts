@@ -94,4 +94,6 @@ export interface CalendarSwapState {
   entryTemplates: Record<string, string>;
   /** Who offers which Platz, so the calendar marks only that holder's entry. */
   openOffers: { shiftId: string; userId: string }[];
+  /** the caller may force swaps in this calendar */
+  canForce: boolean;
 }

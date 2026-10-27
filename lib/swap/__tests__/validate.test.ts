@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateAccept, validateOffer } from "@/lib/swap/validate";
+import { validateAccept, validateCounter, validateForce, validateOffer, validateWaive } from "@/lib/swap/validate";
 
 describe("validateOffer", () => {
   it("normalises a minimal exchange", () => {
@@ -41,5 +41,31 @@ describe("validateAccept", () => {
     expect(validateAccept(undefined)).toEqual({ ok: true, value: { shiftId: null } });
     expect(validateAccept({ shiftId: "s2" })).toEqual({ ok: true, value: { shiftId: "s2" } });
     expect(validateAccept({ shiftId: 3 })).toEqual({ ok: false, error: "invalid" });
+  });
+});
+
+describe("validateForce", () => {
+  it("needs a shift and an absent user; the Einspringer is optional", () => {
+    expect(validateForce({ shiftId: "s", absentUserId: "a" })).toEqual({
+      ok: true,
+      value: { shiftId: "s", absentUserId: "a", substituteUserId: null, note: null },
+    });
+    expect(validateForce({ shiftId: "s", absentUserId: "a", substituteUserId: "b", note: " krank " })).toEqual({
+      ok: true,
+      value: { shiftId: "s", absentUserId: "a", substituteUserId: "b", note: "krank" },
+    });
+    expect(validateForce({ shiftId: "s" }).ok).toBe(false);
+    expect(validateForce({ shiftId: "s", absentUserId: "a", substituteUserId: 5 }).ok).toBe(false);
+    expect(validateForce({ shiftId: "s", absentUserId: "a", note: "x".repeat(201) }).ok).toBe(false);
+  });
+});
+
+describe("validateCounter / validateWaive", () => {
+  it("checks the chosen duty and the reason", () => {
+    expect(validateCounter({ shiftId: "s" })).toEqual({ ok: true, value: { shiftId: "s" } });
+    expect(validateCounter({}).ok).toBe(false);
+    expect(validateWaive({ reason: "  kein Dienst  " })).toEqual({ ok: true, value: { reason: "kein Dienst" } });
+    expect(validateWaive({ reason: "   " }).ok).toBe(false);
+    expect(validateWaive({ reason: "x".repeat(501) }).ok).toBe(false);
   });
 });

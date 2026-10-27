@@ -631,7 +631,7 @@ export function listDuties(calendarId: string, userId: string, now: Date): DutyL
   }));
 }
 
-export function calendarState(calendarId: string, now: Date): CalendarSwapState {
+export function calendarState(calendarId: string, now: Date): Omit<CalendarSwapState, "canForce"> {
   expireDue(now);
   // Schließeinträge (kind != 'duty') are neither swappable duties nor split into Plätze.
   const duties = db
