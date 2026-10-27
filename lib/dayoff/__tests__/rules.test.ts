@@ -111,7 +111,9 @@ describe("revalidate", () => {
   it("moved on the re-derived standard day becomes standard silently", () =>
     expect(revalidate(row({ status: "moved", date: "2026-11-10" }), makeIsOff(new Set(["2026-11-09"]), new Set()), today)).toEqual({ status: "standard", date: "2026-11-10", standardDate: "2026-11-10", notify: null }));
   it("moved whose day has begun falls back to standard with a notice", () =>
-    expect(revalidate(row({ status: "moved", date: "2026-11-11" }), none, "2026-11-11")).toEqual({ status: "standard", date: "2026-11-09", standardDate: "2026-11-09", notify: "reset" }));
+    expect(revalidate(row({ status: "moved", date: "2026-11-11" }), none, "2026-11-11")).toEqual({ status: "standard", date: "2026-11-12", standardDate: "2026-11-12", notify: "reset" }));
+  it("never recomputes a standard date onto today or the past", () =>
+    expect(revalidate(row({ status: "standard", date: "2026-11-12", standardDate: "2026-11-12" }), none, "2026-11-10")).toMatchObject({ status: "standard", date: "2026-11-11", standardDate: "2026-11-11" }));
 });
 
 describe("isFrozen", () => {

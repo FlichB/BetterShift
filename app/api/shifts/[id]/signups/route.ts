@@ -87,7 +87,12 @@ export async function POST(
     if (!result.ok) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
-    reconcileForShift(shiftId, new Date()); // [fork] Dienstfrei follows the Platz
+    // [fork] Dienstfrei follows the Platz; a failure must not fail the committed signup (the hourly job heals it)
+    try {
+      reconcileForShift(shiftId, new Date());
+    } catch (error) {
+      console.error("[dayoff] reconcile after signup failed", error);
+    }
 
     const signups = await getShiftSignupUsers(shiftId);
     return NextResponse.json(signups, { status: 201 });

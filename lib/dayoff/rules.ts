@@ -105,7 +105,8 @@ export function transferStatus(status: DayOffStatus): "standard" | "locked" | nu
 
 /** SPEC 12.38: re-checks a non-frozen row against the current Arbeitstage. */
 export function revalidate(row: DayOffState, isOff: IsOff, today: string): Revalidated {
-  const std = standardDate(row.dutyDate, isOff);
+  // A not-yet-taken Dienstfrei is never recomputed onto today or the past.
+  const std = standardDate(row.dutyDate, (d) => d <= today || isOff(d));
   const invalid = (date: string | null) => !date || date <= today || isOff(date);
   switch (row.status) {
     case "standard":
