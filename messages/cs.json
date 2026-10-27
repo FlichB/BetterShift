@@ -1482,7 +1482,7 @@
       "markSkip": "Odpadá",
       "openHoliday": "Svátek: {name}",
       "keepOpen": "Přesto služba",
-      "reinforced": "{count} osob",
+      "reinforced": "{count, plural, one {# osoba} few {# osoby} other {# osob}}",
       "closeAgain": "Přece zavřít",
       "warnings": "Upozornění",
       "warning": {

@@ -187,6 +187,14 @@ describe("generateDuties", () => {
     expect(() =>
       generateDuties({ ...saturdays, period: "days", periodDays: null }, "2026-11-02", "2026-11-30")
     ).toThrow(RangeError);
+    expect(() => generateDuties({ ...saturdays, weekdays: [0] }, "2026-11-02", "2026-11-30")).toThrow(RangeError);
+    expect(() => generateDuties({ ...saturdays, weekdays: [8] }, "2026-11-02", "2026-11-30")).toThrow(RangeError);
+    expect(() =>
+      generateDuties({ ...saturdays, reinforcedDates: [{ date: "2026-11-14", perShift: 0 }] }, "2026-11-02", "2026-11-30")
+    ).toThrow(RangeError);
+    expect(() =>
+      generateDuties({ ...saturdays, reinforcedDates: [{ date: "2026-11-14", perShift: 2.5 }] }, "2026-11-02", "2026-11-30")
+    ).toThrow(RangeError);
   });
 });
 

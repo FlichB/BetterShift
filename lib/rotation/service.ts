@@ -101,7 +101,12 @@ function begunClosures(reader: Tx | typeof db, r: RotationDetail, today: string)
 }
 
 function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date): RotationRule {
-  const holidays = r.holidayCalendarId && to >= r.startDate ? loadHolidays(reader, r.holidayCalendarId, r.startDate, to) : [];
+  // Seat rounds make a duty depend on the sizes of later duties in its round, so a Feiertag
+  // after `to` can still matter. Closures after the last verstärkter Tag cannot change the
+  // size sequence before it, so loading up to there keeps the plan independent of the window.
+  const holidaysTo = r.reinforcedDates.reduce((max, d) => (d.date > max ? d.date : max), to);
+  const holidays =
+    r.holidayCalendarId && to >= r.startDate ? loadHolidays(reader, r.holidayCalendarId, r.startDate, holidaysTo) : [];
   const resolved = resolveClosedDates(r.skipDates, holidays, r.holidayOpenDates);
   // On begun days the written Schließeinträge are authoritative; Ausfalltage and the calendar decide the rest.
   const past = begunClosures(reader, r, formatDateToLocal(now));

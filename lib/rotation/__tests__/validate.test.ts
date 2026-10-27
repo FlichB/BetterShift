@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateRange, validateRotationInput } from "@/lib/rotation/validate";
+import { checkPastReinforcedDates, validateRange, validateRotationInput } from "@/lib/rotation/validate";
 
 const valid = {
   name: "Samstagsdienst",
@@ -157,5 +157,34 @@ describe("reinforcedDates", () => {
   it("keeps past entries even when they no longer fit", () => {
     const result = check([{ date: "2026-10-03", perShift: 6 }]);
     expect(result.ok && result.value.reinforcedDates).toEqual([{ date: "2026-10-03", perShift: 6 }]);
+  });
+});
+
+describe("checkPastReinforcedDates", () => {
+  const today = "2026-11-01";
+  const stored = [
+    { date: "2026-10-03", perShift: 3 },
+    { date: "2026-10-17", perShift: 4 },
+    { date: "2026-12-19", perShift: 3 },
+  ];
+
+  it("rejects removing a past entry", () => {
+    expect(checkPastReinforcedDates(stored, [stored[1], stored[2]], today)).toBe("reinforcedDates");
+  });
+
+  it("rejects changing a past entry's size", () => {
+    expect(checkPastReinforcedDates(stored, [{ ...stored[0], perShift: 4 }, stored[1], stored[2]], today)).toBe(
+      "reinforcedDates"
+    );
+  });
+
+  it("rejects adding a past entry", () => {
+    expect(checkPastReinforcedDates(stored, [stored[0], { date: "2026-10-10", perShift: 3 }, stored[1], stored[2]], today)).toBe(
+      "reinforcedDates"
+    );
+  });
+
+  it("accepts unchanged past entries with new or changed future ones", () => {
+    expect(checkPastReinforcedDates(stored, [stored[0], stored[1], { date: "2026-11-01", perShift: 3 }], today)).toBeNull();
   });
 });

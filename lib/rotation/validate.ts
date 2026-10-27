@@ -161,6 +161,24 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
   };
 }
 
+/**
+ * On update, verstärkte Tage before today are frozen: the plan is counted from startDate, so
+ * adding, changing or removing a past entry would reshuffle every later Platz.
+ */
+export function checkPastReinforcedDates(
+  stored: ReinforcedDate[],
+  next: ReinforcedDate[],
+  today: string = formatDateToLocal(new Date())
+): RotationValidationError | null {
+  const key = (list: ReinforcedDate[]) =>
+    list
+      .filter((d) => d.date < today)
+      .map((d) => `${d.date}=${d.perShift}`)
+      .sort()
+      .join(",");
+  return key(stored) === key(next) ? null : "reinforcedDates";
+}
+
 export function validateRange(body: unknown): ValidationResult<{ from: string; to: string }> {
   if (typeof body !== "object" || body === null) return fail("range");
   const { from, to } = body as Record<string, unknown>;

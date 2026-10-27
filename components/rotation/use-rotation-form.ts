@@ -104,8 +104,12 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
       state.skipDates.filter((_, i) => i !== index)
     );
 
-  const addReinforcedDate = () =>
-    set("reinforcedDates", [...state.reinforcedDates, { date: state.startDate, perShift: state.perShift + 1 }]);
+  const addReinforcedDate = () => {
+    // A new entry never starts in the past: past entries are frozen once saved.
+    const today = formatDateToLocal(new Date());
+    const date = state.startDate > today ? state.startDate : today;
+    set("reinforcedDates", [...state.reinforcedDates, { date, perShift: state.perShift + 1 }]);
+  };
   const updateReinforcedDate = (index: number, patch: Partial<ReinforcedDate>) =>
     set(
       "reinforcedDates",
@@ -117,7 +121,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
       state.reinforcedDates.filter((_, i) => i !== index)
     );
 
-  const toInput =(): RotationInput => ({
+  const toInput = (): RotationInput => ({
     name: state.name,
     calendarId: calendar.id,
     presetId: state.presetId,

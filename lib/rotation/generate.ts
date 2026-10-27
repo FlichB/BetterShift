@@ -11,6 +11,13 @@ function assertRule(rule: RotationRule): void {
   if (rule.period === "days" && (!Number.isInteger(rule.periodDays) || (rule.periodDays ?? 0) < 1)) {
     throw new RangeError("period 'days' needs a positive periodDays");
   }
+  // An unknown weekday would leave the endless periods() stream without a Diensttag forever.
+  if (!rule.weekdays.every((d) => Number.isInteger(d) && d >= 1 && d <= 7)) {
+    throw new RangeError("weekdays must be integers 1-7");
+  }
+  if (!rule.reinforcedDates.every((r) => Number.isInteger(r.perShift) && r.perShift >= 1)) {
+    throw new RangeError("reinforcedDates perShift must be a positive integer");
+  }
 }
 
 function periodIndex(rule: RotationRule, start: number, day: number): number {

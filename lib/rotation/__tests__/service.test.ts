@@ -376,6 +376,21 @@ describe("Schließtage", () => {
   });
 });
 
+it("plans a short window like a long one when a Feiertag after it precedes a verstärkter Tag", async () => {
+  const holidays = seedHolidays(team.ownerId, [{ date: "2026-12-19", title: "Testfeiertag" }]);
+  const rotation = createRotation(
+    { ...input, holidayCalendarId: holidays, reinforcedDates: [{ date: "2026-12-26", perShift: 3 }] },
+    team.ownerId
+  );
+  const pairs = async (to: string) =>
+    (await previewGeneration(rotation.id, "2026-11-02", to, now)).entries
+      .filter((e) => e.date <= "2026-12-12")
+      .map((e) => [e.date, "userIds" in e ? [...e.userIds].sort() : []]);
+  const short = await pairs("2026-12-12");
+  expect(short).toHaveLength(6);
+  expect(short).toEqual(await pairs("2027-01-30"));
+});
+
 it("writes the capacity of a verstärkter Tag into the duty", async () => {
   const rotation = createRotation({ ...input, reinforcedDates: [{ date: "2026-11-14", perShift: 3 }] }, team.ownerId);
   await runGeneration(rotation.id, "2026-11-07", "2026-11-21", team.ownerId, now);

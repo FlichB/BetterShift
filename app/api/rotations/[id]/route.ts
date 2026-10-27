@@ -6,7 +6,7 @@ import { outlookWorker } from "@/lib/outlook/worker";
 import { canManageRotations } from "@/lib/rotation/permissions";
 import { calendarNameOf, checkRotationReferences } from "@/lib/rotation/references";
 import { deleteRotation, getRotation, updateRotation } from "@/lib/rotation/service";
-import { validateRotationInput } from "@/lib/rotation/validate";
+import { checkPastReinforcedDates, validateRotationInput } from "@/lib/rotation/validate";
 import { readJson, rotationErrorResponse } from "@/lib/rotation/http";
 import type { RotationDeletedMetadata, RotationUpdatedMetadata } from "@/lib/rotation/audit";
 
@@ -45,6 +45,8 @@ export async function PUT(request: NextRequest, { params }: Context) {
     if (input.calendarId !== existing.calendarId) {
       return NextResponse.json({ error: "calendarId" }, { status: 400 });
     }
+    const pastError = checkPastReinforcedDates(existing.reinforcedDates, input.reinforcedDates);
+    if (pastError) return NextResponse.json({ error: pastError }, { status: 400 });
     const referenceError = await checkRotationReferences(input, user?.id, existing.holidayCalendarId);
     if (referenceError) return NextResponse.json({ error: referenceError }, { status: 400 });
 
