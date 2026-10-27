@@ -229,13 +229,77 @@ Gesichert werden muss das Verzeichnis `./data` (die SQLite-Datei). Nimm es ins S
 
 `./uploads` gehört ebenfalls ins Backup, sofern Dateien hochgeladen werden.
 
-### Update
+### Bestehende Instanz aktualisieren
+
+So bringst du eine bereits laufende Instanz auf einen neuen Stand. Die Daten in `./data` bleiben dabei erhalten.
+
+**Woher neue Versionen kommen.** GitHub Actions baut die Images des Forks und legt sie unter `ghcr.io/flichb/bettershift` ab:
+
+| Tag | Entsteht durch | Gedacht für |
+| --- | --- | --- |
+| `latest` | ein Release (Git-Tag `vX.Y.Z`, angelegt mit `npm run release:patch`, `release:minor` oder `release:major`) | den produktiven Betrieb |
+| `vX.Y.Z`, `vX.Y`, `vX` | dasselbe Release | eine fest eingestellte Version |
+| `dev` | jeden Push auf `main`, also jeden zusammengeführten Pull Request | Testinstanzen |
+| `pr-<Nummer>` | einen Pull Request aus diesem Repository | das Ausprobieren vor dem Zusammenführen |
+
+Eine Änderung auf einem Feature-Branch, z. B. `feat/rotation-generator`, erreicht den Server also erst, wenn der Pull Request nach `main` zusammengeführt ist (dann `dev`) und danach ein Release erstellt wurde (dann `latest` und `vX.Y.Z`).
+
+**Empfehlung: Version fest einstellen.** Trag in der Compose-Datei statt `latest` die Version ein, z. B. `image: ghcr.io/flichb/bettershift:v3.3.1`. Dann aktualisiert sich nichts unbemerkt, ein Update ist eine bewusste Änderung dieser Zeile, und für ein Zurück kennst du die alte Version.
+
+**Vorher prüfen.**
+
+1. Welche Version läuft gerade: `https://<deine-adresse>/api/version` im Browser aufrufen oder auf dem Server `docker compose images` ausführen.
+2. Die Release-Notizen der neuen Version auf GitHub (Reiter „Releases" des Repositories) und [`UPGRADING.md`](UPGRADING.md) lesen. Dort steht, ob eine Version Handgriffe verlangt, z. B. neue Umgebungsvariablen oder ein zusätzliches Volume.
+3. Einen ruhigen Zeitpunkt wählen. Während des Neustarts ist die App etwa eine Minute nicht erreichbar.
+
+**Schritte.** Auf dem Server im Verzeichnis der Compose-Datei:
+
+1. **Backup ziehen** (siehe [Datensicherung](#datensicherung)), z. B.:
+
+   ```bash
+   docker compose stop
+   cp -a data "data-backup-$(date +%Y%m%d)"
+   ```
+
+2. Bei fest eingestellter Version die Zeile `image:` in der Compose-Datei auf die neue Version ändern. Bei `latest` entfällt dieser Schritt.
+3. **Neues Image holen und starten:**
+
+   ```bash
+   docker compose pull
+   docker compose up -d
+   ```
+
+4. **Start beobachten:**
+
+   ```bash
+   docker compose logs -f bettershift
+   ```
+
+   Die Migrationen laufen beim Start von selbst (siehe unten). Wenn „Ready" erscheint, ist der Server bereit; mit Strg+C beendest du die Anzeige, der Container läuft weiter.
+5. **Kontrollieren:** `/api/version` zeigt die neue Nummer, `/api/health` meldet `"status": "healthy"`, und Anmeldung, Kalender und `/swaps` funktionieren.
+6. Alte Images aufräumen (optional): `docker image prune`.
+
+**Migrationen.** Das Image startet mit `node scripts/migrate.mjs && node server.js`. Erst werden die offenen Migrationen der Upstream-Tabellen eingespielt, danach die der Fork-Tabellen (Ordner `drizzle/fork`, eigene Verwaltungstabelle); danach startet der Server. Ein manueller Migrationsschritt ist nicht nötig. Schlägt eine Migration fehl, startet der Server nicht, und `docker compose logs bettershift` zeigt den Grund.
+
+**Zurück auf die alte Version.** Migrationen lassen sich nicht rückgängig machen. Ein Zurück geht deshalb nur zusammen mit dem Backup:
 
 ```bash
-docker compose pull && docker compose up -d
+docker compose down
+rm -rf data
+cp -a "data-backup-JJJJMMTT" data
+# in der Compose-Datei die alte Version bei image: eintragen
+docker compose up -d
 ```
 
-Vorher ein Backup ziehen. **Die Migrationen laufen beim Start des Containers**: Das Image startet mit `node scripts/migrate.mjs && node server.js`. Erst werden die offenen Migrationen der Upstream-Tabellen eingespielt, danach die der Fork-Tabellen (Ordner `drizzle/fork`, eigene Verwaltungstabelle); danach startet der Server. Schlägt eine Migration fehl, startet der Server nicht, und `docker compose logs bettershift` zeigt den Grund. Ein manueller Migrationsschritt ist nicht nötig. Mehr zu Upgrades steht in [`UPGRADING.md`](UPGRADING.md).
+Alles, was seit dem Backup eingetragen oder getauscht wurde, ist danach verloren.
+
+**Image nicht abrufbar?** Meldet `docker compose pull` „denied" oder „unauthorized", ist das Paket in der GitHub Container Registry privat. Entweder stellt man es auf GitHub unter „Packages" → „bettershift" → „Package settings" auf öffentlich, oder man meldet den Server einmalig mit einem Token an, das das Recht `read:packages` hat: `docker login ghcr.io -u <github-benutzer>`, als Passwort das Token.
+
+**Besonderheit beim Update auf die wechselnden Paare (Oktober 2026).** Ab dieser Version mischt der Generator die Paare ab der zweiten Runde neu (siehe [Rotation anlegen](#2-rotation-anlegen)). Bereits erzeugte Dienste bleiben, bis du die Rotation das nächste Mal generierst. Beim nächsten „Generieren" werden alle künftigen, nicht getauschten Plätze neu verteilt; getauschte Plätze bleiben gesperrt. Deshalb:
+
+1. Nach dem Update unter `/rotations` zuerst die „Vorschau" ansehen und erst dann „Übernehmen".
+2. Ist Outlook eingeschaltet, aktualisieren sich die Termine danach von selbst; die Betroffenen bekommen geänderte Einladungen bzw. Absagen.
+3. Das Team vorher kurz informieren, dass sich künftige Dienste verschieben.
 
 Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./data`.
 
