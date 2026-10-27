@@ -28,7 +28,10 @@ Die wichtigsten Begriffe (das vollständige Glossar steht in [`CONTEXT.md`](../C
 | **Teilnehmer** | Ein Benutzer mit fester Position in einer Rotation. |
 | **Periode** | Der Zeitabschnitt, in dem dieselbe Besetzung Dienst hat: ein Tag, eine Woche ab Montag oder eine feste Anzahl Tage. |
 | **Diensttage** | Die Wochentage innerhalb einer Periode, an denen tatsächlich ein Dienst stattfindet (z. B. nur Samstag). |
-| **Ausfalltag** | Ein Diensttag, an dem ausnahmsweise kein Dienst stattfindet. Die Reihenfolge rückt zum nächsten Dienst weiter. |
+| **Schließtag** | Ein Diensttag, an dem der Betrieb geschlossen ist: ein Ausfalltag oder ein nicht geöffneter Feiertag. Die Reihenfolge rückt zum nächsten Dienst weiter. |
+| **Ausfalltag** | Ein Schließtag aus eigenem Grund, mit Datum und Grund eingetragen. |
+| **Feiertagskalender** | Ein Kalender, aus dem eine Rotation Feiertage liest; jeder Eintrag darin gilt an seinem Datum als Feiertag. |
+| **Schließeintrag** | Die ganztägige Schicht ohne Plätze, die eine Rotation an einem Schließtag anlegt. |
 | **Dienst** | Ein einzelner Kalendertag-Eintrag im Teamkalender, den eine Rotation erzeugt hat und der eine feste Zahl an Plätzen hat. |
 | **Platz** | Die Zuordnung genau eines Teilnehmers zu einem Dienst. |
 | **Gesperrter Platz** | Ein Platz, der durch einen Tausch entstanden ist. Neues Generieren überschreibt ihn nie. |
@@ -59,12 +62,28 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 | Beginn | Erster Tag der ersten Periode. |
 | Beginnt mit | Welcher Teilnehmer in der ersten Periode Dienst hat. „Vorschlag übernehmen" setzt einen passenden Wert. |
 | Diensttage | Wochentage Mo bis So, an denen in einer Periode tatsächlich Dienst ist („Alle Tage" setzt alle). |
-| Ausfalltage | Einzelne Tage ohne Dienst. Mit „Ausfalltag hinzufügen" ergänzen. |
+| Ausfalltage | Einzelne Tage ohne Dienst, jeweils mit Grund. Mit „Ausfalltag hinzufügen“ ergänzen. |
+| Text bei Schließung | Erscheint an Schließtagen als „Text (Grund)“, z. B. „HeimkinoWelt geschlossen (Inventur)“. |
+| Feiertagskalender | Optional. Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. |
 | Teilnehmer (Reihenfolge) | Die Reihenfolge bestimmt die erste Runde; danach mischt der Generator die Paare selbst. Mit „Nach oben" / „Nach unten" sortieren, mit „Teilnehmer hinzufügen" ergänzen, mit „Entfernen" streichen. |
 
 Beispiel „Samstagsdienst": Periode „Woche (ab Montag)", Diensttag Sa, 2 Personen pro Dienst, 8 Teilnehmer. Jede Person hat dann einmal pro 4 Wochen Dienst. Die erste Runde folgt der Reihenfolge, danach werden die Paare neu gemischt: Niemand hat zwei Samstage hintereinander Dienst, niemand hat zweimal hintereinander denselben Partner, und pro Quartal weicht die Anzahl der Dienste höchstens um 1 ab. Bei wenigen Teilnehmern (z. B. 6) liegt dafür manchmal nur ein freier Samstag zwischen zwei Diensten. Mit „Speichern" wird die Rotation gesichert; erzeugt sind die Dienste damit noch nicht.
 
 Mit dem Feld „Neustart ab Datum" ersetzt du bei einem Teilnehmerwechsel die Reihenfolge ab einem Stichtag: Dienste davor bleiben unverändert (siehe [Generieren](#3-generieren)).
+
+### Feiertage und Schließtage
+
+An einem **Schließtag** legt die Rotation statt des Dienstes einen ganztägigen Eintrag ohne Plätze an: „<Text bei Schließung> (<Grund>)“. Er erscheint im Teamkalender und – bei eingeschaltetem Outlook-Schalter – als ganztägiger Termin bei office@, ohne Einladungen. Auf der Tauschbörse und im persönlichen Feed taucht er nicht auf. Die Reihenfolge rückt zum nächsten Diensttag weiter.
+
+**Feiertage einrichten (Österreich):**
+
+1. Neuen Kalender „Feiertage AT“ anlegen.
+2. In dessen Einstellungen eine externe Synchronisierung mit `webcal://www.wien.gv.at/spezial/daten/ics/feiertage.ics` hinzufügen. Der Feed enthält alle 13 gesetzlichen Feiertage mit Namen, derzeit bis 2035.
+3. In der Rotation diesen Kalender als „Feiertagskalender“ wählen und speichern.
+
+Fällt ein Feiertag auf einen Diensttag, steht in der Vorschau „Geschlossen (Name des Feiertags)“. Mit „Trotzdem Dienst“ wird an diesem einen Datum normal geplant (z. B. am 8. Dezember); „Doch schließen“ macht das rückgängig. Feiertage an anderen Wochentagen haben keine Wirkung.
+
+Der 24. und 31. Dezember sind keine gesetzlichen Feiertage und fehlen im Feed. Wenn ihr dort schließt, trage sie als Ausfalltag mit Grund ein. Ein Ausfalltag hat Vorrang vor einem Feiertag am selben Tag.
 
 ## 3. Generieren
 
@@ -79,7 +98,7 @@ Gut zu wissen:
 - **Vergangenes bleibt.** Bereits begonnene und vergangene Dienste werden nie angefasst, auch wenn der Zeitraum in der Vergangenheit beginnt. Ihre Plätze und Sperren bleiben unverändert.
 - **Getauschte Plätze sind gesperrt** und stehen in der Vorschau als „Getauscht (gesperrt)". Beim Neugenerieren bleiben sie erhalten. Ist der Inhaber eines gesperrten Platzes kein Teilnehmer mehr, erscheint unter „Hinweise" der Knopf „Sperre aufheben": Er gibt den Platz für die Rotation frei, und er wird beim nächsten Übernehmen nach der Rotationsregel besetzt.
 - **Hinweise:** „{user} ist kein Teilnehmer mehr, hat aber einen getauschten Platz" bzw. „Kein Dienst mehr geplant, aber getauschte Plätze vorhanden – der Dienst bleibt bestehen". Beim ersten Hinweis kannst du die Sperre mit „Sperre aufheben" lösen; beim zweiten bleibt der Dienst samt getauschten Plätzen bestehen.
-- **Ausfalltag aus der Vorschau.** In der Vorschau kannst du einen Dienst mit „Fällt aus" als Ausfalltag markieren; die folgenden Besetzungen rücken nach.
+- **Ausfalltag aus der Vorschau.** „Fällt aus“ fragt nach dem Grund und trägt den Tag als Ausfalltag ein; die folgenden Besetzungen rücken nach.
 - **Teilnehmerwechsel:** Rotation bearbeiten, „Neustart ab Datum" setzen, speichern, ab diesem Datum neu generieren. Dienste vorher bleiben, wie sie waren.
 - **Löschen:** „Rotation löschen" fragt, ob die zukünftigen Dienste ebenfalls entfernt werden sollen („Zukünftige Dienste dieser Rotation ebenfalls löschen"). Vergangene Dienste bleiben als normale Schichten im Kalender stehen.
 
@@ -323,4 +342,6 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
 - **Mails mindestens einmal zugestellt.** Bei einem Absturz zwischen Versand und Statuswechsel kann eine Mail ein zweites Mal gehen.
 - **Keine Übernahme bestehender Outlook-Termine** von Hand angelegter Dienste.
 - **Der persönliche Feed zeigt nur eigene Plätze in Rotationsdiensten** der letzten 60 Tage und der Zukunft, keine älteren Dienste.
+- Wird ein Feiertagskalender an eine bereits laufende Rotation gehängt, verschieben die Feiertage seit dem Beginn der Rotation die künftige Besetzung. Die Vorschau zeigt das; wer es nicht will, setzt „Neustart ab Datum“ auf heute.
+- Schließtage erscheinen erst beim nächsten „Übernehmen“, nicht automatisch nach einer Synchronisierung des Feiertagskalenders.
 - Ohne Anmeldung (`AUTH_ENABLED=false`) gibt es weder Tausch-Mails noch Outlook-Sync noch einen persönlichen Feed.

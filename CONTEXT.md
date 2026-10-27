@@ -20,9 +20,24 @@ _Avoid_: Turnus, Zyklus
 Die Wochentage innerhalb einer Periode, an denen tatsächlich ein Dienst stattfindet (z. B. nur Samstag).
 _Avoid_: Arbeitstage
 
+**Schließtag**:
+Ein Diensttag, an dem der Betrieb geschlossen ist: ein Ausfalltag oder ein nicht geöffneter Feiertag. Statt des Dienstes entsteht ein Schließeintrag; die Reihenfolge rückt zum nächsten Dienst weiter.
+_Avoid_: Ruhetag, Lücke
+
 **Ausfalltag**:
-Ein Diensttag, an dem ausnahmsweise kein Dienst stattfindet; die Reihenfolge rückt dadurch zum nächsten Dienst weiter.
-_Avoid_: Feiertag, Ausnahme, Lücke
+Ein Schließtag aus eigenem Grund, vom Verantwortlichen mit Datum und Grund eingetragen.
+_Avoid_: Ausnahme, Lücke
+
+**Feiertagskalender**:
+Ein Kalender, aus dem eine Rotation Feiertage liest; jede Schicht darin gilt an ihrem Datum als Feiertag, ihr Titel ist der Name.
+_Avoid_: Ferienkalender
+
+**Geöffneter Feiertag**:
+Ein Feiertag, an dem trotzdem Dienst ist.
+
+**Schließeintrag**:
+Die ganztägige Schicht ohne Plätze, die eine Rotation an einem Schließtag anlegt, z. B. „HeimkinoWelt geschlossen (Mariä Empfängnis)“.
+_Avoid_: Ausfallschicht
 
 **Generieren**:
 Das Erzeugen der Dienste einer Rotation für einen gewählten Zeitraum; Vergangenes und Gesperrtes bleibt dabei unverändert.
