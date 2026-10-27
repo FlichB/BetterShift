@@ -1526,7 +1526,8 @@
       "closedTitle": "Indica un texto para los días de cierre (máx. 100 caracteres).",
       "holidayCalendar": "Calendario de festivos no válido o sin acceso.",
       "holidayCalendarSame": "El calendario de festivos debe ser otro calendario.",
-      "holidayOpenDates": "Festivos con servicio no válidos."
+      "holidayOpenDates": "Festivos con servicio no válidos.",
+      "entryTitle": "Plantilla de entrada no válida: necesita '{Vorname}' o '{Name}' y solo puede contener '{Vorname}', '{Name}' y '{Dienst}' (máx. 100 caracteres)."
     }
   },
   "swap": {

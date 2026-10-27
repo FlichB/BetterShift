@@ -1526,7 +1526,8 @@
       "closedTitle": "Bitte einen Text bei Schließung (max. 100 Zeichen) angeben.",
       "holidayCalendar": "Feiertagskalender ungültig oder ohne Zugriff.",
       "holidayCalendarSame": "Der Feiertagskalender muss ein anderer Kalender sein.",
-      "holidayOpenDates": "Geöffnete Feiertage ungültig."
+      "holidayOpenDates": "Geöffnete Feiertage ungültig.",
+      "entryTitle": "Eintragsvorlage ungültig: Sie braucht '{Vorname}' oder '{Name}' und darf nur '{Vorname}', '{Name}' und '{Dienst}' enthalten (max. 100 Zeichen)."
     }
   },
   "swap": {

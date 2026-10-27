@@ -1526,7 +1526,8 @@
       "closedTitle": "Zadej text pro dny zavření (max. 100 znaků).",
       "holidayCalendar": "Kalendář svátků je neplatný nebo nepřístupný.",
       "holidayCalendarSame": "Kalendář svátků musí být jiný kalendář.",
-      "holidayOpenDates": "Neplatné svátky se službou."
+      "holidayOpenDates": "Neplatné svátky se službou.",
+      "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků)."
     }
   },
   "swap": {

@@ -18,5 +18,6 @@ export function inputFromRotation(rotation: RotationDetail): RotationInput {
     closedTitle: rotation.closedTitle,
     holidayCalendarId: rotation.holidayCalendarId,
     holidayOpenDates: rotation.holidayOpenDates,
+    entryTitle: rotation.entryTitle,
   };
 }

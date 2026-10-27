@@ -1526,7 +1526,8 @@
       "closedTitle": "Indique un texte pour les jours de fermeture (100 caractères max.).",
       "holidayCalendar": "Calendrier des jours fériés invalide ou inaccessible.",
       "holidayCalendarSame": "Le calendrier des jours fériés doit être un autre calendrier.",
-      "holidayOpenDates": "Jours fériés travaillés invalides."
+      "holidayOpenDates": "Jours fériés travaillés invalides.",
+      "entryTitle": "Modèle d'entrée invalide : il te faut '{Vorname}' ou '{Name}', et seuls '{Vorname}', '{Name}' et '{Dienst}' sont autorisés (100 caractères max.)."
     }
   },
   "swap": {

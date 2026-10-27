@@ -16,6 +16,7 @@ const valid = {
   closedTitle: "HeimkinoWelt geschlossen",
   holidayCalendarId: "holidays",
   holidayOpenDates: ["2026-12-08"],
+  entryTitle: "{Vorname} Dienst",
 };
 
 describe("validateRotationInput", () => {
@@ -106,5 +107,22 @@ describe("validateRange", () => {
     [{}],
   ])("rejects %o", (body) => {
     expect(validateRange(body)).toEqual({ ok: false, error: "range" });
+  });
+});
+
+describe("entryTitle", () => {
+  it("defaults to the standard template and trims", () => {
+    const withoutTitle: Record<string, unknown> = { ...valid };
+    delete withoutTitle.entryTitle;
+    const result = validateRotationInput(withoutTitle);
+    expect(result.ok && result.value.entryTitle).toBe("{Vorname} Dienst");
+    const trimmed = validateRotationInput({ ...valid, entryTitle: "  {Name}  " });
+    expect(trimmed.ok && trimmed.value.entryTitle).toBe("{Name}");
+  });
+
+  it("rejects invalid templates", () => {
+    for (const entryTitle of ["{Dienst}", "{Datum} {Name}", "", 42]) {
+      expect(validateRotationInput({ ...valid, entryTitle })).toEqual({ ok: false, error: "entryTitle" });
+    }
   });
 });

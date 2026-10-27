@@ -91,3 +91,15 @@ describe("closure migration", () => {
     expect(after!.holidayCalendarId).toBeNull();
   });
 });
+
+describe("entry template migration", () => {
+  it("stores the Eintragsvorlage with the standard default", () => {
+    const team = seedTeam({ members: 2 });
+    const row = db
+      .insert(rotations)
+      .values({ calendarId: team.calendarId, name: "R", presetId: team.presetId, perShift: 1, period: "week", startDate: "2026-11-02" })
+      .returning()
+      .get();
+    expect(row.entryTitle).toBe("{Vorname} Dienst");
+  });
+});

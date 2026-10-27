@@ -1526,7 +1526,8 @@
       "closedTitle": "Please enter a text for closure days (max. 100 characters).",
       "holidayCalendar": "Holiday calendar invalid or not accessible.",
       "holidayCalendarSame": "The holiday calendar must be a different calendar.",
-      "holidayOpenDates": "Invalid holidays with duty."
+      "holidayOpenDates": "Invalid holidays with duty.",
+      "entryTitle": "Invalid entry template: it needs '{Vorname}' or '{Name}' and may only contain '{Vorname}', '{Name}' and '{Dienst}' (max. 100 characters)."
     }
   },
   "swap": {

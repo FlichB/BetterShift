@@ -26,6 +26,7 @@ describe("phase 3 schema", () => {
         weekdays: [6],
         skipDates: [],
         closedTitle: "Geschlossen",
+        entryTitle: "{Vorname} Dienst",
         holidayCalendarId: null,
         holidayOpenDates: [],
       },

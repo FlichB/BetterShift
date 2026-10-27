@@ -145,6 +145,7 @@ function configValues(input: RotationInput) {
     closedTitle: input.closedTitle,
     holidayCalendarId: input.holidayCalendarId,
     holidayOpenDates: input.holidayOpenDates,
+    entryTitle: input.entryTitle,
   };
 }
 

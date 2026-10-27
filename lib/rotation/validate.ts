@@ -1,3 +1,4 @@
+import { ENTRY_TITLE_DEFAULT, validateEntryTitle } from "@/lib/rotation/entry-title";
 import { isValidLocalDate, toDayNumber } from "@/lib/rotation/dates";
 import { ROTATION_PERIODS, type RotationPeriod, type SkipDate } from "@/lib/rotation/types";
 
@@ -16,6 +17,7 @@ export interface RotationInput {
   closedTitle: string;
   holidayCalendarId: string | null;
   holidayOpenDates: string[];
+  entryTitle: string;
 }
 
 export type RotationValidationError =
@@ -33,6 +35,7 @@ export type RotationValidationError =
   | "closedTitle"
   | "holidayCalendar"
   | "holidayOpenDates"
+  | "entryTitle"
   | "range";
 
 export type ValidationResult<T> =
@@ -115,6 +118,9 @@ export function validateRotationInput(body: unknown): ValidationResult<RotationI
     return fail("holidayOpenDates");
   }
 
+  const entryTitle = b.entryTitle ?? ENTRY_TITLE_DEFAULT;
+  if (typeof entryTitle !== "string" || validateEntryTitle(entryTitle) !== "ok") return fail("entryTitle");
+
   return {
     ok: true,
     value: {
@@ -132,6 +138,7 @@ export function validateRotationInput(body: unknown): ValidationResult<RotationI
       closedTitle: closedTitle.trim(),
       holidayCalendarId,
       holidayOpenDates: [...new Set(holidayOpenDates as string[])].sort(),
+      entryTitle: entryTitle.trim(),
     },
   };
 }

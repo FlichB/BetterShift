@@ -1526,7 +1526,8 @@
       "closedTitle": "Inserisci un testo per i giorni di chiusura (max. 100 caratteri).",
       "holidayCalendar": "Calendario delle festività non valido o non accessibile.",
       "holidayCalendarSame": "Il calendario delle festività deve essere un altro calendario.",
-      "holidayOpenDates": "Festività con turno non valide."
+      "holidayOpenDates": "Festività con turno non valide.",
+      "entryTitle": "Modello di voce non valido: serve '{Vorname}' o '{Name}' e può contenere solo '{Vorname}', '{Name}' e '{Dienst}' (max. 100 caratteri)."
     }
   },
   "swap": {

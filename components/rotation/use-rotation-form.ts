@@ -5,6 +5,7 @@ import type { RotationDetail } from "@/lib/rotation/service";
 import type { RotationPeriod, SkipDate } from "@/lib/rotation/types";
 import type { RotationInput } from "@/lib/rotation/validate";
 import type { RotationCalendar } from "@/hooks/useRotations";
+import { ENTRY_TITLE_DEFAULT } from "@/lib/rotation/entry-title";
 import { formatDateToLocal } from "@/lib/date-utils";
 
 export interface RotationFormState {
@@ -20,6 +21,7 @@ export interface RotationFormState {
   closedTitle: string;
   holidayCalendarId: string | null;
   holidayOpenDates: string[];
+  entryTitle: string;
   memberIds: string[];
 }
 
@@ -45,6 +47,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           closedTitle: rotation.closedTitle,
           holidayCalendarId: rotation.holidayCalendarId,
           holidayOpenDates: rotation.holidayOpenDates,
+          entryTitle: rotation.entryTitle,
           memberIds: rotation.memberIds,
         }
       : {
@@ -60,6 +63,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           closedTitle: defaults.closedTitle,
           holidayCalendarId: null,
           holidayOpenDates: [],
+          entryTitle: ENTRY_TITLE_DEFAULT,
           memberIds: [],
         }
   );
@@ -112,6 +116,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
     closedTitle: state.closedTitle,
     holidayCalendarId: state.holidayCalendarId,
     holidayOpenDates: state.holidayOpenDates,
+    entryTitle: state.entryTitle,
   });
 
   return { state, set, toggleWeekday, addSkipDate, updateSkipDate, removeSkipDate, removeOpenDate, toInput };

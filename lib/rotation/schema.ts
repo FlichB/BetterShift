@@ -29,6 +29,8 @@ export const rotations = sqliteTable(
     holidayCalendarId: text("holiday_calendar_id").references(() => calendars.id, { onDelete: "set null" }),
     closedTitle: text("closed_title").notNull().default("Geschlossen"),
     holidayOpenDates: text("holiday_open_dates", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
+    // [fork] Eintragsvorlage (spec 2026-10-27 "Ein Eintrag pro Person").
+    entryTitle: text("entry_title").notNull().default("{Vorname} Dienst"),
     // [fork phase 3] Mirror this rotation's duties into the office@ calendar (spec 12.24).
     outlookEnabled: integer("outlook_enabled", { mode: "boolean" }).notNull().default(false),
     createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
