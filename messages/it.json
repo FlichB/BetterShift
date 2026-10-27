@@ -1561,12 +1561,13 @@
       "loadFailed": "Impossibile caricare le impostazioni."
     },
     "title": "Bacheca scambi",
-    "subtitle": "Cedere e scambiare turni",
+    "subtitle": "Scambia i turni",
     "menu": "Bacheca scambi",
     "calendar": "Calendario",
     "tabs": {
       "forMe": "Per me",
-      "mine": "Le mie offerte"
+      "mine": "Le mie offerte",
+      "manage": "Amministrazione"
     },
     "offer": "Offri un turno",
     "emptyForMe": "Al momento non ci sono offerte aperte per te.",
@@ -1578,7 +1579,8 @@
     "kind": {
       "give": "Cessione",
       "exchangeFor": "Scambio con il {date}",
-      "exchangeAny": "Scambio con un turno qualsiasi"
+      "exchangeAny": "Scambio con un turno qualsiasi",
+      "forced": "Scambio forzato"
     },
     "toYou": "a te",
     "toUser": "a {name}",
@@ -1594,35 +1596,35 @@
       "cancelled": "Decaduta"
     },
     "actions": {
-      "take": "Prendi in carico",
       "swap": "Scambia",
       "decline": "Rifiuta",
       "hide": "Nascondi",
       "unhide": "Mostra di nuovo",
-      "withdraw": "Ritira"
+      "withdraw": "Ritira",
+      "coverIn": "Subentra"
     },
     "confirm": {
-      "takeTitle": "Prendere in carico questo turno?",
-      "takeText": "Prendi in carico il turno del {date}, {time}. Vale subito.",
       "swapTitle": "Scambiare i turni?",
       "swapText": "Prendi in carico {date}, {time} e cedi {counter}. Vale subito.",
       "pickCounter": "Quale dei tuoi turni cedi in cambio?",
       "noCounter": "Non hai nessun turno futuro in questo calendario da cedere in cambio.",
-      "loadingDuties": "Caricamento dei tuoi turni …"
+      "loadingDuties": "Caricamento dei tuoi turni …",
+      "forcedTitle": "Subentrare?",
+      "forcedText": "Prendi il turno del {date}, {time} al posto di {name}. Vale subito. Poi scegli in cambio uno dei tuoi turni dei prossimi 3 mesi."
     },
     "done": {
-      "taken": "Turno preso in carico.",
       "swapped": "Turni scambiati.",
       "offered": "Offerta creata.",
       "withdrawn": "Offerta ritirata.",
-      "declined": "Richiesta rifiutata."
+      "declined": "Richiesta rifiutata.",
+      "coveredIn": "Sei subentrato.",
+      "counterChosen": "Turno di compensazione trasferito.",
+      "counterWaived": "Compensazione condonata.",
+      "forced": "Scambio forzato."
     },
     "form": {
       "shift": "Il tuo turno",
       "shiftPlaceholder": "Scegli un turno",
-      "type": "Tipo",
-      "give": "Cedi",
-      "exchange": "Scambia",
       "audience": "A chi?",
       "everyone": "A tutti",
       "person": "A una persona",
@@ -1635,7 +1637,7 @@
       "submit": "Offri",
       "noSlots": "Non hai turni futuri in questo calendario."
     },
-    "offerShift": "Cedi / Scambia",
+    "offerShift": "Scambia",
     "openOffer": "Per questo turno c'è un'offerta di scambio aperta.",
     "openOfferLink": "Vai alla bacheca scambi",
     "marker": "Offerta di scambio aperta",
@@ -1688,7 +1690,25 @@
       "delayHint": "Le app di calendario aggiornano gli abbonamenti con ritardo (Google: diverse ore).",
       "loadFailed": "Impossibile caricare il link.",
       "failed": "Non ha funzionato. Riprova."
-    }
+    },
+    "forcedFor": "Subentra a {name}",
+    "counter": {
+      "pending": "Compensazione aperta",
+      "chosen": "Compensazione: turno del {date}",
+      "waived": "Compensazione condonata",
+      "task": "Sei subentrato a {name}. Scegli entro il {end} uno dei tuoi turni come compensazione.",
+      "choose": "Scegli il turno di compensazione",
+      "chooseFor": "Scegli al suo posto",
+      "title": "Scegli il turno di compensazione",
+      "text": "Il turno scelto passa subito a {name}. Puoi scegliere tra i tuoi turni fino al {end}.",
+      "none": "Non hai nessun turno adatto nel periodo di compensazione. L’amministrazione può condonare la compensazione.",
+      "loading": "Caricamento dei turni …",
+      "waive": "Condona",
+      "waiveTitle": "Condonare la compensazione?",
+      "waiveText": "{name} non deve restituire nessun turno per quello del {date}.",
+      "reason": "Motivo"
+    },
+    "emptyManage": "Nessuno scambio forzato aperto."
   },
   "notifications": {
     "mail": {

@@ -93,7 +93,7 @@ function SwapsContent() {
     accept.mutate(
       { id: entry.id, shiftId: counterShiftId },
       {
-        onSuccess: () => toast.success(entry.type === "give" ? t("swap.done.taken") : t("swap.done.swapped")),
+        onSuccess: () => toast.success(entry.type === "forced" ? t("swap.done.coveredIn") : t("swap.done.swapped")),
         onError,
       }
     );

@@ -12,7 +12,7 @@ import { useDutyFormat } from "@/components/swap/use-duty-format";
 import { ANY_DUTY, useSwapOfferForm, type Audience } from "@/components/swap/use-swap-offer-form";
 import { CalendarX } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { DutyInfo, SwapType } from "@/lib/swap/types";
+import type { DutyInfo } from "@/lib/swap/types";
 
 export function OfferSheet({
   open,
@@ -92,35 +92,21 @@ export function OfferSheet({
               </Select>
             </Field>
 
-            <Field label={t("swap.form.type")}>
-              <ChoiceChips<SwapType>
-                value={form.type}
-                onChange={form.changeType}
-                label={t("swap.form.type")}
-                options={[
-                  { value: "give", label: t("swap.form.give") },
-                  { value: "exchange", label: t("swap.form.exchange") },
-                ]}
-              />
+            <Field label={t("swap.form.requested")} htmlFor="swap-requested">
+              <Select value={form.requestedShiftId} onValueChange={form.changeRequested}>
+                <SelectTrigger id="swap-requested" className={cn(inputClass, "w-full")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ANY_DUTY}>{t("swap.form.anyDuty")}</SelectItem>
+                  {form.counterDuties.map((d) => (
+                    <SelectItem key={d.shiftId} value={d.shiftId}>
+                      {label(d)} · {d.holders.map((h) => h.name ?? "?").join(", ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
-
-            {form.type === "exchange" && (
-              <Field label={t("swap.form.requested")} htmlFor="swap-requested">
-                <Select value={form.requestedShiftId} onValueChange={form.changeRequested}>
-                  <SelectTrigger id="swap-requested" className={cn(inputClass, "w-full")}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={ANY_DUTY}>{t("swap.form.anyDuty")}</SelectItem>
-                    {form.counterDuties.map((d) => (
-                      <SelectItem key={d.shiftId} value={d.shiftId}>
-                        {label(d)} · {d.holders.map((h) => h.name ?? "?").join(", ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            )}
 
             <Field label={t("swap.form.audience")}>
               <ChoiceChips<Audience>

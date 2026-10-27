@@ -1561,12 +1561,13 @@
       "loadFailed": "The settings could not be loaded."
     },
     "title": "Swap board",
-    "subtitle": "Give away and swap duties",
+    "subtitle": "Swap duties",
     "menu": "Swap board",
     "calendar": "Calendar",
     "tabs": {
       "forMe": "For me",
-      "mine": "My offers"
+      "mine": "My offers",
+      "manage": "Management"
     },
     "offer": "Offer a duty",
     "emptyForMe": "There are no open offers for you right now.",
@@ -1578,7 +1579,8 @@
     "kind": {
       "give": "Give away",
       "exchangeFor": "Swap for {date}",
-      "exchangeAny": "Swap for any duty"
+      "exchangeAny": "Swap for any duty",
+      "forced": "Forced swap"
     },
     "toYou": "to you",
     "toUser": "to {name}",
@@ -1594,35 +1596,35 @@
       "cancelled": "Void"
     },
     "actions": {
-      "take": "Take over",
       "swap": "Swap",
       "decline": "Decline",
       "hide": "Hide",
       "unhide": "Show again",
-      "withdraw": "Withdraw"
+      "withdraw": "Withdraw",
+      "coverIn": "Cover"
     },
     "confirm": {
-      "takeTitle": "Take over this duty?",
-      "takeText": "You take over the duty on {date}, {time}. This applies immediately.",
       "swapTitle": "Swap duties?",
       "swapText": "You take over {date}, {time} and give away {counter}. This applies immediately.",
       "pickCounter": "Which of your duties do you give in return?",
       "noCounter": "You have no upcoming duty in this calendar to give in return.",
-      "loadingDuties": "Loading your duties …"
+      "loadingDuties": "Loading your duties …",
+      "forcedTitle": "Cover this duty?",
+      "forcedText": "You take over the duty on {date}, {time} for {name}. This applies immediately. Afterwards you pick one of your duties in the next 3 months in return."
     },
     "done": {
-      "taken": "Duty taken over.",
       "swapped": "Duties swapped.",
       "offered": "Offer created.",
       "withdrawn": "Offer withdrawn.",
-      "declined": "Request declined."
+      "declined": "Request declined.",
+      "coveredIn": "You are covering.",
+      "counterChosen": "Counter duty handed over.",
+      "counterWaived": "Counter duty waived.",
+      "forced": "Swap forced."
     },
     "form": {
       "shift": "Your duty",
       "shiftPlaceholder": "Choose a duty",
-      "type": "Kind",
-      "give": "Give away",
-      "exchange": "Swap",
       "audience": "To whom?",
       "everyone": "Everyone",
       "person": "One person",
@@ -1635,7 +1637,7 @@
       "submit": "Offer",
       "noSlots": "You have no upcoming duties in this calendar."
     },
-    "offerShift": "Give away / swap",
+    "offerShift": "Swap",
     "openOffer": "There is an open swap offer for this duty.",
     "openOfferLink": "Go to swap board",
     "marker": "Open swap offer",
@@ -1688,7 +1690,25 @@
       "delayHint": "Calendar apps refresh subscriptions with a delay (Google: several hours).",
       "loadFailed": "The link could not be loaded.",
       "failed": "That didn't work. Please try again."
-    }
+    },
+    "forcedFor": "Cover for {name}",
+    "counter": {
+      "pending": "Counter duty open",
+      "chosen": "Counter duty: {date}",
+      "waived": "Counter duty waived",
+      "task": "You covered for {name}. Pick one of your duties by {end} in return.",
+      "choose": "Pick counter duty",
+      "chooseFor": "Pick on their behalf",
+      "title": "Pick counter duty",
+      "text": "The chosen duty goes to {name} immediately. Your duties up to {end} are available.",
+      "none": "You have no suitable duty in the window. The management can waive the counter duty.",
+      "loading": "Loading duties …",
+      "waive": "Waive",
+      "waiveTitle": "Waive counter duty?",
+      "waiveText": "{name} does not have to give a duty back for the duty on {date}.",
+      "reason": "Reason"
+    },
+    "emptyManage": "No open forced swaps."
   },
   "notifications": {
     "mail": {

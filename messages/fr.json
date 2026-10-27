@@ -1561,12 +1561,13 @@
       "loadFailed": "Impossible de charger les paramètres."
     },
     "title": "Bourse d'échange",
-    "subtitle": "Céder et échanger des services",
+    "subtitle": "Échanger des services",
     "menu": "Bourse d'échange",
     "calendar": "Agenda",
     "tabs": {
       "forMe": "Pour moi",
-      "mine": "Mes offres"
+      "mine": "Mes offres",
+      "manage": "Direction"
     },
     "offer": "Proposer un service",
     "emptyForMe": "Aucune offre ouverte pour toi pour le moment.",
@@ -1578,7 +1579,8 @@
     "kind": {
       "give": "Cession",
       "exchangeFor": "Échange contre le {date}",
-      "exchangeAny": "Échange contre un service au choix"
+      "exchangeAny": "Échange contre un service au choix",
+      "forced": "Échange forcé"
     },
     "toYou": "pour toi",
     "toUser": "pour {name}",
@@ -1594,35 +1596,35 @@
       "cancelled": "Sans objet"
     },
     "actions": {
-      "take": "Reprendre",
       "swap": "Échanger",
       "decline": "Refuser",
       "hide": "Masquer",
       "unhide": "Réafficher",
-      "withdraw": "Retirer"
+      "withdraw": "Retirer",
+      "coverIn": "Remplacer"
     },
     "confirm": {
-      "takeTitle": "Reprendre ce service ?",
-      "takeText": "Tu reprends le service du {date}, {time}. C'est effectif immédiatement.",
       "swapTitle": "Échanger des services ?",
       "swapText": "Tu reprends {date}, {time} et tu cèdes {counter}. C'est effectif immédiatement.",
       "pickCounter": "Lequel de tes services cèdes-tu en échange ?",
       "noCounter": "Tu n'as aucun service à venir dans cet agenda que tu pourrais céder en échange.",
-      "loadingDuties": "Chargement de tes services …"
+      "loadingDuties": "Chargement de tes services …",
+      "forcedTitle": "Remplacer ce service ?",
+      "forcedText": "Tu reprends le service du {date}, {time} pour {name}. Cela s’applique immédiatement. Ensuite, tu choisis en échange l’un de tes services des 3 prochains mois."
     },
     "done": {
-      "taken": "Service repris.",
       "swapped": "Services échangés.",
       "offered": "Offre créée.",
       "withdrawn": "Offre retirée.",
-      "declined": "Demande refusée."
+      "declined": "Demande refusée.",
+      "coveredIn": "Tu remplaces.",
+      "counterChosen": "Service en contrepartie transféré.",
+      "counterWaived": "Contrepartie annulée.",
+      "forced": "Échange forcé."
     },
     "form": {
       "shift": "Ton service",
       "shiftPlaceholder": "Choisir un service",
-      "type": "Type",
-      "give": "Céder",
-      "exchange": "Échanger",
       "audience": "À qui ?",
       "everyone": "À tous",
       "person": "À une personne",
@@ -1635,7 +1637,7 @@
       "submit": "Proposer",
       "noSlots": "Tu n'as aucun service à venir dans cet agenda."
     },
-    "offerShift": "Céder / Échanger",
+    "offerShift": "Échanger",
     "openOffer": "Il existe une offre d'échange ouverte pour ce service.",
     "openOfferLink": "Aller à la bourse d'échange",
     "marker": "Offre d'échange ouverte",
@@ -1688,7 +1690,25 @@
       "delayHint": "Les applications d'agenda actualisent les abonnements avec un décalage (Google : plusieurs heures).",
       "loadFailed": "Impossible de charger le lien.",
       "failed": "Ça n'a pas fonctionné. Réessaie."
-    }
+    },
+    "forcedFor": "Remplacer {name}",
+    "counter": {
+      "pending": "Contrepartie en attente",
+      "chosen": "Contrepartie : service du {date}",
+      "waived": "Contrepartie annulée",
+      "task": "Tu as remplacé {name}. Choisis d’ici le {end} l’un de tes services en contrepartie.",
+      "choose": "Choisir la contrepartie",
+      "chooseFor": "Choisir à sa place",
+      "title": "Choisir la contrepartie",
+      "text": "Le service choisi passe immédiatement à {name}. Tes services jusqu’au {end} sont possibles.",
+      "none": "Tu n’as aucun service adapté dans la période de contrepartie. La direction peut annuler la contrepartie.",
+      "loading": "Chargement des services …",
+      "waive": "Annuler",
+      "waiveTitle": "Annuler la contrepartie ?",
+      "waiveText": "{name} n’a pas à rendre de service pour celui du {date}.",
+      "reason": "Motif"
+    },
+    "emptyManage": "Aucun échange forcé en cours."
   },
   "notifications": {
     "mail": {

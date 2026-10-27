@@ -1561,12 +1561,13 @@
       "loadFailed": "No se pudieron cargar los ajustes."
     },
     "title": "Bolsa de cambios",
-    "subtitle": "Ceder e intercambiar turnos",
+    "subtitle": "Intercambiar turnos",
     "menu": "Bolsa de cambios",
     "calendar": "Calendario",
     "tabs": {
       "forMe": "Para mí",
-      "mine": "Mis ofertas"
+      "mine": "Mis ofertas",
+      "manage": "Administración"
     },
     "offer": "Ofrecer un turno",
     "emptyForMe": "Ahora mismo no hay ofertas abiertas para ti.",
@@ -1578,7 +1579,8 @@
     "kind": {
       "give": "Cesión",
       "exchangeFor": "Cambio por el {date}",
-      "exchangeAny": "Cambio por cualquier turno"
+      "exchangeAny": "Cambio por cualquier turno",
+      "forced": "Intercambio forzoso"
     },
     "toYou": "para ti",
     "toUser": "para {name}",
@@ -1594,35 +1596,35 @@
       "cancelled": "Anulada"
     },
     "actions": {
-      "take": "Asumir",
       "swap": "Intercambiar",
       "decline": "Rechazar",
       "hide": "Ocultar",
       "unhide": "Mostrar de nuevo",
-      "withdraw": "Retirar"
+      "withdraw": "Retirar",
+      "coverIn": "Sustituir"
     },
     "confirm": {
-      "takeTitle": "¿Asumir este turno?",
-      "takeText": "Asumes el turno del {date}, {time}. Es efectivo de inmediato.",
       "swapTitle": "¿Intercambiar turnos?",
       "swapText": "Asumes {date}, {time} y cedes {counter}. Es efectivo de inmediato.",
       "pickCounter": "¿Cuál de tus turnos cedes a cambio?",
       "noCounter": "No tienes ningún turno futuro en este calendario que puedas ceder.",
-      "loadingDuties": "Cargando tus turnos …"
+      "loadingDuties": "Cargando tus turnos …",
+      "forcedTitle": "¿Sustituir este turno?",
+      "forcedText": "Asumes el turno del {date}, {time} por {name}. Se aplica de inmediato. Después eliges, a cambio, uno de tus turnos de los próximos 3 meses."
     },
     "done": {
-      "taken": "Turno asumido.",
       "swapped": "Turnos intercambiados.",
       "offered": "Oferta creada.",
       "withdrawn": "Oferta retirada.",
-      "declined": "Solicitud rechazada."
+      "declined": "Solicitud rechazada.",
+      "coveredIn": "Estás sustituyendo.",
+      "counterChosen": "Turno de compensación transferido.",
+      "counterWaived": "Turno de compensación condonado.",
+      "forced": "Intercambio forzado."
     },
     "form": {
       "shift": "Tu turno",
       "shiftPlaceholder": "Elegir un turno",
-      "type": "Tipo",
-      "give": "Ceder",
-      "exchange": "Intercambiar",
       "audience": "¿A quién?",
       "everyone": "A todos",
       "person": "A una persona",
@@ -1635,7 +1637,7 @@
       "submit": "Ofrecer",
       "noSlots": "No tienes turnos futuros en este calendario."
     },
-    "offerShift": "Ceder / Intercambiar",
+    "offerShift": "Intercambiar",
     "openOffer": "Hay una oferta de cambio abierta para este turno.",
     "openOfferLink": "Ir a la bolsa de cambios",
     "marker": "Oferta de cambio abierta",
@@ -1688,7 +1690,25 @@
       "delayHint": "Las aplicaciones de calendario actualizan las suscripciones con retraso (Google: varias horas).",
       "loadFailed": "No se pudo cargar el enlace.",
       "failed": "No ha funcionado. Inténtalo de nuevo."
-    }
+    },
+    "forcedFor": "Sustituir a {name}",
+    "counter": {
+      "pending": "Compensación pendiente",
+      "chosen": "Compensación: turno del {date}",
+      "waived": "Compensación condonada",
+      "task": "Has sustituido a {name}. Elige antes del {end} uno de tus turnos como compensación.",
+      "choose": "Elegir turno de compensación",
+      "chooseFor": "Elegir en su nombre",
+      "title": "Elegir turno de compensación",
+      "text": "El turno elegido pasa de inmediato a {name}. Puedes elegir entre tus turnos hasta el {end}.",
+      "none": "No tienes ningún turno adecuado en el plazo de compensación. La administración puede condonar la compensación.",
+      "loading": "Cargando turnos …",
+      "waive": "Condonar",
+      "waiveTitle": "¿Condonar la compensación?",
+      "waiveText": "{name} no tiene que devolver ningún turno por el turno del {date}.",
+      "reason": "Motivo"
+    },
+    "emptyManage": "No hay intercambios forzosos pendientes."
   },
   "notifications": {
     "mail": {

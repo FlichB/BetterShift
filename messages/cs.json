@@ -1561,12 +1561,13 @@
       "loadFailed": "Nastavení se nepodařilo načíst."
     },
     "title": "Burza výměn",
-    "subtitle": "Odevzdávat a vyměňovat služby",
+    "subtitle": "Výměna služeb",
     "menu": "Burza výměn",
     "calendar": "Kalendář",
     "tabs": {
       "forMe": "Pro mě",
-      "mine": "Moje nabídky"
+      "mine": "Moje nabídky",
+      "manage": "Vedení"
     },
     "offer": "Nabídnout službu",
     "emptyForMe": "Právě teď pro tebe nejsou žádné otevřené nabídky.",
@@ -1578,7 +1579,8 @@
     "kind": {
       "give": "Odevzdání",
       "exchangeFor": "Výměna za {date}",
-      "exchangeAny": "Výměna za libovolnou službu"
+      "exchangeAny": "Výměna za libovolnou službu",
+      "forced": "Vynucená výměna"
     },
     "toYou": "tobě",
     "toUser": "uživateli {name}",
@@ -1594,35 +1596,35 @@
       "cancelled": "Neplatná"
     },
     "actions": {
-      "take": "Převzít",
       "swap": "Vyměnit",
       "decline": "Odmítnout",
       "hide": "Skrýt",
       "unhide": "Znovu zobrazit",
-      "withdraw": "Stáhnout"
+      "withdraw": "Stáhnout",
+      "coverIn": "Zaskočit"
     },
     "confirm": {
-      "takeTitle": "Převzít tuto službu?",
-      "takeText": "Přebíráš službu dne {date}, {time}. Platí to okamžitě.",
       "swapTitle": "Vyměnit služby?",
       "swapText": "Přebíráš {date}, {time} a odevzdáváš {counter}. Platí to okamžitě.",
       "pickCounter": "Kterou ze svých služeb za to odevzdáš?",
       "noCounter": "V tomto kalendáři nemáš žádnou budoucí službu, kterou bys mohl(a) odevzdat.",
-      "loadingDuties": "Načítají se tvé služby …"
+      "loadingDuties": "Načítají se tvé služby …",
+      "forcedTitle": "Zaskočit?",
+      "forcedText": "Přebíráš službu dne {date}, {time} za {name}. Platí to okamžitě. Poté si jako náhradu vybereš jednu ze svých služeb v následujících 3 měsících."
     },
     "done": {
-      "taken": "Služba převzata.",
       "swapped": "Služby vyměněny.",
       "offered": "Nabídka vytvořena.",
       "withdrawn": "Nabídka stažena.",
-      "declined": "Žádost odmítnuta."
+      "declined": "Žádost odmítnuta.",
+      "coveredIn": "Zaskočil jsi.",
+      "counterChosen": "Náhradní služba předána.",
+      "counterWaived": "Náhrada prominuta.",
+      "forced": "Výměna vynucena."
     },
     "form": {
       "shift": "Tvoje služba",
       "shiftPlaceholder": "Vybrat službu",
-      "type": "Druh",
-      "give": "Odevzdat",
-      "exchange": "Vyměnit",
       "audience": "Komu?",
       "everyone": "Všem",
       "person": "Jedné osobě",
@@ -1635,7 +1637,7 @@
       "submit": "Nabídnout",
       "noSlots": "V tomto kalendáři nemáš žádné budoucí služby."
     },
-    "offerShift": "Odevzdat / Vyměnit",
+    "offerShift": "Vyměnit",
     "openOffer": "Pro tuto službu existuje otevřená nabídka výměny.",
     "openOfferLink": "Přejít na burzu výměn",
     "marker": "Otevřená nabídka výměny",
@@ -1688,7 +1690,25 @@
       "delayHint": "Kalendářové aplikace aktualizují odběry se zpožděním (Google: několik hodin).",
       "loadFailed": "Odkaz se nepodařilo načíst.",
       "failed": "Nepovedlo se. Zkus to prosím znovu."
-    }
+    },
+    "forcedFor": "Zaskočit za {name}",
+    "counter": {
+      "pending": "Náhrada čeká",
+      "chosen": "Náhrada: služba ze dne {date}",
+      "waived": "Náhrada prominuta",
+      "task": "Zaskočil jsi za {name}. Do {end} vyber jednu ze svých služeb jako náhradu.",
+      "choose": "Vybrat náhradní službu",
+      "chooseFor": "Vybrat za něj",
+      "title": "Vybrat náhradní službu",
+      "text": "Vybraná služba okamžitě přejde na {name}. K výběru jsou tvé služby do {end}.",
+      "none": "V okně pro náhradu nemáš žádnou vhodnou službu. Vedení může náhradu prominout.",
+      "loading": "Načítání služeb …",
+      "waive": "Prominout",
+      "waiveTitle": "Prominout náhradu?",
+      "waiveText": "{name} nemusí za službu dne {date} vracet žádnou službu.",
+      "reason": "Důvod"
+    },
+    "emptyManage": "Žádné otevřené vynucené výměny."
   },
   "notifications": {
     "mail": {

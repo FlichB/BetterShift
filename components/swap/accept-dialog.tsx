@@ -22,6 +22,7 @@ export function AcceptDialog({
   const t = useTranslations();
   const fmt = useDutyFormat();
   const { user } = useAuth();
+  const forced = entry.type === "forced";
   const pickCounter = entry.type === "exchange" && !entry.requested;
   const duties = useSwapDuties(pickCounter ? entry.offered.calendarId : undefined);
   const [counterId, setCounterId] = useState<string>();
@@ -33,10 +34,9 @@ export function AcceptDialog({
   );
   const counter = entry.requested ?? mySlots.find((d) => d.shiftId === counterId);
   const offered = fmt(entry.offered);
-  const description =
-    entry.type === "give"
-      ? t("swap.confirm.takeText", offered)
-      : counter
+  const description = forced
+    ? t("swap.confirm.forcedText", { ...offered, name: entry.offeredBy.name ?? "?" })
+    : counter
         ? t("swap.confirm.swapText", { ...offered, counter: `${fmt(counter).date}, ${fmt(counter).time}` })
         : t("swap.confirm.pickCounter");
 
@@ -44,9 +44,9 @@ export function AcceptDialog({
     <ConfirmationDialog
       open
       onOpenChange={(open) => !open && onCancel()}
-      title={entry.type === "give" ? t("swap.confirm.takeTitle") : t("swap.confirm.swapTitle")}
+      title={forced ? t("swap.confirm.forcedTitle") : t("swap.confirm.swapTitle")}
       description={description}
-      confirmText={entry.type === "give" ? t("swap.actions.take") : t("swap.actions.swap")}
+      confirmText={forced ? t("swap.actions.coverIn") : t("swap.actions.swap")}
       confirmDisabled={pickCounter && !counterId}
       onConfirm={() => onConfirm(pickCounter ? counterId : undefined)}
     >
