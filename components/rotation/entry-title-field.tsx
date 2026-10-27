@@ -47,7 +47,12 @@ export function EntryTitleField({
         >
           <Info className="size-3.5" aria-hidden="true" />
         </PopoverTrigger>
-        <PopoverContent className="max-w-72 text-xs leading-5" side="top">
+        <PopoverContent
+          className="max-w-72 text-xs leading-5"
+          side="top"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
           {t("rotation.fields.entryTitleHelp")}
         </PopoverContent>
       </Popover>

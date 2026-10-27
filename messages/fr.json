@@ -1709,7 +1709,7 @@
     "eventBody": "Cet événement est géré par BetterShift. Les services s'échangent dans le tableau d'échanges.",
     "eventTime": "Horaire du service : {time}",
     "eventPartners": "Avec : {names}",
-    "cancelComment": "Ce service n'a plus lieu."
+    "cancelComment": "Ce rendez-vous ne te concerne plus : la place a été échangée, réattribuée ou le service a été supprimé."
   },
   "personalFeed": {
     "calendarName": "Mes services",

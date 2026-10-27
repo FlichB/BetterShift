@@ -135,6 +135,12 @@ describe("createGraphClient", () => {
     expect(JSON.parse(String(calls[1].init.body))).toMatchObject({ subject: "Samstagsdienst", isAllDay: false });
   });
 
+  it("sends showAs free for a Platz event", async () => {
+    const { calls, fetchImpl } = fakeFetch([token(), json(201, { id: "ev9" })]);
+    await createGraphClient(config, fetchImpl).createEvent({ ...input, showAs: "free" }, "tx-9");
+    expect(JSON.parse(String(calls[1].init.body))).toMatchObject({ showAs: "free" });
+  });
+
   it("cancels an event with the comment in the body", async () => {
     const { calls, fetchImpl } = fakeFetch([token(), new Response(null, { status: 202 })]);
     await createGraphClient(config, fetchImpl).cancelEvent("ev1", "Dienst entfällt");

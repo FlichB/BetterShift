@@ -1709,7 +1709,7 @@
     "eventBody": "Este evento lo gestiona BetterShift. Los turnos se intercambian en el tablón de intercambios.",
     "eventTime": "Horario del turno: {time}",
     "eventPartners": "Con: {names}",
-    "cancelComment": "Este turno ya no se realiza."
+    "cancelComment": "Esta cita ya no es para ti: el puesto se ha intercambiado, reasignado o el turno se ha cancelado."
   },
   "personalFeed": {
     "calendarName": "Mis turnos",

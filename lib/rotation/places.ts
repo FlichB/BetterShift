@@ -18,8 +18,11 @@ export function expandDutyPlaces(shifts: ShiftWithCalendar[], index: DutyPlaceIn
   return shifts.flatMap((shift) => {
     const template = index.templates.get(shift.id);
     if (!template) return [shift];
+    const places = placeTitles(shift, template, openLabel);
+    // A duty without holders and capacity would vanish from the grids; keep it as is.
+    if (places.length === 0) return [shift];
     let free = 0;
-    return placeTitles(shift, template, openLabel).map(({ userId, title }) => ({
+    return places.map(({ userId, title }) => ({
       ...shift,
       id: userId ? `${shift.id}:${userId}` : `${shift.id}:open-${free++}`,
       title,

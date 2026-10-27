@@ -41,4 +41,10 @@ describe("expandDutyPlaces", () => {
     expect(result[2].dutyPlace).toEqual({ shiftId: "s1", userId: null });
     expect(result[3]).toBe(other);
   });
+
+  it("keeps a templated duty without holders and capacity visible", () => {
+    const empty = { ...duty, id: "s3", signups: [], signupCapacity: null } as unknown as ShiftWithCalendar;
+    const result = expandDutyPlaces([empty], { templates: new Map([["s3", "{Vorname} Dienst"]]) }, "Offener Platz");
+    expect(result).toEqual([empty]);
+  });
 });

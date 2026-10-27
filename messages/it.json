@@ -1709,7 +1709,7 @@
     "eventBody": "Questo evento è gestito da BetterShift. I turni si scambiano nella bacheca degli scambi.",
     "eventTime": "Orario del turno: {time}",
     "eventPartners": "Con: {names}",
-    "cancelComment": "Questo turno non si svolge più."
+    "cancelComment": "Questo appuntamento per te non è più valido: il posto è stato scambiato, riassegnato o il turno è stato eliminato."
   },
   "personalFeed": {
     "calendarName": "I miei turni",

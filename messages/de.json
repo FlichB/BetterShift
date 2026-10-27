@@ -1709,7 +1709,7 @@
     "eventBody": "Dieser Termin wird von BetterShift verwaltet. Dienste tauschst du in der Tauschbörse.",
     "eventTime": "Dienstzeit: {time}",
     "eventPartners": "Mit: {names}",
-    "cancelComment": "Dieser Dienst findet nicht mehr statt."
+    "cancelComment": "Dieser Termin entfällt für dich – der Platz wurde getauscht, umbesetzt oder der Dienst gestrichen."
   },
   "personalFeed": {
     "calendarName": "Meine Dienste",

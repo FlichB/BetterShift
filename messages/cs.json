@@ -1709,7 +1709,7 @@
     "eventBody": "Tuto událost spravuje BetterShift. Služby se vyměňují na burze výměn.",
     "eventTime": "Čas služby: {time}",
     "eventPartners": "S: {names}",
-    "cancelComment": "Tato služba se již nekoná."
+    "cancelComment": "Tento termín pro tebe odpadá – místo bylo vyměněno, přeobsazeno nebo byla služba zrušena."
   },
   "personalFeed": {
     "calendarName": "Moje služby",

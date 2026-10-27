@@ -1709,7 +1709,7 @@
     "eventBody": "This event is managed by BetterShift. Swap duties on the swap board.",
     "eventTime": "Duty time: {time}",
     "eventPartners": "With: {names}",
-    "cancelComment": "This duty no longer takes place."
+    "cancelComment": "This appointment no longer applies to you – the spot was swapped, reassigned or the duty was cancelled."
   },
   "personalFeed": {
     "calendarName": "My duties",
