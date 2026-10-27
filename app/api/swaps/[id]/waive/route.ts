@@ -15,7 +15,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const parsed = validateWaive(await readJson(request));
     if (!parsed.ok) return swapError("invalid");
 
-    const swap = waiveCounter(id, parsed.value.reason, ctx.userId);
+    const swap = waiveCounter(id, parsed.value.reason, ctx.userId, new Date());
     await logUserAction<SwapCounterWaivedMetadata>({
       action: "swap.counter_waived",
       userId: ctx.userId,

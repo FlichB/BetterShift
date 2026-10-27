@@ -302,6 +302,20 @@ function cancelOffersOf(
   return out;
 }
 
+const hasOpenForcedOffer = (tx: Reader, shiftId: string, userId: string) =>
+  tx
+    .select({ id: shiftSwaps.id })
+    .from(shiftSwaps)
+    .where(
+      and(
+        eq(shiftSwaps.status, "open"),
+        eq(shiftSwaps.type, "forced"),
+        eq(shiftSwaps.offeredShiftId, shiftId),
+        eq(shiftSwaps.offeredByUserId, userId)
+      )
+    )
+    .get() !== undefined;
+
 export function acceptOffer(id: string, acceptorId: string, counterShiftId: string | null, now: Date): AcceptResult {
   expireDue(now);
   const result = db.transaction((tx): AcceptResult => {
@@ -315,6 +329,8 @@ export function acceptOffer(id: string, acceptorId: string, counterShiftId: stri
     const counterId = swap.type === "exchange" ? (swap.requestedShiftId ?? counterShiftId) : null;
     const counter = counterId ? loadSlot(tx, counterId) : null;
     if (counterId && !counter) throw new SwapServiceError("invalidShift");
+    // The absent user cannot end an open forced offer of their own by giving that duty as the counter.
+    if (counterId && hasOpenForcedOffer(tx, counterId, acceptorId)) throw new SwapServiceError("slotNotOwned");
 
     const check = checkAccept({
       offer: swap,
@@ -429,7 +445,7 @@ export function chooseCounter(id: string, shiftId: string, actorId: string, now:
     for (const move of check.moves) applyMove(tx, move, actorId, now);
     const updated = tx
       .update(shiftSwaps)
-      .set({ acceptedShiftId: shiftId, counterStatus: "chosen", counterResolvedByUserId: actorId })
+      .set({ acceptedShiftId: shiftId, counterStatus: "chosen", counterResolvedByUserId: actorId, resolvedAt: now })
       .where(and(eq(shiftSwaps.id, id), eq(shiftSwaps.counterStatus, "pending")))
       .returning()
       .get();
@@ -448,13 +464,13 @@ export function chooseCounter(id: string, shiftId: string, actorId: string, now:
 }
 
 /** Spec D8: the management releases the Einspringer from the Ausgleich. */
-export function waiveCounter(id: string, reason: string, actorId: string): ShiftSwap {
+export function waiveCounter(id: string, reason: string, actorId: string, now: Date): ShiftSwap {
   return db.transaction((tx) => {
     const swap = loadOpen(tx, id);
     if (swap.type !== "forced" || swap.counterStatus !== "pending") throw new SwapServiceError("counterNotDue");
     const updated = tx
       .update(shiftSwaps)
-      .set({ counterStatus: "waived", waiveReason: reason, counterResolvedByUserId: actorId })
+      .set({ counterStatus: "waived", waiveReason: reason, counterResolvedByUserId: actorId, resolvedAt: now })
       .where(and(eq(shiftSwaps.id, id), eq(shiftSwaps.counterStatus, "pending")))
       .returning()
       .get();

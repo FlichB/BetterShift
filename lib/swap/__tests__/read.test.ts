@@ -153,6 +153,16 @@ describe("listBoard with forced swaps", () => {
     expect(after.mine[0]).toMatchObject({ id: swap.id, counterStatus: "chosen" });
   });
 
+  it("keeps a resolved Ausgleich in mine for 30 days after the choice, not after the takeover", () => {
+    const swap = force("2026-11-07", s.m0, s.m2);
+    const later = new Date(now.getTime() + 40 * 24 * 60 * 60 * 1000); // 2026-12-01
+    chooseCounter(swap.id, s.duty("2026-12-05"), s.m2, later);
+    expect(listBoard(s.m0, cal(), later, false).mine.map((e) => e.id)).toEqual([swap.id]);
+    expect(listBoard(s.m2, cal(), later, false).mine.map((e) => e.id)).toEqual([swap.id]);
+    const muchLater = new Date(later.getTime() + 31 * 24 * 60 * 60 * 1000);
+    expect(listBoard(s.m0, cal(), muchLater, false).mine).toHaveLength(0);
+  });
+
   it("shows an open forced offer to others in forMe", () => {
     const swap = force("2026-11-07", s.m0, null);
     expect(listBoard(s.m4, cal(), now, false).forMe.map((e) => e.id)).toEqual([swap.id]);

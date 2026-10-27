@@ -36,6 +36,19 @@ const code = (fn: () => unknown) => {
 const force = (date: string, absent: string, substitute: string | null, at: Date = now) =>
   forceSwap({ shiftId: s.duty(date), absentUserId: absent, substituteUserId: substitute, note: "Krankenstand" }, s.team.ownerId, at);
 
+describe("forced offer protection", () => {
+  it("keeps the absent user from ending an open forced offer by giving that duty as a counter", () => {
+    force("2026-11-07", s.m0, null); // open to everyone, m0 absent
+    const exchange = createOffer(
+      { shiftId: s.duty("2026-11-21"), type: "exchange", targetUserId: null, requestedShiftId: null, note: null },
+      s.m4,
+      now
+    );
+    expect(code(() => acceptOffer(exchange.id, s.m0, s.duty("2026-11-07"), now))).toBe("slotNotOwned");
+    expect(db.select().from(shiftSwaps).where(eq(shiftSwaps.offeredShiftId, s.duty("2026-11-07"))).get()?.status).toBe("open");
+  });
+});
+
 describe("forceSwap", () => {
   it("hands the Platz to a named Einspringer at once and opens the Ausgleich", () => {
     const { swap } = force("2026-11-07", s.m0, s.m2);
@@ -124,11 +137,11 @@ describe("Ausgleich", () => {
     expect(getSwap(first.id)).toMatchObject({ counterStatus: "chosen", counterResolvedByUserId: s.team.ownerId });
 
     const second = force("2026-11-21", s.m4, s.team.memberIds[6]).swap;
-    expect(waiveCounter(second.id, "Kein Dienst im Fenster", s.team.ownerId)).toMatchObject({
+    expect(waiveCounter(second.id, "Kein Dienst im Fenster", s.team.ownerId, now)).toMatchObject({
       counterStatus: "waived",
       waiveReason: "Kein Dienst im Fenster",
       counterResolvedByUserId: s.team.ownerId,
     });
-    expect(code(() => waiveCounter(second.id, "nochmal", s.team.ownerId))).toBe("counterNotDue");
+    expect(code(() => waiveCounter(second.id, "nochmal", s.team.ownerId, now))).toBe("counterNotDue");
   });
 });
