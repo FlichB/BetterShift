@@ -1,5 +1,5 @@
 ALTER TABLE `rotation_duties` ADD `kind` text DEFAULT 'duty' NOT NULL;--> statement-breakpoint
-ALTER TABLE `rotations` ADD `holiday_calendar_id` text REFERENCES calendars(id);--> statement-breakpoint
+ALTER TABLE `rotations` ADD `holiday_calendar_id` text REFERENCES calendars(id) ON DELETE set null;--> statement-breakpoint
 ALTER TABLE `rotations` ADD `closed_title` text DEFAULT 'Geschlossen' NOT NULL;--> statement-breakpoint
 ALTER TABLE `rotations` ADD `holiday_open_dates` text DEFAULT '[]' NOT NULL;
 --> statement-breakpoint

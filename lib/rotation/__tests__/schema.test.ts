@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { calendars } from "@/lib/db/schema";
 import { rotationMembers, rotations } from "@/lib/rotation/schema";
 import { seedTeam } from "@/tests/helpers/seed";
 
@@ -65,5 +66,28 @@ describe("closure migration", () => {
       { date: "2026-12-26", reason: "Ausfalltag" },
       { date: "2026-12-31", reason: "Ausfalltag" },
     ]);
+  });
+
+  it("clears the holiday calendar reference when that calendar is deleted", () => {
+    const team = seedTeam({ members: 2 });
+    const holidaysId = crypto.randomUUID();
+    db.insert(calendars).values({ id: holidaysId, name: "Feiertage", color: "#ef4444", ownerId: team.ownerId }).run();
+    const row = db
+      .insert(rotations)
+      .values({
+        calendarId: team.calendarId,
+        name: "FT",
+        presetId: team.presetId,
+        perShift: 1,
+        period: "week",
+        startDate: "2026-11-02",
+        holidayCalendarId: holidaysId,
+      })
+      .returning()
+      .get();
+    db.delete(calendars).where(eq(calendars.id, holidaysId)).run();
+    const after = db.select().from(rotations).where(eq(rotations.id, row.id)).get();
+    expect(after).toBeDefined();
+    expect(after!.holidayCalendarId).toBeNull();
   });
 });
