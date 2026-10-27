@@ -58,7 +58,7 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 | Name | Bezeichnung der Rotation (bis 100 Zeichen). |
 | Preset (Titel, Zeit, Farbe) | Das Preset, aus dem jeder Dienst Titel, Zeit und Farbe erhält. |
 | Personen pro Dienst | 1 bis 20. Es braucht mindestens so viele Teilnehmer. |
-| Eintragsvorlage | Der Titel, den jeder Platz im Kalender trägt. Platzhalter: `{Vorname}`, `{Name}` (Nachname) und `{Dienst}` (Titel des Presets). Standard ist `{Vorname} Dienst`, also z. B. „Günther Dienst". `{Vorname}` oder `{Name}` muss vorkommen. Das ⓘ neben dem Feld erklärt die Platzhalter mit einem Beispiel; unter dem Feld zeigt eine Vorschau den Titel für den ersten Teilnehmer. Die Platzhalter unterscheiden Groß- und Kleinschreibung, jedes andere `{…}` wird abgelehnt. Freie Plätze heißen „Offener Platz". |
+| Eintragsvorlage | Der Titel, den jeder Platz im Kalender trägt. Platzhalter: `{Vorname}`, `{Name}` (ganzer Name) und `{Dienst}` (Titel des Presets). Standard ist `{Vorname} Dienst`, also z. B. „Günther Dienst". `{Vorname}` oder `{Name}` muss vorkommen. Das ⓘ neben dem Feld erklärt die Platzhalter mit einem Beispiel; unter dem Feld zeigt eine Vorschau den Titel für den ersten Teilnehmer. Die Platzhalter unterscheiden Groß- und Kleinschreibung, jedes andere `{…}` wird abgelehnt. Freie Plätze heißen „Offener Platz". |
 | Periode | „Tag", „Woche (ab Montag)" oder „Eigene Dauer" (dann „Länge in Tagen", 1 bis 365). |
 | Beginn | Erster Tag der ersten Periode. |
 | Beginnt mit | Welcher Teilnehmer in der ersten Periode Dienst hat. „Vorschlag übernehmen" setzt einen passenden Wert. |
@@ -165,7 +165,7 @@ Das Teilen und die Bündel sind in [`PERMISSIONS.md`](PERMISSIONS.md) beschriebe
 Kurzfassung; die vollständige Einrichtung steht in [`OUTLOOK_SETUP.md`](OUTLOOK_SETUP.md).
 
 - **Tausch-Mails.** Über Microsoft Graph verschickt office@ E-Mails bei einem neuen Angebot an alle (nicht an die aktuellen Inhaber des Dienstes), bei einer Direktanfrage an die angefragte Person sowie bei Annahme bzw. Ablehnung an den Anbieter. Jeder Benutzer schaltet unter „Benachrichtigungen" auf `/swaps` die Arten „Neue Angebote an alle", „Anfragen an mich" und „Meine Angebote" einzeln ab.
-- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Platz wird ein ganztägiger Termin im Kalender von office@ (Status „Frei", Titel aus der Eintragsvorlage); eingeladen ist nur der Inhaber des Platzes. Bei Tausch oder Umbesetzung sagt Exchange den Termin des bisherigen Inhabers ab und lädt den neuen Inhaber ein. Exchange verschickt Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
+- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Platz wird ein ganztägiger Termin im Kalender von office@ (Status „Frei", Titel aus der Eintragsvorlage); eingeladen ist nur der Inhaber des Platzes. Bei Tausch oder Umbesetzung sagt die App den Termin des bisherigen Inhabers ab und lädt den neuen Inhaber ein; Exchange verschickt die Absage sowie Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
 - **Ohne Konfiguration** bleibt alles aus; die Rotationsseite zeigt den Schalter deaktiviert („nicht eingerichtet"), und die Tausch-Mails entfallen.
 - Wer die Einladungen von office@ erhält, braucht den [Kalender-Feed](#7-persönlicher-kalender-feed) nicht zusätzlich in Outlook.
 
@@ -325,7 +325,7 @@ Alles, was seit dem Backup eingetragen oder getauscht wurde, ist danach verloren
 2. Ist Outlook eingeschaltet, aktualisieren sich die Termine danach von selbst; die Betroffenen bekommen geänderte Einladungen bzw. Absagen.
 3. Das Team vorher kurz informieren, dass sich künftige Dienste verschieben.
 
-**Besonderheit beim Update auf „Ein Eintrag pro Person" (Oktober 2026).** Jeder Platz hat jetzt einen eigenen Titel (Eintragsvorlage) und bei Outlook einen eigenen Termin. Nach dem Update auf diese Version sagt der erste Abgleich alle künftigen Termine im alten Format (ein Termin pro Dienst) ab und lädt pro Platz neu ein — jeder Teilnehmer bekommt einmalig eine Absage und eine neue Einladung. Informiere das Team vorher kurz.
+**Besonderheit beim Update auf „Ein Eintrag pro Person" (Oktober 2026).** Jeder Platz hat jetzt einen eigenen Titel (Eintragsvorlage) und bei Outlook einen eigenen Termin. Nach dem Update auf diese Version sagt der erste Abgleich alle künftigen Termine im alten Format (ein Termin pro Dienst) ab und lädt pro Platz neu ein — jeder Teilnehmer bekommt einmalig eine Absage plus eine Einladung je künftigem Platz (bei einem Jahr voller Samstage mehrere Dutzend Mails pro Person), die Exchange teils verzögert zustellt. Informiere das Team vorher.
 
 Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./data`.
 
