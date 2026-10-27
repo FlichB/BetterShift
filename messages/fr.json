@@ -1703,6 +1703,7 @@
       "text": "Le service choisi passe immédiatement à {name}. Tes services jusqu’au {end} sont possibles.",
       "none": "Tu n’as aucun service adapté dans la période de contrepartie. La direction peut annuler la contrepartie.",
       "loading": "Chargement des services …",
+      "loadFailed": "Tes services n’ont pas pu être chargés.",
       "waive": "Annuler",
       "waiveTitle": "Annuler la contrepartie ?",
       "waiveText": "{name} n’a pas à rendre de service pour celui du {date}.",

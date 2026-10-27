@@ -38,7 +38,8 @@ export function CounterDialog({
     >
       <div role="radiogroup" aria-label={t("swap.counter.title")} className="flex flex-col gap-1.5">
         {candidates.isLoading && <p className="text-[13px] text-fg-secondary">{t("swap.counter.loading")}</p>}
-        {!candidates.isLoading && duties.length === 0 && <p className="text-[13px] text-fg-secondary">{t("swap.counter.none")}</p>}
+        {candidates.isError && <p className="text-[13px] text-fg-secondary">{t("swap.counter.loadFailed")}</p>}
+        {!candidates.isLoading && !candidates.isError && duties.length === 0 && <p className="text-[13px] text-fg-secondary">{t("swap.counter.none")}</p>}
         {duties.map((duty) => {
           const f = fmt(duty);
           const selected = duty.shiftId === shiftId;

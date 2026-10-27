@@ -1703,6 +1703,7 @@
       "text": "Vybraná služba okamžitě přejde na {name}. K výběru jsou tvé služby do {end}.",
       "none": "V okně pro náhradu nemáš žádnou vhodnou službu. Vedení může náhradu prominout.",
       "loading": "Načítání služeb …",
+      "loadFailed": "Tvoje služby se nepodařilo načíst.",
       "waive": "Prominout",
       "waiveTitle": "Prominout náhradu?",
       "waiveText": "{name} nemusí za službu dne {date} vracet žádnou službu.",

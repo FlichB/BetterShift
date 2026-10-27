@@ -1703,6 +1703,7 @@
       "text": "Der gewählte Dienst geht sofort an {name}. Möglich sind deine Dienste bis {end}.",
       "none": "Du hast im Ausgleichsfenster keinen passenden Dienst. Die Verwaltung kann den Ausgleich erlassen.",
       "loading": "Dienste werden geladen …",
+      "loadFailed": "Deine Dienste konnten nicht geladen werden.",
       "waive": "Erlassen",
       "waiveTitle": "Ausgleich erlassen?",
       "waiveText": "{name} muss für den Dienst am {date} keinen Gegendienst abgeben.",

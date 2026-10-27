@@ -1703,6 +1703,7 @@
       "text": "Il turno scelto passa subito a {name}. Puoi scegliere tra i tuoi turni fino al {end}.",
       "none": "Non hai nessun turno adatto nel periodo di compensazione. L’amministrazione può condonare la compensazione.",
       "loading": "Caricamento dei turni …",
+      "loadFailed": "Non è stato possibile caricare i tuoi turni.",
       "waive": "Condona",
       "waiveTitle": "Condonare la compensazione?",
       "waiveText": "{name} non deve restituire nessun turno per quello del {date}.",

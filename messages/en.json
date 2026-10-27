@@ -1703,6 +1703,7 @@
       "text": "The chosen duty goes to {name} immediately. Your duties up to {end} are available.",
       "none": "You have no suitable duty in the window. The management can waive the counter duty.",
       "loading": "Loading duties …",
+      "loadFailed": "Your duties could not be loaded.",
       "waive": "Waive",
       "waiveTitle": "Waive counter duty?",
       "waiveText": "{name} does not have to give a duty back for the duty on {date}.",
