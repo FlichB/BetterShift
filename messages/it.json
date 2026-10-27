@@ -1473,7 +1473,7 @@
       "markSkip": "Saltato",
       "openHoliday": "Festività: {name}",
       "keepOpen": "Turno comunque",
-      "closeAgain": "Chiudi comunque",
+      "closeAgain": "Richiudi",
       "warnings": "Avvisi",
       "warning": {
         "lockedNonMember": "{date}: {user} non è più un partecipante ma ha un posto scambiato.",

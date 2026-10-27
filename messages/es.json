@@ -1473,7 +1473,7 @@
       "markSkip": "No hay servicio",
       "openHoliday": "Festivo: {name}",
       "keepOpen": "Servicio igualmente",
-      "closeAgain": "Cerrar de todos modos",
+      "closeAgain": "Volver a cerrar",
       "warnings": "Avisos",
       "warning": {
         "lockedNonMember": "{date}: {user} ya no participa, pero tiene una plaza intercambiada.",
