@@ -8,8 +8,9 @@ import { formatDateToLocal } from "@/lib/date-utils";
 import { buildIcsCalendar, type IcsCalendar } from "@/lib/ics";
 import { getMailTranslator } from "@/lib/notify/translator";
 import { getAppUrl } from "@/lib/outlook/config";
+import { entryTitle } from "@/lib/rotation/entry-title";
 import { addDays } from "@/lib/rotation/dates";
-import { rotationDuties } from "@/lib/rotation/schema";
+import { rotationDuties, rotations } from "@/lib/rotation/schema";
 
 export const PERSONAL_FEED_PAST_DAYS = 60;
 
@@ -18,6 +19,8 @@ export interface PersonalDuty {
   calendarId: string;
   date: string;
   partners: string[];
+  /** the rotation's Eintragsvorlage filled in for this user, as shown in the feed */
+  title: string;
 }
 
 /** Same rule as canReadFeed() and better-auth's admin plugin: an expired ban no longer counts. */
@@ -33,9 +36,16 @@ export async function loadPersonalDuties(
 ): Promise<{ calendars: IcsCalendar[]; duties: PersonalDuty[] }> {
   const from = addDays(formatDateToLocal(now), -PERSONAL_FEED_PAST_DAYS);
   const rows = db
-    .select({ shiftId: rotationDuties.shiftId, calendarId: shifts.calendarId, date: rotationDuties.date })
+    .select({
+      shiftId: rotationDuties.shiftId,
+      calendarId: shifts.calendarId,
+      date: rotationDuties.date,
+      shiftTitle: shifts.title,
+      entryTitle: rotations.entryTitle,
+    })
     .from(shiftSignups)
     .innerJoin(rotationDuties, eq(rotationDuties.shiftId, shiftSignups.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId))
     .innerJoin(shifts, eq(shifts.id, shiftSignups.shiftId))
     .where(and(eq(shiftSignups.userId, userId), gte(rotationDuties.date, from)))
     .all();
@@ -60,8 +70,10 @@ export async function loadPersonalDuties(
     .where(and(inArray(shiftSignups.shiftId, mine.map((r) => r.shiftId)), ne(shiftSignups.userId, userId)))
     .all();
 
-  const duties = mine.map((r) => ({
+  const me = db.select({ name: user.name, email: user.email }).from(user).where(eq(user.id, userId)).get();
+  const duties = mine.map(({ shiftTitle, entryTitle: template, ...r }) => ({
     ...r,
+    title: entryTitle(template, me ?? { name: null, email: null }, shiftTitle),
     partners: partners
       .filter((p) => p.shiftId === r.shiftId && p.name)
       .map((p) => p.name)
@@ -89,6 +101,7 @@ export async function buildPersonalFeed(userId: string, now: Date): Promise<stri
       extraLines,
       uidSuffix: "-me",
       calendarName: t("personalFeed.calendarName"),
+      titles: new Map(duties.map((d) => [d.shiftId, d.title])),
     },
   });
 }

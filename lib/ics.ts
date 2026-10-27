@@ -16,6 +16,8 @@ export interface IcsOnly {
   extraLines: Map<string, string[]>;
   uidSuffix: string;
   calendarName: string;
+  /** [fork] per shift id: the title of the user's own Platz (Eintragsvorlage) */
+  titles: Map<string, string>;
 }
 
 export async function buildIcsCalendar({
@@ -107,9 +109,11 @@ export async function buildIcsCalendar({
   for (const shift of allShifts) {
     const shiftDate = shift.date as Date;
     const calendarName = calendarMap.get(shift.calendarId);
-    const summary = isMultiCalendar && !only // [fork] personal feed shows plain titles
-      ? `[${calendarName}] ${shift.title}`
-      : shift.title;
+    const summary = only // [fork] personal feed: Eintragsvorlage per own Platz
+      ? (only.titles.get(shift.id) ?? shift.title)
+      : isMultiCalendar
+        ? `[${calendarName}] ${shift.title}`
+        : shift.title;
 
     const ranges = shift.isAllDay ? [null] : toTimeRanges(shift);
 

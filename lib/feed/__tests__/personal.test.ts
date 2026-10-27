@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { calendarShares, user } from "@/lib/db/schema";
 import { buildPersonalFeed, isUserBanned, loadPersonalDuties } from "@/lib/feed/personal";
+import { rotations } from "@/lib/rotation/schema";
 import { acceptOffer, createOffer } from "@/lib/swap/service";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
 
@@ -67,5 +68,14 @@ describe("buildPersonalFeed", () => {
     expect(description).toContain("Mit: M2");
     expect(description).toMatch(/Tauschen: https?:\/\/.+\/swaps/);
     expect(String(events[0].getFirstPropertyValue("uid"))).toMatch(/-me$/);
+  });
+
+  it("titles each own duty with the Eintragsvorlage and keeps the real times", async () => {
+    db.update(rotations).set({ entryTitle: "{Vorname} hat {Dienst}" }).where(eq(rotations.id, s.rotation.id)).run();
+    const ics = await buildPersonalFeed(s.m0, now);
+    const first = db.select({ name: user.name }).from(user).where(eq(user.id, s.m0)).get()!.name!.split(" ")[0];
+    expect(ics).toContain(`SUMMARY:${first} hat Samstagsdienst`);
+    // ics.ts writes UTC; 09:30 Europe/Vienna in November (CET, UTC+1) is 08:30Z
+    expect(ics).toMatch(/DTSTART:\d{8}T083000Z/);
   });
 });
