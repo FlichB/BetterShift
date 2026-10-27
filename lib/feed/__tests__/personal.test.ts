@@ -9,7 +9,7 @@ import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
 
 let s: Awaited<ReturnType<typeof seedDuties>>;
 beforeEach(async () => {
-  s = await seedDuties(); // m0+m1 hold 11-07 and 12-05, m2+m3 hold 11-14 and 12-12, …
+  s = await seedDuties(); // m0 holds 11-07 and 12-12, m2 holds 11-14 and 12-05, …
 });
 
 const dates = async (userId: string, at: Date = now) =>
@@ -17,7 +17,7 @@ const dates = async (userId: string, at: Date = now) =>
 
 describe("loadPersonalDuties", () => {
   it("lists only the user's own Plätze with the partners' names", async () => {
-    expect(await dates(s.m0)).toEqual(["2026-11-07", "2026-12-05"]);
+    expect(await dates(s.m0)).toEqual(["2026-11-07", "2026-12-12"]);
     const { duties, calendars } = await loadPersonalDuties(s.m0, now);
     expect(duties[0].partners).toEqual(["M2"]);
     expect(calendars).toEqual([{ id: s.team.calendarId, name: "Team", splitShiftsEnabled: false }]);
@@ -30,8 +30,8 @@ describe("loadPersonalDuties", () => {
       now
     );
     acceptOffer(offer.id, s.m2, null, now);
-    expect(await dates(s.m0)).toEqual(["2026-12-05"]);
-    expect(await dates(s.m2)).toEqual(["2026-11-07", "2026-11-14", "2026-12-12"]);
+    expect(await dates(s.m0)).toEqual(["2026-12-12"]);
+    expect(await dates(s.m2)).toEqual(["2026-11-07", "2026-11-14", "2026-12-05"]);
   });
 
   it("drops calendars the user can no longer read", async () => {
@@ -43,7 +43,7 @@ describe("loadPersonalDuties", () => {
 
   it("keeps the last 60 days and drops older duties", async () => {
     const inFeb = new Date(2027, 1, 1, 12, 0); // 60 days back = 2026-12-03
-    expect(await dates(s.m0, inFeb)).toEqual(["2026-12-05"]);
+    expect(await dates(s.m0, inFeb)).toEqual(["2026-12-12"]);
   });
 });
 

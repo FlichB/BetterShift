@@ -1,6 +1,6 @@
 // Shared seed for swap tests: 8 Teilnehmer, Samstagsdienst 09:30–15:00, 2 per duty,
 // generated for Nov–Dec 2026. Duties: 11-07 [m0,m1], 11-14 [m2,m3], 11-21 [m4,m5],
-// 11-28 [m6,m7], 12-05 [m0,m1], …
+// 11-28 [m6,m7], then re-paired: 12-05 [m1,m2], 12-12 [m0,m3], 12-19 [m5,m6], 12-26 [m4,m7].
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { shiftSignups } from "@/lib/db/schema";

@@ -60,9 +60,9 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 | Beginnt mit | Welcher Teilnehmer in der ersten Periode Dienst hat. „Vorschlag übernehmen" setzt einen passenden Wert. |
 | Diensttage | Wochentage Mo bis So, an denen in einer Periode tatsächlich Dienst ist („Alle Tage" setzt alle). |
 | Ausfalltage | Einzelne Tage ohne Dienst. Mit „Ausfalltag hinzufügen" ergänzen. |
-| Teilnehmer (Reihenfolge) | Die Reihenfolge entscheidet über die Verteilung. Mit „Nach oben" / „Nach unten" sortieren, mit „Teilnehmer hinzufügen" ergänzen, mit „Entfernen" streichen. |
+| Teilnehmer (Reihenfolge) | Die Reihenfolge bestimmt die erste Runde; danach mischt der Generator die Paare selbst. Mit „Nach oben" / „Nach unten" sortieren, mit „Teilnehmer hinzufügen" ergänzen, mit „Entfernen" streichen. |
 
-Beispiel „Samstagsdienst": Periode „Woche (ab Montag)", Diensttag Sa, 2 Personen pro Dienst, 8 Teilnehmer. Jede Person hat dann exakt jede 4. Woche Dienst. Mit „Speichern" wird die Rotation gesichert; erzeugt sind die Dienste damit noch nicht.
+Beispiel „Samstagsdienst": Periode „Woche (ab Montag)", Diensttag Sa, 2 Personen pro Dienst, 8 Teilnehmer. Jede Person hat dann einmal pro 4 Wochen Dienst. Die erste Runde folgt der Reihenfolge, danach werden die Paare neu gemischt: Niemand hat zwei Samstage hintereinander Dienst, niemand hat zweimal hintereinander denselben Partner, und pro Quartal weicht die Anzahl der Dienste höchstens um 1 ab. Bei wenigen Teilnehmern (z. B. 6) liegt dafür manchmal nur ein freier Samstag zwischen zwei Diensten. Mit „Speichern" wird die Rotation gesichert; erzeugt sind die Dienste damit noch nicht.
 
 Mit dem Feld „Neustart ab Datum" ersetzt du bei einem Teilnehmerwechsel die Reihenfolge ab einem Stichtag: Dienste davor bleiben unverändert (siehe [Generieren](#3-generieren)).
 

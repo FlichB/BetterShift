@@ -338,7 +338,7 @@ export function suggestOffsetFor(id: string, restartDate: string, memberIds: str
     .where(eq(shiftSignups.shiftId, last.shiftId))
     .all()
     .map((s) => s.userId);
-  return suggestStartOffset(memberIds, userIds);
+  return suggestStartOffset(memberIds, userIds, loadRotation(db, id).perShift);
 }
 
 export function deleteRotation(

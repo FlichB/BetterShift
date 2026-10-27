@@ -46,8 +46,8 @@ describe("acceptOffer", () => {
     const a = s.duty("2026-11-07");
     const swap = offer(a, s.m0, { type: "exchange" });
     expect(code(() => acceptOffer(swap.id, s.m2, null, now))).toBe("invalid");
-    acceptOffer(swap.id, s.m2, s.duty("2026-12-12"), now);
-    expect(s.holders(s.duty("2026-12-12"))).toContain(s.m0);
+    acceptOffer(swap.id, s.m2, s.duty("2026-12-05"), now);
+    expect(s.holders(s.duty("2026-12-05"))).toContain(s.m0);
   });
 
   it("locks the counter Platz for the offerer against the acceptor on a concrete exchange", () => {
@@ -60,7 +60,7 @@ describe("acceptOffer", () => {
   });
 
   it("stores the chosen counter duty of a Tausch beliebig as accepted", () => {
-    const counter = s.duty("2026-12-12");
+    const counter = s.duty("2026-12-05");
     const swap = offer(s.duty("2026-11-07"), s.m0, { type: "exchange" });
     acceptOffer(swap.id, s.m2, counter, now);
     expect(getSwap(swap.id)).toMatchObject({ status: "accepted", acceptedShiftId: counter });
