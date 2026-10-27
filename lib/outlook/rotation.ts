@@ -3,9 +3,9 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { formatDateToLocal } from "@/lib/date-utils";
 import { isOutlookConfigured } from "@/lib/outlook/config";
-import { desiredEvent, fingerprint } from "@/lib/outlook/desired";
+import { fingerprint } from "@/lib/outlook/desired";
 import { outlookEvents } from "@/lib/outlook/schema";
-import { loadDesiredDuties } from "@/lib/outlook/sync";
+import { loadDesiredPlaces } from "@/lib/outlook/sync";
 import { rotations } from "@/lib/rotation/schema";
 
 export interface OutlookStatus {
@@ -32,14 +32,14 @@ export function setOutlookEnabled(rotationId: string, enabled: boolean): boolean
 }
 
 export function outlookStatus(rotationId: string, enabled: boolean, now: Date): OutlookStatus {
-  const duties = enabled ? loadDesiredDuties(now, rotationId) : [];
+  const places = enabled ? loadDesiredPlaces(now, rotationId) : [];
   const rows = db.select().from(outlookEvents).where(eq(outlookEvents.rotationId, rotationId)).all();
-  const byShift = new Map(rows.map((r) => [r.shiftId, r]));
+  const byKey = new Map(rows.map((r) => [r.eventKey, r]));
 
   let synced = 0;
-  for (const duty of duties) {
-    const row = byShift.get(duty.shiftId);
-    if (row?.state === "active" && row.eventId && !row.lastError && row.fingerprint === fingerprint(desiredEvent(duty))) synced++;
+  for (const place of places) {
+    const row = byKey.get(place.key);
+    if (row?.state === "active" && row.eventId && !row.lastError && row.fingerprint === fingerprint(place.event)) synced++;
   }
   const failing = rows
     .filter((r) => r.lastError && r.startsAt.getTime() > now.getTime())
@@ -49,10 +49,10 @@ export function outlookStatus(rotationId: string, enabled: boolean, now: Date): 
   return {
     configured: isOutlookConfigured(),
     enabled,
-    total: duties.length,
+    total: places.length,
     synced,
     failed: failing.length,
-    pending: Math.max(0, duties.length - synced - failing.length),
+    pending: Math.max(0, places.length - synced - failing.length),
     lastSyncedAt: last?.toISOString() ?? null,
     errors: failing.slice(0, MAX_ERRORS).map((r) => ({ shiftId: r.shiftId, date: formatDateToLocal(r.startsAt), message: r.lastError! })),
   };

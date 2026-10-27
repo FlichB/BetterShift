@@ -18,7 +18,9 @@ const input: EventInput = {
   start: { dateTime: "2026-11-07T09:30:00", timeZone: GRAPH_TIME_ZONE },
   end: { dateTime: "2026-11-07T15:00:00", timeZone: GRAPH_TIME_ZONE },
   isAllDay: false,
+  showAs: "busy",
   attendees: [{ address: "a@firma.at", name: "Anna" }],
+  details: { time: null, partners: [] },
   bodyHtml: "<p>x</p>",
 };
 

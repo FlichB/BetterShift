@@ -57,4 +57,11 @@ describe("render", async () => {
   it("renders the event body with a link", () => {
     expect(renderEventBody(t, "https://shift.firma.at")).toContain('href="https://shift.firma.at/swaps"');
   });
+
+  it("lists duty time and partners before the fixed text, escaped", () => {
+    const html = renderEventBody(t, "https://app.example", { time: "09:30–15:00", partners: ["Anna <B>"] });
+    expect(html).toContain("Dienstzeit: 09:30–15:00");
+    expect(html).toContain("Mit: Anna &lt;B&gt;");
+    expect(html.indexOf("Dienstzeit")).toBeLessThan(html.indexOf("Tauschbörse"));
+  });
 });

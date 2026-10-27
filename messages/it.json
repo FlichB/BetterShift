@@ -1490,9 +1490,9 @@
     },
     "outlook": {
       "toggle": "Inserisci in Outlook (office@)",
-      "toggleHint": "Ogni turno diventa un evento nel calendario office@; i titolari ricevono inviti e aggiornamenti.",
+      "toggleHint": "Ogni posto diventa un appuntamento di un giorno intero nel calendario di office@ (come libero); viene invitato solo il titolare e uno scambio annulla o reinvita.",
       "notConfigured": "Microsoft 365 non è configurato su questo server (vedi docs/OUTLOOK_SETUP.md).",
-      "status": "{synced} di {total} turni in Outlook",
+      "status": "{synced} di {total} appuntamenti in Outlook",
       "loadFailed": "Impossibile caricare lo stato di Outlook.",
       "failed": "{count, plural, one {# errore} other {# errori}}",
       "lastSync": "ultima sincronizzazione {ago}",
@@ -1706,6 +1706,8 @@
   },
   "outlook": {
     "eventBody": "Questo evento è gestito da BetterShift. I turni si scambiano nella bacheca degli scambi.",
+    "eventTime": "Orario del turno: {time}",
+    "eventPartners": "Con: {names}",
     "cancelComment": "Questo turno non si svolge più."
   },
   "personalFeed": {

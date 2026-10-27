@@ -37,12 +37,18 @@ describe("phase 3 schema", () => {
 
   it("keeps outlook_events rows without a shift (no foreign key)", () => {
     const shiftId = crypto.randomUUID();
-    db.insert(outlookEvents).values({ shiftId, rotationId: "gone", startsAt: now }).run();
-    expect(db.select().from(outlookEvents).where(eq(outlookEvents.shiftId, shiftId)).get()).toMatchObject({
+    db.insert(outlookEvents).values({ eventKey: shiftId, shiftId, rotationId: "gone", startsAt: now }).run();
+    expect(db.select().from(outlookEvents).where(eq(outlookEvents.eventKey, shiftId)).get()).toMatchObject({
       state: "active",
       attempts: 0,
       eventId: null,
     });
+  });
+
+  it("keys events by Platz and keeps old rows as per-duty keys", () => {
+    db.insert(outlookEvents).values({ eventKey: "s-x:u-1", shiftId: "s-x", userId: "u-1", rotationId: "r-x", state: "active", startsAt: new Date() }).run();
+    db.insert(outlookEvents).values({ eventKey: "s-x:u-2", shiftId: "s-x", userId: "u-2", rotationId: "r-x", state: "active", startsAt: new Date() }).run();
+    expect(db.select().from(outlookEvents).where(eq(outlookEvents.shiftId, "s-x")).all()).toHaveLength(2);
   });
 
   it("cascades outbox rows with their swap and defaults preferences to on", async () => {

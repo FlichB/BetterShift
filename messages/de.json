@@ -1490,9 +1490,9 @@
     },
     "outlook": {
       "toggle": "In Outlook (office@) eintragen",
-      "toggleHint": "Jeder Dienst wird ein Termin im office@-Kalender; die Platzinhaber erhalten Einladungen und Aktualisierungen.",
+      "toggleHint": "Jeder Platz wird ein ganztägiger Termin im office@-Kalender (Status „Frei“); nur der Platzinhaber wird eingeladen und bei Tausch abgesagt bzw. neu eingeladen.",
       "notConfigured": "Microsoft 365 ist auf diesem Server nicht eingerichtet (siehe docs/OUTLOOK_SETUP.md).",
-      "status": "{synced} von {total} Diensten in Outlook",
+      "status": "{synced} von {total} Terminen in Outlook",
       "loadFailed": "Der Outlook-Status konnte nicht geladen werden.",
       "failed": "{count, plural, one {# Fehler} other {# Fehler}}",
       "lastSync": "letzter Abgleich {ago}",
@@ -1706,6 +1706,8 @@
   },
   "outlook": {
     "eventBody": "Dieser Termin wird von BetterShift verwaltet. Dienste tauschst du in der Tauschbörse.",
+    "eventTime": "Dienstzeit: {time}",
+    "eventPartners": "Mit: {names}",
     "cancelComment": "Dieser Dienst findet nicht mehr statt."
   },
   "personalFeed": {

@@ -1490,9 +1490,9 @@
     },
     "outlook": {
       "toggle": "Ajouter à Outlook (office@)",
-      "toggleHint": "Chaque service devient un événement du calendrier office@ ; les titulaires reçoivent des invitations et des mises à jour.",
+      "toggleHint": "Chaque place devient un rendez-vous sur toute la journée dans le calendrier office@ (affiché libre) ; seul son titulaire est invité, un échange annule ou réinvite.",
       "notConfigured": "Microsoft 365 n'est pas configuré sur ce serveur (voir docs/OUTLOOK_SETUP.md).",
-      "status": "{synced, plural, one {# service} other {# services}} sur {total} dans Outlook",
+      "status": "{synced} sur {total} rendez-vous dans Outlook",
       "loadFailed": "Impossible de charger l'état d'Outlook.",
       "failed": "{count, plural, one {# erreur} other {# erreurs}}",
       "lastSync": "dernière synchronisation {ago}",
@@ -1706,6 +1706,8 @@
   },
   "outlook": {
     "eventBody": "Cet événement est géré par BetterShift. Les services s'échangent dans le tableau d'échanges.",
+    "eventTime": "Horaire du service : {time}",
+    "eventPartners": "Avec : {names}",
     "cancelComment": "Ce service n'a plus lieu."
   },
   "personalFeed": {

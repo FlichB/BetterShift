@@ -16,15 +16,15 @@ beforeEach(async () => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("outlookStatus", () => {
-  it("counts pending, synced and failed duties", async () => {
+  it("counts pending, synced and failed events (one per Platz)", async () => {
     expect(setOutlookEnabled(s.rotation.id, true)).toBe(true);
-    expect(outlookStatus(s.rotation.id, true, now)).toMatchObject({ configured: true, enabled: true, total: 8, synced: 0, pending: 8, failed: 0 });
+    expect(outlookStatus(s.rotation.id, true, now)).toMatchObject({ configured: true, enabled: true, total: 16, synced: 0, pending: 16, failed: 0 });
 
     const graph = new FakeGraph();
     graph.failures.push(new Error("boom"));
-    await syncOutlook(graph, now, { bodyHtml: "", cancelComment: "", rotationId: s.rotation.id });
+    await syncOutlook(graph, now, { renderBody: () => "", cancelComment: "", rotationId: s.rotation.id });
     const status = outlookStatus(s.rotation.id, true, now);
-    expect(status).toMatchObject({ total: 8, synced: 7, failed: 1, pending: 0 });
+    expect(status).toMatchObject({ total: 16, synced: 15, failed: 1, pending: 0 });
     expect(status.errors).toEqual([{ shiftId: s.duty("2026-11-07"), date: "2026-11-07", message: "boom" }]);
     expect(status.lastSyncedAt).toBe(now.toISOString());
   });

@@ -1490,9 +1490,9 @@
     },
     "outlook": {
       "toggle": "Zapsat do Outlooku (office@)",
-      "toggleHint": "Každá služba se stane událostí v kalendáři office@; držitelé míst dostanou pozvánky a aktualizace.",
+      "toggleHint": "Každé místo se stane celodenní událostí v kalendáři office@ (jako volno); pozvaný je jen jeho držitel, výměna ho zruší nebo pozve znovu.",
       "notConfigured": "Microsoft 365 není na tomto serveru nastaven (viz docs/OUTLOOK_SETUP.md).",
-      "status": "{synced} z {total} služeb v Outlooku",
+      "status": "{synced} z {total} událostí v Outlooku",
       "loadFailed": "Stav Outlooku se nepodařilo načíst.",
       "failed": "{count, plural, one {# chyba} few {# chyby} many {# chyby} other {# chyb}}",
       "lastSync": "poslední synchronizace {ago}",
@@ -1706,6 +1706,8 @@
   },
   "outlook": {
     "eventBody": "Tuto událost spravuje BetterShift. Služby se vyměňují na burze výměn.",
+    "eventTime": "Čas služby: {time}",
+    "eventPartners": "S: {names}",
     "cancelComment": "Tato služba se již nekoná."
   },
   "personalFeed": {

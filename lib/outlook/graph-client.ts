@@ -67,7 +67,7 @@ function eventBody(input: EventInput) {
     end: input.end,
     isAllDay: input.isAllDay,
     attendees: input.attendees.map((a) => ({ emailAddress: { address: a.address, name: a.name ?? a.address }, type: "required" })),
-    showAs: "busy",
+    showAs: input.showAs,
     isReminderOn: true,
     responseRequested: false,
     allowNewTimeProposals: false,

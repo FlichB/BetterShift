@@ -1490,9 +1490,9 @@
     },
     "outlook": {
       "toggle": "Add to Outlook (office@)",
-      "toggleHint": "Each duty becomes an event in the office@ calendar; holders receive invitations and updates.",
+      "toggleHint": "Each Platz becomes an all-day event in the office@ calendar (shown as free); only its holder is invited, and a swap cancels or re-invites.",
       "notConfigured": "Microsoft 365 is not set up on this server (see docs/OUTLOOK_SETUP.md).",
-      "status": "{synced} of {total} duties in Outlook",
+      "status": "{synced} of {total} events in Outlook",
       "loadFailed": "The Outlook status could not be loaded.",
       "failed": "{count, plural, one {# error} other {# errors}}",
       "lastSync": "last sync {ago}",
@@ -1706,6 +1706,8 @@
   },
   "outlook": {
     "eventBody": "This event is managed by BetterShift. Swap duties on the swap board.",
+    "eventTime": "Duty time: {time}",
+    "eventPartners": "With: {names}",
     "cancelComment": "This duty no longer takes place."
   },
   "personalFeed": {

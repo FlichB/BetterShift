@@ -1,12 +1,13 @@
 // [fork] Reconciles office@ events with the duties of Outlook-enabled rotations (spec 12.25).
 // Local fingerprints decide what changed, so Graph is only called for real differences —
 // including holder changes made through upstream signup routes, which fork code never sees.
+// One event per Platz (spec 12.32); a swap is one cancel plus one create.
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { shiftSignups, shifts, user } from "@/lib/db/schema";
 import { formatDateToLocal } from "@/lib/date-utils";
 import type { OutlookSyncFailedMetadata } from "@/lib/outlook/audit";
-import { desiredEvent, dutyStartsAt, fingerprint, type DesiredEvent, type DutyForSync } from "@/lib/outlook/desired";
+import { desiredEvents, dutyStartsAt, fingerprint, type DesiredEvent, type DutyForSync, type PlaceEvent } from "@/lib/outlook/desired";
 import { GraphError, type GraphClient, type GraphEvent } from "@/lib/outlook/graph-client";
 import { outlookEvents, type OutlookEvent } from "@/lib/outlook/schema";
 import { hasStarted } from "@/lib/rotation/dates";
@@ -24,7 +25,7 @@ export function backoffMs(attempts: number): number {
 export type SyncFailure = OutlookSyncFailedMetadata;
 
 export interface SyncOptions {
-  bodyHtml: string;
+  renderBody: (event: DesiredEvent) => string;
   cancelComment: string;
   rotationId?: string;
   limit?: number;
@@ -39,7 +40,7 @@ export interface SyncResult {
   remaining: number;
 }
 
-type UpsertJob = { kind: "upsert"; duty: DutyForSync; event: DesiredEvent; fp: string; row: OutlookEvent | undefined };
+type UpsertJob = { kind: "upsert"; place: PlaceEvent; fp: string; row: OutlookEvent | undefined };
 type CancelJob = { kind: "cancel"; row: OutlookEvent };
 type Job = UpsertJob | CancelJob;
 
@@ -50,11 +51,13 @@ export function loadDesiredDuties(now: Date, rotationId?: string): DutyForSync[]
     .select({
       shiftId: rotationDuties.shiftId,
       rotationId: rotationDuties.rotationId,
+      kind: rotationDuties.kind,
       date: rotationDuties.date,
       startTime: shifts.startTime,
       endTime: shifts.endTime,
       isAllDay: shifts.isAllDay,
       title: shifts.title,
+      entryTitle: rotations.entryTitle,
     })
     .from(rotationDuties)
     .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId))
@@ -67,7 +70,7 @@ export function loadDesiredDuties(now: Date, rotationId?: string): DutyForSync[]
   if (rows.length === 0) return [];
 
   const holders = db
-    .select({ shiftId: shiftSignups.shiftId, email: user.email, name: user.name })
+    .select({ shiftId: shiftSignups.shiftId, userId: shiftSignups.userId, email: user.email, name: user.name })
     .from(shiftSignups)
     .innerJoin(user, eq(user.id, shiftSignups.userId))
     .where(inArray(shiftSignups.shiftId, rows.map((r) => r.shiftId)))
@@ -75,28 +78,34 @@ export function loadDesiredDuties(now: Date, rotationId?: string): DutyForSync[]
   return rows.map((r) => ({
     ...r,
     isAllDay: Boolean(r.isAllDay),
-    holders: holders.filter((h) => h.shiftId === r.shiftId).map(({ email, name }) => ({ email, name })),
+    holders: holders.filter((h) => h.shiftId === r.shiftId).map(({ userId, email, name }) => ({ userId, email, name })),
   }));
 }
 
-function markSynced(shiftId: string, values: Partial<OutlookEvent>, now: Date): void {
+/** Every office@ event the enabled rotations want, nearest first. */
+export function loadDesiredPlaces(now: Date, rotationId?: string): PlaceEvent[] {
+  return loadDesiredDuties(now, rotationId).flatMap(desiredEvents);
+}
+
+function markSynced(key: string, values: Partial<OutlookEvent>, now: Date): void {
   db.update(outlookEvents)
     .set({ ...values, state: "active", transactionId: null, syncedAt: now, attempts: 0, nextAttemptAt: null, lastError: null })
-    .where(eq(outlookEvents.shiftId, shiftId))
+    .where(eq(outlookEvents.eventKey, key))
     .run();
 }
 
-async function upsert(client: GraphClient, job: UpsertJob, now: Date, bodyHtml: string, result: SyncResult): Promise<void> {
-  const { duty, event, fp, row } = job;
-  const startsAt = dutyStartsAt(duty.date, duty.startTime);
-  const input = { ...event, bodyHtml };
+async function upsert(client: GraphClient, job: UpsertJob, now: Date, renderBody: SyncOptions["renderBody"], result: SyncResult): Promise<void> {
+  const { place, fp, row } = job;
+  const { event } = place;
+  const startsAt = dutyStartsAt(place.date, place.startTime);
+  const input = { ...event, bodyHtml: renderBody(event) };
 
   // A cancelled event of a duty that is wanted again starts over with a fresh event.
   const eventId = row?.state === "active" ? row.eventId : null;
   if (eventId) {
     try {
       await client.updateEvent(eventId, input);
-      markSynced(duty.shiftId, { eventId, fingerprint: fp, startsAt, rotationId: duty.rotationId }, now);
+      markSynced(place.key, { eventId, fingerprint: fp, startsAt, rotationId: place.rotationId }, now);
       result.updated++;
       return;
     } catch (error) {
@@ -108,14 +117,14 @@ async function upsert(client: GraphClient, job: UpsertJob, now: Date, bodyHtml: 
   // Reuse the id of a create still in flight; anything else gets a new one.
   const pending = row?.state === "active" && !row.eventId ? row.transactionId : null;
   const transactionId = pending ?? crypto.randomUUID();
-  const values = { rotationId: duty.rotationId, startsAt, transactionId, state: "active" as const, eventId: null, fingerprint: null };
+  const values = { rotationId: place.rotationId, startsAt, transactionId, state: "active" as const, eventId: null, fingerprint: null };
   db.insert(outlookEvents)
-    .values({ shiftId: duty.shiftId, ...values })
-    .onConflictDoUpdate({ target: outlookEvents.shiftId, set: values })
+    .values({ eventKey: place.key, shiftId: place.shiftId, userId: place.userId, ...values })
+    .onConflictDoUpdate({ target: outlookEvents.eventKey, set: values })
     .run();
   const created = await client.createEvent(input, transactionId);
   // A reused id may have returned an earlier event with old content: leave the fingerprint empty so the next run patches it.
-  markSynced(duty.shiftId, { eventId: created.id, icalUid: created.iCalUId, fingerprint: pending ? null : fp, startsAt }, now);
+  markSynced(place.key, { eventId: created.id, icalUid: created.iCalUId, fingerprint: pending ? null : fp, startsAt }, now);
   result.created++;
 }
 
@@ -138,52 +147,51 @@ async function cancel(client: GraphClient, row: OutlookEvent, now: Date, comment
   }
   db.update(outlookEvents)
     .set({ state: "cancelled", transactionId: null, syncedAt: now, attempts: 0, nextAttemptAt: null, lastError: null })
-    .where(eq(outlookEvents.shiftId, row.shiftId))
+    .where(eq(outlookEvents.eventKey, row.eventKey))
     .run();
   result.cancelled++;
 }
 
 /** Stores the failure on the row; returns it when this is the duty's first failure in a row. */
 function recordFailure(job: Job, error: unknown, now: Date): SyncFailure | null {
-  const shiftId = job.kind === "upsert" ? job.duty.shiftId : job.row.shiftId;
-  const current = db.select().from(outlookEvents).where(eq(outlookEvents.shiftId, shiftId)).get();
+  const key = job.kind === "upsert" ? job.place.key : job.row.eventKey;
+  const current = db.select().from(outlookEvents).where(eq(outlookEvents.eventKey, key)).get();
   if (!current) return null; // upsert inserts the row before calling Graph, cancel works on an existing row
   const attempts = current.attempts + 1;
   const message = (error instanceof Error ? error.message : String(error)).slice(0, 500);
   const wait = error instanceof GraphError && error.retryAfterMs !== null ? error.retryAfterMs : backoffMs(attempts);
   db.update(outlookEvents)
     .set({ attempts, nextAttemptAt: new Date(now.getTime() + wait), lastError: message })
-    .where(eq(outlookEvents.shiftId, shiftId))
+    .where(eq(outlookEvents.eventKey, key))
     .run();
   if (attempts > 1) return null;
-  const date = job.kind === "upsert" ? job.duty.date : formatDateToLocal(current.startsAt);
-  return { rotationId: current.rotationId, shiftId, date, message };
+  const date = job.kind === "upsert" ? job.place.date : formatDateToLocal(current.startsAt);
+  return { rotationId: current.rotationId, shiftId: current.shiftId, date, message };
 }
 
 export async function syncOutlook(client: GraphClient, now: Date, options: SyncOptions): Promise<SyncResult> {
   const result: SyncResult = { created: 0, updated: 0, cancelled: 0, failures: [], authError: null, remaining: 0 };
-  const duties = loadDesiredDuties(now, options.rotationId);
+  const places = loadDesiredPlaces(now, options.rotationId);
   const rows = new Map(
     db
       .select()
       .from(outlookEvents)
       .where(options.rotationId ? eq(outlookEvents.rotationId, options.rotationId) : undefined)
       .all()
-      .map((r) => [r.shiftId, r])
+      .map((r) => [r.eventKey, r])
   );
 
   const jobs: Job[] = [];
-  const desiredIds = new Set<string>();
-  for (const duty of duties) {
-    desiredIds.add(duty.shiftId);
-    const event = desiredEvent(duty);
-    const fp = fingerprint(event);
-    const row = rows.get(duty.shiftId);
+  const desiredKeys = new Set<string>();
+  for (const place of places) {
+    desiredKeys.add(place.key);
+    const fp = fingerprint(place.event);
+    const row = rows.get(place.key);
     if (row?.state === "active" && row.eventId && row.fingerprint === fp) continue;
-    jobs.push({ kind: "upsert", duty, event, fp, row });
+    jobs.push({ kind: "upsert", place, fp, row });
   }
   for (const row of rows.values()) {
-    if (row.state !== "active" || desiredIds.has(row.shiftId)) continue;
+    if (row.state !== "active" || desiredKeys.has(row.eventKey)) continue;
     if (row.startsAt.getTime() <= now.getTime()) continue; // begun duties are never touched
     jobs.push({ kind: "cancel", row });
   }
@@ -194,7 +202,7 @@ export async function syncOutlook(client: GraphClient, now: Date, options: SyncO
 
   for (const job of due.slice(0, limit)) {
     try {
-      if (job.kind === "upsert") await upsert(client, job, now, options.bodyHtml, result);
+      if (job.kind === "upsert") await upsert(client, job, now, options.renderBody, result);
       else await cancel(client, job.row, now, options.cancelComment, result);
     } catch (error) {
       if (error instanceof GraphError && error.isAuth) {
@@ -240,13 +248,13 @@ export async function verifyOutlook(
   now: Date,
   rotationId?: string
 ): Promise<{ drifted: number; authError: string | null; throttled?: boolean }> {
-  const wanted = new Map(loadDesiredDuties(now, rotationId).map((d) => [d.shiftId, desiredEvent(d)]));
+  const wanted = new Map(loadDesiredPlaces(now, rotationId).map((p) => [p.key, p.event]));
   const rows = db
     .select()
     .from(outlookEvents)
     .where(eq(outlookEvents.state, "active"))
     .all()
-    .filter((r) => r.eventId && wanted.has(r.shiftId));
+    .filter((r) => r.eventId && wanted.has(r.eventKey));
 
   let drifted = 0;
   for (const row of rows) {
@@ -255,18 +263,18 @@ export async function verifyOutlook(
       if (!actual || actual.isCancelled) {
         db.update(outlookEvents)
           .set({ eventId: null, fingerprint: null, transactionId: null })
-          .where(eq(outlookEvents.shiftId, row.shiftId))
+          .where(eq(outlookEvents.eventKey, row.eventKey))
           .run();
         drifted++;
-      } else if (!eventMatches(actual, wanted.get(row.shiftId)!)) {
-        db.update(outlookEvents).set({ fingerprint: null }).where(eq(outlookEvents.shiftId, row.shiftId)).run();
+      } else if (!eventMatches(actual, wanted.get(row.eventKey)!)) {
+        db.update(outlookEvents).set({ fingerprint: null }).where(eq(outlookEvents.eventKey, row.eventKey)).run();
         drifted++;
       }
     } catch (error) {
       if (error instanceof GraphError && error.isAuth) return { drifted, authError: error.message };
       // Throttled: stop here and let a later tick repeat the whole verify.
       if (error instanceof GraphError && error.status === 429) return { drifted, authError: null, throttled: true };
-      console.error(`[Outlook] Verifying event of duty ${row.shiftId} failed:`, error);
+      console.error(`[Outlook] Verifying event ${row.eventKey} failed:`, error);
     }
   }
   return { drifted, authError: null };

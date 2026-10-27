@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { parseLocalDate } from "@/lib/date-utils";
 import { getDateLocale } from "@/lib/locales";
+import type { EventDetails } from "@/lib/outlook/desired";
 import type { NotificationKind } from "@/lib/notify/schema";
 import type { MailTranslator } from "@/lib/notify/translator";
 import type { SwapType } from "@/lib/swap/types";
@@ -106,6 +107,11 @@ export function renderMail(ctx: MailContext, t: MailTranslator, locale: string):
   return { subject: subjectOf(ctx.kind, t, duty), html };
 }
 
-export function renderEventBody(t: MailTranslator, appUrl: string): string {
-  return `<p>${escapeHtml(t("outlook.eventBody"))}</p><p>${link(`${appUrl}/swaps`, t("notifications.mail.button"), "")}</p>`;
+export function renderEventBody(t: MailTranslator, appUrl: string, details: EventDetails = { time: null, partners: [] }): string {
+  const lines = [
+    details.time ? t("outlook.eventTime", { time: details.time }) : null,
+    details.partners.length > 0 ? t("outlook.eventPartners", { names: details.partners.join(", ") }) : null,
+  ].filter((line): line is string => line !== null);
+  const facts = lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("");
+  return `${facts}<p>${escapeHtml(t("outlook.eventBody"))}</p><p>${link(`${appUrl}/swaps`, t("notifications.mail.button"), "")}</p>`;
 }
