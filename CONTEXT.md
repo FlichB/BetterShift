@@ -61,6 +61,10 @@ _Avoid_: Fixiert, locked Shift
 Ein Teilnehmer hätte zur selben Zeit Plätze in zwei Diensten (derselben oder einer anderen Rotation).
 _Avoid_: Konflikt, Überschneidung
 
+**Eintragsvorlage**:
+Der Text je Rotation, aus dem für jeden Platz der angezeigte Titel entsteht, z. B. „{Vorname} Dienst" → „Günther Dienst".
+_Avoid_: Titelformat, Muster
+
 ## Tausch
 
 **Angebot**:
