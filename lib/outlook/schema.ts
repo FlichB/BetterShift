@@ -1,17 +1,20 @@
-// [fork] Outlook sync state, one row per duty (spec 12.24/12.25). Fork track (drizzle/fork),
+// [fork] Outlook sync state, one row per office@ event (spec 12.24/12.32). Fork track (drizzle/fork),
 // see docs/adr/0002-eigene-migrationsspur-fuer-fork.md. Core query API only.
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export type OutlookEventState = "active" | "cancelled";
 
 /**
- * The office@ event of a duty. Deliberately without foreign keys: when the duty shift or the
+ * The office@ event of a Platz (or of a Schließeintrag). Deliberately without foreign keys: when the duty shift or the
  * rotation is deleted, the worker still needs event_id to cancel the event.
  */
 export const outlookEvents = sqliteTable(
   "outlook_events",
   {
-    shiftId: text("shift_id").primaryKey(),
+    // "<shiftId>:<userId>" for a Platz, "<shiftId>" for a Schließeintrag (spec 12.32).
+    eventKey: text("event_key").primaryKey(),
+    shiftId: text("shift_id").notNull(),
+    userId: text("user_id"),
     rotationId: text("rotation_id").notNull(),
     eventId: text("event_id"),
     icalUid: text("ical_uid"),
@@ -28,6 +31,7 @@ export const outlookEvents = sqliteTable(
   },
   (table) => [
     index("outlook_events_rotationId_idx").on(table.rotationId),
+    index("outlook_events_shiftId_idx").on(table.shiftId),
     index("outlook_events_state_next_idx").on(table.state, table.nextAttemptAt),
   ]
 );

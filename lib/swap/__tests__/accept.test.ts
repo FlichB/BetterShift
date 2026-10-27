@@ -18,13 +18,13 @@ const code = (fn: () => unknown) => {
   return null;
 };
 const offer = (shiftId: string, by: string, over: Partial<Parameters<typeof createOffer>[0]> = {}) =>
-  createOffer({ shiftId, type: "give", targetUserId: null, requestedShiftId: null, note: null, ...over }, by, now);
+  createOffer({ shiftId, type: "exchange", targetUserId: null, requestedShiftId: null, note: null, ...over }, by, now);
 
 describe("acceptOffer", () => {
-  it("gives a Platz away and locks it against the planned Teilnehmer", () => {
+  it("hands a Platz to the acceptor against a counter duty and locks it against the planned Teilnehmer", () => {
     const sat = s.duty("2026-11-07");
     const swap = offer(sat, s.m0);
-    const result = acceptOffer(swap.id, s.m2, null, now);
+    const result = acceptOffer(swap.id, s.m2, s.duty("2026-11-14"), now);
 
     expect(result.swap).toMatchObject({ status: "accepted", acceptedByUserId: s.m2 });
     expect(s.holders(sat)).toEqual(sorted(s.m1, s.m2));
@@ -68,29 +68,29 @@ describe("acceptOffer", () => {
 
   it("refuses an acceptor already on the offered duty and the offerer accepting their own offer", () => {
     const swap = offer(s.duty("2026-11-07"), s.m0); // m0, m1
-    expect(code(() => acceptOffer(swap.id, s.m1, null, now))).toBe("alreadyOnDuty");
-    expect(code(() => acceptOffer(swap.id, s.m0, null, now))).toBe("ownOffer");
+    expect(code(() => acceptOffer(swap.id, s.m1, s.duty("2026-11-14"), now))).toBe("alreadyOnDuty");
+    expect(code(() => acceptOffer(swap.id, s.m0, s.duty("2026-11-14"), now))).toBe("ownOffer");
     expect(getSwap(swap.id)?.status).toBe("open");
   });
 
   it("lets only one of two acceptances win", () => {
     const swap = offer(s.duty("2026-11-07"), s.m0);
-    acceptOffer(swap.id, s.m2, null, now);
-    expect(code(() => acceptOffer(swap.id, s.m3, null, now))).toBe("notOpen");
+    acceptOffer(swap.id, s.m2, s.duty("2026-11-14"), now);
+    expect(code(() => acceptOffer(swap.id, s.m3, s.duty("2026-11-14"), now))).toBe("notOpen");
     expect(s.holders(s.duty("2026-11-07"))).toEqual(sorted(s.m1, s.m2));
   });
 
   it("fails cleanly on a withdrawn offer and leaves the Plätze alone", () => {
     const swap = offer(s.duty("2026-11-07"), s.m0);
     withdrawOffer(swap.id, s.m0, now);
-    expect(code(() => acceptOffer(swap.id, s.m2, null, now))).toBe("notOpen");
+    expect(code(() => acceptOffer(swap.id, s.m2, s.duty("2026-11-14"), now))).toBe("notOpen");
     expect(s.holders(s.duty("2026-11-07"))).toEqual(sorted(s.m0, s.m1));
   });
 
   it("refuses a Direktanfrage for anyone but the target", () => {
     const swap = offer(s.duty("2026-11-07"), s.m0, { targetUserId: s.m2 });
-    expect(code(() => acceptOffer(swap.id, s.m3, null, now))).toBe("notTarget");
-    acceptOffer(swap.id, s.m2, null, now);
+    expect(code(() => acceptOffer(swap.id, s.m3, s.duty("2026-11-14"), now))).toBe("notTarget");
+    acceptOffer(swap.id, s.m2, s.duty("2026-11-14"), now);
   });
 
   it("refuses a Doppelbelegung across rotations and rolls back", async () => {
@@ -109,6 +109,8 @@ describe("acceptOffer", () => {
         weekdays: [6],
         skipDates: [],
         closedTitle: "Geschlossen",
+        entryTitle: "{Vorname} Dienst",
+        reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],
       },
@@ -116,14 +118,14 @@ describe("acceptOffer", () => {
     );
     await runGeneration(other.id, "2026-11-02", "2026-11-08", s.team.ownerId, now);
     const swap = offer(s.duty("2026-11-07"), s.m0);
-    expect(code(() => acceptOffer(swap.id, s.m2, null, now))).toBe("doubleBooked");
+    expect(code(() => acceptOffer(swap.id, s.m2, s.duty("2026-11-14"), now))).toBe("doubleBooked");
     expect(getSwap(swap.id)?.status).toBe("open");
     expect(s.holders(s.duty("2026-11-07"))).toEqual(sorted(s.m0, s.m1));
   });
 
   it("refuses a duty that has begun", () => {
     const swap = offer(s.duty("2026-11-07"), s.m0);
-    expect(code(() => acceptOffer(swap.id, s.m2, null, new Date(2026, 10, 7, 9, 30)))).toBe("notOpen");
+    expect(code(() => acceptOffer(swap.id, s.m2, s.duty("2026-11-14"), new Date(2026, 10, 7, 9, 30)))).toBe("notOpen");
     expect(getSwap(swap.id)?.status).toBe("expired");
   });
 
@@ -139,16 +141,17 @@ describe("acceptOffer", () => {
 
   it("keeps the planned Teilnehmer over two swaps and unlocks on the way back", () => {
     const sat = s.duty("2026-11-07");
-    acceptOffer(offer(sat, s.m0).id, s.m2, null, now);
-    acceptOffer(offer(sat, s.m2).id, s.m3, null, now);
+    const c14 = s.duty("2026-11-14"); // m2, m3
+    acceptOffer(offer(sat, s.m0, { requestedShiftId: c14 }).id, s.m2, null, now);
+    acceptOffer(offer(sat, s.m2, { requestedShiftId: c14 }).id, s.m3, null, now);
     expect(s.locks(sat)).toMatchObject([{ userId: s.m3, replacesUserId: s.m0 }]);
-    acceptOffer(offer(sat, s.m3).id, s.m0, null, now);
+    acceptOffer(offer(sat, s.m3, { requestedShiftId: c14 }).id, s.m0, null, now);
     expect(s.locks(sat)).toHaveLength(0);
   });
 
   it("survives regeneration with the swapped Platz intact", async () => {
     const sat = s.duty("2026-11-07");
-    acceptOffer(offer(sat, s.m0).id, s.m2, null, now);
+    acceptOffer(offer(sat, s.m0).id, s.m2, s.duty("2026-11-14"), now);
     await runGeneration(s.rotation.id, "2026-11-02", "2026-12-27", s.team.ownerId, now);
     expect(s.holders(sat)).toEqual(sorted(s.m1, s.m2));
   });

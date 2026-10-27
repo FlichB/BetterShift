@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createRotation, runGeneration } from "@/lib/rotation/service";
 import { setOutlookEnabled } from "@/lib/outlook/rotation";
 import { loadDesiredDuties } from "@/lib/outlook/sync";
-import { desiredEvent } from "@/lib/outlook/desired";
+import { desiredEvents } from "@/lib/outlook/desired";
 import { loadPersonalDuties } from "@/lib/feed/personal";
 import { seedTeam } from "@/tests/helpers/seed";
 
@@ -25,6 +25,8 @@ describe("Schließeinträge in Outlook and the personal feed", () => {
         weekdays: [6],
         skipDates: [{ date: "2026-11-14", reason: "Inventur" }],
         closedTitle: "HeimkinoWelt geschlossen",
+        entryTitle: "{Vorname} Dienst",
+        reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],
       },
@@ -35,7 +37,10 @@ describe("Schließeinträge in Outlook and the personal feed", () => {
 
     const closure = loadDesiredDuties(now, rotation.id).find((d) => d.date === "2026-11-14")!;
     expect(closure).toMatchObject({ title: "HeimkinoWelt geschlossen (Inventur)", isAllDay: true, holders: [] });
-    expect(desiredEvent(closure)).toMatchObject({ isAllDay: true, attendees: [], subject: "HeimkinoWelt geschlossen (Inventur)" });
+    const events = desiredEvents(closure);
+    expect(events).toHaveLength(1);
+    expect(events[0].key).toBe(closure.shiftId);
+    expect(events[0].event).toMatchObject({ isAllDay: true, showAs: "busy", attendees: [], subject: "HeimkinoWelt geschlossen (Inventur)" });
 
     for (const memberId of team.memberIds) {
       const { duties } = await loadPersonalDuties(memberId, now);

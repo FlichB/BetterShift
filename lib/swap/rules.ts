@@ -1,7 +1,9 @@
 // Pure swap rules on plain data: whether an offer or an acceptance is allowed,
 // which Plätze move, and how locks follow them. No DB access.
+import { addMonths } from "date-fns";
+import { formatDateToLocal, parseLocalDate } from "@/lib/date-utils";
 import { hasStarted, toDayNumber } from "@/lib/rotation/dates";
-import type { SwapErrorCode, SwapStatus, SwapType } from "@/lib/swap/types";
+import type { CounterStatus, SwapErrorCode, SwapStatus, SwapType } from "@/lib/swap/types";
 
 export interface DutyTiming {
   shiftId: string;
@@ -54,6 +56,16 @@ export function overlaps(a: DutyTiming, b: DutyTiming): boolean {
 
 const started = (d: DutyTiming, now: Date) => hasStarted(d.date, d.startTime, now);
 
+/** A forced swap stays possible for the whole day of the duty (spec D9). */
+const dayPassed = (d: DutyTiming, now: Date) => d.date < formatDateToLocal(now);
+
+export const COUNTER_WINDOW_MONTHS = 3;
+
+/** Last day of the Ausgleichsfenster: the taken-over duty's date plus three months (spec D6). */
+export function counterWindowEnd(dutyDate: string): string {
+  return formatDateToLocal(addMonths(parseLocalDate(dutyDate), COUNTER_WINDOW_MONTHS));
+}
+
 /** Whether `incoming` would clash with any of `held`, ignoring the duty being handed away. */
 function clashes(incoming: DutyTiming, held: DutyTiming[], handedAway: string | null): boolean {
   return held.some((d) => d.shiftId !== incoming.shiftId && d.shiftId !== handedAway && overlaps(d, incoming));
@@ -75,7 +87,8 @@ export function checkOffer(input: OfferCheckInput): SwapErrorCode | null {
   if (started(offered.duty, input.now)) return "alreadyStarted";
   if (input.targetUserId === input.offererId) return "invalid";
   if (input.targetUserId && offered.holderIds.includes(input.targetUserId)) return "alreadyOnDuty";
-  if (input.type === "give" && requested) return "invalid";
+  // Only exchanges can be offered (spec D1); a forced swap goes through checkForce.
+  if (input.type !== "exchange") return "invalid";
   if (requested) {
     if (requested.duty.calendarId !== offered.duty.calendarId || requested.duty.shiftId === offered.duty.shiftId) {
       return "invalidShift";
@@ -118,12 +131,13 @@ export function checkAccept(input: AcceptCheckInput): AcceptCheck {
   if (acceptorId === offererId) return fail("ownOffer");
   if (offer.targetUserId && offer.targetUserId !== acceptorId) return fail("notTarget");
   if (!offered.holderIds.includes(offererId)) return fail("slotNotOwned");
-  if (started(offered.duty, now)) return fail("alreadyStarted");
+  const ended = offer.type === "forced" ? dayPassed(offered.duty, now) : started(offered.duty, now);
+  if (ended) return fail("alreadyStarted");
   if (offered.holderIds.includes(acceptorId)) return fail("alreadyOnDuty");
 
   const moves: SlotMove[] = [{ shiftId: offered.duty.shiftId, fromUserId: offererId, toUserId: acceptorId }];
 
-  if (offer.type === "give") {
+  if (offer.type !== "exchange") {
     if (counter) return fail("invalid");
   } else {
     if (!counter) return fail("invalid");
@@ -181,5 +195,79 @@ export function dueStatus(
     if (requested.holderIds.includes(offererId)) return "cancelled";
     if (targetUserId && !requested.holderIds.includes(targetUserId)) return "cancelled";
   }
+  return null;
+}
+
+export interface ForceCheckInput {
+  absentId: string;
+  /** null = offen an alle: nothing moves until someone takes it over */
+  substituteId: string | null;
+  offered: SlotView;
+  substituteDuties: DutyTiming[];
+  now: Date;
+}
+
+export function checkForce(input: ForceCheckInput): AcceptCheck {
+  const { offered, absentId, substituteId, now } = input;
+  const fail = (error: SwapErrorCode): AcceptCheck => ({ ok: false, error });
+  if (!offered.holderIds.includes(absentId)) return fail("slotNotOwned");
+  if (dayPassed(offered.duty, now)) return fail("alreadyStarted");
+  if (!substituteId) return { ok: true, moves: [] };
+  if (substituteId === absentId) return fail("invalid");
+  if (offered.holderIds.includes(substituteId)) return fail("alreadyOnDuty");
+  if (clashes(offered.duty, input.substituteDuties, null)) return fail("doubleBooked");
+  return { ok: true, moves: [{ shiftId: offered.duty.shiftId, fromUserId: absentId, toUserId: substituteId }] };
+}
+
+export interface CounterOffer {
+  type: SwapType;
+  counterStatus: CounterStatus | null;
+  counterWindowEnd: string | null;
+  offeredByUserId: string;
+  acceptedByUserId: string | null;
+}
+
+export interface CounterCheckInput {
+  offer: CounterOffer;
+  /** the duty the Einspringer took over */
+  offered: { shiftId: string; calendarId: string };
+  chosen: SlotView;
+  /** every duty the absent user holds a Platz in */
+  absentDuties: DutyTiming[];
+  now: Date;
+}
+
+/** Whether the Einspringer may hand `chosen` to the absent user as Ausgleich (spec D6). */
+export function checkCounterChoice(input: CounterCheckInput): AcceptCheck {
+  const { offer, chosen, now } = input;
+  const fail = (error: SwapErrorCode): AcceptCheck => ({ ok: false, error });
+  const substituteId = offer.acceptedByUserId;
+  if (offer.type !== "forced" || offer.counterStatus !== "pending" || !substituteId || !offer.counterWindowEnd) {
+    return fail("counterNotDue");
+  }
+  const c = chosen.duty;
+  if (c.shiftId === input.offered.shiftId || c.calendarId !== input.offered.calendarId) return fail("invalidShift");
+  if (!chosen.holderIds.includes(substituteId)) return fail("slotNotOwned");
+  if (started(c, now)) return fail("alreadyStarted");
+  if (c.date > offer.counterWindowEnd) return fail("outsideWindow");
+  if (chosen.holderIds.includes(offer.offeredByUserId)) return fail("alreadyOnDuty");
+  if (clashes(c, input.absentDuties, null)) return fail("doubleBooked");
+  return { ok: true, moves: [{ shiftId: c.shiftId, fromUserId: substituteId, toUserId: offer.offeredByUserId }] };
+}
+
+/** The duties checkCounterChoice would accept, so the selection list and the check never drift apart. */
+export function counterCandidates(input: Omit<CounterCheckInput, "chosen"> & { slots: SlotView[] }): DutyTiming[] {
+  const { slots, ...rest } = input;
+  return slots
+    .filter((chosen) => checkCounterChoice({ ...rest, chosen }).ok)
+    .map((s) => s.duty)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
+}
+
+/** dueStatus for an open forced offer: it ends after the day of the duty, not at its start (spec D9). */
+export function forcedDueStatus(absentId: string, offered: SlotView | null, now: Date): "expired" | "cancelled" | null {
+  if (!offered) return "cancelled";
+  if (dayPassed(offered.duty, now)) return "expired";
+  if (!offered.holderIds.includes(absentId)) return "cancelled";
   return null;
 }

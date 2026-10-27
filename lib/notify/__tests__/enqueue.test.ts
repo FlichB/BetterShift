@@ -7,9 +7,9 @@ import { acceptOffer, createOffer, declineOffer, SwapServiceError } from "@/lib/
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
 
 let s: Awaited<ReturnType<typeof seedDuties>>;
-const give = (shiftId: string, targetUserId: string | null = null) => ({
+const offer = (shiftId: string, targetUserId: string | null = null) => ({
   shiftId,
-  type: "give" as const,
+  type: "exchange" as const,
   targetUserId,
   requestedShiftId: null,
   note: null,
@@ -31,21 +31,21 @@ afterEach(() => vi.unstubAllEnvs());
 
 describe("enqueueSwapEvent via the swap service", () => {
   it("queues offer_to_all for an offer an alle and offer_to_me for a Direktanfrage", () => {
-    const broadcast = createOffer(give(s.duty("2026-11-07")), s.m0, now);
-    const direct = createOffer(give(s.duty("2026-11-14"), s.m4), s.m2, now);
+    const broadcast = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
+    const direct = createOffer(offer(s.duty("2026-11-14"), s.m4), s.m2, now);
     expect(outbox(broadcast.id)).toEqual([{ kind: "offer_to_all", actorUserId: s.m0, status: "pending" }]);
     expect(outbox(direct.id)).toEqual([{ kind: "offer_to_me", actorUserId: s.m2, status: "pending" }]);
   });
 
   it("queues offer_accepted with the acceptor and offer_declined with the target as actor", () => {
-    const taken = createOffer(give(s.duty("2026-11-07")), s.m0, now);
-    acceptOffer(taken.id, s.m2, null, now);
+    const taken = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
+    acceptOffer(taken.id, s.m2, s.duty("2026-11-14"), now);
     expect(outbox(taken.id).map((r) => [r.kind, r.actorUserId])).toEqual([
       ["offer_to_all", s.m0],
       ["offer_accepted", s.m2],
     ]);
 
-    const asked = createOffer(give(s.duty("2026-11-14"), s.m4), s.m2, now);
+    const asked = createOffer(offer(s.duty("2026-12-05"), s.m4), s.m2, now);
     declineOffer(asked.id, s.m4, now);
     expect(outbox(asked.id).map((r) => [r.kind, r.actorUserId])).toEqual([
       ["offer_to_me", s.m2],
@@ -55,12 +55,12 @@ describe("enqueueSwapEvent via the swap service", () => {
 
   it("writes nothing when the action fails", () => {
     const before = total();
-    expect(() => createOffer(give(s.duty("2026-11-14")), s.m0, now)).toThrow(SwapServiceError);
+    expect(() => createOffer(offer(s.duty("2026-11-14")), s.m0, now)).toThrow(SwapServiceError);
     expect(total()).toBe(before);
   });
 
   it("rolls back with the surrounding transaction", () => {
-    const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    const swap = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     expect(() =>
       db.transaction((tx) => {
         enqueueSwapEvent(tx, "offer_accepted", swap, s.m2, now);
@@ -72,7 +72,7 @@ describe("enqueueSwapEvent via the swap service", () => {
 
   it("writes nothing without an Outlook configuration", () => {
     vi.unstubAllEnvs();
-    const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    const swap = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     expect(outbox(swap.id)).toEqual([]);
   });
 });

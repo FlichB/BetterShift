@@ -7,7 +7,7 @@ import { LIVE_REFETCH_INTERVAL } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
 import { swapQueryKeys } from "@/lib/swap/query-keys";
 import type { SlotMove } from "@/lib/swap/rules";
-import type { Board, CalendarSwapState, DutiesResponse, SwapType } from "@/lib/swap/types";
+import type { Board, CalendarSwapState, CounterCandidatesResponse, DutiesResponse } from "@/lib/swap/types";
 
 export class SwapApiError extends Error {
   constructor(
@@ -19,7 +19,7 @@ export class SwapApiError extends Error {
   }
 }
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
+export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
     headers: init?.body ? { "Content-Type": "application/json" } : undefined,
@@ -61,8 +61,11 @@ export function useSwapCalendarState(calendarId: string | undefined) {
   });
   return useMemo(
     () => ({
+      canForce: data?.canForce ?? false,
       dutyShiftIds: new Set(data?.dutyShiftIds ?? []),
       openOfferShiftIds: new Set(data?.openOfferShiftIds ?? []),
+      entryTemplates: new Map(Object.entries(data?.entryTemplates ?? {})),
+      openOfferKeys: new Set((data?.openOffers ?? []).map((o) => `${o.shiftId}:${o.userId}`)),
     }),
     [data]
   );
@@ -84,7 +87,7 @@ function useSwapMutation<TVars, TResult = unknown>(mutationFn: (vars: TVars) => 
 
 export interface CreateSwapInput {
   shiftId: string;
-  type: SwapType;
+  type: "exchange";
   targetUserId: string | null;
   requestedShiftId: string | null;
   note: string | null;
@@ -111,3 +114,33 @@ export const useHideSwap = () =>
   useSwapMutation(({ id, hidden }: { id: string; hidden: boolean }) =>
     request(`/api/swaps/${id}/hide`, { method: hidden ? "POST" : "DELETE" })
   );
+
+export interface ForceSwapInput {
+  shiftId: string;
+  absentUserId: string;
+  substituteUserId: string | null;
+  note: string | null;
+}
+
+export const useForceSwap = () =>
+  useSwapMutation((input: ForceSwapInput) =>
+    request<{ moves: SlotMove[] }>("/api/swaps/force", { method: "POST", body: JSON.stringify(input) })
+  );
+
+export const useChooseCounter = () =>
+  useSwapMutation(({ id, shiftId }: { id: string; shiftId: string }) =>
+    request<{ moves: SlotMove[] }>(`/api/swaps/${id}/counter`, { method: "POST", body: JSON.stringify({ shiftId }) })
+  );
+
+export const useWaiveCounter = () =>
+  useSwapMutation(({ id, reason }: { id: string; reason: string }) =>
+    request(`/api/swaps/${id}/waive`, { method: "POST", body: JSON.stringify({ reason }) })
+  );
+
+export function useCounterCandidates(id: string | undefined) {
+  return useQuery({
+    queryKey: swapQueryKeys.counterCandidates(id ?? ""),
+    queryFn: () => request<CounterCandidatesResponse>(`/api/swaps/${id}/counter-candidates`),
+    enabled: Boolean(id),
+  });
+}

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { acceptOffer, calendarState, createOffer, declineOffer, hideOffer, listBoard, listDuties, withdrawOffer } from "@/lib/swap/service";
+import { acceptOffer, calendarState, chooseCounter, createOffer, declineOffer, forceSwap, hideOffer, listBoard, listDuties, withdrawOffer } from "@/lib/swap/service";
 import { now, seedDuties } from "./fixtures";
 
 let s: Awaited<ReturnType<typeof seedDuties>>;
@@ -7,13 +7,13 @@ beforeEach(async () => {
   s = await seedDuties();
 });
 
-const give = (shiftId: string, by: string, targetUserId: string | null = null) =>
-  createOffer({ shiftId, type: "give", targetUserId, requestedShiftId: null, note: "Urlaub" }, by, now);
+const offer = (shiftId: string, by: string, targetUserId: string | null = null) =>
+  createOffer({ shiftId, type: "exchange", targetUserId, requestedShiftId: null, note: "Urlaub" }, by, now);
 
 describe("listBoard", () => {
   it("shows broadcast and direct offers to the right people", () => {
-    const broadcast = give(s.duty("2026-11-07"), s.m0);
-    const direct = give(s.duty("2026-11-14"), s.m2, s.m4);
+    const broadcast = offer(s.duty("2026-11-07"), s.m0);
+    const direct = offer(s.duty("2026-11-14"), s.m2, s.m4);
     const cal = [s.team.calendarId];
 
     expect(listBoard(s.m4, cal, now, false).forMe.map((e) => e.id).sort()).toEqual([broadcast.id, direct.id].sort());
@@ -23,10 +23,10 @@ describe("listBoard", () => {
   });
 
   it("fills the entry with duty, people and note", () => {
-    give(s.duty("2026-11-07"), s.m0);
+    offer(s.duty("2026-11-07"), s.m0);
     const [entry] = listBoard(s.m4, [s.team.calendarId], now, false).forMe;
     expect(entry).toMatchObject({
-      type: "give",
+      type: "exchange",
       status: "open",
       calendarName: "Team",
       offered: { date: "2026-11-07", startTime: "09:30", endTime: "15:00", title: "Samstagsdienst" },
@@ -37,7 +37,7 @@ describe("listBoard", () => {
   });
 
   it("moves hidden offers out of forMe for that user only", () => {
-    const broadcast = give(s.duty("2026-11-07"), s.m0);
+    const broadcast = offer(s.duty("2026-11-07"), s.m0);
     hideOffer(broadcast.id, s.m4);
     expect(listBoard(s.m4, [s.team.calendarId], now, false).forMe).toHaveLength(0);
     expect(listBoard(s.m4, [s.team.calendarId], now, true).hidden.map((e) => e.id)).toEqual([broadcast.id]);
@@ -45,13 +45,13 @@ describe("listBoard", () => {
   });
 
   it("shows nothing for calendars the user cannot swap in", () => {
-    give(s.duty("2026-11-07"), s.m0);
+    offer(s.duty("2026-11-07"), s.m0);
     expect(listBoard(s.m4, [], now, false).forMe).toHaveLength(0);
   });
 
   it("keeps resolved own offers in mine with the acceptor", () => {
-    const swap = give(s.duty("2026-11-07"), s.m0);
-    acceptOffer(swap.id, s.m2, null, now);
+    const swap = offer(s.duty("2026-11-07"), s.m0);
+    acceptOffer(swap.id, s.m2, s.duty("2026-11-14"), now);
     const [entry] = listBoard(s.m0, [s.team.calendarId], now, false).mine;
     expect(entry).toMatchObject({ status: "accepted", acceptedBy: { id: s.m2 } });
   });
@@ -61,14 +61,14 @@ describe("listBoard history and settling", () => {
   const cal = () => [s.team.calendarId];
 
   it("drops own resolved offers from mine after 30 days", () => {
-    const swap = give(s.duty("2026-11-07"), s.m0);
+    const swap = offer(s.duty("2026-11-07"), s.m0);
     withdrawOffer(swap.id, s.m0, now);
     expect(listBoard(s.m0, cal(), now, false).mine.map((e) => [e.id, e.status])).toEqual([[swap.id, "withdrawn"]]);
     expect(listBoard(s.m0, cal(), new Date(now.getTime() + 31 * 86_400_000), false).mine).toHaveLength(0);
   });
 
   it("settles due offers on read", () => {
-    const swap = give(s.duty("2026-11-07"), s.m0);
+    const swap = offer(s.duty("2026-11-07"), s.m0);
     const afterStart = new Date(2026, 10, 7, 10, 0);
     const board = listBoard(s.m0, cal(), afterStart, false);
     expect(board.mine.map((e) => [e.id, e.status])).toEqual([[swap.id, "expired"]]);
@@ -76,7 +76,7 @@ describe("listBoard history and settling", () => {
   });
 
   it("shows a declined Direktanfrage to the offerer only", () => {
-    const direct = give(s.duty("2026-11-07"), s.m0, s.m2);
+    const direct = offer(s.duty("2026-11-07"), s.m0, s.m2);
     expect(listBoard(s.m2, cal(), now, false).forMe.map((e) => e.id)).toEqual([direct.id]);
     declineOffer(direct.id, s.m2, now);
     expect(listBoard(s.m0, cal(), now, false).mine.map((e) => [e.id, e.status])).toEqual([[direct.id, "declined"]]);
@@ -89,7 +89,7 @@ describe("listBoard history and settling", () => {
     const swap = createOffer({ shiftId: a, type: "exchange", targetUserId: null, requestedShiftId: b, note: null }, s.m0, now);
     const open = listBoard(s.m0, cal(), now, false).mine[0];
     expect(open).toMatchObject({ requested: { date: "2026-11-14" }, accepted: null });
-    acceptOffer(swap.id, s.m2, null, now);
+    acceptOffer(swap.id, s.m2, s.duty("2026-11-14"), now);
     const [entry] = listBoard(s.m0, cal(), now, false).mine;
     expect(entry).toMatchObject({
       status: "accepted",
@@ -103,7 +103,7 @@ describe("listBoard history and settling", () => {
 
 describe("listDuties", () => {
   it("lists upcoming duties with holders and my open offer", () => {
-    const swap = give(s.duty("2026-11-07"), s.m0);
+    const swap = offer(s.duty("2026-11-07"), s.m0);
     const duties = listDuties(s.team.calendarId, s.m0, now);
     expect(duties.map((d) => d.date)).toEqual([
       "2026-11-07", "2026-11-14", "2026-11-21", "2026-11-28",
@@ -117,9 +117,64 @@ describe("listDuties", () => {
 
 describe("calendarState", () => {
   it("lists duties and duties with open offers", () => {
-    give(s.duty("2026-11-07"), s.m0);
+    offer(s.duty("2026-11-07"), s.m0);
     const state = calendarState(s.team.calendarId, now);
     expect(state.dutyShiftIds).toHaveLength(8);
     expect(state.openOfferShiftIds).toEqual([s.duty("2026-11-07")]);
+  });
+});
+
+describe("calendarState templates and offers", () => {
+  it("carries the entry template per duty and open offers per holder", () => {
+    const shiftId = s.duty("2026-11-07");
+    offer(shiftId, s.m0);
+    const state = calendarState(s.team.calendarId, now);
+    expect(state.entryTemplates[shiftId]).toBe("{Vorname} Dienst");
+    expect(state.openOffers).toContainEqual({ shiftId, userId: s.m0 });
+  });
+});
+
+describe("listBoard with forced swaps", () => {
+  const cal = () => [s.team.calendarId];
+  const force = (date: string, absent: string, substitute: string | null) =>
+    forceSwap({ shiftId: s.duty(date), absentUserId: absent, substituteUserId: substitute, note: null }, s.team.ownerId, now).swap;
+
+  it("gives the Einspringer a counter task and the absent user a mine entry", () => {
+    const swap = force("2026-11-07", s.m0, s.m2);
+    const sub = listBoard(s.m2, cal(), now, false);
+    expect(sub.pendingCounters.map((e) => e.id)).toEqual([swap.id]);
+    expect(sub.pendingCounters[0]).toMatchObject({ type: "forced", counterStatus: "pending", counterWindowEnd: "2027-02-07", forcedBy: { id: s.team.ownerId } });
+    expect(sub.mine).toHaveLength(0);
+    expect(listBoard(s.m0, cal(), now, false).mine.map((e) => e.id)).toEqual([swap.id]);
+
+    chooseCounter(swap.id, s.duty("2026-11-14"), s.m2, now);
+    const after = listBoard(s.m2, cal(), now, false);
+    expect(after.pendingCounters).toHaveLength(0);
+    expect(after.mine[0]).toMatchObject({ id: swap.id, counterStatus: "chosen" });
+  });
+
+  it("keeps a resolved Ausgleich in mine for 30 days after the choice, not after the takeover", () => {
+    const swap = force("2026-11-07", s.m0, s.m2);
+    const later = new Date(now.getTime() + 40 * 24 * 60 * 60 * 1000); // 2026-12-01
+    chooseCounter(swap.id, s.duty("2026-12-05"), s.m2, later);
+    expect(listBoard(s.m0, cal(), later, false).mine.map((e) => e.id)).toEqual([swap.id]);
+    expect(listBoard(s.m2, cal(), later, false).mine.map((e) => e.id)).toEqual([swap.id]);
+    const muchLater = new Date(later.getTime() + 31 * 24 * 60 * 60 * 1000);
+    expect(listBoard(s.m0, cal(), muchLater, false).mine).toHaveLength(0);
+  });
+
+  it("shows an open forced offer to others in forMe", () => {
+    const swap = force("2026-11-07", s.m0, null);
+    expect(listBoard(s.m4, cal(), now, false).forMe.map((e) => e.id)).toEqual([swap.id]);
+  });
+
+  it("lists open forced offers and pending Ausgleiche for the management only", () => {
+    const open = force("2026-11-07", s.m0, null);
+    const pending = force("2026-11-21", s.m4, s.team.memberIds[6]);
+    force("2026-11-28", s.team.memberIds[6], s.m2); // also pending
+    const manage = listBoard(s.team.ownerId, [], now, false, cal()).manage.map((e) => e.id);
+    expect(manage).toEqual(expect.arrayContaining([open.id, pending.id]));
+    expect(manage).toHaveLength(3);
+    expect(listBoard(s.m4, cal(), now, false).manage).toHaveLength(0);
   });
 });

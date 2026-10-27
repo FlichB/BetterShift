@@ -1,0 +1,1 @@
+ALTER TABLE `rotations` ADD `reinforced_dates` text DEFAULT '[]' NOT NULL;

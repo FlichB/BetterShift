@@ -1134,6 +1134,9 @@
       "swapWithdrawn": "Offre pour le service du {date} retirée",
       "swapExpired": "Offre pour le service du {date} expirée",
       "swapCancelled": "Offre pour le service du {date} devenue sans objet",
+      "swapForced": "Échange forcé du service du {date} dans « {calendar} »",
+      "swapCounterChosen": "Service de compensation pour le {date} choisi : service du {other}",
+      "swapCounterWaived": "Service de compensation pour le {date} annulé ({reason})",
       "outlookEnabled": "Synchronisation Outlook activée pour la rotation « {name} » dans {calendar}",
       "outlookDisabled": "Synchronisation Outlook désactivée pour la rotation « {name} » dans {calendar}",
       "outlookSyncFailed": "Impossible de synchroniser l'événement Outlook du service du {date} : {message}",
@@ -1413,9 +1416,17 @@
       "skipDates": "Jours sans service",
       "members": "Participants (ordre)",
       "skipReason": "Motif",
+      "reinforcedDates": "Jours renforcés",
+      "reinforcedPeople": "Personnes ce jour-là",
+      "reinforcedHint": "Un jour renforcé redistribue les places suivantes non échangées. L'aperçu te montre ce qui change.",
       "closedTitle": "Texte en cas de fermeture",
       "closedTitleDefault": "Fermé",
       "closedTitleHint": "S'affiche les jours de fermeture sous la forme « Texte (motif) », p. ex. « Fermé (Noël) ».",
+      "entryTitle": "Modèle d'entrée",
+      "entryTitleHint": "C'est le nom de chaque place dans le calendrier et dans Outlook.",
+      "entryTitleInfo": "À propos du modèle d'entrée",
+      "entryTitleHelp": "Espaces réservés : '{Vorname}' = premier mot du nom, '{Name}' = nom complet, '{Dienst}' = titre du service. '{Vorname}' ou '{Name}' doit apparaître. Exemple : « '{Vorname}' Dienst » → « Günther Dienst ».",
+      "entryTitlePreview": "Aperçu : {title}",
       "holidayCalendar": "Calendrier des jours fériés",
       "holidayCalendarNone": "Aucun",
       "holidayCalendarUnavailable": "Calendrier sans accès",
@@ -1438,6 +1449,7 @@
     },
     "allDays": "Tous les jours",
     "addSkipDate": "Ajouter un jour sans service",
+    "addReinforcedDate": "Ajouter un jour renforcé",
     "moveUp": "Monter",
     "moveDown": "Descendre",
     "removeMember": "Retirer",
@@ -1469,15 +1481,18 @@
       },
       "locked": "Échangé (verrouillé)",
       "fieldsChanged": "Horaire/titre issus du modèle",
+      "capacityChanged": "Places ajustées à {count}",
       "overwriteNotice": "{count, plural, one {# place sera réattribuée} other {# places seront réattribuées}}",
       "markSkip": "Sans service",
       "openHoliday": "Jour férié : {name}",
       "keepOpen": "Service quand même",
+      "reinforced": "{count} personnes",
       "closeAgain": "Fermer finalement",
       "warnings": "Remarques",
       "warning": {
         "lockedNonMember": "{date} : {user} ne participe plus, mais a une place échangée.",
-        "lockedWithoutDuty": "{date} : plus aucun service prévu, mais des places échangées existent – le service est conservé."
+        "lockedWithoutDuty": "{date} : plus aucun service prévu, mais des places échangées existent – le service est conservé.",
+        "lockedOverCapacity": "{date} : plus de places échangées ({count}) que prévu maintenant – le service garde toutes les places échangées."
       },
       "unlock": "Lever le verrouillage",
       "skipReason": "Motif de la fermeture",
@@ -1485,9 +1500,9 @@
     },
     "outlook": {
       "toggle": "Ajouter à Outlook (office@)",
-      "toggleHint": "Chaque service devient un événement du calendrier office@ ; les titulaires reçoivent des invitations et des mises à jour.",
+      "toggleHint": "Chaque place devient un rendez-vous sur toute la journée dans le calendrier office@ (affiché libre) ; seul son titulaire est invité, un échange annule ou réinvite.",
       "notConfigured": "Microsoft 365 n'est pas configuré sur ce serveur (voir docs/OUTLOOK_SETUP.md).",
-      "status": "{synced, plural, one {# service} other {# services}} sur {total} dans Outlook",
+      "status": "{synced} sur {total} rendez-vous dans Outlook",
       "loadFailed": "Impossible de charger l'état d'Outlook.",
       "failed": "{count, plural, one {# erreur} other {# erreurs}}",
       "lastSync": "dernière synchronisation {ago}",
@@ -1526,7 +1541,9 @@
       "closedTitle": "Indique un texte pour les jours de fermeture (100 caractères max.).",
       "holidayCalendar": "Calendrier des jours fériés invalide ou inaccessible.",
       "holidayCalendarSame": "Le calendrier des jours fériés doit être un autre calendrier.",
-      "holidayOpenDates": "Jours fériés travaillés invalides."
+      "holidayOpenDates": "Jours fériés travaillés invalides.",
+      "entryTitle": "Modèle d'entrée invalide : il te faut '{Vorname}' ou '{Name}', et seuls '{Vorname}', '{Name}' et '{Dienst}' sont autorisés (100 caractères max.).",
+      "reinforcedDates": "Jours renforcés invalides : une entrée par date ; les jours à venir ont besoin de plus de personnes que « Personnes par service », au maximum autant que de participants."
     }
   },
   "swap": {
@@ -1539,18 +1556,19 @@
       "offersToMe": "Demandes qui me sont adressées",
       "offersToMeHint": "Lorsque quelqu'un te demande directement un service.",
       "myOffers": "Mes offres",
-      "myOffersHint": "Lorsque ton offre est acceptée ou ta demande refusée.",
+      "myOffersHint": "Lorsque ton offre est acceptée, ta demande refusée ou ton service transféré.",
       "notConfigured": "L'envoi d'e-mails n'est pas configuré sur ce serveur. Ton choix s'appliquera dès qu'il le sera.",
       "saveFailed": "Le paramètre n'a pas pu être enregistré.",
       "loadFailed": "Impossible de charger les paramètres."
     },
     "title": "Bourse d'échange",
-    "subtitle": "Céder et échanger des services",
+    "subtitle": "Échanger des services",
     "menu": "Bourse d'échange",
     "calendar": "Agenda",
     "tabs": {
       "forMe": "Pour moi",
-      "mine": "Mes offres"
+      "mine": "Mes offres",
+      "manage": "Direction"
     },
     "offer": "Proposer un service",
     "emptyForMe": "Aucune offre ouverte pour toi pour le moment.",
@@ -1562,7 +1580,8 @@
     "kind": {
       "give": "Cession",
       "exchangeFor": "Échange contre le {date}",
-      "exchangeAny": "Échange contre un service au choix"
+      "exchangeAny": "Échange contre un service au choix",
+      "forced": "Échange forcé"
     },
     "toYou": "pour toi",
     "toUser": "pour {name}",
@@ -1578,35 +1597,35 @@
       "cancelled": "Sans objet"
     },
     "actions": {
-      "take": "Reprendre",
       "swap": "Échanger",
       "decline": "Refuser",
       "hide": "Masquer",
       "unhide": "Réafficher",
-      "withdraw": "Retirer"
+      "withdraw": "Retirer",
+      "coverIn": "Remplacer"
     },
     "confirm": {
-      "takeTitle": "Reprendre ce service ?",
-      "takeText": "Tu reprends le service du {date}, {time}. C'est effectif immédiatement.",
       "swapTitle": "Échanger des services ?",
       "swapText": "Tu reprends {date}, {time} et tu cèdes {counter}. C'est effectif immédiatement.",
       "pickCounter": "Lequel de tes services cèdes-tu en échange ?",
       "noCounter": "Tu n'as aucun service à venir dans cet agenda que tu pourrais céder en échange.",
-      "loadingDuties": "Chargement de tes services …"
+      "loadingDuties": "Chargement de tes services …",
+      "forcedTitle": "Remplacer ce service ?",
+      "forcedText": "Tu reprends le service du {date}, {time} pour {name}. Cela s’applique immédiatement. Ensuite, tu choisis en échange l’un de tes services des 3 prochains mois."
     },
     "done": {
-      "taken": "Service repris.",
       "swapped": "Services échangés.",
       "offered": "Offre créée.",
       "withdrawn": "Offre retirée.",
-      "declined": "Demande refusée."
+      "declined": "Demande refusée.",
+      "coveredIn": "Tu remplaces.",
+      "counterChosen": "Service en contrepartie transféré.",
+      "counterWaived": "Contrepartie annulée.",
+      "forced": "Échange forcé."
     },
     "form": {
       "shift": "Ton service",
       "shiftPlaceholder": "Choisir un service",
-      "type": "Type",
-      "give": "Céder",
-      "exchange": "Échanger",
       "audience": "À qui ?",
       "everyone": "À tous",
       "person": "À une personne",
@@ -1619,10 +1638,11 @@
       "submit": "Proposer",
       "noSlots": "Tu n'as aucun service à venir dans cet agenda."
     },
-    "offerShift": "Céder / Échanger",
+    "offerShift": "Échanger",
     "openOffer": "Il existe une offre d'échange ouverte pour ce service.",
     "openOfferLink": "Aller à la bourse d'échange",
     "marker": "Offre d'échange ouverte",
+    "openPlace": "Place libre",
     "signupHint": "Les places de ce service changent de mains via la bourse d'échange.",
     "errors": {
       "notFound": "Offre introuvable.",
@@ -1642,6 +1662,8 @@
       "notBroadcast": "Seules les offres destinées à tous peuvent être masquées.",
       "dutySlotSwapOnly": "Les places des services ne changent de mains que via la bourse d'échange.",
       "closedDuty": "Il n'y a pas de places un jour de fermeture.",
+      "counterNotDue": "Aucune compensation n'est en attente pour cet échange.",
+      "outsideWindow": "Ce service se situe en dehors de la période de compensation.",
       "internal": "Erreur inattendue."
     },
     "retry": "Réessayer",
@@ -1669,6 +1691,40 @@
       "delayHint": "Les applications d'agenda actualisent les abonnements avec un décalage (Google : plusieurs heures).",
       "loadFailed": "Impossible de charger le lien.",
       "failed": "Ça n'a pas fonctionné. Réessaie."
+    },
+    "forcedFor": "Remplacer {name}",
+    "counter": {
+      "pending": "Contrepartie en attente",
+      "chosen": "Contrepartie : service du {date}",
+      "waived": "Contrepartie annulée",
+      "task": "Tu as remplacé {name}. Choisis d’ici le {end} l’un de tes services en contrepartie.",
+      "choose": "Choisir la contrepartie",
+      "chooseFor": "Choisir à sa place",
+      "title": "Choisir la contrepartie",
+      "text": "Le service choisi passe immédiatement à {name}. Tes services jusqu’au {end} sont possibles.",
+      "none": "Tu n’as aucun service adapté dans la période de contrepartie. La direction peut annuler la contrepartie.",
+      "loading": "Chargement des services …",
+      "loadFailed": "Tes services n’ont pas pu être chargés.",
+      "waive": "Annuler",
+      "waiveTitle": "Annuler la contrepartie ?",
+      "waiveText": "{name} n’a pas à rendre de service pour celui du {date}.",
+      "reason": "Motif"
+    },
+    "emptyManage": "Aucun échange forcé en cours.",
+    "force": {
+      "hint": "Administration : transférer la place d'une personne absente à quelqu'un qui la remplace.",
+      "forUser": "Forcer l'échange : {name}",
+      "title": "Forcer l'échange",
+      "absent": "Absent·e",
+      "substitute": "Remplaçant·e",
+      "person": "Personne précise",
+      "everyone": "Ouvert à tous",
+      "target": "Choisis qui remplace",
+      "notePlaceholder": "p. ex. arrêt maladie",
+      "submit": "Forcer",
+      "confirmTitle": "Forcer cet échange ?",
+      "confirmPerson": "La place de {absent} passe immédiatement à {name}. {name} choisit ensuite l'un de ses propres services des 3 prochains mois, qui ira à {absent}.",
+      "confirmEveryone": "Le service de {absent} apparaît comme « Remplaçant recherché ». Celui ou celle qui le prend reçoit la place immédiatement, puis choisit en échange l'un de ses propres services des 3 prochains mois."
     }
   },
   "notifications": {
@@ -1677,19 +1733,28 @@
         "offerToAll": "Service proposé : {duty}",
         "offerToMe": "Demande pour toi : {duty}",
         "offerAccepted": "Ton offre a été acceptée : {duty}",
-        "offerDeclined": "Ta demande a été refusée : {duty}"
+        "offerDeclined": "Ta demande a été refusée : {duty}",
+        "forcedToAll": "Remplaçant recherché : {duty}",
+        "forcedToMe": "Tu remplaces : {duty}",
+        "dutyTransferred": "Ton service a été transféré : {duty}",
+        "counterChosen": "Service de compensation pour ton service : {duty}"
       },
       "lead": {
         "offerToAll": "{name} propose le service du {duty}.",
         "offerToMe": "{name} te sollicite directement pour le service du {duty}.",
         "offerAccepted": "{name} a accepté ton offre pour le service du {duty}.",
-        "offerDeclined": "{name} a refusé ta demande pour le service du {duty}."
+        "offerDeclined": "{name} a refusé ta demande pour le service du {duty}.",
+        "forcedToAll": "On cherche quelqu'un pour assurer le service de {name} le {duty}. Celui ou celle qui le prend choisit en échange l'un de ses propres services des 3 prochains mois.",
+        "forcedToMe": "{actor} t'a désigné comme remplaçant de {name} le {duty}.",
+        "dutyTransferred": "Ton service du {duty} a été transféré à {name}.",
+        "counterChosen": "En compensation de ton service du {duty}, tu reprends le service du {counter}."
       },
       "kind": {
         "give": "Cession – celui qui accepte reprend le service.",
         "exchangeFor": "Échange contre le service du {duty}.",
         "exchangeAny": "Échange – celui qui accepte rend l'un de ses propres services à venir."
       },
+      "chooseCounter": "Choisis sur le tableau d'échanges, d'ici le {end}, l'un de tes services en compensation.",
       "youGet": "En échange, tu reprends le service du {duty}.",
       "note": "Note : {note}",
       "allDay": "toute la journée",
@@ -1700,7 +1765,9 @@
   },
   "outlook": {
     "eventBody": "Cet événement est géré par BetterShift. Les services s'échangent dans le tableau d'échanges.",
-    "cancelComment": "Ce service n'a plus lieu."
+    "eventTime": "Horaire du service : {time}",
+    "eventPartners": "Avec : {names}",
+    "cancelComment": "Ce rendez-vous ne te concerne plus : la place a été échangée, réattribuée ou le service a été supprimé."
   },
   "personalFeed": {
     "calendarName": "Mes services",

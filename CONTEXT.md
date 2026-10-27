@@ -39,6 +39,14 @@ Ein Feiertag, an dem trotzdem Dienst ist.
 Die ganztägige Schicht ohne Plätze, die eine Rotation an einem Schließtag anlegt, z. B. „HeimkinoWelt geschlossen (Mariä Empfängnis)“.
 _Avoid_: Ausfallschicht
 
+**Verstärkter Tag**:
+Ein Diensttag, an dem ein Dienst mehr Plätze hat als „Personen pro Dienst“; die Zusatzplätze werden reihum besetzt und zählen wie jeder andere Platz.
+_Avoid_: Zusatztag, Sondertag
+
+**Zusatzplatz**:
+Ein Platz eines verstärkten Tages über „Personen pro Dienst“ hinaus.
+_Avoid_: Extraplatz
+
 **Generieren**:
 Das Erzeugen der Dienste einer Rotation für einen gewählten Zeitraum; Vergangenes und Gesperrtes bleibt dabei unverändert.
 _Avoid_: Planen, Ausrollen
@@ -61,14 +69,18 @@ _Avoid_: Fixiert, locked Shift
 Ein Teilnehmer hätte zur selben Zeit Plätze in zwei Diensten (derselben oder einer anderen Rotation).
 _Avoid_: Konflikt, Überschneidung
 
+**Eintragsvorlage**:
+Der Text je Rotation, aus dem für jeden Platz der angezeigte Titel entsteht, z. B. „{Vorname} Dienst" → „Günther Dienst".
+_Avoid_: Titelformat, Muster
+
 ## Tausch
 
 **Angebot**:
-Die Erklärung eines Teilnehmers, einen eigenen künftigen Platz herzugeben – an alle oder gezielt an einen Kollegen.
+Die Erklärung, einen eigenen künftigen Platz zu tauschen – an alle oder gezielt an einen Kollegen.
 _Avoid_: Anfrage, Tauschwunsch, Swap
 
-**Abgabe**:
-Ein Angebot ohne Gegenleistung: wer annimmt, übernimmt den Platz.
+**Abgabe** *(historisch)*:
+Ein Angebot ohne Gegenleistung. Kann nicht mehr erstellt werden; offene Abgaben sind mit der Umstellung hinfällig geworden.
 _Avoid_: Verschenken, Übergabe
 
 **Tausch**:
@@ -78,6 +90,26 @@ _Avoid_: Wechsel, Swap
 **Direktanfrage**:
 Ein Angebot, das nur ein bestimmter Teilnehmer annehmen oder ablehnen kann.
 _Avoid_: Privatangebot
+
+**Erzwungener Tausch**:
+Ein Tausch, den die Rotations-Verwaltung für einen Ausfallenden anlegt (z. B. bei Krankenstand). Der Platz wechselt ohne Zustimmung des Ausfallenden.
+_Avoid_: Zwangstausch, Notabgabe
+
+**Ausfallender**:
+Der Teilnehmer, dessen Platz bei einem erzwungenen Tausch übertragen wird.
+_Avoid_: Kranker
+
+**Einspringer**:
+Wer bei einem erzwungenen Tausch den Platz des Ausfallenden übernimmt.
+_Avoid_: Vertretung, Ersatz
+
+**Ausgleich**:
+Der Gegendienst, den der Einspringer nach einem erzwungenen Tausch an den Ausfallenden abgibt. Er ist **offen**, **gewählt** oder **erlassen**.
+_Avoid_: Gegenleistung, Rückgabe
+
+**Ausgleichsfenster**:
+Der Zeitraum, aus dem der Gegendienst stammen muss: ab jetzt bis 3 Monate nach dem Datum des übernommenen Dienstes.
+_Avoid_: Frist
 
 **Annehmen**:
 Das sofort wirksame Ausführen eines offenen Angebots durch einen anderen Teilnehmer, ohne Freigabe.

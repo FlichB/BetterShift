@@ -1,6 +1,8 @@
 // [fork] Swap board types shared by server and client; no DB imports here.
-export type SwapType = "give" | "exchange";
+export type SwapType = "give" | "exchange" | "forced";
 export type SwapStatus = "open" | "accepted" | "declined" | "withdrawn" | "expired" | "cancelled";
+/** Ausgleich of a forced swap; null on other types and on a forced offer nobody took yet. */
+export type CounterStatus = "pending" | "chosen" | "waived";
 
 export type SwapErrorCode =
   | "notFound"
@@ -19,7 +21,9 @@ export type SwapErrorCode =
   | "notDirect"
   | "notBroadcast"
   | "dutySlotSwapOnly"
-  | "closedDuty";
+  | "closedDuty"
+  | "counterNotDue"
+  | "outsideWindow";
 
 export interface DutyInfo {
   shiftId: string;
@@ -47,6 +51,10 @@ export interface BoardEntry {
   offeredBy: Person;
   target: Person | null;
   acceptedBy: Person | null;
+  forcedBy: Person | null;
+  counterStatus: CounterStatus | null;
+  counterWindowEnd: string | null;
+  waiveReason: string | null;
   note: string | null;
   createdAt: string;
   resolvedAt: string | null;
@@ -57,11 +65,21 @@ export interface Board {
   forMe: BoardEntry[];
   mine: BoardEntry[];
   hidden: BoardEntry[];
+  /** forced swaps where the user is the Einspringer and still has to pick a counter duty */
+  pendingCounters: BoardEntry[];
+  /** open forced offers and pending Ausgleiche in calendars the user manages rotations in */
+  manage: BoardEntry[];
+  manageCalendarIds: string[];
 }
 
 export interface DutyListEntry extends DutyInfo {
   holders: Person[];
   myOpenSwapId: string | null;
+}
+
+export interface CounterCandidatesResponse {
+  duties: DutyInfo[];
+  windowEnd: string;
 }
 
 export interface DutiesResponse {
@@ -72,4 +90,10 @@ export interface DutiesResponse {
 export interface CalendarSwapState {
   dutyShiftIds: string[];
   openOfferShiftIds: string[];
+  /** Eintragsvorlage per duty (Schließeinträge excluded), spec 12.32. */
+  entryTemplates: Record<string, string>;
+  /** Who offers which Platz, so the calendar marks only that holder's entry. */
+  openOffers: { shiftId: string; userId: string }[];
+  /** the caller may force swaps in this calendar */
+  canForce: boolean;
 }

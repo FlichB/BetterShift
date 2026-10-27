@@ -39,6 +39,7 @@ export async function resolveRecipients(
   let ids: string[];
   switch (kind) {
     case "offer_to_all":
+    case "forced_to_all":
       // R5: current holders of the offered duty cannot take it over, so they are not addressed.
       {
         const holders = new Set(
@@ -48,10 +49,13 @@ export async function resolveRecipients(
       }
       break;
     case "offer_to_me":
+    case "forced_to_me":
       ids = swap.targetUserId ? [swap.targetUserId] : [];
       break;
     case "offer_accepted":
     case "offer_declined":
+    case "duty_transferred":
+    case "counter_chosen":
       ids = [swap.offeredByUserId];
       break;
   }

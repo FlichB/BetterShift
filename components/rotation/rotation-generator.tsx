@@ -172,6 +172,7 @@ export function RotationGenerator({
                 {t(`rotation.generator.warning.${w.kind}`, {
                   date: day(w.date),
                   user: w.kind === "lockedNonMember" ? name(w.userId) : "",
+                  count: "userIds" in w ? w.userIds.length : 0,
                 })}
               </span>
               {w.kind === "lockedNonMember" && (
@@ -211,6 +212,7 @@ export function RotationGenerator({
                     key={row.key}
                     entry={row.entry}
                     name={name}
+                    perShift={rotation.perShift}
                     date={day(row.date)}
                     busy={save.isPending}
                     holiday={openHoliday.get(row.date) ?? null}
@@ -231,6 +233,7 @@ export function RotationGenerator({
 function PlanRow({
   entry,
   name,
+  perShift,
   date,
   busy,
   holiday,
@@ -239,6 +242,7 @@ function PlanRow({
 }: {
   entry: PlanEntry;
   name: (id: string) => string;
+  perShift: number;
   date: string;
   busy: boolean;
   holiday: string | null;
@@ -261,10 +265,14 @@ function PlanRow({
       </span>
       <span className="flex flex-wrap items-center gap-2">
         <Badge variant={entry.kind === "unchanged" ? "secondary" : "default"}>{t(`rotation.generator.kind.${entry.kind}`)}</Badge>
+        {entry.kind !== "delete" && entry.capacity > perShift && (
+          <Badge variant="outline">{t("rotation.generator.reinforced", { count: entry.capacity })}</Badge>
+        )}
         {entry.kind === "update" && (
           <span className="text-sm text-fg-secondary">
             {[...entry.add.map((id) => `+${name(id)}`), ...entry.remove.map((id) => `−${name(id)}`)].join(" ")}
             {entry.fieldsChanged && ` ${t("rotation.generator.fieldsChanged")}`}
+            {entry.capacityChanged && ` ${t("rotation.generator.capacityChanged", { count: entry.capacity })}`}
           </span>
         )}
         {holiday && entry.kind !== "delete" && (

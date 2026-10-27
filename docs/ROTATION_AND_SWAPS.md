@@ -1,6 +1,6 @@
 # Rotationen, Tauschbörse und persönlicher Kalender-Feed
 
-Diese Anleitung beschreibt die Fork-Erweiterungen von BetterShift: Dienste reihum erzeugen lassen (Rotation), Dienste selbständig abgeben und tauschen (Tauschbörse), die eigenen Dienste als Kalender-Abo beziehen und den Betrieb der App. Die Outlook-Anbindung steht separat in [`OUTLOOK_SETUP.md`](OUTLOOK_SETUP.md).
+Diese Anleitung beschreibt die Fork-Erweiterungen von BetterShift: Dienste reihum erzeugen lassen (Rotation), Dienste selbständig tauschen (Tauschbörse), die eigenen Dienste als Kalender-Abo beziehen und den Betrieb der App. Die Outlook-Anbindung steht separat in [`OUTLOOK_SETUP.md`](OUTLOOK_SETUP.md).
 
 ## Inhalt
 
@@ -36,10 +36,14 @@ Die wichtigsten Begriffe (das vollständige Glossar steht in [`CONTEXT.md`](../C
 | **Platz** | Die Zuordnung genau eines Teilnehmers zu einem Dienst. |
 | **Gesperrter Platz** | Ein Platz, der durch einen Tausch entstanden ist. Neues Generieren überschreibt ihn nie. |
 | **Doppelbelegung** | Ein Teilnehmer hätte zur selben Zeit Plätze in zwei Diensten. Das wird verhindert. |
-| **Angebot** | Die Erklärung, einen eigenen künftigen Platz herzugeben, an alle oder gezielt an einen Kollegen. |
-| **Abgabe** | Ein Angebot ohne Gegenleistung: Wer annimmt, übernimmt den Platz. |
+| **Angebot** | Die Erklärung, einen eigenen künftigen Platz zu tauschen, an alle oder gezielt an einen Kollegen. |
+| **Abgabe** | (nicht mehr möglich) Ein Angebot ohne Gegenleistung. Offene Abgaben wurden mit der Umstellung hinfällig. |
 | **Tausch** | Ein Angebot mit Gegenleistung: Der Annehmende gibt einen eigenen künftigen Platz zurück. |
 | **Direktanfrage** | Ein Angebot, das nur eine bestimmte Person annehmen oder ablehnen kann. |
+| **Erzwungener Tausch** | Ein Tausch, den die Rotations-Verwaltung für einen Ausfallenden anlegt. Der Platz wechselt ohne Zustimmung des Ausfallenden. |
+| **Einspringer** | Wer bei einem erzwungenen Tausch den Platz des Ausfallenden übernimmt. |
+| **Ausgleich** | Der Gegendienst, den der Einspringer nach einem erzwungenen Tausch an den Ausfallenden abgibt. Er ist offen, gewählt oder erlassen. |
+| **Ausgleichsfenster** | Der Zeitraum, aus dem der Gegendienst stammen muss: ab jetzt bis 3 Monate nach dem Datum des übernommenen Dienstes. |
 
 Die Rotationen verwaltest du unter `/rotations` (Menüpunkt „Rotationen"), die Tauschbörse liegt unter `/swaps` (Menüpunkt „Tauschbörse"). Beides ist nur mit eingeschalteter Anmeldung sinnvoll: Bei `AUTH_ENABLED=false` leitet die Tauschbörse auf die Startseite um; die Seite `/rotations` lässt sich zwar öffnen, aber Tausch, Benachrichtigungen, Outlook-Sync und Feed stehen dann nicht zur Verfügung.
 
@@ -58,11 +62,13 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 | Name | Bezeichnung der Rotation (bis 100 Zeichen). |
 | Preset (Titel, Zeit, Farbe) | Das Preset, aus dem jeder Dienst Titel, Zeit und Farbe erhält. |
 | Personen pro Dienst | 1 bis 20. Es braucht mindestens so viele Teilnehmer. |
+| Eintragsvorlage | Der Titel, den jeder Platz im Kalender trägt. Platzhalter: `{Vorname}`, `{Name}` (ganzer Name) und `{Dienst}` (Titel des Presets). Standard ist `{Vorname} Dienst`, also z. B. „Günther Dienst". `{Vorname}` oder `{Name}` muss vorkommen. Das ⓘ neben dem Feld erklärt die Platzhalter mit einem Beispiel; unter dem Feld zeigt eine Vorschau den Titel für den ersten Teilnehmer. Die Platzhalter unterscheiden Groß- und Kleinschreibung, jedes andere `{…}` wird abgelehnt. Freie Plätze heißen „Offener Platz". |
 | Periode | „Tag", „Woche (ab Montag)" oder „Eigene Dauer" (dann „Länge in Tagen", 1 bis 365). |
 | Beginn | Erster Tag der ersten Periode. |
 | Beginnt mit | Welcher Teilnehmer in der ersten Periode Dienst hat. „Vorschlag übernehmen" setzt einen passenden Wert. |
 | Diensttage | Wochentage Mo bis So, an denen in einer Periode tatsächlich Dienst ist („Alle Tage" setzt alle). |
 | Ausfalltage | Einzelne Tage ohne Dienst, jeweils mit Grund. Mit „Ausfalltag hinzufügen“ ergänzen. |
+| Verstärkte Tage | Einzelne Daten, an denen mehr Personen Dienst haben als „Personen pro Dienst“ (höchstens so viele wie Teilnehmer). Mit „Verstärkten Tag hinzufügen“ ergänzen. |
 | Text bei Schließung | Erscheint an Schließtagen als „Text (Grund)“, z. B. „HeimkinoWelt geschlossen (Inventur)“. |
 | Feiertagskalender | Optional. Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. |
 | Teilnehmer (Reihenfolge) | Die Reihenfolge bestimmt die erste Runde; danach mischt der Generator die Paare selbst. Mit „Nach oben" / „Nach unten" sortieren, mit „Teilnehmer hinzufügen" ergänzen, mit „Entfernen" streichen. |
@@ -70,6 +76,12 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 Beispiel „Samstagsdienst": Periode „Woche (ab Montag)", Diensttag Sa, 2 Personen pro Dienst, 8 Teilnehmer. Jede Person hat dann einmal pro 4 Wochen Dienst. Die erste Runde folgt der Reihenfolge, danach werden die Paare neu gemischt: Niemand hat zwei Samstage hintereinander Dienst, niemand hat zweimal hintereinander denselben Partner, und pro Quartal weicht die Anzahl der Dienste höchstens um 1 ab. Bei wenigen Teilnehmern (z. B. 6) liegt dafür manchmal nur ein freier Samstag zwischen zwei Diensten. Mit „Speichern" wird die Rotation gesichert; erzeugt sind die Dienste damit noch nicht.
 
 Mit dem Feld „Neustart ab Datum" ersetzt du bei einem Teilnehmerwechsel die Reihenfolge ab einem Stichtag: Dienste davor bleiben unverändert (siehe [Generieren](#3-generieren)).
+
+### Verstärkte Tage
+
+An einem **verstärkten Tag** hat ein Dienst mehr Personen als sonst, z. B. 3 statt 2 vor Weihnachten. Trage das Datum und die Personenzahl bei „Verstärkte Tage“ ein und generiere neu. Die Zusatzplätze werden reihum besetzt und zählen wie jeder andere Platz; niemand sitzt zweimal im selben Dienst. Dafür dürfen „nie zwei Diensttage in Folge“ und „nie derselbe Partner hintereinander“ rund um einen verstärkten Tag brechen. Die Vorschau zeigt am Datum „{count} Personen“. Jede zusätzliche Person bekommt wie jeder Platz ihren eigenen Eintrag (und bei eingeschaltetem Outlook-Schalter ihren eigenen Termin).
+
+Ein verstärkter Tag verschiebt die späteren, noch nicht getauschten Plätze, genauso wie ein Ausfalltag. Getauschte Plätze bleiben bestehen; sind es mehr als die neue Personenzahl, warnt die Vorschau. Vergangene Einträge bleiben gespeichert und ändern nichts. Fällt das Datum auf einen Schließtag, gilt der Schließtag. Zum Rückgängigmachen entfernst du den Eintrag und generierst den Zeitraum erneut.
 
 ### Feiertage und Schließtage
 
@@ -110,19 +122,17 @@ Gut zu wissen:
 
 Unter `/swaps` sieht jeder Teilnehmer zwei Reiter: „Für mich" (offene Angebote, die er annehmen kann) und „Meine Angebote" (die eigenen der letzten 30 Tage). Oben wählst du den Kalender.
 
-**Dienst anbieten.** Mit „Dienst anbieten" (oder dem Knopf „Abgeben / Tauschen" im Dienst eines Kalenders) öffnet sich das Formular:
+**Dienst anbieten.** Mit „Dienst anbieten" (oder dem Knopf „Tauschen" im Dienst eines Kalenders) öffnet sich das Formular:
 
 | Feld | Auswahl |
 | --- | --- |
 | Dein Dienst | Einer deiner künftigen Dienste in diesem Kalender. |
-| Art | „Abgeben" oder „Tauschen". |
 | An wen? | „An alle" oder „An eine Person" (Direktanfrage, dann „Kollege"). |
-| Gewünschter Gegendienst | Nur beim Tauschen: ein konkreter Dienst des Kollegen oder „Beliebig – der andere wählt". |
+| Gewünschter Gegendienst | Ein konkreter Dienst des Kollegen oder „Beliebig – der andere wählt". |
 | Notiz | Freitext, z. B. Grund oder Wunsch. |
 
-Mit „Anbieten" wird das Angebot erstellt. Es gibt vier Fälle:
+Mit „Anbieten" wird das Angebot erstellt. Jedes Angebot ist ein Tausch; ein Abgeben ohne Gegenleistung gibt es nicht mehr. Es gibt drei Fälle:
 
-- **Abgabe:** Wer „Übernehmen" anklickt und bestätigt, übernimmt den Dienst. Das gilt sofort.
 - **Tausch gegen einen konkreten Dienst** (im Angebot steht „Tausch gegen" mit dem Datum des Gegendienstes): „Tauschen" anklicken und bestätigen. Beide Plätze wechseln in einem Schritt.
 - **Tausch gegen beliebigen Dienst:** Der Annehmende wählt unter „Welchen deiner Dienste gibst du dafür ab?" einen eigenen künftigen Dienst.
 - **Direktanfrage** (im Angebot steht „an" mit dem Namen der Person): Nur diese Person kann annehmen oder „Ablehnen".
@@ -135,23 +145,45 @@ Weitere Aktionen:
 
 Die Status eines Angebots: „Offen", „Angenommen", „Abgelehnt", „Zurückgezogen", „Verfallen", „Hinfällig".
 
+### Erzwungener Tausch (Krankenstand)
+
+Fällt jemand kurzfristig aus, z. B. durch Krankenstand, kann die Rotations-Verwaltung (Besitzer, „Kalendereinstellungen verwalten" oder Administrator, siehe [Rechte](#5-rechte)) einen **erzwungenen Tausch** anlegen. Der Ausfallende braucht dafür kein Tauschrecht und muss nicht zustimmen.
+
+1. Im Dienst steht neben jedem Platzinhaber der Knopf „Tausch erzwingen: {Name}". Er öffnet das Fenster „Tausch erzwingen".
+2. Dort stehen „Ausfallend" (mit dem Platzinhaber vorbelegt), „Einspringer" und „Notiz" (z. B. „Krankenstand"). Beim Einspringer wählst du „Bestimmte Person" oder „Offen an alle".
+3. Mit „Erzwingen" und der Bestätigung wird der Tausch angelegt.
+
+Was dann passiert:
+
+- **Bestimmte Person:** Der Platz wechselt sofort an den Einspringer.
+- **Offen an alle:** Der Dienst erscheint bei allen unter „Für mich" als Karte „Einspringen für {Name}". Wer „Einspringen" anklickt und bestätigt, bekommt den Platz sofort. Ablehnen oder Ausblenden geht bei einem erzwungenen Tausch nicht.
+- **Ausgleich:** Der Platz wechselt unabhängig vom Gegendienst. Danach ist der Ausgleich offen („Ausgleich offen"). Der Einspringer sieht unter „Für mich" eine Karte mit dem Knopf „Gegendienst wählen" und wählt frei einen eigenen Dienst im selben Kalender. Dieser Dienst geht sofort an den Ausfallenden, der ihn nicht ablehnen kann. Der Dienst muss im **Ausgleichsfenster** liegen: bis 3 Monate nach dem Datum des übernommenen Dienstes. Der Ausgleich hat keine Frist.
+- **Reiter „Verwaltung":** Er ist nur sichtbar, wenn du in mindestens einem Kalender Rotationen verwaltest, und zeigt die offenen erzwungenen Tausche und die offenen Ausgleiche des gewählten Kalenders. Die Verwaltung kann ein noch nicht übernommenes Angebot „Zurückziehen" (der Ausfallende selbst kann das nicht), den Gegendienst „Stellvertretend wählen" oder den Ausgleich „Erlassen", etwa wenn der Einspringer im Fenster keinen Dienst hat. Beim Erlassen ist eine „Begründung" Pflicht.
+- **Anzeige:** Als Art steht „Erzwungener Tausch" im Angebot. Der Ausfallende und der Einspringer sehen unter „Meine Angebote" den Stand „Ausgleich offen", „Ausgleich: Dienst vom …" oder „Ausgleich erlassen".
+- **Bis zum Ende des Diensttages:** Erzwingen ist möglich, solange der Dienst heute oder später stattfindet, auch wenn er heute schon begonnen hat. Ein offenes erzwungenes Angebot verfällt erst, wenn der Tag des Dienstes vorbei ist.
+- **Vorhandenes Angebot:** Hat der Ausfallende für den Platz schon ein offenes Angebot, wird es hinfällig; der erzwungene Tausch hat Vorrang.
+- Beide Plätze (der übertragene und später der Gegendienst) sind wie bei jedem Tausch gesperrt.
+
+Die 3-Monats-Grenze gilt nur hier; normale Tausche gegen einen beliebigen Dienst haben weiter keine Zeitgrenze.
+
 Regeln, die die App durchsetzt:
 
 - **Sofort wirksam.** Annehmen braucht keine Freigabe; der Kalender zeigt die neue Besetzung ohne Neuladen.
 - **Atomar.** Beim Tausch wechseln beide Plätze zusammen oder gar nicht. Nehmen zwei Personen gleichzeitig an, gelingt nur eine; die andere erhält „Das Angebot ist nicht mehr offen."
-- **Verfallen.** Ein offenes Angebot endet von selbst, sobald der angebotene Dienst begonnen hat. Begonnene und vergangene Dienste lassen sich weder anbieten noch annehmen („Der Dienst hat bereits begonnen.").
-- **Hinfällig.** Ein Tausch gegen einen konkreten Gegendienst wird automatisch auf „Hinfällig" gesetzt, wenn dieser Gegendienst nicht mehr abgegeben werden kann: Der Anbieter besitzt ihn selbst, oder bei einer Direktanfrage gehört er der angefragten Person nicht mehr. Ebenso wird ein Angebot hinfällig, wenn der Anbieter den angebotenen Platz nicht mehr innehat oder wenn der angebotene oder der gewünschte Dienst nicht mehr existiert. Verliert der Anbieter das Recht zum Tauschen, wird sein offener Tausch beim Annehmen ebenfalls hinfällig; eine Abgabe bleibt annehmbar.
+- **Verfallen.** Ein offenes Angebot endet von selbst, sobald der angebotene Dienst begonnen hat (ein offener erzwungener Tausch erst nach dem Diensttag). Begonnene und vergangene Dienste lassen sich weder anbieten noch annehmen („Der Dienst hat bereits begonnen.").
+- **Hinfällig.** Ein Tausch gegen einen konkreten Gegendienst wird automatisch auf „Hinfällig" gesetzt, wenn dieser Gegendienst nicht mehr abgegeben werden kann: Der Anbieter besitzt ihn selbst, oder bei einer Direktanfrage gehört er der angefragten Person nicht mehr. Ebenso wird ein Angebot hinfällig, wenn der Anbieter den angebotenen Platz nicht mehr innehat oder wenn der angebotene oder der gewünschte Dienst nicht mehr existiert. Verliert der Anbieter das Recht zum Tauschen, wird sein offener Tausch beim Annehmen ebenfalls hinfällig. Offene Abgaben aus der Zeit vor der Umstellung wurden hinfällig.
 - **Keine Doppelbelegung.** Würde der Annehmende zur selben Zeit schon Dienst haben, lehnt die App ab („Das ergäbe eine Doppelbelegung.").
 - **Ein Angebot je Platz.** Für denselben Platz kann es nur ein offenes Angebot geben.
 - **Getauschte Plätze sind gesperrt** und bleiben beim Neugenerieren der Rotation erhalten (siehe [Generieren](#3-generieren)).
 - **Plätze von Diensten wechseln nur über die Tauschbörse.** Sich selbst im Dienst ein- oder auszutragen ist für Rotationsdienste gesperrt. Ausnahme: Wer das Recht „Andere eintragen" (`signUpOthers`) hat, kann Plätze weiterhin von Hand umbesetzen.
-- Alle Tauschvorgänge stehen im Audit-Log (`swap.offered`, `swap.accepted`, `swap.declined`, `swap.withdrawn`).
+- Alle Tauschvorgänge stehen im Audit-Log (`swap.offered`, `swap.accepted`, `swap.declined`, `swap.withdrawn`, `swap.forced`, `swap.counter_chosen`, `swap.counter_waived`).
 
 ## 5. Rechte
 
 | Wer | Was | Voraussetzung |
 | --- | --- | --- |
 | Verwaltung von Rotationen | Rotationen anlegen, ändern, generieren, Outlook-Schalter | Besitzer des Kalenders, Recht „Kalendereinstellungen verwalten" im Kalender oder Administrator der Instanz |
+| Tausch erzwingen | Tausch erzwingen, Gegendienst stellvertretend wählen, Ausgleich erlassen | wie Verwaltung von Rotationen |
 | Tauschen | Dienste anbieten und annehmen | Angemeldet, im Kalender das Recht „Sich selbst eintragen" (`signUpSelf`) und Anmeldungen im Kalender eingeschaltet |
 | Persönlicher Feed | Eigenen Feed einrichten | Angemeldet; im Feed erscheinen nur Dienste aus Kalendern, die der Benutzer sehen darf |
 
@@ -163,8 +195,17 @@ Das Teilen und die Bündel sind in [`PERMISSIONS.md`](PERMISSIONS.md) beschriebe
 
 Kurzfassung; die vollständige Einrichtung steht in [`OUTLOOK_SETUP.md`](OUTLOOK_SETUP.md).
 
-- **Tausch-Mails.** Über Microsoft Graph verschickt office@ E-Mails bei einem neuen Angebot an alle (nicht an die aktuellen Inhaber des Dienstes), bei einer Direktanfrage an die angefragte Person sowie bei Annahme bzw. Ablehnung an den Anbieter. Jeder Benutzer schaltet unter „Benachrichtigungen" auf `/swaps` die Arten „Neue Angebote an alle", „Anfragen an mich" und „Meine Angebote" einzeln ab.
-- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Dienst wird ein Termin im Kalender von office@, die Platzinhaber sind die Teilnehmer; Exchange verschickt Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
+- **Tausch-Mails.** Über Microsoft Graph verschickt office@ E-Mails bei einem neuen Angebot an alle (nicht an die aktuellen Inhaber des Dienstes), bei einer Direktanfrage an die angefragte Person sowie bei Annahme bzw. Ablehnung an den Anbieter. Beim erzwungenen Tausch kommen vier Mails dazu:
+
+  | Mail | An wen | Schalter |
+  | --- | --- | --- |
+  | „Einspringer gesucht: …" | alle außer den Platzinhabern des Dienstes (Tausch „Offen an alle") | „Neue Angebote an alle" |
+  | „Du springst ein: …" | der bestimmte Einspringer | „Anfragen an mich" |
+  | „Dein Dienst wurde übertragen: …" | der Ausfallende | „Meine Angebote" |
+  | „Ausgleich für deinen Dienst: …" | der Ausfallende, sobald der Gegendienst gewählt ist | „Meine Angebote" |
+
+  Das Erlassen eines Ausgleichs löst keine Mail aus. Jeder Benutzer schaltet unter „Benachrichtigungen" auf `/swaps` die Arten „Neue Angebote an alle", „Anfragen an mich" und „Meine Angebote" einzeln ab.
+- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Platz wird ein ganztägiger Termin im Kalender von office@ (Status „Frei", Titel aus der Eintragsvorlage); eingeladen ist nur der Inhaber des Platzes. Bei Tausch oder Umbesetzung sagt die App den Termin des bisherigen Inhabers ab und lädt den neuen Inhaber ein; Exchange verschickt die Absage sowie Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
 - **Ohne Konfiguration** bleibt alles aus; die Rotationsseite zeigt den Schalter deaktiviert („nicht eingerichtet"), und die Tausch-Mails entfallen.
 - Wer die Einladungen von office@ erhält, braucht den [Kalender-Feed](#7-persönlicher-kalender-feed) nicht zusätzlich in Outlook.
 
@@ -185,7 +226,7 @@ Der Link hat die Form `<BETTER_AUTH_URL>/api/feed/me/<Token>.ics`. Er gilt für 
 - **Ein Link pro Benutzer** über alle Kalender und Rotationen hinweg.
 - Es erscheinen **nur Rotationsdienste, auf denen du aktuell einen eigenen Platz hast**, aus Kalendern, die du sehen darfst. Von Hand angelegte Schichten mit Anmeldungen sind nicht enthalten.
 - Zeitraum: die **letzten 60 Tage** und **alle künftigen** Dienste.
-- Der Kalender heißt „Meine Dienste". Titel und Zeit stammen vom Dienst; die Beschreibung enthält der Reihe nach Notizen und benutzerdefinierte Felder des Dienstes, dann „Mit: …" (die anderen Platzinhaber, entfällt, wenn du allein im Dienst bist) und „Tauschen: `<BETTER_AUTH_URL>`/swaps".
+- Der Kalender heißt „Meine Dienste". Der Titel stammt aus der Eintragsvorlage der Rotation (z. B. „Günther Dienst"), die Zeit ist die echte Dienstzeit; die Beschreibung enthält der Reihe nach Notizen und benutzerdefinierte Felder des Dienstes, dann „Mit: …" (die anderen Platzinhaber, entfällt, wenn du allein im Dienst bist) und „Tauschen: `<BETTER_AUTH_URL>`/swaps".
 - Die festen Texte („Mit", „Tauschen", „Meine Dienste") stehen in `DEFAULT_LOCALE`.
 
 **Neu erzeugen und widerrufen.**
@@ -324,6 +365,8 @@ Alles, was seit dem Backup eingetragen oder getauscht wurde, ist danach verloren
 2. Ist Outlook eingeschaltet, aktualisieren sich die Termine danach von selbst; die Betroffenen bekommen geänderte Einladungen bzw. Absagen.
 3. Das Team vorher kurz informieren, dass sich künftige Dienste verschieben.
 
+**Besonderheit beim Update auf „Ein Eintrag pro Person" (Oktober 2026).** Jeder Platz hat jetzt einen eigenen Titel (Eintragsvorlage) und bei Outlook einen eigenen Termin. Nach dem Update auf diese Version sagt der erste Abgleich alle künftigen Termine im alten Format (ein Termin pro Dienst) ab und lädt pro Platz neu ein — jeder Teilnehmer bekommt einmalig eine Absage plus eine Einladung je künftigem Platz (bei einem Jahr voller Samstage mehrere Dutzend Mails pro Person), die Exchange teils verzögert zustellt. Informiere das Team vorher.
+
 Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./data`.
 
 ### Erstinbetriebnahme
@@ -348,4 +391,11 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
 - **Der persönliche Feed zeigt nur eigene Plätze in Rotationsdiensten** der letzten 60 Tage und der Zukunft, keine älteren Dienste.
 - Wird ein Feiertagskalender an eine bereits laufende Rotation gehängt, verschieben die Feiertage seit dem Beginn der Rotation die künftige Besetzung. Die Vorschau zeigt das; wer es nicht will, setzt „Neustart ab Datum“ auf heute.
 - Schließtage erscheinen erst beim nächsten „Übernehmen“, nicht automatisch nach einer Synchronisierung des Feiertagskalenders.
+- **Erzwungener Tausch und Ausgleich:**
+  - Die Umstellung offener Abgaben verschickt keine Mails; sie werden beim nächsten Lauf hinfällig.
+  - Wählt die Verwaltung den Gegendienst stellvertretend, bekommt nur der Ausfallende eine Mail. Der Einspringer erfährt es über die Outlook-Absage und die Tauschbörse.
+  - Der Einspringer sieht einen gewählten oder erlassenen Ausgleich danach unter „Meine Angebote" (30 Tage).
+  - Ein offener Ausgleich hat keine Frist und keine Erinnerungsmail. Die Verwaltung sieht ihn im Reiter „Verwaltung".
+  - Die 3 Monate des Ausgleichsfensters sind fest im Code, keine Einstellung pro Rotation.
+  - Der Ausfallende kann einen erzwungenen Tausch weder verhindern noch rückgängig machen. Ein Fehler der Verwaltung lässt sich nur durch einen weiteren Tausch oder durch Umbesetzen mit „Andere eintragen" (`signUpOthers`) korrigieren.
 - Ohne Anmeldung (`AUTH_ENABLED=false`) gibt es weder Tausch-Mails noch Outlook-Sync noch einen persönlichen Feed.

@@ -1134,6 +1134,9 @@
       "swapWithdrawn": "Withdrew the offer for the duty on {date}",
       "swapExpired": "Offer for the duty on {date} expired",
       "swapCancelled": "Offer for the duty on {date} became void",
+      "swapForced": "Forced a swap of the duty on {date} in “{calendar}”",
+      "swapCounterChosen": "Counter duty for {date} chosen: duty on {other}",
+      "swapCounterWaived": "Counter duty for {date} waived ({reason})",
       "outlookEnabled": "Turned on Outlook sync for rotation \"{name}\" in {calendar}",
       "outlookDisabled": "Turned off Outlook sync for rotation \"{name}\" in {calendar}",
       "outlookSyncFailed": "Could not sync the Outlook event for the duty on {date}: {message}",
@@ -1413,9 +1416,17 @@
       "skipDates": "Skipped days",
       "members": "Participants (order)",
       "skipReason": "Reason",
+      "reinforcedDates": "Reinforced days",
+      "reinforcedPeople": "People on this day",
+      "reinforcedHint": "A reinforced day redistributes the later Plätze that were not swapped. The preview shows what changes.",
       "closedTitle": "Text when closed",
       "closedTitleDefault": "Closed",
       "closedTitleHint": "Shown on closure days as \"Text (reason)\", e.g. \"Closed (Christmas Day)\".",
+      "entryTitle": "Entry template",
+      "entryTitleHint": "This is what each Platz is called in the calendar and in Outlook.",
+      "entryTitleInfo": "About the entry template",
+      "entryTitleHelp": "Placeholders: '{Vorname}' = first word of the name, '{Name}' = full name, '{Dienst}' = title of the duty. '{Vorname}' or '{Name}' must appear. Example: \"'{Vorname}' Dienst\" → \"Günther Dienst\".",
+      "entryTitlePreview": "Preview: {title}",
       "holidayCalendar": "Holiday calendar",
       "holidayCalendarNone": "None",
       "holidayCalendarUnavailable": "Calendar without access",
@@ -1438,6 +1449,7 @@
     },
     "allDays": "All days",
     "addSkipDate": "Add skipped day",
+    "addReinforcedDate": "Add reinforced day",
     "moveUp": "Move up",
     "moveDown": "Move down",
     "removeMember": "Remove",
@@ -1469,15 +1481,18 @@
       },
       "locked": "Swapped (locked)",
       "fieldsChanged": "Time/title from preset",
+      "capacityChanged": "Slots set to {count}",
       "overwriteNotice": "{count, plural, one {# slot will be reassigned} other {# slots will be reassigned}}",
       "markSkip": "Skipped",
       "openHoliday": "Holiday: {name}",
       "keepOpen": "Duty anyway",
+      "reinforced": "{count} people",
       "closeAgain": "Close after all",
       "warnings": "Notes",
       "warning": {
         "lockedNonMember": "{date}: {user} is no longer a participant but has a swapped slot.",
-        "lockedWithoutDuty": "{date}: No duty planned any more, but swapped slots exist – the duty stays."
+        "lockedWithoutDuty": "{date}: No duty planned any more, but swapped slots exist – the duty stays.",
+        "lockedOverCapacity": "{date}: More swapped Plätze ({count}) than now planned – the duty keeps all swapped Plätze."
       },
       "unlock": "Remove lock",
       "skipReason": "Reason for closing",
@@ -1485,9 +1500,9 @@
     },
     "outlook": {
       "toggle": "Add to Outlook (office@)",
-      "toggleHint": "Each duty becomes an event in the office@ calendar; holders receive invitations and updates.",
+      "toggleHint": "Each Platz becomes an all-day event in the office@ calendar (shown as free); only its holder is invited, and a swap cancels or re-invites.",
       "notConfigured": "Microsoft 365 is not set up on this server (see docs/OUTLOOK_SETUP.md).",
-      "status": "{synced} of {total} duties in Outlook",
+      "status": "{synced} of {total} events in Outlook",
       "loadFailed": "The Outlook status could not be loaded.",
       "failed": "{count, plural, one {# error} other {# errors}}",
       "lastSync": "last sync {ago}",
@@ -1526,7 +1541,9 @@
       "closedTitle": "Please enter a text for closure days (max. 100 characters).",
       "holidayCalendar": "Holiday calendar invalid or not accessible.",
       "holidayCalendarSame": "The holiday calendar must be a different calendar.",
-      "holidayOpenDates": "Invalid holidays with duty."
+      "holidayOpenDates": "Invalid holidays with duty.",
+      "entryTitle": "Invalid entry template: it needs '{Vorname}' or '{Name}' and may only contain '{Vorname}', '{Name}' and '{Dienst}' (max. 100 characters).",
+      "reinforcedDates": "Invalid reinforced days: one entry per date; future days need more people than \"People per duty\" and at most as many as there are participants."
     }
   },
   "swap": {
@@ -1539,18 +1556,19 @@
       "offersToMe": "Requests to me",
       "offersToMeHint": "When someone asks you directly about a duty.",
       "myOffers": "My offers",
-      "myOffersHint": "When your offer is accepted or your request is declined.",
+      "myOffersHint": "When your offer is accepted, your request is declined or your duty is handed over.",
       "notConfigured": "Email is not set up on this server. Your choice applies once it is.",
       "saveFailed": "Could not save the setting.",
       "loadFailed": "The settings could not be loaded."
     },
     "title": "Swap board",
-    "subtitle": "Give away and swap duties",
+    "subtitle": "Swap duties",
     "menu": "Swap board",
     "calendar": "Calendar",
     "tabs": {
       "forMe": "For me",
-      "mine": "My offers"
+      "mine": "My offers",
+      "manage": "Management"
     },
     "offer": "Offer a duty",
     "emptyForMe": "There are no open offers for you right now.",
@@ -1562,7 +1580,8 @@
     "kind": {
       "give": "Give away",
       "exchangeFor": "Swap for {date}",
-      "exchangeAny": "Swap for any duty"
+      "exchangeAny": "Swap for any duty",
+      "forced": "Forced swap"
     },
     "toYou": "to you",
     "toUser": "to {name}",
@@ -1578,35 +1597,35 @@
       "cancelled": "Void"
     },
     "actions": {
-      "take": "Take over",
       "swap": "Swap",
       "decline": "Decline",
       "hide": "Hide",
       "unhide": "Show again",
-      "withdraw": "Withdraw"
+      "withdraw": "Withdraw",
+      "coverIn": "Cover"
     },
     "confirm": {
-      "takeTitle": "Take over this duty?",
-      "takeText": "You take over the duty on {date}, {time}. This applies immediately.",
       "swapTitle": "Swap duties?",
       "swapText": "You take over {date}, {time} and give away {counter}. This applies immediately.",
       "pickCounter": "Which of your duties do you give in return?",
       "noCounter": "You have no upcoming duty in this calendar to give in return.",
-      "loadingDuties": "Loading your duties …"
+      "loadingDuties": "Loading your duties …",
+      "forcedTitle": "Cover this duty?",
+      "forcedText": "You take over the duty on {date}, {time} for {name}. This applies immediately. Afterwards you pick one of your duties in the next 3 months in return."
     },
     "done": {
-      "taken": "Duty taken over.",
       "swapped": "Duties swapped.",
       "offered": "Offer created.",
       "withdrawn": "Offer withdrawn.",
-      "declined": "Request declined."
+      "declined": "Request declined.",
+      "coveredIn": "You are covering.",
+      "counterChosen": "Counter duty handed over.",
+      "counterWaived": "Counter duty waived.",
+      "forced": "Swap forced."
     },
     "form": {
       "shift": "Your duty",
       "shiftPlaceholder": "Choose a duty",
-      "type": "Kind",
-      "give": "Give away",
-      "exchange": "Swap",
       "audience": "To whom?",
       "everyone": "Everyone",
       "person": "One person",
@@ -1619,10 +1638,11 @@
       "submit": "Offer",
       "noSlots": "You have no upcoming duties in this calendar."
     },
-    "offerShift": "Give away / swap",
+    "offerShift": "Swap",
     "openOffer": "There is an open swap offer for this duty.",
     "openOfferLink": "Go to swap board",
     "marker": "Open swap offer",
+    "openPlace": "Open slot",
     "signupHint": "Places on this duty change hands through the swap board.",
     "errors": {
       "notFound": "Offer not found.",
@@ -1642,6 +1662,8 @@
       "notBroadcast": "Only offers to everyone can be hidden.",
       "dutySlotSwapOnly": "Places on duties change hands only through the swap board.",
       "closedDuty": "There are no places on a closure day.",
+      "counterNotDue": "There is no open counter duty for this swap.",
+      "outsideWindow": "This duty is outside the counter-duty window.",
       "internal": "Unexpected error."
     },
     "retry": "Try again",
@@ -1669,6 +1691,40 @@
       "delayHint": "Calendar apps refresh subscriptions with a delay (Google: several hours).",
       "loadFailed": "The link could not be loaded.",
       "failed": "That didn't work. Please try again."
+    },
+    "forcedFor": "Cover for {name}",
+    "counter": {
+      "pending": "Counter duty open",
+      "chosen": "Counter duty: {date}",
+      "waived": "Counter duty waived",
+      "task": "You covered for {name}. Pick one of your duties by {end} in return.",
+      "choose": "Pick counter duty",
+      "chooseFor": "Pick on their behalf",
+      "title": "Pick counter duty",
+      "text": "The chosen duty goes to {name} immediately. Your duties up to {end} are available.",
+      "none": "You have no suitable duty in the window. The management can waive the counter duty.",
+      "loading": "Loading duties …",
+      "loadFailed": "Your duties could not be loaded.",
+      "waive": "Waive",
+      "waiveTitle": "Waive counter duty?",
+      "waiveText": "{name} does not have to give a duty back for the duty on {date}.",
+      "reason": "Reason"
+    },
+    "emptyManage": "No open forced swaps.",
+    "force": {
+      "hint": "Management: hand an absent person's place to someone covering.",
+      "forUser": "Force swap: {name}",
+      "title": "Force swap",
+      "absent": "Absent",
+      "substitute": "Covering",
+      "person": "Specific person",
+      "everyone": "Open to everyone",
+      "target": "Choose who covers",
+      "notePlaceholder": "e.g. sick leave",
+      "submit": "Force",
+      "confirmTitle": "Force this swap?",
+      "confirmPerson": "{absent}'s place goes to {name} immediately. {name} then picks one of their own duties in the next 3 months, which goes to {absent}.",
+      "confirmEveryone": "{absent}'s duty appears as “Cover needed”. Whoever takes it gets the place immediately and then picks one of their own duties in the next 3 months in return."
     }
   },
   "notifications": {
@@ -1677,19 +1733,28 @@
         "offerToAll": "Duty offered: {duty}",
         "offerToMe": "Request for you: {duty}",
         "offerAccepted": "Your offer was accepted: {duty}",
-        "offerDeclined": "Your request was declined: {duty}"
+        "offerDeclined": "Your request was declined: {duty}",
+        "forcedToAll": "Cover needed: {duty}",
+        "forcedToMe": "You are covering: {duty}",
+        "dutyTransferred": "Your duty was handed over: {duty}",
+        "counterChosen": "Counter duty for your duty: {duty}"
       },
       "lead": {
         "offerToAll": "{name} is offering the duty on {duty}.",
         "offerToMe": "{name} is asking you directly about the duty on {duty}.",
         "offerAccepted": "{name} accepted your offer for the duty on {duty}.",
-        "offerDeclined": "{name} declined your request for the duty on {duty}."
+        "offerDeclined": "{name} declined your request for the duty on {duty}.",
+        "forcedToAll": "Someone is needed to cover {name}'s duty on {duty}. Whoever takes it picks one of their own duties in the next 3 months in return.",
+        "forcedToMe": "{actor} assigned you to cover {name} on {duty}.",
+        "dutyTransferred": "Your duty on {duty} was handed over to {name}.",
+        "counterChosen": "In return for your duty on {duty}, you take over the duty on {counter}."
       },
       "kind": {
         "give": "Hand-over – whoever accepts takes the duty.",
         "exchangeFor": "Swap for the duty on {duty}.",
         "exchangeAny": "Swap – whoever accepts gives back one of their own upcoming duties."
       },
+      "chooseCounter": "Pick one of your duties on the swap board by {end} in return.",
       "youGet": "In return you take the duty on {duty}.",
       "note": "Note: {note}",
       "allDay": "all day",
@@ -1700,7 +1765,9 @@
   },
   "outlook": {
     "eventBody": "This event is managed by BetterShift. Swap duties on the swap board.",
-    "cancelComment": "This duty no longer takes place."
+    "eventTime": "Duty time: {time}",
+    "eventPartners": "With: {names}",
+    "cancelComment": "This appointment no longer applies to you – the spot was swapped, reassigned or the duty was cancelled."
   },
   "personalFeed": {
     "calendarName": "My duties",

@@ -65,8 +65,8 @@ export async function dispatchNotifications(client: GraphClient, config: Outlook
     try {
       const swap = getSwap(row.swapId);
       const offered = swap ? loadSlot(db, swap.offeredShiftId) : null;
-      const isOffer = row.kind === "offer_to_all" || row.kind === "offer_to_me";
-      if (!swap || !offered || (isOffer && swap.status !== "open")) {
+      const openOnly = row.kind === "offer_to_all" || row.kind === "offer_to_me" || row.kind === "forced_to_all";
+      if (!swap || !offered || (openOnly && swap.status !== "open")) {
         finish("skipped");
         continue;
       }
@@ -85,8 +85,10 @@ export async function dispatchNotifications(client: GraphClient, config: Outlook
           requested: dutyOf(swap.requestedShiftId),
           accepted: dutyOf(swap.acceptedShiftId),
           offeredByName: nameOf(swap.offeredByUserId) ?? someone,
+          acceptedByName: nameOf(swap.acceptedByUserId) ?? someone,
           actorName: nameOf(row.actorUserId) ?? someone,
           note: swap.note,
+          counterWindowEnd: swap.counterWindowEnd,
           appUrl: config.appUrl,
         },
         t,

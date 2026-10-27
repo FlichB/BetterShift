@@ -1134,6 +1134,9 @@
       "swapWithdrawn": "Oferta para el turno del {date} retirada",
       "swapExpired": "Oferta para el turno del {date} caducada",
       "swapCancelled": "Oferta para el turno del {date} anulada",
+      "swapForced": "Intercambio forzado del turno del {date} en «{calendar}»",
+      "swapCounterChosen": "Turno de compensación para el {date} elegido: turno del {other}",
+      "swapCounterWaived": "Turno de compensación para el {date} dispensado ({reason})",
       "outlookEnabled": "Sincronización con Outlook activada para la rotación \"{name}\" en {calendar}",
       "outlookDisabled": "Sincronización con Outlook desactivada para la rotación \"{name}\" en {calendar}",
       "outlookSyncFailed": "No se pudo sincronizar el evento de Outlook del servicio del {date}: {message}",
@@ -1413,9 +1416,17 @@
       "skipDates": "Días sin servicio",
       "members": "Participantes (orden)",
       "skipReason": "Motivo",
+      "reinforcedDates": "Días reforzados",
+      "reinforcedPeople": "Personas ese día",
+      "reinforcedHint": "Un día reforzado reparte de nuevo las plazas posteriores no intercambiadas. La vista previa muestra los cambios.",
       "closedTitle": "Texto si está cerrado",
       "closedTitleDefault": "Cerrado",
       "closedTitleHint": "Aparece en los días de cierre como «Texto (motivo)», p. ej. «Cerrado (Navidad)».",
+      "entryTitle": "Plantilla de entrada",
+      "entryTitleHint": "Así se llama cada plaza en el calendario y en Outlook.",
+      "entryTitleInfo": "Sobre la plantilla de entrada",
+      "entryTitleHelp": "Marcadores: '{Vorname}' = primera palabra del nombre, '{Name}' = nombre completo, '{Dienst}' = título del turno. Debe aparecer '{Vorname}' o '{Name}'. Ejemplo: «'{Vorname}' Dienst» → «Günther Dienst».",
+      "entryTitlePreview": "Vista previa: {title}",
       "holidayCalendar": "Calendario de festivos",
       "holidayCalendarNone": "Ninguno",
       "holidayCalendarUnavailable": "Calendario sin acceso",
@@ -1438,6 +1449,7 @@
     },
     "allDays": "Todos los días",
     "addSkipDate": "Añadir día sin servicio",
+    "addReinforcedDate": "Añadir día reforzado",
     "moveUp": "Subir",
     "moveDown": "Bajar",
     "removeMember": "Quitar",
@@ -1469,15 +1481,18 @@
       },
       "locked": "Intercambiado (bloqueado)",
       "fieldsChanged": "Hora/título del preajuste",
+      "capacityChanged": "Plazas ajustadas a {count}",
       "overwriteNotice": "{count, plural, one {# plaza se reasignará} other {# plazas se reasignarán}}",
       "markSkip": "No hay servicio",
       "openHoliday": "Festivo: {name}",
       "keepOpen": "Servicio igualmente",
+      "reinforced": "{count} personas",
       "closeAgain": "Volver a cerrar",
       "warnings": "Avisos",
       "warning": {
         "lockedNonMember": "{date}: {user} ya no participa, pero tiene una plaza intercambiada.",
-        "lockedWithoutDuty": "{date}: Ya no hay ningún turno previsto, pero existen plazas intercambiadas: el turno se mantiene."
+        "lockedWithoutDuty": "{date}: Ya no hay ningún turno previsto, pero existen plazas intercambiadas: el turno se mantiene.",
+        "lockedOverCapacity": "{date}: Más plazas intercambiadas ({count}) de las previstas ahora; el turno conserva todas las plazas intercambiadas."
       },
       "unlock": "Quitar bloqueo",
       "skipReason": "Motivo del cierre",
@@ -1485,9 +1500,9 @@
     },
     "outlook": {
       "toggle": "Añadir a Outlook (office@)",
-      "toggleHint": "Cada turno se convierte en un evento del calendario office@; los titulares reciben invitaciones y actualizaciones.",
+      "toggleHint": "Cada plaza se convierte en una cita de todo el día en el calendario de office@ (como libre); solo se invita a su titular y un intercambio la cancela o invita de nuevo.",
       "notConfigured": "Microsoft 365 no está configurado en este servidor (véase docs/OUTLOOK_SETUP.md).",
-      "status": "{synced} de {total} turnos en Outlook",
+      "status": "{synced} de {total} citas en Outlook",
       "loadFailed": "No se pudo cargar el estado de Outlook.",
       "failed": "{count, plural, one {# error} other {# errores}}",
       "lastSync": "última sincronización {ago}",
@@ -1526,7 +1541,9 @@
       "closedTitle": "Indica un texto para los días de cierre (máx. 100 caracteres).",
       "holidayCalendar": "Calendario de festivos no válido o sin acceso.",
       "holidayCalendarSame": "El calendario de festivos debe ser otro calendario.",
-      "holidayOpenDates": "Festivos con servicio no válidos."
+      "holidayOpenDates": "Festivos con servicio no válidos.",
+      "entryTitle": "Plantilla de entrada no válida: necesita '{Vorname}' o '{Name}' y solo puede contener '{Vorname}', '{Name}' y '{Dienst}' (máx. 100 caracteres).",
+      "reinforcedDates": "Días reforzados no válidos: una entrada por fecha; los días futuros necesitan más personas que «Personas por turno» y como máximo tantas como participantes."
     }
   },
   "swap": {
@@ -1539,18 +1556,19 @@
       "offersToMe": "Solicitudes para mí",
       "offersToMeHint": "Cuando alguien te pide directamente un turno.",
       "myOffers": "Mis ofertas",
-      "myOffersHint": "Cuando se acepta tu oferta o se rechaza tu solicitud.",
+      "myOffersHint": "Cuando se acepta tu oferta, se rechaza tu solicitud o se traspasa tu turno.",
       "notConfigured": "El envío de correos no está configurado en este servidor. Tu elección se aplicará en cuanto lo esté.",
       "saveFailed": "No se pudo guardar el ajuste.",
       "loadFailed": "No se pudieron cargar los ajustes."
     },
     "title": "Bolsa de cambios",
-    "subtitle": "Ceder e intercambiar turnos",
+    "subtitle": "Intercambiar turnos",
     "menu": "Bolsa de cambios",
     "calendar": "Calendario",
     "tabs": {
       "forMe": "Para mí",
-      "mine": "Mis ofertas"
+      "mine": "Mis ofertas",
+      "manage": "Administración"
     },
     "offer": "Ofrecer un turno",
     "emptyForMe": "Ahora mismo no hay ofertas abiertas para ti.",
@@ -1562,7 +1580,8 @@
     "kind": {
       "give": "Cesión",
       "exchangeFor": "Cambio por el {date}",
-      "exchangeAny": "Cambio por cualquier turno"
+      "exchangeAny": "Cambio por cualquier turno",
+      "forced": "Intercambio forzoso"
     },
     "toYou": "para ti",
     "toUser": "para {name}",
@@ -1578,35 +1597,35 @@
       "cancelled": "Anulada"
     },
     "actions": {
-      "take": "Asumir",
       "swap": "Intercambiar",
       "decline": "Rechazar",
       "hide": "Ocultar",
       "unhide": "Mostrar de nuevo",
-      "withdraw": "Retirar"
+      "withdraw": "Retirar",
+      "coverIn": "Sustituir"
     },
     "confirm": {
-      "takeTitle": "¿Asumir este turno?",
-      "takeText": "Asumes el turno del {date}, {time}. Es efectivo de inmediato.",
       "swapTitle": "¿Intercambiar turnos?",
       "swapText": "Asumes {date}, {time} y cedes {counter}. Es efectivo de inmediato.",
       "pickCounter": "¿Cuál de tus turnos cedes a cambio?",
       "noCounter": "No tienes ningún turno futuro en este calendario que puedas ceder.",
-      "loadingDuties": "Cargando tus turnos …"
+      "loadingDuties": "Cargando tus turnos …",
+      "forcedTitle": "¿Sustituir este turno?",
+      "forcedText": "Asumes el turno del {date}, {time} por {name}. Se aplica de inmediato. Después eliges, a cambio, uno de tus turnos de los próximos 3 meses."
     },
     "done": {
-      "taken": "Turno asumido.",
       "swapped": "Turnos intercambiados.",
       "offered": "Oferta creada.",
       "withdrawn": "Oferta retirada.",
-      "declined": "Solicitud rechazada."
+      "declined": "Solicitud rechazada.",
+      "coveredIn": "Estás sustituyendo.",
+      "counterChosen": "Turno de compensación transferido.",
+      "counterWaived": "Turno de compensación condonado.",
+      "forced": "Intercambio forzado."
     },
     "form": {
       "shift": "Tu turno",
       "shiftPlaceholder": "Elegir un turno",
-      "type": "Tipo",
-      "give": "Ceder",
-      "exchange": "Intercambiar",
       "audience": "¿A quién?",
       "everyone": "A todos",
       "person": "A una persona",
@@ -1619,10 +1638,11 @@
       "submit": "Ofrecer",
       "noSlots": "No tienes turnos futuros en este calendario."
     },
-    "offerShift": "Ceder / Intercambiar",
+    "offerShift": "Intercambiar",
     "openOffer": "Hay una oferta de cambio abierta para este turno.",
     "openOfferLink": "Ir a la bolsa de cambios",
     "marker": "Oferta de cambio abierta",
+    "openPlace": "Plaza libre",
     "signupHint": "Las plazas de este turno cambian de manos a través de la bolsa de cambios.",
     "errors": {
       "notFound": "Oferta no encontrada.",
@@ -1642,6 +1662,8 @@
       "notBroadcast": "Solo se pueden ocultar las ofertas dirigidas a todos.",
       "dutySlotSwapOnly": "Las plazas de los turnos solo cambian de manos a través de la bolsa de cambios.",
       "closedDuty": "En un día de cierre no hay plazas.",
+      "counterNotDue": "Para este intercambio no hay ninguna compensación pendiente.",
+      "outsideWindow": "Este turno está fuera del plazo de compensación.",
       "internal": "Error inesperado."
     },
     "retry": "Reintentar",
@@ -1669,6 +1691,40 @@
       "delayHint": "Las aplicaciones de calendario actualizan las suscripciones con retraso (Google: varias horas).",
       "loadFailed": "No se pudo cargar el enlace.",
       "failed": "No ha funcionado. Inténtalo de nuevo."
+    },
+    "forcedFor": "Sustituir a {name}",
+    "counter": {
+      "pending": "Compensación pendiente",
+      "chosen": "Compensación: turno del {date}",
+      "waived": "Compensación condonada",
+      "task": "Has sustituido a {name}. Elige antes del {end} uno de tus turnos como compensación.",
+      "choose": "Elegir turno de compensación",
+      "chooseFor": "Elegir en su nombre",
+      "title": "Elegir turno de compensación",
+      "text": "El turno elegido pasa de inmediato a {name}. Puedes elegir entre tus turnos hasta el {end}.",
+      "none": "No tienes ningún turno adecuado en el plazo de compensación. La administración puede condonar la compensación.",
+      "loading": "Cargando turnos …",
+      "loadFailed": "No se pudieron cargar tus turnos.",
+      "waive": "Condonar",
+      "waiveTitle": "¿Condonar la compensación?",
+      "waiveText": "{name} no tiene que devolver ningún turno por el turno del {date}.",
+      "reason": "Motivo"
+    },
+    "emptyManage": "No hay intercambios forzosos pendientes.",
+    "force": {
+      "hint": "Administración: pasa el puesto de una persona ausente a alguien que la cubra.",
+      "forUser": "Forzar intercambio: {name}",
+      "title": "Forzar intercambio",
+      "absent": "Ausente",
+      "substitute": "Suplente",
+      "person": "Persona concreta",
+      "everyone": "Abierto a todos",
+      "target": "Elige quién cubre",
+      "notePlaceholder": "p. ej. baja por enfermedad",
+      "submit": "Forzar",
+      "confirmTitle": "¿Forzar este intercambio?",
+      "confirmPerson": "El puesto de {absent} pasa de inmediato a {name}. Después, {name} elige uno de sus propios turnos de los próximos 3 meses, que pasará a {absent}.",
+      "confirmEveryone": "El turno de {absent} aparece como «Se busca suplente». Quien lo asuma recibe el puesto de inmediato y después elige a cambio uno de sus propios turnos de los próximos 3 meses."
     }
   },
   "notifications": {
@@ -1677,19 +1733,28 @@
         "offerToAll": "Turno ofrecido: {duty}",
         "offerToMe": "Solicitud para ti: {duty}",
         "offerAccepted": "Tu oferta fue aceptada: {duty}",
-        "offerDeclined": "Tu solicitud fue rechazada: {duty}"
+        "offerDeclined": "Tu solicitud fue rechazada: {duty}",
+        "forcedToAll": "Se busca sustituto: {duty}",
+        "forcedToMe": "Vas a sustituir: {duty}",
+        "dutyTransferred": "Tu turno ha sido traspasado: {duty}",
+        "counterChosen": "Turno de compensación para tu turno: {duty}"
       },
       "lead": {
         "offerToAll": "{name} ofrece el turno del {duty}.",
         "offerToMe": "{name} te pregunta directamente por el turno del {duty}.",
         "offerAccepted": "{name} aceptó tu oferta para el turno del {duty}.",
-        "offerDeclined": "{name} rechazó tu solicitud para el turno del {duty}."
+        "offerDeclined": "{name} rechazó tu solicitud para el turno del {duty}.",
+        "forcedToAll": "Se busca a alguien para cubrir el turno de {name} del {duty}. Quien lo asuma elige a cambio uno de sus propios turnos de los próximos 3 meses.",
+        "forcedToMe": "{actor} te ha asignado para sustituir a {name} el {duty}.",
+        "dutyTransferred": "Tu turno del {duty} ha sido traspasado a {name}.",
+        "counterChosen": "A cambio de tu turno del {duty}, asumes el turno del {counter}."
       },
       "kind": {
         "give": "Cesión – quien acepta se queda con el turno.",
         "exchangeFor": "Intercambio por el turno del {duty}.",
         "exchangeAny": "Intercambio – quien acepta devuelve uno de sus propios turnos futuros."
       },
+      "chooseCounter": "Elige en el tablón de intercambios hasta el {end} uno de tus turnos como compensación.",
       "youGet": "A cambio te quedas con el turno del {duty}.",
       "note": "Nota: {note}",
       "allDay": "todo el día",
@@ -1700,7 +1765,9 @@
   },
   "outlook": {
     "eventBody": "Este evento lo gestiona BetterShift. Los turnos se intercambian en el tablón de intercambios.",
-    "cancelComment": "Este turno ya no se realiza."
+    "eventTime": "Horario del turno: {time}",
+    "eventPartners": "Con: {names}",
+    "cancelComment": "Esta cita ya no es para ti: el puesto se ha intercambiado, reasignado o el turno se ha cancelado."
   },
   "personalFeed": {
     "calendarName": "Mis turnos",

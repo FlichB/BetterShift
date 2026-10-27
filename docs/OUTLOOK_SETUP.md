@@ -19,7 +19,7 @@ Diese Anleitung beschreibt, wie BetterShift an Microsoft 365 angebunden wird: Di
 
 Die Bedienung von Rotationen, Tauschbörse und persönlichem Kalender-Feed sowie den Betrieb beschreibt [`ROTATION_AND_SWAPS.md`](ROTATION_AND_SWAPS.md).
 
-- **office@ ist der Organisator.** Die App legt Termine im Kalender dieses Postfachs an, ändert sie und sagt sie ab. Die Teilnehmer eines Termins sind die aktuellen Platzinhaber des Dienstes.
+- **office@ ist der Organisator.** Die App legt Termine im Kalender dieses Postfachs an, ändert sie und sagt sie ab. Pro Platz gibt es einen ganztägigen Termin (Status „Frei"); eingeladen ist nur der aktuelle Platzinhaber. Bei Tausch oder Umbesetzung wird der Termin des bisherigen Inhabers abgesagt und der neue Inhaber eingeladen. Nach dem Update auf diese Version sagt der erste Abgleich alle künftigen Termine im alten Format (ein Termin pro Dienst) ab und lädt pro künftigem Platz neu ein — jeder Teilnehmer bekommt einmalig eine Absage plus eine Einladung je künftigem Platz (bei einem Jahr voller Samstage mehrere Dutzend Mails pro Person), die Exchange teils verzögert zustellt. Informiere das Team vorher.
 - **Exchange verschickt den Rest**: Einladungen, Aktualisierungen und Absagen kommen von Exchange selbst, die App sendet sie nicht.
 - **Tausch-Mails** (neues Angebot, Direktanfrage, angenommen, abgelehnt) werden über Graph `sendMail` von office@ verschickt. Jeder Benutzer kann die Arten auf `/swaps` einzeln abschalten.
 - Benötigt wird **eine** Entra-App mit Anwendungsberechtigungen (kein Benutzer-Login, kein Redirect).
@@ -98,13 +98,13 @@ Die Anmelde-E-Mail eines Benutzers muss seine Microsoft-365-Adresse sein; sie wi
 
 ## Testen
 
-1. **Trockenlauf**: `OUTLOOK_ORGANIZER=office@example.test`, `OUTLOOK_DRY_RUN=true`, `OUTLOOK_SYNC_INTERVAL_SECONDS=15` setzen. Beim Einschalten des Schalters einer Rotation erscheint im Server-Log je künftigem Dienst eine Zeile `[Outlook dry-run] create …` mit den Teilnehmern; Tausch-Aktionen erzeugen `update` bzw. `mail "…"`, Ausschalten `cancel`.
+1. **Trockenlauf**: `OUTLOOK_ORGANIZER=office@example.test`, `OUTLOOK_DRY_RUN=true`, `OUTLOOK_SYNC_INTERVAL_SECONDS=15` setzen. Beim Einschalten des Schalters einer Rotation erscheint im Server-Log je künftigem Platz eine Zeile `[Outlook dry-run] create …` (ganztägig, Status Frei, ein Teilnehmer); ein Tausch erzeugt ein `cancel` an den bisherigen und ein `create` (Einladung) für den neuen Inhaber sowie ein `update` am Termin des Partners (Zeile „Mit: …"), dazu `mail "…"`; Ausschalten erzeugt `cancel`.
 2. **Echt**: Dry-Run abschalten und die vier Pflichtvariablen setzen. Den Schalter für **eine** Rotation aktivieren und prüfen:
-   - Im office@-Kalender steht pro künftigem Dienst ein Termin.
+   - Im office@-Kalender steht pro künftigem Platz ein ganztägiger Termin (Status Frei).
    - Ein Teilnehmer hat die Einladung im Posteingang.
-   - Einen Dienst abgeben und übernehmen lassen: Das Update (neuer Teilnehmer, Absage an den alten) kommt innerhalb etwa einer Minute.
+   - Einen Dienst abgeben und übernehmen lassen: Die Absage an den bisherigen und die Einladung an den neuen Inhaber (plus Aktualisierung des Partner-Termins) kommen innerhalb etwa einer Minute.
    - Ein Angebot erzeugt eine Mail von office@ an die richtigen Empfänger.
-   - Eine Rotation ausschalten, deren Dienste noch **keinen Teilnehmer** haben (Absage eines Termins ohne Teilnehmer): Der Termin muss aus dem Kalender verschwinden. Graph lehnt die Absage dafür mit 400 ab; die App löscht ihn dann stattdessen.
+   - Eine Rotation ausschalten, die Schließeinträge hat: Der Schließtermin (ohne Teilnehmer) muss aus dem Kalender verschwinden. Graph lehnt die Absage dafür mit 400 ab; die App löscht ihn dann stattdessen.
 3. Erst danach weitere Rotationen aktivieren.
 
 ## Fehlerbilder

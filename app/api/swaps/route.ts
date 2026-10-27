@@ -9,7 +9,7 @@ import { outlookWorker } from "@/lib/outlook/worker";
 import { readJson } from "@/lib/rotation/http";
 import { shiftDate, swapAuditBase, type SwapOfferedMetadata } from "@/lib/swap/audit";
 import { swapError, swapErrorResponse, swapsDisabled } from "@/lib/swap/http";
-import { canOtherUserSwap, canUseSwaps, swapCalendarIds } from "@/lib/swap/permissions";
+import { canOtherUserSwap, canUseSwaps, manageCalendarIds, swapCalendarIds } from "@/lib/swap/permissions";
 import { createOffer, dutyCalendarId, listBoard } from "@/lib/swap/service";
 import { validateOffer } from "@/lib/swap/validate";
 import type { Board } from "@/lib/swap/types";
@@ -21,12 +21,17 @@ export async function GET(request: NextRequest) {
     const user = await getSessionUser(request.headers);
     if (!user) return NextResponse.json({ error: "forbidden" }, { status: 401 });
     const calendarIds = await swapCalendarIds(user.id);
+    const managed = await manageCalendarIds(user.id);
     const includeHidden = request.nextUrl.searchParams.get("hidden") === "1";
     const names =
       calendarIds.length === 0
         ? []
         : db.select({ id: calendars.id, name: calendars.name }).from(calendars).where(inArray(calendars.id, calendarIds)).all();
-    const board: Board = { calendars: names, ...listBoard(user.id, calendarIds, new Date(), includeHidden) };
+    const board: Board = {
+      calendars: names,
+      manageCalendarIds: managed,
+      ...listBoard(user.id, calendarIds, new Date(), includeHidden, managed),
+    };
     return NextResponse.json(board);
   } catch (error) {
     return swapErrorResponse(error, "Failed to load swap board:");

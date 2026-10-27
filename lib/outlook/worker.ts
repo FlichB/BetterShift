@@ -78,7 +78,7 @@ async function runOnce(): Promise<void> {
 
   const { t } = await getMailTranslator();
   const sync = await syncOutlook(client, now, {
-    bodyHtml: renderEventBody(t, config.appUrl),
+    renderBody: (event) => renderEventBody(t, config.appUrl, event.details),
     cancelComment: t("outlook.cancelComment"),
   });
   // Audit logging must never skip the auth pause below.

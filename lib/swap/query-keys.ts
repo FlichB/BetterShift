@@ -3,5 +3,6 @@ export const swapQueryKeys = {
   all: ["swaps"] as const,
   board: (includeHidden: boolean) => ["swaps", "board", includeHidden] as const,
   duties: (calendarId: string) => ["swaps", "duties", calendarId] as const,
+  counterCandidates: (id: string) => ["swaps", "counter-candidates", id] as const,
   calendarState: (calendarId: string) => ["swaps", "calendar-state", calendarId] as const,
 };

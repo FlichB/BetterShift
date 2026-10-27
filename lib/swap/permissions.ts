@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendars } from "@/lib/db/schema";
+import { canManageRotations } from "@/lib/rotation/permissions";
 import { getCalendarAccess, getShiftSignupPermission, getUserAccessibleCalendars } from "@/lib/auth/permissions";
 
 /** Spec B1: any signed-in user holding signUpSelf in the calendar (signups switched on). */
@@ -26,6 +27,15 @@ export async function swapCalendarIds(userId: string): Promise<string[]> {
   const ids: string[] = [];
   for (const calendar of await getUserAccessibleCalendars(userId)) {
     if (await canUseSwaps(userId, calendar.id)) ids.push(calendar.id);
+  }
+  return ids;
+}
+
+/** Calendars the user may force swaps in (spec D3). */
+export async function manageCalendarIds(userId: string): Promise<string[]> {
+  const ids: string[] = [];
+  for (const calendar of await getUserAccessibleCalendars(userId)) {
+    if (await canManageRotations(userId, calendar.id)) ids.push(calendar.id);
   }
   return ids;
 }

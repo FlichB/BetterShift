@@ -1,0 +1,1 @@
+ALTER TABLE `rotations` ADD `entry_title` text DEFAULT '{Vorname} Dienst' NOT NULL;

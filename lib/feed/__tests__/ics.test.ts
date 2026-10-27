@@ -14,7 +14,7 @@ describe("buildIcsCalendar with only", () => {
       calendars: [calendar],
       locale: "de",
       feed: true,
-      only: { shiftIds: [nov7], extraLines: new Map([[nov7, ["Mit: M2", "Tauschen: x"]]]), uidSuffix: "-me", calendarName: "Meine Dienste" },
+      only: { shiftIds: [nov7], extraLines: new Map([[nov7, ["Mit: M2", "Tauschen: x"]]]), uidSuffix: "-me", calendarName: "Meine Dienste", titles: new Map() },
     });
     const list = events(ics);
     expect(list).toHaveLength(1);
@@ -30,7 +30,7 @@ describe("buildIcsCalendar with only", () => {
     const empty = await buildIcsCalendar({
       calendars: [],
       locale: "de",
-      only: { shiftIds: [], extraLines: new Map(), uidSuffix: "-me", calendarName: "Meine Dienste" },
+      only: { shiftIds: [], extraLines: new Map(), uidSuffix: "-me", calendarName: "Meine Dienste", titles: new Map() },
     });
     expect(events(empty)).toHaveLength(0);
 

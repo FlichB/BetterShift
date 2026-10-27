@@ -1134,6 +1134,9 @@
       "swapWithdrawn": "Angebot für den Dienst am {date} zurückgezogen",
       "swapExpired": "Angebot für den Dienst am {date} verfallen",
       "swapCancelled": "Angebot für den Dienst am {date} hinfällig",
+      "swapForced": "Tausch für den Dienst am {date} in „{calendar}“ erzwungen",
+      "swapCounterChosen": "Ausgleich für den Dienst am {date} gewählt: Dienst am {other}",
+      "swapCounterWaived": "Ausgleich für den Dienst am {date} erlassen ({reason})",
       "outlookEnabled": "Outlook-Abgleich für Rotation „{name}“ in {calendar} eingeschaltet",
       "outlookDisabled": "Outlook-Abgleich für Rotation „{name}“ in {calendar} ausgeschaltet",
       "outlookSyncFailed": "Outlook-Termin für den Dienst am {date} konnte nicht abgeglichen werden: {message}",
@@ -1413,9 +1416,17 @@
       "skipDates": "Ausfalltage",
       "members": "Teilnehmer (Reihenfolge)",
       "skipReason": "Grund",
+      "reinforcedDates": "Verstärkte Tage",
+      "reinforcedPeople": "Personen an diesem Tag",
+      "reinforcedHint": "Ein verstärkter Tag verteilt die späteren, nicht getauschten Plätze neu. Die Vorschau zeigt, was sich ändert.",
       "closedTitle": "Text bei Schließung",
       "closedTitleDefault": "Geschlossen",
       "closedTitleHint": "Erscheint an Schließtagen als „Text (Grund)“, z. B. „Geschlossen (Mariä Empfängnis)“.",
+      "entryTitle": "Eintragsvorlage",
+      "entryTitleHint": "So heißt jeder Platz im Kalender und in Outlook.",
+      "entryTitleInfo": "Erklärung zur Eintragsvorlage",
+      "entryTitleHelp": "Platzhalter: '{Vorname}' = erstes Wort des Namens, '{Name}' = ganzer Name, '{Dienst}' = Titel des Dienstes. '{Vorname}' oder '{Name}' muss vorkommen. Beispiel: „'{Vorname}' Dienst“ → „Günther Dienst“.",
+      "entryTitlePreview": "Vorschau: {title}",
       "holidayCalendar": "Feiertagskalender",
       "holidayCalendarNone": "Keiner",
       "holidayCalendarUnavailable": "Kalender ohne Zugriff",
@@ -1438,6 +1449,7 @@
     },
     "allDays": "Alle Tage",
     "addSkipDate": "Ausfalltag hinzufügen",
+    "addReinforcedDate": "Verstärkten Tag hinzufügen",
     "moveUp": "Nach oben",
     "moveDown": "Nach unten",
     "removeMember": "Entfernen",
@@ -1469,15 +1481,18 @@
       },
       "locked": "Getauscht (gesperrt)",
       "fieldsChanged": "Zeit/Titel aus Preset",
+      "capacityChanged": "Plätze angepasst auf {count}",
       "overwriteNotice": "{count, plural, one {# Platz wird neu besetzt} other {# Plätze werden neu besetzt}}",
       "markSkip": "Fällt aus",
       "openHoliday": "Feiertag: {name}",
       "keepOpen": "Trotzdem Dienst",
+      "reinforced": "{count} Personen",
       "closeAgain": "Doch schließen",
       "warnings": "Hinweise",
       "warning": {
         "lockedNonMember": "{date}: {user} ist kein Teilnehmer mehr, hat aber einen getauschten Platz.",
-        "lockedWithoutDuty": "{date}: Kein Dienst mehr geplant, aber getauschte Plätze vorhanden – der Dienst bleibt bestehen."
+        "lockedWithoutDuty": "{date}: Kein Dienst mehr geplant, aber getauschte Plätze vorhanden – der Dienst bleibt bestehen.",
+        "lockedOverCapacity": "{date}: Mehr getauschte Plätze ({count}) als jetzt geplant – der Dienst behält alle getauschten Plätze."
       },
       "unlock": "Sperre aufheben",
       "skipReason": "Grund des Ausfalls",
@@ -1485,9 +1500,9 @@
     },
     "outlook": {
       "toggle": "In Outlook (office@) eintragen",
-      "toggleHint": "Jeder Dienst wird ein Termin im office@-Kalender; die Platzinhaber erhalten Einladungen und Aktualisierungen.",
+      "toggleHint": "Jeder Platz wird ein ganztägiger Termin im office@-Kalender (Status „Frei“); nur der Platzinhaber wird eingeladen und bei Tausch abgesagt bzw. neu eingeladen.",
       "notConfigured": "Microsoft 365 ist auf diesem Server nicht eingerichtet (siehe docs/OUTLOOK_SETUP.md).",
-      "status": "{synced} von {total} Diensten in Outlook",
+      "status": "{synced} von {total} Terminen in Outlook",
       "loadFailed": "Der Outlook-Status konnte nicht geladen werden.",
       "failed": "{count, plural, one {# Fehler} other {# Fehler}}",
       "lastSync": "letzter Abgleich {ago}",
@@ -1526,7 +1541,9 @@
       "closedTitle": "Bitte einen Text bei Schließung (max. 100 Zeichen) angeben.",
       "holidayCalendar": "Feiertagskalender ungültig oder ohne Zugriff.",
       "holidayCalendarSame": "Der Feiertagskalender muss ein anderer Kalender sein.",
-      "holidayOpenDates": "Geöffnete Feiertage ungültig."
+      "holidayOpenDates": "Geöffnete Feiertage ungültig.",
+      "entryTitle": "Eintragsvorlage ungültig: Sie braucht '{Vorname}' oder '{Name}' und darf nur '{Vorname}', '{Name}' und '{Dienst}' enthalten (max. 100 Zeichen).",
+      "reinforcedDates": "Verstärkte Tage ungültig: Je Datum ein Eintrag, und künftige Tage brauchen mehr Personen als „Personen pro Dienst“, höchstens so viele wie Teilnehmer."
     }
   },
   "swap": {
@@ -1539,18 +1556,19 @@
       "offersToMe": "Anfragen an mich",
       "offersToMeHint": "Wenn dich jemand gezielt für einen Dienst anfragt.",
       "myOffers": "Meine Angebote",
-      "myOffersHint": "Wenn dein Angebot angenommen oder deine Anfrage abgelehnt wird.",
+      "myOffersHint": "Wenn dein Angebot angenommen, deine Anfrage abgelehnt oder dein Dienst übertragen wird.",
       "notConfigured": "Der E-Mail-Versand ist auf diesem Server nicht eingerichtet. Deine Auswahl gilt, sobald er eingerichtet ist.",
       "saveFailed": "Einstellung konnte nicht gespeichert werden.",
       "loadFailed": "Die Einstellungen konnten nicht geladen werden."
     },
     "title": "Tauschbörse",
-    "subtitle": "Dienste abgeben und tauschen",
+    "subtitle": "Dienste tauschen",
     "menu": "Tauschbörse",
     "calendar": "Kalender",
     "tabs": {
       "forMe": "Für mich",
-      "mine": "Meine Angebote"
+      "mine": "Meine Angebote",
+      "manage": "Verwaltung"
     },
     "offer": "Dienst anbieten",
     "emptyForMe": "Gerade gibt es keine offenen Angebote für dich.",
@@ -1562,7 +1580,8 @@
     "kind": {
       "give": "Abgabe",
       "exchangeFor": "Tausch gegen {date}",
-      "exchangeAny": "Tausch gegen beliebigen Dienst"
+      "exchangeAny": "Tausch gegen beliebigen Dienst",
+      "forced": "Erzwungener Tausch"
     },
     "toYou": "an dich",
     "toUser": "an {name}",
@@ -1578,35 +1597,35 @@
       "cancelled": "Hinfällig"
     },
     "actions": {
-      "take": "Übernehmen",
       "swap": "Tauschen",
       "decline": "Ablehnen",
       "hide": "Ausblenden",
       "unhide": "Wieder einblenden",
-      "withdraw": "Zurückziehen"
+      "withdraw": "Zurückziehen",
+      "coverIn": "Einspringen"
     },
     "confirm": {
-      "takeTitle": "Dienst übernehmen?",
-      "takeText": "Du übernimmst den Dienst am {date}, {time}. Das gilt sofort.",
       "swapTitle": "Dienste tauschen?",
       "swapText": "Du übernimmst {date}, {time} und gibst {counter} ab. Das gilt sofort.",
       "pickCounter": "Welchen deiner Dienste gibst du dafür ab?",
       "noCounter": "Du hast keinen künftigen Dienst in diesem Kalender, den du abgeben kannst.",
-      "loadingDuties": "Deine Dienste werden geladen …"
+      "loadingDuties": "Deine Dienste werden geladen …",
+      "forcedTitle": "Einspringen?",
+      "forcedText": "Du übernimmst den Dienst am {date}, {time} für {name}. Das gilt sofort. Danach wählst du einen deiner Dienste der nächsten 3 Monate als Ausgleich."
     },
     "done": {
-      "taken": "Dienst übernommen.",
       "swapped": "Dienste getauscht.",
       "offered": "Angebot erstellt.",
       "withdrawn": "Angebot zurückgezogen.",
-      "declined": "Anfrage abgelehnt."
+      "declined": "Anfrage abgelehnt.",
+      "coveredIn": "Du bist eingesprungen.",
+      "counterChosen": "Gegendienst übertragen.",
+      "counterWaived": "Ausgleich erlassen.",
+      "forced": "Tausch erzwungen."
     },
     "form": {
       "shift": "Dein Dienst",
       "shiftPlaceholder": "Dienst wählen",
-      "type": "Art",
-      "give": "Abgeben",
-      "exchange": "Tauschen",
       "audience": "An wen?",
       "everyone": "An alle",
       "person": "An eine Person",
@@ -1619,10 +1638,11 @@
       "submit": "Anbieten",
       "noSlots": "Du hast keine künftigen Dienste in diesem Kalender."
     },
-    "offerShift": "Abgeben / Tauschen",
+    "offerShift": "Tauschen",
     "openOffer": "Für diesen Dienst gibt es ein offenes Tauschangebot.",
     "openOfferLink": "Zur Tauschbörse",
     "marker": "Offenes Tauschangebot",
+    "openPlace": "Offener Platz",
     "signupHint": "Plätze dieses Dienstes wechseln über die Tauschbörse.",
     "errors": {
       "notFound": "Angebot nicht gefunden.",
@@ -1642,6 +1662,8 @@
       "notBroadcast": "Nur Angebote an alle können ausgeblendet werden.",
       "dutySlotSwapOnly": "Plätze von Diensten wechseln nur über die Tauschbörse.",
       "closedDuty": "An einem Schließtag gibt es keine Plätze.",
+      "counterNotDue": "Für diesen Tausch ist kein Ausgleich offen.",
+      "outsideWindow": "Dieser Dienst liegt außerhalb des Ausgleichsfensters.",
       "internal": "Unerwarteter Fehler."
     },
     "retry": "Erneut versuchen",
@@ -1669,6 +1691,40 @@
       "delayHint": "Kalender-Apps aktualisieren Abos verzögert (Google: mehrere Stunden).",
       "loadFailed": "Der Link konnte nicht geladen werden.",
       "failed": "Das hat nicht geklappt. Bitte erneut versuchen."
+    },
+    "forcedFor": "Einspringen für {name}",
+    "counter": {
+      "pending": "Ausgleich offen",
+      "chosen": "Ausgleich: Dienst vom {date}",
+      "waived": "Ausgleich erlassen",
+      "task": "Du bist für {name} eingesprungen. Wähle bis {end} einen deiner Dienste als Ausgleich.",
+      "choose": "Gegendienst wählen",
+      "chooseFor": "Stellvertretend wählen",
+      "title": "Gegendienst wählen",
+      "text": "Der gewählte Dienst geht sofort an {name}. Möglich sind deine Dienste bis {end}.",
+      "none": "Du hast im Ausgleichsfenster keinen passenden Dienst. Die Verwaltung kann den Ausgleich erlassen.",
+      "loading": "Dienste werden geladen …",
+      "loadFailed": "Deine Dienste konnten nicht geladen werden.",
+      "waive": "Erlassen",
+      "waiveTitle": "Ausgleich erlassen?",
+      "waiveText": "{name} muss für den Dienst am {date} keinen Gegendienst abgeben.",
+      "reason": "Begründung"
+    },
+    "emptyManage": "Keine offenen erzwungenen Tausche.",
+    "force": {
+      "hint": "Verwaltung: Platz eines Ausfallenden an einen Einspringer übertragen.",
+      "forUser": "Tausch erzwingen: {name}",
+      "title": "Tausch erzwingen",
+      "absent": "Ausfallend",
+      "substitute": "Einspringer",
+      "person": "Bestimmte Person",
+      "everyone": "Offen an alle",
+      "target": "Einspringer wählen",
+      "notePlaceholder": "z. B. Krankenstand",
+      "submit": "Erzwingen",
+      "confirmTitle": "Tausch erzwingen?",
+      "confirmPerson": "Der Platz von {absent} geht sofort an {name}. {name} wählt danach einen eigenen Dienst der nächsten 3 Monate, der an {absent} geht.",
+      "confirmEveryone": "Der Dienst von {absent} erscheint als „Einspringen gesucht“. Wer übernimmt, bekommt den Platz sofort und wählt danach einen eigenen Dienst der nächsten 3 Monate als Ausgleich."
     }
   },
   "notifications": {
@@ -1677,19 +1733,28 @@
         "offerToAll": "Dienst angeboten: {duty}",
         "offerToMe": "Anfrage an dich: {duty}",
         "offerAccepted": "Dein Angebot wurde angenommen: {duty}",
-        "offerDeclined": "Deine Anfrage wurde abgelehnt: {duty}"
+        "offerDeclined": "Deine Anfrage wurde abgelehnt: {duty}",
+        "forcedToAll": "Einspringer gesucht: {duty}",
+        "forcedToMe": "Du springst ein: {duty}",
+        "dutyTransferred": "Dein Dienst wurde übertragen: {duty}",
+        "counterChosen": "Ausgleich für deinen Dienst: {duty}"
       },
       "lead": {
         "offerToAll": "{name} bietet den Dienst am {duty} an.",
         "offerToMe": "{name} fragt dich gezielt für den Dienst am {duty} an.",
         "offerAccepted": "{name} hat dein Angebot für den Dienst am {duty} angenommen.",
-        "offerDeclined": "{name} hat deine Anfrage für den Dienst am {duty} abgelehnt."
+        "offerDeclined": "{name} hat deine Anfrage für den Dienst am {duty} abgelehnt.",
+        "forcedToAll": "Für den Dienst am {duty} wird ein Einspringer für {name} gesucht. Wer übernimmt, wählt danach einen eigenen Dienst der nächsten 3 Monate als Ausgleich.",
+        "forcedToMe": "{actor} hat dich als Einspringer für {name} am {duty} eingeteilt.",
+        "dutyTransferred": "Dein Dienst am {duty} wurde an {name} übertragen.",
+        "counterChosen": "Als Ausgleich für deinen Dienst am {duty} übernimmst du den Dienst am {counter}."
       },
       "kind": {
         "give": "Abgabe – wer annimmt, übernimmt den Dienst.",
         "exchangeFor": "Tausch gegen den Dienst am {duty}.",
         "exchangeAny": "Tausch – wer annimmt, gibt einen eigenen künftigen Dienst zurück."
       },
+      "chooseCounter": "Wähle auf der Tauschbörse bis {end} einen deiner Dienste als Ausgleich.",
       "youGet": "Du übernimmst im Gegenzug den Dienst am {duty}.",
       "note": "Notiz: {note}",
       "allDay": "ganztägig",
@@ -1700,7 +1765,9 @@
   },
   "outlook": {
     "eventBody": "Dieser Termin wird von BetterShift verwaltet. Dienste tauschst du in der Tauschbörse.",
-    "cancelComment": "Dieser Dienst findet nicht mehr statt."
+    "eventTime": "Dienstzeit: {time}",
+    "eventPartners": "Mit: {names}",
+    "cancelComment": "Dieser Termin entfällt für dich – der Platz wurde getauscht, umbesetzt oder der Dienst gestrichen."
   },
   "personalFeed": {
     "calendarName": "Meine Dienste",

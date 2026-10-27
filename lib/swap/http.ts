@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isAuthEnabled } from "@/lib/auth/feature-flags";
 import { getSessionUser } from "@/lib/auth/sessions";
 import { rateLimit } from "@/lib/rate-limiter";
+import { canManageRotations } from "@/lib/rotation/permissions";
 import { canUseSwaps } from "@/lib/swap/permissions";
 import { SwapServiceError, dutyCalendarId, getSwap } from "@/lib/swap/service";
 import type { ShiftSwap } from "@/lib/swap/schema";
@@ -25,6 +26,8 @@ const STATUS: Record<SwapErrorCode, number> = {
   alreadyOnDuty: 409,
   doubleBooked: 409,
   duplicateOffer: 409,
+  counterNotDue: 409,
+  outsideWindow: 409,
 };
 
 export const swapError = (code: SwapErrorCode) => NextResponse.json({ error: code }, { status: STATUS[code] });
@@ -60,4 +63,32 @@ export async function swapWriteContext(
   const limited = rateLimit(request, user.id, "swap-mutations");
   if (limited) return { ok: false, response: limited };
   return { ok: true, userId: user.id, calendarId, swap };
+}
+
+/**
+ * Session, forced swap, permission and rate limit for the management actions on a forced swap.
+ * Rotation managers always pass (spec D3); with `allowSubstitute` its Einspringer does too.
+ */
+export async function swapManageContext(
+  request: NextRequest,
+  id: string,
+  options: { allowSubstitute?: boolean; rateLimited?: boolean } = {}
+): Promise<
+  { ok: true; userId: string; calendarId: string; swap: ShiftSwap; isManager: boolean } | { ok: false; response: NextResponse }
+> {
+  const disabled = swapsDisabled();
+  if (disabled) return { ok: false, response: disabled };
+  const user = await getSessionUser(request.headers);
+  if (!user) return { ok: false, response: NextResponse.json({ error: "forbidden" }, { status: 401 }) };
+  const swap = getSwap(id);
+  const calendarId = swap ? dutyCalendarId(swap.offeredShiftId) : null;
+  if (!swap || !calendarId) return { ok: false, response: swapError("notFound") };
+  const isManager = await canManageRotations(user.id, calendarId);
+  const isSubstitute = Boolean(options.allowSubstitute) && swap.acceptedByUserId === user.id;
+  if (!isManager && !isSubstitute) return { ok: false, response: swapError("forbidden") };
+  if (options.rateLimited !== false) {
+    const limited = rateLimit(request, user.id, "swap-mutations");
+    if (limited) return { ok: false, response: limited };
+  }
+  return { ok: true, userId: user.id, calendarId, swap, isManager };
 }

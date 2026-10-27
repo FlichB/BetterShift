@@ -60,3 +60,12 @@ export async function logResolved(items: { swap: ShiftSwap; status: "expired" | 
     });
   }
 }
+
+export type SwapForcedMetadata = SwapAuditBase & { forcedByUserId: string; substituteUserId: string | null; moves: SlotMove[] };
+export type SwapCounterChosenMetadata = SwapAuditBase & {
+  substituteUserId: string | null;
+  chosenByUserId: string;
+  counterDate: string | null;
+  moves: SlotMove[];
+};
+export type SwapCounterWaivedMetadata = SwapAuditBase & { substituteUserId: string | null; reason: string };

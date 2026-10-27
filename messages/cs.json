@@ -1134,6 +1134,9 @@
       "swapWithdrawn": "Nabídka služby dne {date} stažena",
       "swapExpired": "Nabídka služby dne {date} vypršela",
       "swapCancelled": "Nabídka služby dne {date} pozbyla platnosti",
+      "swapForced": "Vynucená výměna služby dne {date} v kalendáři „{calendar}“",
+      "swapCounterChosen": "Náhradní služba za {date} zvolena: služba dne {other}",
+      "swapCounterWaived": "Náhradní služba za {date} prominuta ({reason})",
       "outlookEnabled": "Synchronizace s Outlookem zapnuta pro rotaci „{name}“ v kalendáři {calendar}",
       "outlookDisabled": "Synchronizace s Outlookem vypnuta pro rotaci „{name}“ v kalendáři {calendar}",
       "outlookSyncFailed": "Událost v Outlooku pro službu dne {date} se nepodařilo synchronizovat: {message}",
@@ -1413,9 +1416,17 @@
       "skipDates": "Dny bez služby",
       "members": "Účastníci (pořadí)",
       "skipReason": "Důvod",
+      "reinforcedDates": "Posílené dny",
+      "reinforcedPeople": "Osob v tento den",
+      "reinforcedHint": "Posílený den znovu rozdělí pozdější nevyměněná místa. Náhled ti ukáže, co se změní.",
       "closedTitle": "Text při zavření",
       "closedTitleDefault": "Zavřeno",
       "closedTitleHint": "Ve dnech zavření se zobrazí jako „Text (důvod)“, např. „Zavřeno (Boží hod)“.",
+      "entryTitle": "Šablona záznamu",
+      "entryTitleHint": "Takto se jmenuje každé místo v kalendáři a v Outlooku.",
+      "entryTitleInfo": "O šabloně záznamu",
+      "entryTitleHelp": "Zástupné symboly: '{Vorname}' = první slovo jména, '{Name}' = celé jméno, '{Dienst}' = název služby. Musí se objevit '{Vorname}' nebo '{Name}'. Příklad: „'{Vorname}' Dienst“ → „Günther Dienst“.",
+      "entryTitlePreview": "Náhled: {title}",
       "holidayCalendar": "Kalendář svátků",
       "holidayCalendarNone": "Žádný",
       "holidayCalendarUnavailable": "Kalendář bez přístupu",
@@ -1438,6 +1449,7 @@
     },
     "allDays": "Všechny dny",
     "addSkipDate": "Přidat den bez služby",
+    "addReinforcedDate": "Přidat posílený den",
     "moveUp": "Posunout nahoru",
     "moveDown": "Posunout dolů",
     "removeMember": "Odebrat",
@@ -1469,15 +1481,18 @@
       },
       "locked": "Vyměněno (zamčeno)",
       "fieldsChanged": "Čas/název z předvolby",
+      "capacityChanged": "Počet míst upraven na {count}",
       "overwriteNotice": "{count, plural, one {# místo bude obsazeno znovu} few {# místa budou obsazena znovu} many {# místa bude obsazeno znovu} other {# míst bude obsazeno znovu}}",
       "markSkip": "Odpadá",
       "openHoliday": "Svátek: {name}",
       "keepOpen": "Přesto služba",
+      "reinforced": "{count, plural, one {# osoba} few {# osoby} other {# osob}}",
       "closeAgain": "Přece zavřít",
       "warnings": "Upozornění",
       "warning": {
         "lockedNonMember": "{date}: {user} už není účastník, ale má vyměněné místo.",
-        "lockedWithoutDuty": "{date}: Žádná služba už není naplánovaná, ale existují vyměněná místa – služba zůstane."
+        "lockedWithoutDuty": "{date}: Žádná služba už není naplánovaná, ale existují vyměněná místa – služba zůstane.",
+        "lockedOverCapacity": "{date}: Víc vyměněných míst ({count}) než je teď plánováno – služba si ponechá všechna vyměněná místa."
       },
       "unlock": "Odstranit zámek",
       "skipReason": "Důvod zavření",
@@ -1485,9 +1500,9 @@
     },
     "outlook": {
       "toggle": "Zapsat do Outlooku (office@)",
-      "toggleHint": "Každá služba se stane událostí v kalendáři office@; držitelé míst dostanou pozvánky a aktualizace.",
+      "toggleHint": "Každé místo se stane celodenní událostí v kalendáři office@ (jako volno); pozvaný je jen jeho držitel, výměna ho zruší nebo pozve znovu.",
       "notConfigured": "Microsoft 365 není na tomto serveru nastaven (viz docs/OUTLOOK_SETUP.md).",
-      "status": "{synced} z {total} služeb v Outlooku",
+      "status": "{synced} z {total} událostí v Outlooku",
       "loadFailed": "Stav Outlooku se nepodařilo načíst.",
       "failed": "{count, plural, one {# chyba} few {# chyby} many {# chyby} other {# chyb}}",
       "lastSync": "poslední synchronizace {ago}",
@@ -1526,7 +1541,9 @@
       "closedTitle": "Zadej text pro dny zavření (max. 100 znaků).",
       "holidayCalendar": "Kalendář svátků je neplatný nebo nepřístupný.",
       "holidayCalendarSame": "Kalendář svátků musí být jiný kalendář.",
-      "holidayOpenDates": "Neplatné svátky se službou."
+      "holidayOpenDates": "Neplatné svátky se službou.",
+      "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků).",
+      "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků."
     }
   },
   "swap": {
@@ -1539,18 +1556,19 @@
       "offersToMe": "Žádosti pro mě",
       "offersToMeHint": "Když tě někdo přímo požádá o službu.",
       "myOffers": "Moje nabídky",
-      "myOffersHint": "Když je tvoje nabídka přijata nebo tvoje žádost odmítnuta.",
+      "myOffersHint": "Když je tvoje nabídka přijata, tvoje žádost odmítnuta nebo tvoje služba převedena.",
       "notConfigured": "Odesílání e-mailů není na tomto serveru nastaveno. Tvoje volba se uplatní, jakmile bude.",
       "saveFailed": "Nastavení se nepodařilo uložit.",
       "loadFailed": "Nastavení se nepodařilo načíst."
     },
     "title": "Burza výměn",
-    "subtitle": "Odevzdávat a vyměňovat služby",
+    "subtitle": "Výměna služeb",
     "menu": "Burza výměn",
     "calendar": "Kalendář",
     "tabs": {
       "forMe": "Pro mě",
-      "mine": "Moje nabídky"
+      "mine": "Moje nabídky",
+      "manage": "Vedení"
     },
     "offer": "Nabídnout službu",
     "emptyForMe": "Právě teď pro tebe nejsou žádné otevřené nabídky.",
@@ -1562,7 +1580,8 @@
     "kind": {
       "give": "Odevzdání",
       "exchangeFor": "Výměna za {date}",
-      "exchangeAny": "Výměna za libovolnou službu"
+      "exchangeAny": "Výměna za libovolnou službu",
+      "forced": "Vynucená výměna"
     },
     "toYou": "tobě",
     "toUser": "uživateli {name}",
@@ -1578,35 +1597,35 @@
       "cancelled": "Neplatná"
     },
     "actions": {
-      "take": "Převzít",
       "swap": "Vyměnit",
       "decline": "Odmítnout",
       "hide": "Skrýt",
       "unhide": "Znovu zobrazit",
-      "withdraw": "Stáhnout"
+      "withdraw": "Stáhnout",
+      "coverIn": "Zaskočit"
     },
     "confirm": {
-      "takeTitle": "Převzít tuto službu?",
-      "takeText": "Přebíráš službu dne {date}, {time}. Platí to okamžitě.",
       "swapTitle": "Vyměnit služby?",
       "swapText": "Přebíráš {date}, {time} a odevzdáváš {counter}. Platí to okamžitě.",
       "pickCounter": "Kterou ze svých služeb za to odevzdáš?",
       "noCounter": "V tomto kalendáři nemáš žádnou budoucí službu, kterou bys mohl(a) odevzdat.",
-      "loadingDuties": "Načítají se tvé služby …"
+      "loadingDuties": "Načítají se tvé služby …",
+      "forcedTitle": "Zaskočit?",
+      "forcedText": "Přebíráš službu dne {date}, {time} za {name}. Platí to okamžitě. Poté si jako náhradu vybereš jednu ze svých služeb v následujících 3 měsících."
     },
     "done": {
-      "taken": "Služba převzata.",
       "swapped": "Služby vyměněny.",
       "offered": "Nabídka vytvořena.",
       "withdrawn": "Nabídka stažena.",
-      "declined": "Žádost odmítnuta."
+      "declined": "Žádost odmítnuta.",
+      "coveredIn": "Zaskočil jsi.",
+      "counterChosen": "Náhradní služba předána.",
+      "counterWaived": "Náhrada prominuta.",
+      "forced": "Výměna vynucena."
     },
     "form": {
       "shift": "Tvoje služba",
       "shiftPlaceholder": "Vybrat službu",
-      "type": "Druh",
-      "give": "Odevzdat",
-      "exchange": "Vyměnit",
       "audience": "Komu?",
       "everyone": "Všem",
       "person": "Jedné osobě",
@@ -1619,10 +1638,11 @@
       "submit": "Nabídnout",
       "noSlots": "V tomto kalendáři nemáš žádné budoucí služby."
     },
-    "offerShift": "Odevzdat / Vyměnit",
+    "offerShift": "Vyměnit",
     "openOffer": "Pro tuto službu existuje otevřená nabídka výměny.",
     "openOfferLink": "Přejít na burzu výměn",
     "marker": "Otevřená nabídka výměny",
+    "openPlace": "Volné místo",
     "signupHint": "Místa této služby se předávají přes burzu výměn.",
     "errors": {
       "notFound": "Nabídka nenalezena.",
@@ -1642,6 +1662,8 @@
       "notBroadcast": "Skrýt lze jen nabídky určené všem.",
       "dutySlotSwapOnly": "Místa ve službách se předávají jen přes burzu výměn.",
       "closedDuty": "V den zavření nejsou žádná místa.",
+      "counterNotDue": "Pro tuto výměnu není otevřená žádná kompenzace.",
+      "outsideWindow": "Tato služba leží mimo okno pro kompenzaci.",
       "internal": "Neočekávaná chyba."
     },
     "retry": "Zkusit znovu",
@@ -1669,6 +1691,40 @@
       "delayHint": "Kalendářové aplikace aktualizují odběry se zpožděním (Google: několik hodin).",
       "loadFailed": "Odkaz se nepodařilo načíst.",
       "failed": "Nepovedlo se. Zkus to prosím znovu."
+    },
+    "forcedFor": "Zaskočit za {name}",
+    "counter": {
+      "pending": "Náhrada čeká",
+      "chosen": "Náhrada: služba ze dne {date}",
+      "waived": "Náhrada prominuta",
+      "task": "Zaskočil jsi za {name}. Do {end} vyber jednu ze svých služeb jako náhradu.",
+      "choose": "Vybrat náhradní službu",
+      "chooseFor": "Vybrat za něj",
+      "title": "Vybrat náhradní službu",
+      "text": "Vybraná služba okamžitě přejde na {name}. K výběru jsou tvé služby do {end}.",
+      "none": "V okně pro náhradu nemáš žádnou vhodnou službu. Vedení může náhradu prominout.",
+      "loading": "Načítání služeb …",
+      "loadFailed": "Tvoje služby se nepodařilo načíst.",
+      "waive": "Prominout",
+      "waiveTitle": "Prominout náhradu?",
+      "waiveText": "{name} nemusí za službu dne {date} vracet žádnou službu.",
+      "reason": "Důvod"
+    },
+    "emptyManage": "Žádné otevřené vynucené výměny.",
+    "force": {
+      "hint": "Správa: přenést místo nepřítomného na toho, kdo zaskočí.",
+      "forUser": "Vynutit výměnu: {name}",
+      "title": "Vynutit výměnu",
+      "absent": "Nepřítomný",
+      "substitute": "Zástup",
+      "person": "Konkrétní osoba",
+      "everyone": "Otevřeno všem",
+      "target": "Vyber, kdo zaskočí",
+      "notePlaceholder": "např. nemocenská",
+      "submit": "Vynutit",
+      "confirmTitle": "Vynutit tuto výměnu?",
+      "confirmPerson": "Místo uživatele {absent} okamžitě přebírá {name}. {name} si poté vybere jednu vlastní službu z následujících 3 měsíců, která připadne uživateli {absent}.",
+      "confirmEveryone": "Služba uživatele {absent} se zobrazí jako „Hledá se zástup“. Kdo ji převezme, získá místo okamžitě a poté si jako náhradu vybere jednu vlastní službu z následujících 3 měsíců."
     }
   },
   "notifications": {
@@ -1677,19 +1733,28 @@
         "offerToAll": "Nabídnutá služba: {duty}",
         "offerToMe": "Žádost pro tebe: {duty}",
         "offerAccepted": "Tvoje nabídka byla přijata: {duty}",
-        "offerDeclined": "Tvoje žádost byla odmítnuta: {duty}"
+        "offerDeclined": "Tvoje žádost byla odmítnuta: {duty}",
+        "forcedToAll": "Hledá se zástup: {duty}",
+        "forcedToMe": "Zaskakuješ: {duty}",
+        "dutyTransferred": "Tvoje služba byla převedena: {duty}",
+        "counterChosen": "Vyrovnání za tvoji službu: {duty}"
       },
       "lead": {
         "offerToAll": "{name} nabízí službu dne {duty}.",
         "offerToMe": "{name} se tě přímo ptá na službu dne {duty}.",
         "offerAccepted": "{name} přijal(a) tvoji nabídku na službu dne {duty}.",
-        "offerDeclined": "{name} odmítl(a) tvoji žádost o službu dne {duty}."
+        "offerDeclined": "{name} odmítl(a) tvoji žádost o službu dne {duty}.",
+        "forcedToAll": "Hledá se někdo, kdo převezme službu {name} dne {duty}. Kdo ji převezme, vybere si na oplátku jednu vlastní službu z následujících 3 měsíců.",
+        "forcedToMe": "{actor} tě určil(a) jako zástup za {name} dne {duty}.",
+        "dutyTransferred": "Tvoje služba dne {duty} byla převedena na {name}.",
+        "counterChosen": "Jako vyrovnání za tvoji službu dne {duty} přebíráš službu dne {counter}."
       },
       "kind": {
         "give": "Předání – kdo přijme, převezme službu.",
         "exchangeFor": "Výměna za službu dne {duty}.",
         "exchangeAny": "Výměna – kdo přijme, vrátí jednu ze svých budoucích služeb."
       },
+      "chooseCounter": "Vyber si na burze výměn do {end} jednu ze svých služeb jako vyrovnání.",
       "youGet": "Na oplátku přebíráš službu dne {duty}.",
       "note": "Poznámka: {note}",
       "allDay": "celý den",
@@ -1700,7 +1765,9 @@
   },
   "outlook": {
     "eventBody": "Tuto událost spravuje BetterShift. Služby se vyměňují na burze výměn.",
-    "cancelComment": "Tato služba se již nekoná."
+    "eventTime": "Čas služby: {time}",
+    "eventPartners": "S: {names}",
+    "cancelComment": "Tento termín pro tebe odpadá – místo bylo vyměněno, přeobsazeno nebo byla služba zrušena."
   },
   "personalFeed": {
     "calendarName": "Moje služby",

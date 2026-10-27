@@ -25,6 +25,12 @@ export interface ClosedDate {
   source: ClosureSource;
 }
 
+/** A Verstärkter Tag: a Diensttag with more Plätze than the rotation's perShift. */
+export interface ReinforcedDate {
+  date: string;
+  perShift: number;
+}
+
 /** Everything the round-robin needs; no database identifiers beyond user ids. */
 export interface RotationRule {
   /** Teilnehmer in rotation order (index = position). */
@@ -43,11 +49,15 @@ export interface RotationRule {
   closedDates: ClosedDate[];
   /** Geöffnete Feiertage; only shown in the preview. */
   openHolidays: Holiday[];
+  /** Verstärkte Tage; on these dates a duty has perShift Plätze instead of rule.perShift. */
+  reinforcedDates: ReinforcedDate[];
 }
 
 export interface PlannedDuty {
   date: string;
   userIds: string[];
+  /** Plätze of this duty; absent = rule.perShift. Always set by generateDays. */
+  capacity?: number;
   /** Name of a Geöffneter Feiertag on this date; absent otherwise. */
   openHoliday?: string;
 }

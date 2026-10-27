@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateRange, validateRotationInput } from "@/lib/rotation/validate";
+import { checkPastReinforcedDates, validateRange, validateRotationInput } from "@/lib/rotation/validate";
 
 const valid = {
   name: "Samstagsdienst",
@@ -16,6 +16,8 @@ const valid = {
   closedTitle: "HeimkinoWelt geschlossen",
   holidayCalendarId: "holidays",
   holidayOpenDates: ["2026-12-08"],
+  entryTitle: "{Vorname} Dienst",
+  reinforcedDates: [] as { date: string; perShift: number }[],
 };
 
 describe("validateRotationInput", () => {
@@ -106,5 +108,83 @@ describe("validateRange", () => {
     [{}],
   ])("rejects %o", (body) => {
     expect(validateRange(body)).toEqual({ ok: false, error: "range" });
+  });
+});
+
+describe("entryTitle", () => {
+  it("defaults to the standard template and trims", () => {
+    const withoutTitle: Record<string, unknown> = { ...valid };
+    delete withoutTitle.entryTitle;
+    const result = validateRotationInput(withoutTitle);
+    expect(result.ok && result.value.entryTitle).toBe("{Vorname} Dienst");
+    const trimmed = validateRotationInput({ ...valid, entryTitle: "  {Name}  " });
+    expect(trimmed.ok && trimmed.value.entryTitle).toBe("{Name}");
+  });
+
+  it("rejects invalid templates", () => {
+    for (const entryTitle of ["{Dienst}", "{Datum} {Name}", "", 42]) {
+      expect(validateRotationInput({ ...valid, entryTitle })).toEqual({ ok: false, error: "entryTitle" });
+    }
+  });
+});
+
+describe("reinforcedDates", () => {
+  const today = "2026-11-01";
+  const check = (reinforcedDates: unknown, patch: object = {}) =>
+    validateRotationInput({ ...valid, memberIds: ["u1", "u2", "u3", "u4"], perShift: 2, ...patch, reinforcedDates }, today);
+
+  it("defaults to none and sorts by date", () => {
+    const body: Record<string, unknown> = { ...valid };
+    delete body.reinforcedDates;
+    const none = validateRotationInput(body, today);
+    expect(none.ok && none.value.reinforcedDates).toEqual([]);
+    const sorted = check([{ date: "2026-12-19", perShift: 3 }, { date: "2026-12-05", perShift: 4 }]);
+    expect(sorted.ok && sorted.value.reinforcedDates).toEqual([{ date: "2026-12-05", perShift: 4 }, { date: "2026-12-19", perShift: 3 }]);
+  });
+
+  it("rejects future entries that are not above perShift or above the Teilnehmer count", () => {
+    expect(check([{ date: "2026-12-19", perShift: 2 }])).toEqual({ ok: false, error: "reinforcedDates" });
+    expect(check([{ date: "2026-12-19", perShift: 5 }])).toEqual({ ok: false, error: "reinforcedDates" });
+    expect(check([{ date: "2026-12-19", perShift: 3 }], { perShift: 3 })).toEqual({ ok: false, error: "reinforcedDates" });
+  });
+
+  it("rejects malformed and duplicate entries", () => {
+    for (const bad of [[{ date: "2026-13-01", perShift: 3 }], [{ date: "2026-12-19", perShift: 2.5 }], ["2026-12-19"], [{ date: "2026-12-19", perShift: 3 }, { date: "2026-12-19", perShift: 4 }]]) {
+      expect(check(bad)).toEqual({ ok: false, error: "reinforcedDates" });
+    }
+  });
+
+  it("keeps past entries even when they no longer fit", () => {
+    const result = check([{ date: "2026-10-03", perShift: 6 }]);
+    expect(result.ok && result.value.reinforcedDates).toEqual([{ date: "2026-10-03", perShift: 6 }]);
+  });
+});
+
+describe("checkPastReinforcedDates", () => {
+  const today = "2026-11-01";
+  const stored = [
+    { date: "2026-10-03", perShift: 3 },
+    { date: "2026-10-17", perShift: 4 },
+    { date: "2026-12-19", perShift: 3 },
+  ];
+
+  it("rejects removing a past entry", () => {
+    expect(checkPastReinforcedDates(stored, [stored[1], stored[2]], today)).toBe("reinforcedDates");
+  });
+
+  it("rejects changing a past entry's size", () => {
+    expect(checkPastReinforcedDates(stored, [{ ...stored[0], perShift: 4 }, stored[1], stored[2]], today)).toBe(
+      "reinforcedDates"
+    );
+  });
+
+  it("rejects adding a past entry", () => {
+    expect(checkPastReinforcedDates(stored, [stored[0], { date: "2026-10-10", perShift: 3 }, stored[1], stored[2]], today)).toBe(
+      "reinforcedDates"
+    );
+  });
+
+  it("accepts unchanged past entries with new or changed future ones", () => {
+    expect(checkPastReinforcedDates(stored, [stored[0], stored[1], { date: "2026-11-01", perShift: 3 }], today)).toBeNull();
   });
 });

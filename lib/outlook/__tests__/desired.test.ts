@@ -1,84 +1,74 @@
 import { describe, expect, it } from "vitest";
-import { desiredEvent, dutyStartsAt, fingerprint, GRAPH_TIME_ZONE, type DutyForSync } from "@/lib/outlook/desired";
-import { addDays } from "@/lib/rotation/dates";
+import { desiredEvents, dutyStartsAt, fingerprint, placeKey, type DutyForSync } from "@/lib/outlook/desired";
 
-const duty = (overrides: Partial<DutyForSync> = {}): DutyForSync => ({
+const duty = (patch: Partial<DutyForSync> = {}): DutyForSync => ({
   shiftId: "s1",
   rotationId: "r1",
+  kind: "duty",
   date: "2026-11-07",
   startTime: "09:30",
   endTime: "15:00",
   isAllDay: false,
   title: "Samstagsdienst",
+  entryTitle: "{Vorname} Dienst",
   holders: [
-    { email: "B@Firma.at", name: "Berta" },
-    { email: "a@firma.at", name: "Anna" },
+    { userId: "u1", email: "G.Maier@example.at", name: "Günther Maier" },
+    { userId: "u2", email: "anna@example.at", name: "Anna Berger" },
   ],
-  ...overrides,
+  ...patch,
 });
 
-describe("desiredEvent", () => {
-  it("builds a wall-clock event in the Vienna zone with sorted, lower-cased attendees", () => {
-    expect(desiredEvent(duty())).toEqual({
-      subject: "Samstagsdienst",
-      start: { dateTime: "2026-11-07T09:30:00", timeZone: GRAPH_TIME_ZONE },
-      end: { dateTime: "2026-11-07T15:00:00", timeZone: GRAPH_TIME_ZONE },
-      isAllDay: false,
-      attendees: [
-        { address: "a@firma.at", name: "Anna" },
-        { address: "b@firma.at", name: "Berta" },
-      ],
-    });
-  });
-
-  it("ends on the next day when the duty runs past midnight", () => {
-    const event = desiredEvent(duty({ startTime: "22:00", endTime: "06:00" }));
-    expect(event.end.dateTime).toBe("2026-11-08T06:00:00");
-  });
-
-  it("treats an end equal to the start as a 24-hour duty like the swap rules", () => {
-    const base = duty();
-    const event = desiredEvent({ ...base, startTime: "08:00", endTime: "08:00" });
-    expect(event.start.dateTime).toBe(`${base.date}T08:00:00`);
-    expect(event.end.dateTime).toBe(`${addDays(base.date, 1)}T08:00:00`);
-  });
-
-  it("spans whole days for all-day duties", () => {
-    const event = desiredEvent(duty({ isAllDay: true, startTime: "00:00", endTime: "23:59" }));
-    expect(event).toMatchObject({
+describe("desiredEvents", () => {
+  it("one all-day free event per holder, only that holder invited", () => {
+    const events = desiredEvents(duty());
+    expect(events.map((e) => e.key)).toEqual(["s1:u1", "s1:u2"]);
+    expect(events[0]).toMatchObject({ shiftId: "s1", userId: "u1", rotationId: "r1", date: "2026-11-07", startTime: "09:30" });
+    expect(events[0].event).toEqual({
+      subject: "Günther Dienst",
+      start: { dateTime: "2026-11-07T00:00:00", timeZone: "W. Europe Standard Time" },
+      end: { dateTime: "2026-11-08T00:00:00", timeZone: "W. Europe Standard Time" },
       isAllDay: true,
-      start: { dateTime: "2026-11-07T00:00:00" },
-      end: { dateTime: "2026-11-08T00:00:00" },
+      showAs: "free",
+      attendees: [{ address: "g.maier@example.at", name: "Günther Maier" }],
+      details: { time: "09:30–15:00", partners: ["Anna Berger"] },
     });
   });
 
-  it("drops holders without an address and duplicates", () => {
-    const event = desiredEvent(
-      duty({ holders: [{ email: null, name: "X" }, { email: "a@firma.at", name: "A" }, { email: " A@firma.at ", name: "A2" }] })
+  it("skips holders without e-mail and duplicate addresses", () => {
+    const events = desiredEvents(
+      duty({
+        holders: [
+          { userId: "u1", email: null, name: "Ohne Mail" },
+          { userId: "u2", email: "a@example.at", name: "A" },
+          { userId: "u3", email: "A@example.at", name: "A2" },
+        ],
+      })
     );
-    expect(event.attendees).toEqual([{ address: "a@firma.at", name: "A" }]);
-  });
-});
-
-describe("fingerprint", () => {
-  it("changes with a holder change but not with holder order or names", () => {
-    const base = fingerprint(desiredEvent(duty()));
-    const reordered = fingerprint(desiredEvent(duty({ holders: [...duty().holders].reverse() })));
-    const renamed = fingerprint(
-      desiredEvent(duty({ holders: [{ email: "a@firma.at", name: "Anni" }, { email: "b@firma.at", name: null }] }))
-    );
-    const swapped = fingerprint(
-      desiredEvent(duty({ holders: [{ email: "a@firma.at", name: "Anna" }, { email: "c@firma.at", name: "Cäsar" }] }))
-    );
-    expect(reordered).toBe(base);
-    expect(renamed).toBe(base);
-    expect(swapped).not.toBe(base);
+    expect(events.map((e) => e.key)).toEqual(["s1:u2"]);
+    expect(events[0].event.details.partners).toEqual(["A2", "Ohne Mail"]);
   });
 
-  it("changes with time and title", () => {
-    const base = fingerprint(desiredEvent(duty()));
-    expect(fingerprint(desiredEvent(duty({ endTime: "16:00" })))).not.toBe(base);
-    expect(fingerprint(desiredEvent(duty({ title: "Andere" })))).not.toBe(base);
+  it("an all-day duty has no time line; a duty past midnight stays on its start day", () => {
+    expect(desiredEvents(duty({ isAllDay: true }))[0].event.details.time).toBeNull();
+    const night = desiredEvents(duty({ startTime: "22:00", endTime: "06:00" }))[0].event;
+    expect([night.start.dateTime, night.end.dateTime]).toEqual(["2026-11-07T00:00:00", "2026-11-08T00:00:00"]);
+    expect(night.details.time).toBe("22:00–06:00");
+  });
+
+  it("a Schließeintrag stays one busy event without attendees, keyed by the shift", () => {
+    const [closure] = desiredEvents(duty({ kind: "closed", isAllDay: true, title: "Geschlossen (Inventur)", holders: [] }));
+    expect(closure.key).toBe(placeKey("s1", null));
+    expect(closure.key).toBe("s1");
+    expect(closure.event).toMatchObject({ subject: "Geschlossen (Inventur)", isAllDay: true, showAs: "busy", attendees: [] });
+  });
+
+  it("fingerprint follows subject, partners and time, not the holder's display name", () => {
+    const base = fingerprint(desiredEvents(duty())[0].event);
+    expect(fingerprint(desiredEvents(duty({ entryTitle: "{Name}" }))[0].event)).not.toBe(base);
+    expect(fingerprint(desiredEvents(duty({ endTime: "16:00" }))[0].event)).not.toBe(base);
+    const renamedPartner = duty();
+    renamedPartner.holders[1] = { ...renamedPartner.holders[1], name: "Anna Huber" };
+    expect(fingerprint(desiredEvents(renamedPartner)[0].event)).not.toBe(base);
   });
 });
 

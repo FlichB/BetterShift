@@ -24,6 +24,8 @@ beforeEach(() => {
     closedTitle: "Geschlossen",
     holidayCalendarId: null,
     holidayOpenDates: [],
+    entryTitle: "{Vorname} Dienst",
+    reinforcedDates: [],
   };
 });
 

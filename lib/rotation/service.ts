@@ -101,7 +101,12 @@ function begunClosures(reader: Tx | typeof db, r: RotationDetail, today: string)
 }
 
 function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date): RotationRule {
-  const holidays = r.holidayCalendarId && to >= r.startDate ? loadHolidays(reader, r.holidayCalendarId, r.startDate, to) : [];
+  // Seat rounds make a duty depend on the sizes of later duties in its round, so a Feiertag
+  // after `to` can still matter. Closures after the last verstärkter Tag cannot change the
+  // size sequence before it, so loading up to there keeps the plan independent of the window.
+  const holidaysTo = r.reinforcedDates.reduce((max, d) => (d.date > max ? d.date : max), to);
+  const holidays =
+    r.holidayCalendarId && to >= r.startDate ? loadHolidays(reader, r.holidayCalendarId, r.startDate, holidaysTo) : [];
   const resolved = resolveClosedDates(r.skipDates, holidays, r.holidayOpenDates);
   // On begun days the written Schließeinträge are authoritative; Ausfalltage and the calendar decide the rest.
   const past = begunClosures(reader, r, formatDateToLocal(now));
@@ -121,6 +126,7 @@ function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date
     weekdays: r.weekdays,
     closedDates,
     openHolidays,
+    reinforcedDates: r.reinforcedDates,
   };
 }
 
@@ -145,6 +151,8 @@ function configValues(input: RotationInput) {
     closedTitle: input.closedTitle,
     holidayCalendarId: input.holidayCalendarId,
     holidayOpenDates: input.holidayOpenDates,
+    entryTitle: input.entryTitle,
+    reinforcedDates: input.reinforcedDates,
   };
 }
 
@@ -377,7 +385,7 @@ export async function runGeneration(
               presetId: loaded.presetId,
               date: parseLocalDate(entry.date),
               ...template,
-              signupCapacity: rotation.perShift,
+              signupCapacity: entry.capacity,
               createdBy: actorId,
               createdAt: now,
               updatedAt: now,
@@ -406,11 +414,13 @@ export async function runGeneration(
           }
           if (entry.fieldsChanged) {
             tx.update(shifts)
-              .set({ ...template, presetId: loaded.presetId, signupCapacity: rotation.perShift, updatedAt: now })
+              .set({ ...template, presetId: loaded.presetId, signupCapacity: entry.capacity, updatedAt: now })
               .where(eq(shifts.id, entry.shiftId))
               .run();
             replaceShiftSegments(tx, entry.shiftId, loaded.segments);
             replaceShiftCustomFieldValues(tx, entry.shiftId, loaded.customFieldValues);
+          } else if (entry.capacityChanged) {
+            tx.update(shifts).set({ signupCapacity: entry.capacity, updatedAt: now }).where(eq(shifts.id, entry.shiftId)).run();
           }
           summary.updated++;
           break;

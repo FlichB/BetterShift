@@ -51,6 +51,8 @@ export interface ShiftWithCalendar {
   externalSyncId?: string | null;
   signupCapacity?: number | null;
   signups?: ShiftSignupUser[];
+  /** [fork] Set only on a rendering copy of a duty: the Platz it stands for (null userId = open Platz). */
+  dutyPlace?: { shiftId: string; userId: string | null };
   /** Additional time ranges beyond startTime/endTime (split shifts). Empty/undefined for a normal shift. */
   segments?: { startTime: string; endTime: string }[];
   /** Values for this calendar's custom fields, keyed by the definition's `key`. Absent when the calendar defines none. */

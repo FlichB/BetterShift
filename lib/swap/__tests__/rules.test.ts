@@ -1,13 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
   checkAccept,
+  checkCounterChoice,
+  checkForce,
   checkOffer,
+  counterCandidates,
+  counterWindowEnd,
   dueStatus,
   dutySpan,
+  forcedDueStatus,
   nextLock,
   overlaps,
   type AcceptCheckInput,
+  type CounterCheckInput,
   type DutyTiming,
+  type ForceCheckInput,
   type SlotView,
 } from "@/lib/swap/rules";
 
@@ -67,7 +74,7 @@ describe("dutySpan", () => {
 
 describe("checkOffer", () => {
   const base = {
-    type: "give" as const,
+    type: "exchange" as const,
     offererId: "A",
     targetUserId: null,
     offered: slot(sat1, ["A", "B"]),
@@ -87,10 +94,14 @@ describe("checkOffer", () => {
     expect(checkOffer({ ...base, targetUserId: "A" })).toBe("invalid");
   });
 
+  it("refuses an Abgabe and a forced offer", () => {
+    expect(checkOffer({ ...base, type: "give" })).toBe("invalid");
+    expect(checkOffer({ ...base, type: "forced" })).toBe("invalid");
+  });
+
   it("checks a concrete counter duty", () => {
     const exchange = { ...base, type: "exchange" as const };
     expect(checkOffer({ ...exchange, requested: slot(sat2, ["C", "D"]) })).toBeNull();
-    expect(checkOffer({ ...base, requested: slot(sat2, ["C", "D"]) })).toBe("invalid");
     expect(checkOffer({ ...exchange, requested: slot(sat1, ["A", "B"]) })).toBe("invalidShift");
     expect(checkOffer({ ...exchange, requested: slot({ ...sat2, calendarId: "other" }, ["C"]) })).toBe("invalidShift");
     expect(checkOffer({ ...exchange, requested: slot(sat2, ["A", "D"]) })).toBe("alreadyOnDuty");
@@ -236,5 +247,115 @@ describe("dueStatus", () => {
 
   it("keeps a broadcast exchange open while someone holds the requested duty", () => {
     expect(dueStatus("A", null, slot(sat1, ["A"]), slot(sat2, ["C"]), "s2", now)).toBeNull();
+  });
+});
+
+describe("counterWindowEnd", () => {
+  it("adds three calendar months and clamps to the month end", () => {
+    expect(counterWindowEnd("2026-11-07")).toBe("2027-02-07");
+    expect(counterWindowEnd("2026-01-31")).toBe("2026-04-30");
+    expect(counterWindowEnd("2026-11-30")).toBe("2027-02-28");
+  });
+});
+
+describe("checkForce", () => {
+  const input = (over: Partial<ForceCheckInput> = {}): ForceCheckInput => ({
+    absentId: "A",
+    substituteId: "C",
+    offered: slot(sat1, ["A", "B"]),
+    substituteDuties: [sat2],
+    now,
+    ...over,
+  });
+
+  it("moves the absent user's Platz to a named Einspringer", () => {
+    expect(checkForce(input())).toEqual({ ok: true, moves: [{ shiftId: "s1", fromUserId: "A", toUserId: "C" }] });
+  });
+
+  it("moves nothing yet when the duty goes to everyone", () => {
+    expect(checkForce(input({ substituteId: null }))).toEqual({ ok: true, moves: [] });
+  });
+
+  it("allows a duty that began today but not one from yesterday", () => {
+    expect(checkForce(input({ now: new Date(2026, 10, 7, 10, 0) })).ok).toBe(true);
+    expect(checkForce(input({ now: new Date(2026, 10, 8, 0, 1) }))).toEqual({ ok: false, error: "alreadyStarted" });
+  });
+
+  it("guards ownership, identity, holders and Doppelbelegung", () => {
+    expect(checkForce(input({ absentId: "X" }))).toEqual({ ok: false, error: "slotNotOwned" });
+    expect(checkForce(input({ substituteId: "A" }))).toEqual({ ok: false, error: "invalid" });
+    expect(checkForce(input({ substituteId: "B" }))).toEqual({ ok: false, error: "alreadyOnDuty" });
+    const clash = duty("x", "2026-11-07", { startTime: "14:00", endTime: "18:00" });
+    expect(checkForce(input({ substituteDuties: [clash] }))).toEqual({ ok: false, error: "doubleBooked" });
+  });
+});
+
+describe("checkAccept for a forced offer", () => {
+  const forced = { type: "forced" as const, status: "open" as const, offeredByUserId: "A", targetUserId: null, requestedShiftId: null };
+
+  it("moves only the offered Platz and refuses a counter duty", () => {
+    expect(checkAccept(accept({ offer: forced }))).toEqual({ ok: true, moves: [{ shiftId: "s1", fromUserId: "A", toUserId: "C" }] });
+    expect(checkAccept(accept({ offer: forced, counter: slot(sat2, ["C"]) }))).toEqual({ ok: false, error: "invalid" });
+  });
+
+  it("stays acceptable on the day of the duty after it began", () => {
+    expect(checkAccept(accept({ offer: forced, now: new Date(2026, 10, 7, 10, 0) })).ok).toBe(true);
+    expect(checkAccept(accept({ offer: forced, now: new Date(2026, 10, 8, 8, 0) }))).toEqual({ ok: false, error: "alreadyStarted" });
+  });
+});
+
+describe("checkCounterChoice", () => {
+  const sat3 = duty("s3", "2027-02-06");
+  const sat4 = duty("s4", "2027-02-13");
+  const input = (over: Partial<CounterCheckInput> = {}): CounterCheckInput => ({
+    offer: { type: "forced", counterStatus: "pending", counterWindowEnd: "2027-02-07", offeredByUserId: "A", acceptedByUserId: "C" },
+    offered: { shiftId: "s1", calendarId: "cal" },
+    chosen: slot(sat2, ["C", "D"]),
+    absentDuties: [],
+    now,
+    ...over,
+  });
+
+  it("hands one of the Einspringer's duties to the absent user", () => {
+    expect(checkCounterChoice(input())).toEqual({ ok: true, moves: [{ shiftId: "s2", fromUserId: "C", toUserId: "A" }] });
+  });
+
+  it("needs a pending Ausgleich on a forced swap", () => {
+    expect(checkCounterChoice(input({ offer: { ...input().offer, counterStatus: "chosen" } }))).toEqual({ ok: false, error: "counterNotDue" });
+    expect(checkCounterChoice(input({ offer: { ...input().offer, type: "exchange" } }))).toEqual({ ok: false, error: "counterNotDue" });
+  });
+
+  it("keeps the counter duty in the window: last day allowed, day after refused", () => {
+    expect(checkCounterChoice(input({ chosen: slot(sat3, ["C"]) })).ok).toBe(true);
+    expect(checkCounterChoice(input({ chosen: slot(sat4, ["C"]) }))).toEqual({ ok: false, error: "outsideWindow" });
+  });
+
+  it("refuses the taken-over duty, other calendars, foreign and started duties", () => {
+    expect(checkCounterChoice(input({ chosen: slot(sat1, ["C", "B"]) }))).toEqual({ ok: false, error: "invalidShift" });
+    expect(checkCounterChoice(input({ chosen: slot(duty("o", "2026-11-14", { calendarId: "other" }), ["C"]) }))).toEqual({ ok: false, error: "invalidShift" });
+    expect(checkCounterChoice(input({ chosen: slot(sat2, ["D"]) }))).toEqual({ ok: false, error: "slotNotOwned" });
+    expect(checkCounterChoice(input({ now: new Date(2026, 10, 14, 10, 0) }))).toEqual({ ok: false, error: "alreadyStarted" });
+  });
+
+  it("prevents a Doppelbelegung for the absent user", () => {
+    expect(checkCounterChoice(input({ chosen: slot(sat2, ["C", "A"]) }))).toEqual({ ok: false, error: "alreadyOnDuty" });
+    const clash = duty("x", "2026-11-14", { startTime: "08:00", endTime: "10:00" });
+    expect(checkCounterChoice(input({ absentDuties: [clash] }))).toEqual({ ok: false, error: "doubleBooked" });
+  });
+
+  it("lists exactly the choosable duties, sorted by date", () => {
+    const base = input();
+    const rest = { offer: base.offer, offered: base.offered, absentDuties: base.absentDuties, now: base.now };
+    const slots = [slot(sat4, ["C"]), slot(sat3, ["C"]), slot(sat2, ["C"]), slot(sat1, ["C"])];
+    expect(counterCandidates({ ...rest, slots }).map((d) => d.shiftId)).toEqual(["s2", "s3"]);
+  });
+});
+
+describe("forcedDueStatus", () => {
+  it("expires after the day of the duty and cancels when the Platz moved", () => {
+    expect(forcedDueStatus("A", slot(sat1, ["A"]), new Date(2026, 10, 7, 14, 0))).toBeNull();
+    expect(forcedDueStatus("A", slot(sat1, ["A"]), new Date(2026, 10, 8, 0, 0))).toBe("expired");
+    expect(forcedDueStatus("A", slot(sat1, ["B"]), now)).toBe("cancelled");
+    expect(forcedDueStatus("A", null, now)).toBe("cancelled");
   });
 });

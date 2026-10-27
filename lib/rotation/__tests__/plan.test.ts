@@ -38,7 +38,7 @@ describe("planGeneration", () => {
       perShift: 2,
       now,
     });
-    expect(plan.entries).toEqual([{ kind: "create", date: "2026-11-07", userIds: ["a", "b"] }]);
+    expect(plan.entries).toEqual([{ kind: "create", date: "2026-11-07", userIds: ["a", "b"], capacity: 2 }]);
     expect(plan.warnings).toEqual([]);
   });
 
@@ -53,7 +53,7 @@ describe("planGeneration", () => {
       now,
     });
     expect(plan.entries).toEqual([
-      { kind: "unchanged", shiftId: "s-2026-11-07", date: "2026-11-07", userIds: ["a", "b"], locked: [] },
+      { kind: "unchanged", shiftId: "s-2026-11-07", date: "2026-11-07", userIds: ["a", "b"], locked: [], capacity: 2 },
     ]);
   });
 
@@ -106,7 +106,7 @@ describe("planGeneration", () => {
       perShift: 2,
       now,
     });
-    expect(plan.entries[0]).toMatchObject({ kind: "update", add: [], remove: [], fieldsChanged: true });
+    expect(plan.entries[0]).toMatchObject({ kind: "update", add: [], remove: [], fieldsChanged: false, capacityChanged: true });
   });
 
   it("flags preset mismatch", () => {
@@ -203,5 +203,39 @@ describe("planGeneration notes", () => {
       now,
     });
     expect(plan.entries[0]).toMatchObject({ kind: "update", add: [], remove: [], fieldsChanged: true });
+  });
+});
+
+describe("capacity per duty", () => {
+  it("creates a verstärkter Dienst with its capacity", () => {
+    const plan = planGeneration({
+      desired: [{ date: "2026-12-19", userIds: ["a", "b", "c"], capacity: 3 }],
+      existing: [],
+      template,
+      presetId: "p1",
+      memberIds: ["a", "b", "c", "d"],
+      perShift: 2,
+      now,
+    });
+    expect(plan.entries).toEqual([{ kind: "create", date: "2026-12-19", userIds: ["a", "b", "c"], capacity: 3 }]);
+  });
+
+  it("updates the capacity when a verstärkter Tag is added to an existing duty", () => {
+    const current = existing("2026-12-19", [slot("a"), slot("b")], { signupCapacity: 2 });
+    const [entry] = planGeneration({ desired: [{ date: "2026-12-19", userIds: ["a", "b", "c"], capacity: 3 }], existing: [current], template, presetId: "p1", memberIds: ["a", "b", "c", "d"], perShift: 2, now }).entries;
+    expect(entry).toMatchObject({ kind: "update", capacity: 3, add: ["c"], remove: [], fieldsChanged: false, capacityChanged: true });
+  });
+
+  it("reports a field change apart from a capacity change", () => {
+    const current = existing("2026-12-19", [slot("a"), slot("b")], { signupCapacity: 2, notes: "old" });
+    const [entry] = planGeneration({ desired: [{ date: "2026-12-19", userIds: ["a", "b"], capacity: 2 }], existing: [current], template, presetId: "p1", memberIds: ["a", "b", "c", "d"], perShift: 2, now }).entries;
+    expect(entry).toMatchObject({ kind: "update", fieldsChanged: true, capacityChanged: false });
+  });
+
+  it("keeps locked Plätze over a shrunk capacity and warns", () => {
+    const current = existing("2026-12-19", ["a", "b", "c"].map((id) => slot(id, true)), { signupCapacity: 3 });
+    const plan = planGeneration({ desired: [{ date: "2026-12-19", userIds: ["a", "b"], capacity: 2 }], existing: [current], template, presetId: "p1", memberIds: ["a", "b", "c", "d"], perShift: 2, now });
+    expect(plan.entries[0]).toMatchObject({ kind: "unchanged", capacity: 3, userIds: ["a", "b", "c"] });
+    expect(plan.warnings).toEqual([{ kind: "lockedOverCapacity", shiftId: current.shiftId, date: "2026-12-19", userIds: ["a", "b", "c"], capacity: 2 }]);
   });
 });

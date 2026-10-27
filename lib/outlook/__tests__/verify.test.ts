@@ -10,9 +10,13 @@ import { FakeGraph } from "@/tests/helpers/fake-graph";
 
 let s: Awaited<ReturnType<typeof seedDuties>>;
 let graph: FakeGraph;
-const sync = () => syncOutlook(graph, now, { bodyHtml: "", cancelComment: "", rotationId: s.rotation.id });
-const eventOf = (date: string) =>
-  db.select().from(outlookEvents).where(eq(outlookEvents.shiftId, s.duty(date))).get()!.eventId!;
+const sync = () => syncOutlook(graph, now, { renderBody: () => "", cancelComment: "", rotationId: s.rotation.id });
+// The event of the first Platz of that day's duty.
+const eventOf = (date: string) => {
+  const shiftId = s.duty(date);
+  const key = `${shiftId}:${s.holders(shiftId)[0]}`;
+  return db.select().from(outlookEvents).where(eq(outlookEvents.eventKey, key)).get()!.eventId!;
+};
 
 beforeEach(async () => {
   s = await seedDuties();
@@ -26,7 +30,7 @@ describe("verifyOutlook", () => {
   it("reports no drift when office@ matches", async () => {
     expect(await verifyOutlook(graph, now, s.rotation.id)).toEqual({ drifted: 0, authError: null });
     expect(graph.calls.every((c) => c.startsWith("get:"))).toBe(true);
-    expect(graph.calls).toHaveLength(8);
+    expect(graph.calls).toHaveLength(16); // 8 duties × 2 Plätze
   });
 
   it("re-creates deleted or cancelled events and patches edited ones", async () => {

@@ -15,3 +15,9 @@ export function useDutyFormat() {
     time: duty.isAllDay ? t("calendarView.allDayShort") : `${duty.startTime}–${duty.endTime}`,
   });
 }
+
+/** A local YYYY-MM-DD as short weekday + date, matching useDutyFormat. */
+export function useLocalDateFormat() {
+  const dateLocale = getDateLocale(useLocale());
+  return (date: string) => format(parseLocalDate(date), "EEE P", { locale: dateLocale });
+}

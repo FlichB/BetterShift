@@ -37,6 +37,8 @@ beforeEach(() => {
     closedTitle: "Geschlossen",
     holidayCalendarId: null,
     holidayOpenDates: [],
+    entryTitle: "{Vorname} Dienst",
+    reinforcedDates: [],
   };
 });
 
@@ -372,4 +374,54 @@ describe("Schließtage", () => {
     // Last entry before 2026-11-15 is the closure; the suggestion must look at the duty of 2026-11-07 (M1, M2).
     expect(suggestOffsetFor(rotation.id, "2026-11-15", team.memberIds)).toBe(2);
   });
+});
+
+it("plans a short window like a long one when a Feiertag after it precedes a verstärkter Tag", async () => {
+  const holidays = seedHolidays(team.ownerId, [{ date: "2026-12-19", title: "Testfeiertag" }]);
+  const rotation = createRotation(
+    { ...input, holidayCalendarId: holidays, reinforcedDates: [{ date: "2026-12-26", perShift: 3 }] },
+    team.ownerId
+  );
+  const pairs = async (to: string) =>
+    (await previewGeneration(rotation.id, "2026-11-02", to, now)).entries
+      .filter((e) => e.date <= "2026-12-12")
+      .map((e) => [e.date, "userIds" in e ? [...e.userIds].sort() : []]);
+  const short = await pairs("2026-12-12");
+  expect(short).toHaveLength(6);
+  expect(short).toEqual(await pairs("2027-01-30"));
+});
+
+it("writes the capacity of a verstärkter Tag into the duty", async () => {
+  const rotation = createRotation({ ...input, reinforcedDates: [{ date: "2026-11-14", perShift: 3 }] }, team.ownerId);
+  await runGeneration(rotation.id, "2026-11-07", "2026-11-21", team.ownerId, now);
+  const capacities = db
+    .select({ date: rotationDuties.date, capacity: shifts.signupCapacity })
+    .from(rotationDuties)
+    .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .where(eq(rotationDuties.rotationId, rotation.id))
+    .all()
+    .sort((a, b) => a.date.localeCompare(b.date));
+  expect(capacities).toEqual([
+    { date: "2026-11-07", capacity: 2 },
+    { date: "2026-11-14", capacity: 3 },
+    { date: "2026-11-21", capacity: 2 },
+  ]);
+});
+
+it("raises the capacity of an existing duty as a capacity change, not a field change", async () => {
+  const rotation = createRotation(input, team.ownerId);
+  await runGeneration(rotation.id, "2026-11-14", "2026-11-14", team.ownerId, now);
+
+  updateRotation(rotation.id, { ...input, reinforcedDates: [{ date: "2026-11-14", perShift: 3 }] });
+  const plan = await previewGeneration(rotation.id, "2026-11-14", "2026-11-14", now);
+  expect(plan.entries[0]).toMatchObject({ kind: "update", capacityChanged: true, fieldsChanged: false });
+
+  await runGeneration(rotation.id, "2026-11-14", "2026-11-14", team.ownerId, now);
+  const duty = db
+    .select({ capacity: shifts.signupCapacity })
+    .from(rotationDuties)
+    .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .where(and(eq(rotationDuties.rotationId, rotation.id), eq(rotationDuties.date, "2026-11-14")))
+    .get();
+  expect(duty).toEqual({ capacity: 3 });
 });

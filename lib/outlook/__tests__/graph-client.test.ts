@@ -18,7 +18,9 @@ const input: EventInput = {
   start: { dateTime: "2026-11-07T09:30:00", timeZone: GRAPH_TIME_ZONE },
   end: { dateTime: "2026-11-07T15:00:00", timeZone: GRAPH_TIME_ZONE },
   isAllDay: false,
+  showAs: "busy",
   attendees: [{ address: "a@firma.at", name: "Anna" }],
+  details: { time: null, partners: [] },
   bodyHtml: "<p>x</p>",
 };
 
@@ -131,6 +133,12 @@ describe("createGraphClient", () => {
     expect(calls[1].url).toBe("https://graph.microsoft.com/v1.0/users/office%40firma.at/events/ev%2F1");
     expect(calls[1].init.method).toBe("PATCH");
     expect(JSON.parse(String(calls[1].init.body))).toMatchObject({ subject: "Samstagsdienst", isAllDay: false });
+  });
+
+  it("sends showAs free for a Platz event", async () => {
+    const { calls, fetchImpl } = fakeFetch([token(), json(201, { id: "ev9" })]);
+    await createGraphClient(config, fetchImpl).createEvent({ ...input, showAs: "free" }, "tx-9");
+    expect(JSON.parse(String(calls[1].init.body))).toMatchObject({ showAs: "free" });
   });
 
   it("cancels an event with the comment in the body", async () => {

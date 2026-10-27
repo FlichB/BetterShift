@@ -35,6 +35,7 @@ const saturdays: RotationRule = {
   weekdays: [6],
   closedDates: [],
   openHolidays: [],
+  reinforcedDates: [],
 };
 
 describe("generateDuties", () => {
@@ -145,9 +146,9 @@ describe("generateDuties", () => {
     const rule: RotationRule = { ...saturdays, closedDates: [{ date: "2026-11-14", reason: "Inventur", source: "skip" }] };
     expect(generateDays(rule, "2026-11-02", "2026-11-28")).toEqual({
       duties: [
-        { date: "2026-11-07", userIds: ["a", "b"] },
-        { date: "2026-11-21", userIds: ["c", "d"] },
-        { date: "2026-11-28", userIds: ["e", "f"] },
+        { date: "2026-11-07", userIds: ["a", "b"], capacity: 2 },
+        { date: "2026-11-21", userIds: ["c", "d"], capacity: 2 },
+        { date: "2026-11-28", userIds: ["e", "f"], capacity: 2 },
       ],
       closures: [{ date: "2026-11-14", reason: "Inventur", source: "skip" }],
     });
@@ -162,14 +163,14 @@ describe("generateDuties", () => {
 
   it("a Schließtag before the window still shifts the Besetzung inside it", () => {
     const closed: RotationRule = { ...saturdays, closedDates: [{ date: "2026-11-07", reason: "Inventur", source: "skip" }] };
-    expect(generateDuties(closed, "2026-11-14", "2026-11-14")).toEqual([{ date: "2026-11-14", userIds: ["a", "b"] }]);
+    expect(generateDuties(closed, "2026-11-14", "2026-11-14")).toEqual([{ date: "2026-11-14", userIds: ["a", "b"], capacity: 2 }]);
     expect(generateDays(closed, "2026-11-14", "2026-11-14").closures).toEqual([]);
   });
 
   it("marks a Geöffneter Feiertag on the duty", () => {
     const rule: RotationRule = { ...saturdays, openHolidays: [{ date: "2029-12-08", name: "Mariä Empfängnis" }], startDate: "2029-12-03" };
     expect(generateDuties(rule, "2029-12-03", "2029-12-09")).toEqual([
-      { date: "2029-12-08", userIds: ["a", "b"], openHoliday: "Mariä Empfängnis" },
+      { date: "2029-12-08", userIds: ["a", "b"], capacity: 2, openHoliday: "Mariä Empfängnis" },
     ]);
   });
 
@@ -185,6 +186,14 @@ describe("generateDuties", () => {
     expect(() => generateDuties({ ...saturdays, memberIds: ["a"] }, "2026-11-02", "2026-11-30")).toThrow(RangeError);
     expect(() =>
       generateDuties({ ...saturdays, period: "days", periodDays: null }, "2026-11-02", "2026-11-30")
+    ).toThrow(RangeError);
+    expect(() => generateDuties({ ...saturdays, weekdays: [0] }, "2026-11-02", "2026-11-30")).toThrow(RangeError);
+    expect(() => generateDuties({ ...saturdays, weekdays: [8] }, "2026-11-02", "2026-11-30")).toThrow(RangeError);
+    expect(() =>
+      generateDuties({ ...saturdays, reinforcedDates: [{ date: "2026-11-14", perShift: 0 }] }, "2026-11-02", "2026-11-30")
+    ).toThrow(RangeError);
+    expect(() =>
+      generateDuties({ ...saturdays, reinforcedDates: [{ date: "2026-11-14", perShift: 2.5 }] }, "2026-11-02", "2026-11-30")
     ).toThrow(RangeError);
   });
 });
@@ -230,5 +239,105 @@ describe("suggestStartOffset", () => {
   it("skips ahead so nobody of the last duty serves the first one again", () => {
     expect(suggestStartOffset(eight, ["a", "h"], 2)).toBe(1); // after h is a → start at b
     expect(suggestStartOffset(eight, ["c", "d"], 2)).toBe(4);
+  });
+});
+
+describe("verstärkte Tage", () => {
+  const count = (duties: { userIds: string[] }[], ids: string[]) => {
+    const counts = new Map(ids.map((id) => [id, 0]));
+    for (const d of duties) for (const u of d.userIds) counts.set(u, counts.get(u)! + 1);
+    return [...counts.values()];
+  };
+  const quarterSpreads = (duties: { date: string; userIds: string[] }[], ids: string[]) => {
+    const byQuarter = new Map<string, { date: string; userIds: string[] }[]>();
+    for (const d of duties) {
+      const q = `${d.date.slice(0, 4)}-${Math.floor((Number(d.date.slice(5, 7)) - 1) / 3)}`;
+      byQuarter.set(q, [...(byQuarter.get(q) ?? []), d]);
+    }
+    return [...byQuarter.values()].map((list) => {
+      const c = count(list, ids);
+      return Math.max(...c) - Math.min(...c);
+    });
+  };
+  const reinforced: RotationRule = { ...saturdays, reinforcedDates: [{ date: "2026-12-19", perShift: 3 }] };
+
+  it("gives the verstärkter Tag its capacity and three different people", () => {
+    const duties = generateDuties(reinforced, "2026-12-12", "2026-12-26");
+    expect(duties.map((d) => [d.date, d.capacity, d.userIds.length])).toEqual([
+      ["2026-12-12", 2, 2],
+      ["2026-12-19", 3, 3],
+      ["2026-12-26", 2, 2],
+    ]);
+    expect(new Set(duties[1].userIds).size).toBe(3);
+  });
+
+  it("counts the Zusatzplatz fully: over the horizon Plätze per person differ by at most 1", () => {
+    const duties = generateDuties(reinforced, "2026-11-02", "2028-12-31");
+    const c = count(duties, eight);
+    expect(Math.max(...c) - Math.min(...c)).toBeLessThanOrEqual(1);
+    for (const d of duties) expect(new Set(d.userIds).size).toBe(d.userIds.length);
+  });
+
+  it("keeps the soft rules with a single verstärkter Tag and stays as fair per quarter as without", () => {
+    const duties = generateDuties(reinforced, "2026-11-02", "2028-12-31");
+    const { minGap, samePartner } = audit(duties.map((d) => d.userIds));
+    expect(minGap).toBeGreaterThanOrEqual(2);
+    expect(samePartner).toBe(0);
+    const withSpread = quarterSpreads(duties, eight);
+    const withoutSpread = quarterSpreads(generateDuties(saturdays, "2026-11-02", "2028-12-31"), eight);
+    expect(Math.max(...withSpread)).toBeLessThanOrEqual(Math.max(...withoutSpread));
+  });
+
+  it("6 Teilnehmer with a verstärkter Tag: at most 1 apart per quarter", () => {
+    const rule: RotationRule = { ...saturdays, memberIds: six, reinforcedDates: [{ date: "2027-02-06", perShift: 3 }] };
+    const duties = generateDuties(rule, "2026-11-02", "2028-12-31");
+    expect(Math.max(...quarterSpreads(duties, six))).toBeLessThanOrEqual(1);
+  });
+
+  it("several verstärkte Tage in a row: never twice in one duty, soft rules may give way", () => {
+    const rule: RotationRule = {
+      ...saturdays,
+      reinforcedDates: [
+        { date: "2026-12-05", perShift: 3 },
+        { date: "2026-12-12", perShift: 3 },
+        { date: "2026-12-19", perShift: 4 },
+      ],
+    };
+    const duties = generateDuties(rule, "2026-11-02", "2027-12-31");
+    for (const d of duties) {
+      expect(d.userIds).toHaveLength(d.capacity!);
+      expect(new Set(d.userIds).size).toBe(d.userIds.length);
+    }
+  });
+
+  it("is independent of the requested window", () => {
+    const full = generateDuties(reinforced, "2026-11-02", "2027-06-30").filter((d) => d.date >= "2026-12-01");
+    expect(generateDuties(reinforced, "2026-12-01", "2027-06-30")).toEqual(full);
+    // A window ending right before the verstärkter Tag must already plan around it.
+    expect(generateDuties(reinforced, "2026-11-02", "2026-12-12")).toEqual(
+      generateDuties(reinforced, "2026-11-02", "2027-06-30").filter((d) => d.date <= "2026-12-12")
+    );
+  });
+
+  it("caps the capacity at the number of Teilnehmer", () => {
+    const [duty] = generateDuties({ ...saturdays, reinforcedDates: [{ date: "2026-12-19", perShift: 12 }] }, "2026-12-19", "2026-12-19");
+    expect(duty.capacity).toBe(8);
+    expect([...duty.userIds].sort()).toEqual(eight);
+  });
+
+  it("ignores a verstärkter Tag on a non-Diensttag, before startDate or on a Schließtag", () => {
+    const rule: RotationRule = {
+      ...saturdays,
+      reinforcedDates: [
+        { date: "2026-12-18", perShift: 3 }, // Friday
+        { date: "2026-10-31", perShift: 3 }, // before startDate
+        { date: "2026-12-26", perShift: 3 }, // closed below
+      ],
+      closedDates: [{ date: "2026-12-26", reason: "Inventur", source: "skip" }],
+    };
+    const days = generateDays(rule, "2026-11-02", "2027-01-31");
+    expect(days.duties.every((d) => d.capacity === 2)).toBe(true);
+    expect(days.duties.map((d) => d.userIds)).toEqual(generateDays({ ...rule, reinforcedDates: [] }, "2026-11-02", "2027-01-31").duties.map((d) => d.userIds));
+    expect(days.closures.map((c) => c.date)).toEqual(["2026-12-26"]);
   });
 });

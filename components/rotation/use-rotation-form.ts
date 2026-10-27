@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import type { RotationDetail } from "@/lib/rotation/service";
-import type { RotationPeriod, SkipDate } from "@/lib/rotation/types";
+import type { ReinforcedDate, RotationPeriod, SkipDate } from "@/lib/rotation/types";
 import type { RotationInput } from "@/lib/rotation/validate";
 import type { RotationCalendar } from "@/hooks/useRotations";
+import { ENTRY_TITLE_DEFAULT } from "@/lib/rotation/entry-title";
 import { formatDateToLocal } from "@/lib/date-utils";
 
 export interface RotationFormState {
@@ -20,6 +21,8 @@ export interface RotationFormState {
   closedTitle: string;
   holidayCalendarId: string | null;
   holidayOpenDates: string[];
+  entryTitle: string;
+  reinforcedDates: ReinforcedDate[];
   memberIds: string[];
 }
 
@@ -45,6 +48,8 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           closedTitle: rotation.closedTitle,
           holidayCalendarId: rotation.holidayCalendarId,
           holidayOpenDates: rotation.holidayOpenDates,
+          entryTitle: rotation.entryTitle,
+          reinforcedDates: rotation.reinforcedDates,
           memberIds: rotation.memberIds,
         }
       : {
@@ -60,6 +65,8 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           closedTitle: defaults.closedTitle,
           holidayCalendarId: null,
           holidayOpenDates: [],
+          entryTitle: ENTRY_TITLE_DEFAULT,
+          reinforcedDates: [],
           memberIds: [],
         }
   );
@@ -97,6 +104,23 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
       state.skipDates.filter((_, i) => i !== index)
     );
 
+  const addReinforcedDate = () => {
+    // A new entry never starts in the past: past entries are frozen once saved.
+    const today = formatDateToLocal(new Date());
+    const date = state.startDate > today ? state.startDate : today;
+    set("reinforcedDates", [...state.reinforcedDates, { date, perShift: state.perShift + 1 }]);
+  };
+  const updateReinforcedDate = (index: number, patch: Partial<ReinforcedDate>) =>
+    set(
+      "reinforcedDates",
+      state.reinforcedDates.map((d, i) => (i === index ? { ...d, ...patch } : d))
+    );
+  const removeReinforcedDate = (index: number) =>
+    set(
+      "reinforcedDates",
+      state.reinforcedDates.filter((_, i) => i !== index)
+    );
+
   const toInput = (): RotationInput => ({
     name: state.name,
     calendarId: calendar.id,
@@ -112,7 +136,21 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
     closedTitle: state.closedTitle,
     holidayCalendarId: state.holidayCalendarId,
     holidayOpenDates: state.holidayOpenDates,
+    entryTitle: state.entryTitle,
+    reinforcedDates: state.reinforcedDates,
   });
 
-  return { state, set, toggleWeekday, addSkipDate, updateSkipDate, removeSkipDate, removeOpenDate, toInput };
+  return {
+    state,
+    set,
+    toggleWeekday,
+    addSkipDate,
+    updateSkipDate,
+    removeSkipDate,
+    addReinforcedDate,
+    updateReinforcedDate,
+    removeReinforcedDate,
+    removeOpenDate,
+    toInput,
+  };
 }
