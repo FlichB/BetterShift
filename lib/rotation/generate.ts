@@ -1,5 +1,5 @@
 import { fromDayNumber, isoWeekday, mondayOf, toDayNumber } from "@/lib/rotation/dates";
-import type { PlannedDuty, RotationRule } from "@/lib/rotation/types";
+import type { PlannedDays, PlannedDuty, RotationRule } from "@/lib/rotation/types";
 
 function assertRule(rule: RotationRule): void {
   if (!Number.isInteger(rule.perShift) || rule.perShift < 1) {
@@ -194,20 +194,21 @@ export function* dutyGroups(rule: RotationRule): Generator<string[]> {
 }
 
 /**
- * Planned duties for every duty day in [from, to] on or after rule.startDate.
- * Duties are counted from startDate so the result for a date never
- * depends on the requested window; a period whose duty days are all
- * Ausfalltage does not consume a number.
+ * Duties and Schließtage for every Diensttag in [from, to] on or after
+ * rule.startDate. Duties are counted from startDate so the result for a date
+ * never depends on the requested window; a Schließtag does not consume a
+ * duty, and a period whose Diensttage are all closed does not consume a number.
  */
-export function generateDuties(rule: RotationRule, from: string, to: string): PlannedDuty[] {
+export function generateDays(rule: RotationRule, from: string, to: string): PlannedDays {
   assertRule(rule);
   const start = toDayNumber(rule.startDate);
   const first = Math.max(start, toDayNumber(from));
   const last = toDayNumber(to);
-  const skip = new Set(rule.skipDates);
+  const closed = new Map(rule.closedDates.map((c) => [c.date, c]));
+  const open = new Map(rule.openHolidays.map((h) => [h.date, h.name]));
   const weekdays = new Set(rule.weekdays);
 
-  const result: PlannedDuty[] = [];
+  const result: PlannedDays = { duties: [], closures: [] };
   const groups = dutyGroups(rule);
   let userIds: string[] = [];
   let currentPeriod: number | null = null;
@@ -215,16 +216,28 @@ export function generateDuties(rule: RotationRule, from: string, to: string): Pl
   for (let day = start; day <= last; day++) {
     if (weekdays.size > 0 && !weekdays.has(isoWeekday(day))) continue;
     const date = fromDayNumber(day);
-    if (skip.has(date)) continue;
+    const closure = closed.get(date);
+    if (closure) {
+      if (day >= first) result.closures.push({ ...closure });
+      continue;
+    }
 
     const period = periodIndex(rule, start, day);
     if (period !== currentPeriod) {
       currentPeriod = period;
       userIds = groups.next().value as string[];
     }
-    if (day >= first) result.push({ date, userIds });
+    if (day >= first) {
+      const openHoliday = open.get(date);
+      result.duties.push(openHoliday ? { date, userIds, openHoliday } : { date, userIds });
+    }
   }
   return result;
+}
+
+/** Only the duties of generateDays(). */
+export function generateDuties(rule: RotationRule, from: string, to: string): PlannedDuty[] {
+  return generateDays(rule, from, to).duties;
 }
 
 /**

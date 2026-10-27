@@ -9,6 +9,7 @@ import {
   replaceShiftCustomFieldValues,
 } from "@/lib/shift-custom-fields";
 import type { TimeRange } from "@/lib/time-ranges";
+import { resolveClosedDates } from "@/lib/rotation/closures";
 import { hasStarted } from "@/lib/rotation/dates";
 import { generateDuties, suggestStartOffset } from "@/lib/rotation/generate";
 import {
@@ -74,6 +75,7 @@ function loadRotation(tx: Tx | typeof db, id: string): RotationDetail {
 }
 
 function toRule(r: RotationDetail): RotationRule {
+  const { closedDates, openHolidays } = resolveClosedDates(r.skipDates, [], r.holidayOpenDates);
   return {
     memberIds: r.memberIds,
     perShift: r.perShift,
@@ -82,7 +84,8 @@ function toRule(r: RotationDetail): RotationRule {
     startDate: r.startDate,
     startOffset: r.startOffset,
     weekdays: r.weekdays,
-    skipDates: r.skipDates.map((s) => s.date),
+    closedDates,
+    openHolidays,
   };
 }
 
