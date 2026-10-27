@@ -58,7 +58,7 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 | Name | Bezeichnung der Rotation (bis 100 Zeichen). |
 | Preset (Titel, Zeit, Farbe) | Das Preset, aus dem jeder Dienst Titel, Zeit und Farbe erhält. |
 | Personen pro Dienst | 1 bis 20. Es braucht mindestens so viele Teilnehmer. |
-| Eintragsvorlage | Der Titel, den jeder Platz im Kalender trägt. Platzhalter: `{Vorname}`, `{Name}` (Nachname) und `{Dienst}` (Titel des Presets). Standard ist `{Vorname} Dienst`, also z. B. „Günther Dienst". `{Vorname}` oder `{Name}` muss vorkommen. Das ⓘ neben dem Feld erklärt die Platzhalter und zeigt eine Vorschau mit echten Teilnehmern. Freie Plätze heißen „Offener Platz". |
+| Eintragsvorlage | Der Titel, den jeder Platz im Kalender trägt. Platzhalter: `{Vorname}`, `{Name}` (Nachname) und `{Dienst}` (Titel des Presets). Standard ist `{Vorname} Dienst`, also z. B. „Günther Dienst". `{Vorname}` oder `{Name}` muss vorkommen. Das ⓘ neben dem Feld erklärt die Platzhalter mit einem Beispiel; unter dem Feld zeigt eine Vorschau den Titel für den ersten Teilnehmer. Die Platzhalter unterscheiden Groß- und Kleinschreibung, jedes andere `{…}` wird abgelehnt. Freie Plätze heißen „Offener Platz". |
 | Periode | „Tag", „Woche (ab Montag)" oder „Eigene Dauer" (dann „Länge in Tagen", 1 bis 365). |
 | Beginn | Erster Tag der ersten Periode. |
 | Beginnt mit | Welcher Teilnehmer in der ersten Periode Dienst hat. „Vorschlag übernehmen" setzt einen passenden Wert. |
@@ -186,7 +186,7 @@ Der Link hat die Form `<BETTER_AUTH_URL>/api/feed/me/<Token>.ics`. Er gilt für 
 - **Ein Link pro Benutzer** über alle Kalender und Rotationen hinweg.
 - Es erscheinen **nur Rotationsdienste, auf denen du aktuell einen eigenen Platz hast**, aus Kalendern, die du sehen darfst. Von Hand angelegte Schichten mit Anmeldungen sind nicht enthalten.
 - Zeitraum: die **letzten 60 Tage** und **alle künftigen** Dienste.
-- Der Kalender heißt „Meine Dienste". Titel und Zeit stammen vom Dienst; die Beschreibung enthält der Reihe nach Notizen und benutzerdefinierte Felder des Dienstes, dann „Mit: …" (die anderen Platzinhaber, entfällt, wenn du allein im Dienst bist) und „Tauschen: `<BETTER_AUTH_URL>`/swaps".
+- Der Kalender heißt „Meine Dienste". Der Titel stammt aus der Eintragsvorlage der Rotation (z. B. „Günther Dienst"), die Zeit ist die echte Dienstzeit; die Beschreibung enthält der Reihe nach Notizen und benutzerdefinierte Felder des Dienstes, dann „Mit: …" (die anderen Platzinhaber, entfällt, wenn du allein im Dienst bist) und „Tauschen: `<BETTER_AUTH_URL>`/swaps".
 - Die festen Texte („Mit", „Tauschen", „Meine Dienste") stehen in `DEFAULT_LOCALE`.
 
 **Neu erzeugen und widerrufen.**

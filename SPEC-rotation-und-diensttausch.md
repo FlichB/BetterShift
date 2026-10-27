@@ -118,7 +118,7 @@ shift_swaps (id, type: 'give' | 'exchange', status: 'open' | 'accepted' | 'decli
 - Auslöser: neues Angebot an alle bzw. an mich, mein Angebot wurde angenommen, Dienst morgen
 - Pro User abschaltbar
 - **Outlook-Integration:** Dienste als iCalendar-Einladungen (REQUEST/CANCEL) per SMTP in die persönlichen Kalender oder per Microsoft Graph (siehe 12.21; Umgebung: Microsoft 365)
-- **Entschieden (2026-10-22, siehe 12.24–12.27):** Microsoft Graph; office@ bleibt Organisator, ein Termin pro Dienst; Angebots-Mails per Graph von office@; keine Mail „Dienst morgen" (Outlook erinnert), kein Web-Push
+- **Entschieden (2026-10-22, siehe 12.24–12.27):** Microsoft Graph; office@ bleibt Organisator, ein Termin pro Dienst *(ersetzt durch 12.32: ein Termin pro Platz)*; Angebots-Mails per Graph von office@; keine Mail „Dienst morgen" (Outlook erinnert), kein Web-Push
 
 ## 8. Umsetzungsphasen
 

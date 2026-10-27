@@ -98,11 +98,11 @@ Die Anmelde-E-Mail eines Benutzers muss seine Microsoft-365-Adresse sein; sie wi
 
 ## Testen
 
-1. **Trockenlauf**: `OUTLOOK_ORGANIZER=office@example.test`, `OUTLOOK_DRY_RUN=true`, `OUTLOOK_SYNC_INTERVAL_SECONDS=15` setzen. Beim Einschalten des Schalters einer Rotation erscheint im Server-Log je künftigem Dienst eine Zeile `[Outlook dry-run] create …` mit den Teilnehmern; Tausch-Aktionen erzeugen `update` bzw. `mail "…"`, Ausschalten `cancel`.
+1. **Trockenlauf**: `OUTLOOK_ORGANIZER=office@example.test`, `OUTLOOK_DRY_RUN=true`, `OUTLOOK_SYNC_INTERVAL_SECONDS=15` setzen. Beim Einschalten des Schalters einer Rotation erscheint im Server-Log je künftigem Platz eine Zeile `[Outlook dry-run] create …` (ganztägig, Status Frei, ein Teilnehmer); ein Tausch erzeugt ein `cancel` an den bisherigen und ein `create` (Einladung) für den neuen Inhaber sowie ein `update` am Termin des Partners (Zeile „Mit: …"), dazu `mail "…"`; Ausschalten erzeugt `cancel`.
 2. **Echt**: Dry-Run abschalten und die vier Pflichtvariablen setzen. Den Schalter für **eine** Rotation aktivieren und prüfen:
-   - Im office@-Kalender steht pro künftigem Dienst ein Termin.
+   - Im office@-Kalender steht pro künftigem Platz ein ganztägiger Termin (Status Frei).
    - Ein Teilnehmer hat die Einladung im Posteingang.
-   - Einen Dienst abgeben und übernehmen lassen: Das Update (neuer Teilnehmer, Absage an den alten) kommt innerhalb etwa einer Minute.
+   - Einen Dienst abgeben und übernehmen lassen: Die Absage an den bisherigen und die Einladung an den neuen Inhaber (plus Aktualisierung des Partner-Termins) kommen innerhalb etwa einer Minute.
    - Ein Angebot erzeugt eine Mail von office@ an die richtigen Empfänger.
    - Eine Rotation ausschalten, deren Dienste noch **keinen Teilnehmer** haben (Absage eines Termins ohne Teilnehmer): Der Termin muss aus dem Kalender verschwinden. Graph lehnt die Absage dafür mit 400 ab; die App löscht ihn dann stattdessen.
 3. Erst danach weitere Rotationen aktivieren.
