@@ -344,6 +344,25 @@ describe("Schließtage", () => {
     expect(on(after, "2026-12-05").userIds).toHaveLength(2);
   });
 
+  it("a begun day keeps its Schließeintrag when the closure is lifted (no duty created, no crash)", async () => {
+    const rotation = createRotation({ ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] }, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    const morning = new Date(2026, 10, 14, 8, 0); // closure has begun, duty start 09:30 not yet
+    updateRotation(rotation.id, input);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, morning);
+    expect(dutiesOf(rotation.id).find((d) => d.date === "2026-11-14")!.kind).toBe("closed");
+  });
+
+  it("a begun day keeps its duty when it becomes closed before the duty starts (no gap)", async () => {
+    const rotation = createRotation(input, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    const before = dutiesOf(rotation.id).find((d) => d.date === "2026-11-14")!;
+    const morning = new Date(2026, 10, 14, 8, 0);
+    updateRotation(rotation.id, { ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] });
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, morning);
+    expect(dutiesOf(rotation.id).find((d) => d.date === "2026-11-14")).toEqual(before);
+  });
+
   it("ignores Schließeinträge when suggesting a restart offset", async () => {
     const rotation = createRotation({ ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] }, team.ownerId);
     await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);

@@ -78,11 +78,12 @@ function loadRotation(tx: Tx | typeof db, id: string): RotationDetail {
 }
 
 /**
- * Schließeinträge this rotation already wrote before today. They keep counting
- * as Schließtage even after their Feiertag left the Feiertagskalender (the sync
- * only keeps a window around now), so the round count of future duties stays put.
+ * Schließeinträge this rotation already wrote up to today (a Schließeintrag has
+ * begun at 00:00). They keep counting as Schließtage even after their Feiertag
+ * left the Feiertagskalender (the sync only keeps a window around now) or the
+ * Ausfalltag was removed, so the round count of future duties stays put.
  */
-function pastClosures(reader: Tx | typeof db, r: RotationDetail, today: string): ClosedDate[] {
+function begunClosures(reader: Tx | typeof db, r: RotationDetail, today: string): ClosedDate[] {
   return reader
     .select({ date: rotationDuties.date, title: shifts.title })
     .from(rotationDuties)
@@ -92,7 +93,7 @@ function pastClosures(reader: Tx | typeof db, r: RotationDetail, today: string):
         eq(rotationDuties.rotationId, r.id),
         eq(rotationDuties.kind, "closed"),
         gte(rotationDuties.date, r.startDate),
-        lt(rotationDuties.date, today)
+        lte(rotationDuties.date, today)
       )
     )
     .all()
@@ -102,8 +103,8 @@ function pastClosures(reader: Tx | typeof db, r: RotationDetail, today: string):
 function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date): RotationRule {
   const holidays = r.holidayCalendarId && to >= r.startDate ? loadHolidays(reader, r.holidayCalendarId, r.startDate, to) : [];
   const resolved = resolveClosedDates(r.skipDates, holidays, r.holidayOpenDates);
-  // Before today the written Schließeinträge are authoritative; the calendar only decides from today on.
-  const past = pastClosures(reader, r, formatDateToLocal(now));
+  // On begun days the written Schließeinträge are authoritative; Ausfalltage and the calendar decide the rest.
+  const past = begunClosures(reader, r, formatDateToLocal(now));
   const pastDates = new Set(past.map((c) => c.date));
   const resolvedDates = new Set(resolved.closedDates.map((c) => c.date));
   const closedDates = [...resolved.closedDates, ...past.filter((c) => !resolvedDates.has(c.date))].sort((a, b) =>
@@ -310,9 +311,15 @@ function buildPlan(
   if (windowStart > to) return { entries: [], warnings: [], closures: [], openHolidays: [] };
   const rule = toRule(tx, rotation, to, now);
   const days = generateDays(rule, windowStart, to);
+  // A day that has begun keeps what it holds: a Schließeintrag can no longer be written there,
+  // so a duty on a newly closed begun day stays instead of leaving a gap. (A begun Schließeintrag
+  // already counts as closed in the rule, so no duty is planned on its date.)
+  const begunClosedDays = new Set(
+    days.closures.filter((c) => hasStarted(c.date, CLOSURE_FIELDS.startTime, now)).map((c) => c.date)
+  );
   const duties = planGeneration({
     desired: days.duties,
-    existing: loadExistingDuties(tx, rotation.id, windowStart, to),
+    existing: loadExistingDuties(tx, rotation.id, windowStart, to).filter((d) => !begunClosedDays.has(d.date)),
     template,
     presetId,
     memberIds: rotation.memberIds,
