@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChoiceChips, Field, inputClass } from "@/components/form-kit";
+import { EntryTitleField } from "@/components/rotation/entry-title-field";
 import { MemberOrderList } from "@/components/rotation/member-order-list";
 import { useRotationForm } from "@/components/rotation/use-rotation-form";
 import { fetchSuggestedOffset, RotationApiError, useSaveRotation, type RotationCalendar } from "@/hooks/useRotations";
@@ -33,6 +34,8 @@ export function RotationForm({
     useRotationForm(calendar, rotation, { closedTitle: t("rotation.fields.closedTitleDefault") });
   const { calendars } = useCalendars();
   const save = useSaveRotation();
+  const firstMember = calendar.members.find((m) => m.id === state.memberIds[0]);
+  const previewHolder = firstMember ? { name: firstMember.name, email: null } : null;
   const [restartDate, setRestartDate] = useState(state.startDate);
 
   const showError = (error: unknown) => {
@@ -204,6 +207,13 @@ export function RotationForm({
           </Button>
         </div>
       </Field>
+
+      <EntryTitleField
+        value={state.entryTitle}
+        onChange={(value) => set("entryTitle", value)}
+        previewHolder={previewHolder}
+        dutyTitle={calendar.presets.find((p) => p.id === state.presetId)?.title ?? ""}
+      />
 
       <Field label={t("rotation.fields.closedTitle")} hint={t("rotation.fields.closedTitleHint")}>
         <Input className={inputClass} maxLength={100} value={state.closedTitle} onChange={(e) => set("closedTitle", e.target.value)} />
