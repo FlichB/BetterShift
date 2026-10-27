@@ -1743,6 +1743,24 @@
       "confirmEveryone": "Der Dienst von {absent} erscheint als „Einspringen gesucht“. Wer übernimmt, bekommt den Platz sofort und wählt danach einen eigenen Dienst der nächsten 3 Monate als Ausgleich."
     }
   },
+  "dayOff": {
+    "errors": {
+      "notFound": "Dieses Dienstfrei gibt es nicht mehr.",
+      "forbidden": "Dafür fehlt dir die Berechtigung.",
+      "invalid": "Die Angaben sind ungültig.",
+      "notHolder": "Das ist nicht dein Dienstfrei.",
+      "wrongStatus": "Das geht in diesem Zustand nicht.",
+      "alreadyStarted": "Dieser Tag hat schon begonnen.",
+      "notWorkday": "Das ist kein Arbeitstag.",
+      "outsideWeek": "Verschieben geht nur innerhalb der Arbeitswoche.",
+      "outsideWindow": "Der Termin liegt mehr als 3 Monate nach dem Dienst.",
+      "taken": "An diesem Tag hast du schon ein Dienstfrei.",
+      "duplicate": "Dieser Termin ist schon vorgeschlagen.",
+      "tooMany": "Zu viele offene Vorschläge.",
+      "reasonRequired": "Bitte gib eine Begründung an.",
+      "proposalNotOpen": "Dieser Vorschlag ist nicht mehr offen."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {

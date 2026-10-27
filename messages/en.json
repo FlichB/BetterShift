@@ -1743,6 +1743,24 @@
       "confirmEveryone": "{absent}'s duty appears as “Cover needed”. Whoever takes it gets the place immediately and then picks one of their own duties in the next 3 months in return."
     }
   },
+  "dayOff": {
+    "errors": {
+      "notFound": "This day off no longer exists.",
+      "forbidden": "You are not allowed to do that.",
+      "invalid": "The input is invalid.",
+      "notHolder": "This is not your day off.",
+      "wrongStatus": "Not possible in this state.",
+      "alreadyStarted": "This day has already begun.",
+      "notWorkday": "That is not a working day.",
+      "outsideWeek": "You can only move it within the work week.",
+      "outsideWindow": "The date is more than 3 months after the duty.",
+      "taken": "You already have a day off on that day.",
+      "duplicate": "This date has already been proposed.",
+      "tooMany": "Too many open proposals.",
+      "reasonRequired": "Please give a reason.",
+      "proposalNotOpen": "This proposal is no longer open."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {

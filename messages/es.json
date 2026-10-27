@@ -1743,6 +1743,24 @@
       "confirmEveryone": "El turno de {absent} aparece como «Se busca suplente». Quien lo asuma recibe el puesto de inmediato y después elige a cambio uno de sus propios turnos de los próximos 3 meses."
     }
   },
+  "dayOff": {
+    "errors": {
+      "notFound": "Este día libre ya no existe.",
+      "forbidden": "No tienes permiso para hacer eso.",
+      "invalid": "Los datos no son válidos.",
+      "notHolder": "Este no es tu día libre.",
+      "wrongStatus": "No es posible en este estado.",
+      "alreadyStarted": "Este día ya ha comenzado.",
+      "notWorkday": "Ese no es un día laborable.",
+      "outsideWeek": "Solo puedes moverlo dentro de la semana laboral.",
+      "outsideWindow": "La fecha es más de 3 meses posterior al servicio.",
+      "taken": "Ya tienes un día libre ese día.",
+      "duplicate": "Esta fecha ya se ha propuesto.",
+      "tooMany": "Demasiadas propuestas abiertas.",
+      "reasonRequired": "Por favor, indica un motivo.",
+      "proposalNotOpen": "Esta propuesta ya no está abierta."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {

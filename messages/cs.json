@@ -1743,6 +1743,24 @@
       "confirmEveryone": "Služba uživatele {absent} se zobrazí jako „Hledá se zástup“. Kdo ji převezme, získá místo okamžitě a poté si jako náhradu vybere jednu vlastní službu z následujících 3 měsíců."
     }
   },
+  "dayOff": {
+    "errors": {
+      "notFound": "Toto volno už neexistuje.",
+      "forbidden": "Nemáš k tomu oprávnění.",
+      "invalid": "Zadané údaje jsou neplatné.",
+      "notHolder": "Toto není tvoje volno.",
+      "wrongStatus": "V tomto stavu to nejde.",
+      "alreadyStarted": "Tento den už začal.",
+      "notWorkday": "To není pracovní den.",
+      "outsideWeek": "Přesunout to jde jen v rámci pracovního týdne.",
+      "outsideWindow": "Termín je více než 3 měsíce po službě.",
+      "taken": "V tento den už máš volno.",
+      "duplicate": "Tento termín už byl navržen.",
+      "tooMany": "Příliš mnoho otevřených návrhů.",
+      "reasonRequired": "Uveď prosím důvod.",
+      "proposalNotOpen": "Tento návrh už není otevřený."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {

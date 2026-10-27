@@ -1743,6 +1743,24 @@
       "confirmEveryone": "Le service de {absent} apparaît comme « Remplaçant recherché ». Celui ou celle qui le prend reçoit la place immédiatement, puis choisit en échange l'un de ses propres services des 3 prochains mois."
     }
   },
+  "dayOff": {
+    "errors": {
+      "notFound": "Ce jour de repos n'existe plus.",
+      "forbidden": "Tu n'as pas la permission de faire cela.",
+      "invalid": "Les informations sont invalides.",
+      "notHolder": "Ce n'est pas ton jour de repos.",
+      "wrongStatus": "Ce n'est pas possible dans cet état.",
+      "alreadyStarted": "Ce jour a déjà commencé.",
+      "notWorkday": "Ce n'est pas un jour ouvré.",
+      "outsideWeek": "Tu ne peux le déplacer que dans la semaine de travail.",
+      "outsideWindow": "La date est plus de 3 mois après le service.",
+      "taken": "Tu as déjà un jour de repos ce jour-là.",
+      "duplicate": "Cette date a déjà été proposée.",
+      "tooMany": "Trop de propositions ouvertes.",
+      "reasonRequired": "Merci d'indiquer un motif.",
+      "proposalNotOpen": "Cette proposition n'est plus ouverte."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {

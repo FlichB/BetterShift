@@ -1743,6 +1743,24 @@
       "confirmEveryone": "Il turno di {absent} compare come «Cercasi sostituto». Chi lo prende riceve subito il posto e poi sceglie in cambio uno dei propri turni dei prossimi 3 mesi."
     }
   },
+  "dayOff": {
+    "errors": {
+      "notFound": "Questo giorno libero non esiste più.",
+      "forbidden": "Non hai il permesso di farlo.",
+      "invalid": "I dati non sono validi.",
+      "notHolder": "Questo non è il tuo giorno libero.",
+      "wrongStatus": "Non è possibile in questo stato.",
+      "alreadyStarted": "Questo giorno è già iniziato.",
+      "notWorkday": "Non è un giorno lavorativo.",
+      "outsideWeek": "Puoi spostarlo solo all'interno della settimana lavorativa.",
+      "outsideWindow": "La data è più di 3 mesi dopo il servizio.",
+      "taken": "Hai già un giorno libero in quel giorno.",
+      "duplicate": "Questa data è già stata proposta.",
+      "tooMany": "Troppe proposte aperte.",
+      "reasonRequired": "Indica un motivo, per favore.",
+      "proposalNotOpen": "Questa proposta non è più aperta."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {
