@@ -64,6 +64,7 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 | Beginnt mit | Welcher Teilnehmer in der ersten Periode Dienst hat. „Vorschlag übernehmen" setzt einen passenden Wert. |
 | Diensttage | Wochentage Mo bis So, an denen in einer Periode tatsächlich Dienst ist („Alle Tage" setzt alle). |
 | Ausfalltage | Einzelne Tage ohne Dienst, jeweils mit Grund. Mit „Ausfalltag hinzufügen“ ergänzen. |
+| Verstärkte Tage | Einzelne Daten, an denen mehr Personen Dienst haben als „Personen pro Dienst" (höchstens so viele wie Teilnehmer). Mit „Verstärkten Tag hinzufügen" ergänzen. |
 | Text bei Schließung | Erscheint an Schließtagen als „Text (Grund)“, z. B. „HeimkinoWelt geschlossen (Inventur)“. |
 | Feiertagskalender | Optional. Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. |
 | Teilnehmer (Reihenfolge) | Die Reihenfolge bestimmt die erste Runde; danach mischt der Generator die Paare selbst. Mit „Nach oben" / „Nach unten" sortieren, mit „Teilnehmer hinzufügen" ergänzen, mit „Entfernen" streichen. |
@@ -71,6 +72,12 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 Beispiel „Samstagsdienst": Periode „Woche (ab Montag)", Diensttag Sa, 2 Personen pro Dienst, 8 Teilnehmer. Jede Person hat dann einmal pro 4 Wochen Dienst. Die erste Runde folgt der Reihenfolge, danach werden die Paare neu gemischt: Niemand hat zwei Samstage hintereinander Dienst, niemand hat zweimal hintereinander denselben Partner, und pro Quartal weicht die Anzahl der Dienste höchstens um 1 ab. Bei wenigen Teilnehmern (z. B. 6) liegt dafür manchmal nur ein freier Samstag zwischen zwei Diensten. Mit „Speichern" wird die Rotation gesichert; erzeugt sind die Dienste damit noch nicht.
 
 Mit dem Feld „Neustart ab Datum" ersetzt du bei einem Teilnehmerwechsel die Reihenfolge ab einem Stichtag: Dienste davor bleiben unverändert (siehe [Generieren](#3-generieren)).
+
+### Verstärkte Tage
+
+An einem **verstärkten Tag** hat ein Dienst mehr Personen als sonst, z. B. 3 statt 2 vor Weihnachten. Trage das Datum und die Personenzahl bei „Verstärkte Tage" ein und generiere neu. Die Zusatzplätze werden reihum besetzt und zählen wie jeder andere Platz; niemand sitzt zweimal im selben Dienst. Dafür dürfen „nie zwei Diensttage in Folge" und „nie derselbe Partner hintereinander" rund um einen verstärkten Tag brechen. Die Vorschau zeigt am Datum „{count} Personen". Jede zusätzliche Person bekommt wie jeder Platz ihren eigenen Eintrag (und bei eingeschaltetem Outlook-Schalter ihren eigenen Termin).
+
+Ein verstärkter Tag verschiebt die späteren, noch nicht getauschten Plätze, genauso wie ein Ausfalltag. Getauschte Plätze bleiben bestehen; sind es mehr als die neue Personenzahl, warnt die Vorschau. Vergangene Einträge bleiben gespeichert und ändern nichts. Fällt das Datum auf einen Schließtag, gilt der Schließtag. Zum Rückgängigmachen entfernst du den Eintrag und generierst den Zeitraum erneut.
 
 ### Feiertage und Schließtage
 

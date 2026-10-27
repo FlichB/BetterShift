@@ -39,6 +39,14 @@ Ein Feiertag, an dem trotzdem Dienst ist.
 Die ganztägige Schicht ohne Plätze, die eine Rotation an einem Schließtag anlegt, z. B. „HeimkinoWelt geschlossen (Mariä Empfängnis)“.
 _Avoid_: Ausfallschicht
 
+**Verstärkter Tag**:
+Ein Diensttag, an dem ein Dienst mehr Plätze hat als „Personen pro Dienst"; die Zusatzplätze werden reihum besetzt und zählen wie jeder andere Platz.
+_Avoid_: Zusatztag, Sondertag
+
+**Zusatzplatz**:
+Ein Platz eines verstärkten Tages über „Personen pro Dienst" hinaus.
+_Avoid_: Extraplatz
+
 **Generieren**:
 Das Erzeugen der Dienste einer Rotation für einen gewählten Zeitraum; Vergangenes und Gesperrtes bleibt dabei unverändert.
 _Avoid_: Planen, Ausrollen
