@@ -1,8 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { generateDuties, seatsFor, suggestStartOffset } from "@/lib/rotation/generate";
+import { dutyGroups, generateDuties, suggestStartOffset } from "@/lib/rotation/generate";
 import type { RotationRule } from "@/lib/rotation/types";
 
 const eight = ["a", "b", "c", "d", "e", "f", "g", "h"];
+const six = eight.slice(0, 6);
+
+/** For every Teilnehmer: gaps between own duties and whether a partner repeated. */
+function audit(groups: string[][]) {
+  const last = new Map<string, number>();
+  const lastGroup = new Map<string, string[]>();
+  const gaps: number[] = [];
+  let samePartner = 0;
+  groups.forEach((group, t) => {
+    for (const u of group) {
+      const prev = last.get(u);
+      if (prev !== undefined) {
+        gaps.push(t - prev);
+        if (group.some((v) => v !== u && lastGroup.get(u)!.includes(v))) samePartner++;
+      }
+      last.set(u, t);
+      lastGroup.set(u, group);
+    }
+  });
+  return { minGap: Math.min(...gaps), samePartner };
+}
 
 const saturdays: RotationRule = {
   memberIds: eight,
@@ -16,14 +37,34 @@ const saturdays: RotationRule = {
 };
 
 describe("generateDuties", () => {
-  it("8 Teilnehmer / 2 pro Dienst / Samstag: jede Person exakt jede 4. Woche", () => {
-    const duties = generateDuties(saturdays, "2026-11-02", "2027-01-31");
-    expect(duties[0]).toEqual({ date: "2026-11-07", userIds: ["a", "b"] });
-    expect(duties[1]).toEqual({ date: "2026-11-14", userIds: ["c", "d"] });
-    expect(duties[4]).toEqual({ date: "2026-12-05", userIds: ["a", "b"] });
-    for (const id of eight) {
-      const weeks = duties.flatMap((d, i) => (d.userIds.includes(id) ? [i] : []));
-      for (let k = 1; k < weeks.length; k++) expect(weeks[k] - weeks[k - 1]).toBe(4);
+  it("8 Teilnehmer / 2 pro Dienst / Samstag: einmal pro Runde, wechselnde Partner, nie zwei Samstage in Folge", () => {
+    const duties = generateDuties(saturdays, "2026-11-02", "2028-12-31");
+    expect(duties.slice(0, 4).map((d) => d.userIds)).toEqual([["a", "b"], ["c", "d"], ["e", "f"], ["g", "h"]]);
+    for (let r = 0; r + 4 <= duties.length; r += 4) {
+      expect(duties.slice(r, r + 4).flatMap((d) => d.userIds).sort()).toEqual(eight);
+    }
+    const { minGap, samePartner } = audit(duties.map((d) => d.userIds));
+    expect(minGap).toBeGreaterThanOrEqual(2);
+    expect(samePartner).toBe(0);
+    expect(new Set(duties.map((d) => d.userIds.join())).size).toBe(28); // every pair comes up
+  });
+
+  it("6 Teilnehmer / 2 pro Dienst: alle 15 Paare in 15 Samstagen, je Quartal höchstens 1 Dienst Unterschied", () => {
+    const rule: RotationRule = { ...saturdays, memberIds: six, startDate: "2027-01-01" };
+    const duties = generateDuties(rule, "2027-01-01", "2029-12-31");
+    expect(new Set(duties.slice(0, 15).map((d) => d.userIds.join())).size).toBe(15);
+    const { minGap, samePartner } = audit(duties.map((d) => d.userIds));
+    expect(minGap).toBeGreaterThanOrEqual(2);
+    expect(samePartner).toBe(0);
+
+    const quarters = new Map<string, string[][]>();
+    for (const d of duties) {
+      const q = `${d.date.slice(0, 4)}-${Math.floor((Number(d.date.slice(5, 7)) - 1) / 3)}`;
+      quarters.set(q, [...(quarters.get(q) ?? []), d.userIds]);
+    }
+    for (const groups of quarters.values()) {
+      const counts = six.map((id) => groups.filter((g) => g.includes(id)).length);
+      expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
     }
   });
 
@@ -76,11 +117,13 @@ describe("generateDuties", () => {
       period: "day",
       weekdays: [1, 2, 3, 4, 5],
     };
-    const duties = generateDuties(rule, "2026-11-06", "2026-11-09");
-    expect(duties).toEqual([
-      { date: "2026-11-06", userIds: ["a", "b"] }, // Fri = duty #4 → (4*2)%8 = 0
-      { date: "2026-11-09", userIds: ["c", "d"] }, // Mon = duty #5
+    const duties = generateDuties(rule, "2026-11-02", "2026-11-09");
+    expect(duties.map((d) => d.date)).toEqual([
+      "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-09",
     ]);
+    expect(duties[3].userIds).toEqual(["g", "h"]);
+    // Fri and Mon are consecutive duties, so nobody serves both
+    expect(duties[4].userIds.some((id) => duties[5].userIds.includes(id))).toBe(false);
   });
 
   it("custom period length in days", () => {
@@ -123,10 +166,28 @@ describe("generateDuties", () => {
   });
 });
 
-describe("seatsFor", () => {
-  it("wraps around the member list", () => {
-    expect(seatsFor(saturdays, 3)).toEqual(["g", "h"]);
-    expect(seatsFor(saturdays, 4)).toEqual(["a", "b"]);
+describe("dutyGroups", () => {
+  it("starts with plain round robin from startOffset", () => {
+    const groups = dutyGroups({ ...saturdays, startOffset: 6 });
+    expect([groups.next().value, groups.next().value]).toEqual([["g", "h"], ["a", "b"]]);
+  });
+
+  it("is deterministic", () => {
+    const take = (n: number) => {
+      const g = dutyGroups(saturdays);
+      return Array.from({ length: n }, () => g.next().value);
+    };
+    expect(take(40)).toEqual(take(40));
+  });
+
+  it("7 Teilnehmer: each serves twice per 7-duty round", () => {
+    const g = dutyGroups({ ...saturdays, memberIds: eight.slice(0, 7) });
+    const groups = Array.from({ length: 70 }, () => g.next().value as string[]);
+    for (let r = 0; r < 70; r += 7) {
+      const seats = groups.slice(r, r + 7).flat();
+      for (const id of eight.slice(0, 7)) expect(seats.filter((s) => s === id)).toHaveLength(2);
+    }
+    expect(audit(groups).minGap).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -141,5 +202,10 @@ describe("suggestStartOffset", () => {
     expect(suggestStartOffset(withoutD, ["c", "d"])).toBe(3); // c is at 2 → next is 3 ("e")
     expect(suggestStartOffset(eight, [])).toBe(0);
     expect(suggestStartOffset(eight, ["x"])).toBe(0);
+  });
+
+  it("skips ahead so nobody of the last duty serves the first one again", () => {
+    expect(suggestStartOffset(eight, ["a", "h"], 2)).toBe(1); // after h is a → start at b
+    expect(suggestStartOffset(eight, ["c", "d"], 2)).toBe(4);
   });
 });

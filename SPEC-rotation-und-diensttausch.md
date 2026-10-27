@@ -58,9 +58,10 @@
 
 ### 5.2 Algorithmus
 
-- Reihum-Verfahren (Round Robin) über die Teilnehmerliste: Dienst Nr. *i* bekommt die Personen an den Positionen `(startOffset + i·perShift + k) mod n` für `k = 0 … perShift−1`
-- Bei 8 Personen und 2 pro Dienst ⇒ jede Person ist **jede 4. Periode** dran
-- Ist `n` nicht durch `perShift` teilbar, läuft die Rotation trotzdem gleichmäßig weiter
+- Dienste laufen in **Runden**, in denen jede Person gleich oft dran ist (bei 8 Personen und 2 pro Dienst: 4 Dienste, jede Person einmal)
+- Die erste Runde ist das Reihum-Verfahren ab `startOffset` (Positionen `(startOffset + i·perShift + k) mod n`)
+- Jede weitere Runde wird neu zusammengestellt (siehe §12, Entscheidung 30): nie zwei Dienste in Folge, nie derselbe Partner wie beim eigenen letzten Dienst, die Paare wechseln durch, und jede Person bleibt nahe an ihrem gleichmäßigen Takt (`n / perShift`), damit die Anzahl pro Quartal höchstens um 1 abweicht
+- Ist `n` nicht durch `perShift` teilbar, ist eine Runde `n / ggT(n, perShift)` Dienste lang
 - Algorithmus als **reine Funktion** ohne DB-Zugriff in `lib/rotation/generate.ts`
 
 ### 5.3 Generieren
@@ -133,7 +134,7 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 
 ## 9. Abnahmekriterien
 
-- [x] Rotation mit 8 Personen / 2 pro Dienst / wöchentlich (Samstag) erzeugt einen Plan, in dem jede Person exakt jede 4. Woche Dienst hat *(Phase 1: Unit-Test + API-Abnahme 2026-10-21)*
+- [x] Rotation mit 8 Personen / 2 pro Dienst / wöchentlich (Samstag) erzeugt einen Plan, in dem jede Person einmal pro 4 Wochen Dienst hat *(Phase 1: Unit-Test + API-Abnahme 2026-10-21; seit 2026-10-27 mit wechselnden Paaren, siehe §12.30)*
 - [x] Erneutes Generieren erzeugt keine Duplikate und überschreibt keine getauschten Plätze *(Phase 1: Duplikate per API geprüft; Sperren per Integrationstest, echte Tausche ab Phase 2)*
 - [x] Mitarbeiter A kann einen Dienst abgeben; B übernimmt; der Kalender zeigt B (spätestens nach 15 s) *(Phase 2: Abgeben/Übernehmen im Dev-Server abgenommen, Kalender-Symbol verschwindet ohne Neuladen, 2026-10-22)*
 - [x] Tausch zweier Dienste funktioniert in einem Schritt und ist atomar *(Phase 2: gezielter Tausch und „Tausch beliebig" per Dev-Server-Abnahme, 2026-10-22)*
@@ -199,3 +200,4 @@ Nach jeder Phase: `npm test`, `npm run build`, kurzer Bericht. Docker-Image baut
 27. **Benachrichtigungen (2026-10-22):** E-Mail per Graph von office@ bei neuem Angebot an alle, Direktanfrage an mich, Annahme bzw. Ablehnung meines Angebots; pro Benutzer und Art abschaltbar auf `/swaps`. Einreihen in derselben Transaktion wie die Tauschaktion (Outbox). Angebote an alle gehen nicht an die aktuellen Inhaber des angebotenen Dienstes, da sie ihn nicht übernehmen können. Design: `docs/superpowers/specs/2026-10-22-phase-3-outlook-benachrichtigungen-design.md`.
 28. **Persönlicher Feed (2026-10-23):** ein Link pro Benutzer über alle Kalender, nur Dienste mit eigenem Platz, 60 Tage Rückblick, Partner („Mit: …") und Tausch-Link in der Beschreibung; Verwaltung auf `/swaps` (Knopf „Kalender-Abo"). Design: `docs/superpowers/specs/2026-10-23-phase-4-feinschliff-feed-design.md`.
 29. **Mobile (2026-10-23):** Bedienelemente der Fork-Seiten nutzen die Upstream-Größe `sm` (32 px); geprüft bei 375 px ohne horizontales Scrollen. Die Vorgabe „≥ 40 px" (§6) wurde bewusst nicht erzwungen, um nah am Upstream-Design zu bleiben.
+30. **Wechselnde Paare (2026-10-27):** Feste Paare sind unerwünscht. Pro Runde hat jede Person gleich oft Dienst; ab der zweiten Runde wird neu gemischt, sodass nie zwei Samstage in Folge und nie zweimal hintereinander mit demselben Partner Dienst ist. Mindestens ein dienstfreier Samstag zwischen zwei Diensten; bei 6 Personen ist der Abstand dadurch zeitweise knapp (2 Wochen), das ist akzeptiert. Pro Kalenderquartal weicht die Anzahl der Dienste höchstens um 1 ab. Deterministisch ab `startDate` gerechnet; Neugenerieren verteilt nicht gesperrte künftige Plätze entsprechend neu.
