@@ -1568,6 +1568,10 @@
       "offersToMeHint": "Quando qualcuno ti chiede direttamente un turno.",
       "myOffers": "Le mie offerte",
       "myOffersHint": "Quando la tua offerta viene accettata, la tua richiesta rifiutata o il tuo turno trasferito.",
+      "myDayOffs": "Il mio giorno libero (blocco, risposte, modifiche)",
+      "myDayOffsHint": "Quando il tuo giorno libero viene bloccato, risolto, reimpostato o annullato.",
+      "dayOffRequests": "Proposte di giorno libero dei partecipanti (gestione)",
+      "dayOffRequestsHint": "Quando i partecipanti propongono date per un giorno libero bloccato o attendono la tua risposta.",
       "notConfigured": "L'invio delle e-mail non è configurato su questo server. La tua scelta varrà non appena lo sarà.",
       "saveFailed": "Impossibile salvare l'impostazione.",
       "loadFailed": "Impossibile caricare le impostazioni."
@@ -1748,7 +1752,15 @@
         "forcedToAll": "Cercasi sostituto: {duty}",
         "forcedToMe": "Sei il sostituto: {duty}",
         "dutyTransferred": "Il tuo turno è stato trasferito: {duty}",
-        "counterChosen": "Turno di compensazione per il tuo turno: {duty}"
+        "counterChosen": "Turno di compensazione per il tuo turno: {duty}",
+        "dayOffLocked": "Il tuo giorno libero è stato bloccato",
+        "dayOffProposed": "Date proposte per un giorno libero",
+        "dayOffCountered": "Controproposta per il tuo giorno libero",
+        "dayOffAccepted": "Giorno libero concordato",
+        "dayOffDeclined": "Proposta rifiutata",
+        "dayOffReset": "Il tuo giorno libero è cambiato",
+        "dayOffDropped": "Il tuo giorno libero è annullato",
+        "dayOffReminder": "Proposte di data in sospeso"
       },
       "lead": {
         "offerToAll": "{name} offre il turno del {duty}.",
@@ -1758,7 +1770,15 @@
         "forcedToAll": "Si cerca qualcuno che copra il turno di {name} del {duty}. Chi lo prende sceglie in cambio uno dei propri turni dei prossimi 3 mesi.",
         "forcedToMe": "{actor} ti ha assegnato come sostituto di {name} il {duty}.",
         "dutyTransferred": "Il tuo turno del {duty} è stato trasferito a {name}.",
-        "counterChosen": "In cambio del tuo turno del {duty}, prendi il turno del {counter}."
+        "counterChosen": "In cambio del tuo turno del {duty}, prendi il turno del {counter}.",
+        "dayOffLocked": "Il tuo giorno libero dopo il turno del {duty} è stato bloccato. Proponi delle date, per favore.",
+        "dayOffProposed": "{holder} propone per il giorno libero dopo il turno del {duty}: {dates}.",
+        "dayOffCountered": "Per il tuo giorno libero dopo il turno del {duty} viene proposto il {date}.",
+        "dayOffAccepted": "Il giorno libero dopo il turno del {duty} è il {date}.",
+        "dayOffDeclined": "La proposta del {date} per il giorno libero dopo il turno del {duty} è stata rifiutata.",
+        "dayOffReset": "Il tuo giorno libero dopo il turno del {duty} non è più valido ed è stato reimpostato.",
+        "dayOffDropped": "Il tuo giorno libero dopo il turno del {duty} è annullato.",
+        "dayOffReminder": "Le proposte di {holder} per il giorno libero dopo il turno del {duty} sono in attesa di risposta da 3 giorni."
       },
       "kind": {
         "give": "Cessione – chi accetta prende il turno.",
@@ -1768,6 +1788,7 @@
       "chooseCounter": "Scegli nella bacheca degli scambi, entro il {end}, uno dei tuoi turni come compensazione.",
       "youGet": "In cambio prendi il turno del {duty}.",
       "note": "Nota: {note}",
+      "reason": "Motivo: {reason}",
       "allDay": "tutto il giorno",
       "button": "Apri la bacheca degli scambi",
       "footer": "Modifica le notifiche",

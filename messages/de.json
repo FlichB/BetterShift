@@ -1568,6 +1568,10 @@
       "offersToMeHint": "Wenn dich jemand gezielt für einen Dienst anfragt.",
       "myOffers": "Meine Angebote",
       "myOffersHint": "Wenn dein Angebot angenommen, deine Anfrage abgelehnt oder dein Dienst übertragen wird.",
+      "myDayOffs": "Mein Dienstfrei (Sperre, Antworten, Änderungen)",
+      "myDayOffsHint": "Wenn dein Dienstfrei gesperrt, beantwortet, zurückgesetzt oder gestrichen wird.",
+      "dayOffRequests": "Dienstfrei-Vorschläge der Teilnehmer (Verwaltung)",
+      "dayOffRequestsHint": "Wenn Teilnehmer Termine für ein gesperrtes Dienstfrei vorschlagen oder darauf warten, dass du antwortest.",
       "notConfigured": "Der E-Mail-Versand ist auf diesem Server nicht eingerichtet. Deine Auswahl gilt, sobald er eingerichtet ist.",
       "saveFailed": "Einstellung konnte nicht gespeichert werden.",
       "loadFailed": "Die Einstellungen konnten nicht geladen werden."
@@ -1748,7 +1752,15 @@
         "forcedToAll": "Einspringer gesucht: {duty}",
         "forcedToMe": "Du springst ein: {duty}",
         "dutyTransferred": "Dein Dienst wurde übertragen: {duty}",
-        "counterChosen": "Ausgleich für deinen Dienst: {duty}"
+        "counterChosen": "Ausgleich für deinen Dienst: {duty}",
+        "dayOffLocked": "Dein Dienstfrei wurde gesperrt",
+        "dayOffProposed": "Terminvorschläge für Dienstfrei",
+        "dayOffCountered": "Gegenvorschlag für dein Dienstfrei",
+        "dayOffAccepted": "Dienstfrei vereinbart",
+        "dayOffDeclined": "Vorschlag abgelehnt",
+        "dayOffReset": "Dein Dienstfrei hat sich geändert",
+        "dayOffDropped": "Dein Dienstfrei entfällt",
+        "dayOffReminder": "Offene Terminvorschläge"
       },
       "lead": {
         "offerToAll": "{name} bietet den Dienst am {duty} an.",
@@ -1758,7 +1770,15 @@
         "forcedToAll": "Für den Dienst am {duty} wird ein Einspringer für {name} gesucht. Wer übernimmt, wählt danach einen eigenen Dienst der nächsten 3 Monate als Ausgleich.",
         "forcedToMe": "{actor} hat dich als Einspringer für {name} am {duty} eingeteilt.",
         "dutyTransferred": "Dein Dienst am {duty} wurde an {name} übertragen.",
-        "counterChosen": "Als Ausgleich für deinen Dienst am {duty} übernimmst du den Dienst am {counter}."
+        "counterChosen": "Als Ausgleich für deinen Dienst am {duty} übernimmst du den Dienst am {counter}.",
+        "dayOffLocked": "Dein Dienstfrei nach dem Dienst am {duty} wurde gesperrt. Schlage bitte Termine vor.",
+        "dayOffProposed": "{holder} schlägt für das Dienstfrei nach dem Dienst am {duty} vor: {dates}.",
+        "dayOffCountered": "Für dein Dienstfrei nach dem Dienst am {duty} wird der {date} vorgeschlagen.",
+        "dayOffAccepted": "Das Dienstfrei nach dem Dienst am {duty} ist am {date}.",
+        "dayOffDeclined": "Der Vorschlag {date} für das Dienstfrei nach dem Dienst am {duty} wurde abgelehnt.",
+        "dayOffReset": "Dein Dienstfrei nach dem Dienst am {duty} ist nicht mehr gültig und wurde zurückgesetzt.",
+        "dayOffDropped": "Dein Dienstfrei nach dem Dienst am {duty} entfällt.",
+        "dayOffReminder": "Die Vorschläge von {holder} für das Dienstfrei nach dem Dienst am {duty} warten seit 3 Tagen auf Antwort."
       },
       "kind": {
         "give": "Abgabe – wer annimmt, übernimmt den Dienst.",
@@ -1768,6 +1788,7 @@
       "chooseCounter": "Wähle auf der Tauschbörse bis {end} einen deiner Dienste als Ausgleich.",
       "youGet": "Du übernimmst im Gegenzug den Dienst am {duty}.",
       "note": "Notiz: {note}",
+      "reason": "Begründung: {reason}",
       "allDay": "ganztägig",
       "button": "Zur Tauschbörse",
       "footer": "Benachrichtigungen ändern",

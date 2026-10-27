@@ -1,6 +1,6 @@
 "use client";
 
-// [fork] Three switches for swap notification mails (spec 12.27), saved on every change.
+// [fork] Five switches for swap notification mails (spec 12.27), saved on every change.
 import { useTranslations } from "next-intl";
 import { MailX } from "lucide-react";
 import { toast } from "sonner";
@@ -61,6 +61,20 @@ export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolea
             description={t("swap.notifications.myOffersHint")}
             checked={data.preferences.myOffers}
             onCheckedChange={change("myOffers")}
+          />
+          <ToggleRow
+            id="notify-my-day-offs"
+            title={t("swap.notifications.myDayOffs")}
+            description={t("swap.notifications.myDayOffsHint")}
+            checked={data.preferences.myDayOffs}
+            onCheckedChange={change("myDayOffs")}
+          />
+          <ToggleRow
+            id="notify-day-off-requests"
+            title={t("swap.notifications.dayOffRequests")}
+            description={t("swap.notifications.dayOffRequestsHint")}
+            checked={data.preferences.dayOffRequests}
+            onCheckedChange={change("dayOffRequests")}
           />
         </div>
       )}

@@ -1568,6 +1568,10 @@
       "offersToMeHint": "Lorsque quelqu'un te demande directement un service.",
       "myOffers": "Mes offres",
       "myOffersHint": "Lorsque ton offre est acceptée, ta demande refusée ou ton service transféré.",
+      "myDayOffs": "Mon jour de repos (verrouillage, réponses, modifications)",
+      "myDayOffsHint": "Quand ton jour de repos est verrouillé, traité, réinitialisé ou annulé.",
+      "dayOffRequests": "Propositions de jour de repos des participants (gestion)",
+      "dayOffRequestsHint": "Quand des participants proposent des dates pour un jour de repos verrouillé ou attendent ta réponse.",
       "notConfigured": "L'envoi d'e-mails n'est pas configuré sur ce serveur. Ton choix s'appliquera dès qu'il le sera.",
       "saveFailed": "Le paramètre n'a pas pu être enregistré.",
       "loadFailed": "Impossible de charger les paramètres."
@@ -1748,7 +1752,15 @@
         "forcedToAll": "Remplaçant recherché : {duty}",
         "forcedToMe": "Tu remplaces : {duty}",
         "dutyTransferred": "Ton service a été transféré : {duty}",
-        "counterChosen": "Service de compensation pour ton service : {duty}"
+        "counterChosen": "Service de compensation pour ton service : {duty}",
+        "dayOffLocked": "Ton jour de repos a été verrouillé",
+        "dayOffProposed": "Dates proposées pour un jour de repos",
+        "dayOffCountered": "Contre-proposition pour ton jour de repos",
+        "dayOffAccepted": "Jour de repos convenu",
+        "dayOffDeclined": "Proposition refusée",
+        "dayOffReset": "Ton jour de repos a changé",
+        "dayOffDropped": "Ton jour de repos est annulé",
+        "dayOffReminder": "Propositions de date en attente"
       },
       "lead": {
         "offerToAll": "{name} propose le service du {duty}.",
@@ -1758,7 +1770,15 @@
         "forcedToAll": "On cherche quelqu'un pour assurer le service de {name} le {duty}. Celui ou celle qui le prend choisit en échange l'un de ses propres services des 3 prochains mois.",
         "forcedToMe": "{actor} t'a désigné comme remplaçant de {name} le {duty}.",
         "dutyTransferred": "Ton service du {duty} a été transféré à {name}.",
-        "counterChosen": "En compensation de ton service du {duty}, tu reprends le service du {counter}."
+        "counterChosen": "En compensation de ton service du {duty}, tu reprends le service du {counter}.",
+        "dayOffLocked": "Ton jour de repos après le service du {duty} a été verrouillé. Propose des dates, s’il te plaît.",
+        "dayOffProposed": "{holder} propose pour le jour de repos après le service du {duty} : {dates}.",
+        "dayOffCountered": "Pour ton jour de repos après le service du {duty}, le {date} est proposé.",
+        "dayOffAccepted": "Le jour de repos après le service du {duty} est le {date}.",
+        "dayOffDeclined": "La proposition du {date} pour le jour de repos après le service du {duty} a été refusée.",
+        "dayOffReset": "Ton jour de repos après le service du {duty} n’est plus valable et a été réinitialisé.",
+        "dayOffDropped": "Ton jour de repos après le service du {duty} est annulé.",
+        "dayOffReminder": "Les propositions de {holder} pour le jour de repos après le service du {duty} attendent une réponse depuis 3 jours."
       },
       "kind": {
         "give": "Cession – celui qui accepte reprend le service.",
@@ -1768,6 +1788,7 @@
       "chooseCounter": "Choisis sur le tableau d'échanges, d'ici le {end}, l'un de tes services en compensation.",
       "youGet": "En échange, tu reprends le service du {duty}.",
       "note": "Note : {note}",
+      "reason": "Motif : {reason}",
       "allDay": "toute la journée",
       "button": "Ouvrir le tableau d'échanges",
       "footer": "Modifier les notifications",

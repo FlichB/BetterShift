@@ -4,7 +4,13 @@ import { db } from "@/lib/db";
 import { notificationPreferences, type NotificationKind } from "@/lib/notify/schema";
 import type { NotificationPreferences } from "@/lib/notify/types";
 
-export const DEFAULT_PREFERENCES: NotificationPreferences = { offersToAll: true, offersToMe: true, myOffers: true };
+export const DEFAULT_PREFERENCES: NotificationPreferences = {
+  offersToAll: true,
+  offersToMe: true,
+  myOffers: true,
+  myDayOffs: true,
+  dayOffRequests: true,
+};
 
 export function preferenceFor(kind: NotificationKind): keyof NotificationPreferences {
   switch (kind) {
@@ -24,7 +30,15 @@ export function preferenceFor(kind: NotificationKind): keyof NotificationPrefere
 
 export function getPreferences(userId: string): NotificationPreferences {
   const row = db.select().from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).get();
-  return row ? { offersToAll: row.offersToAll, offersToMe: row.offersToMe, myOffers: row.myOffers } : { ...DEFAULT_PREFERENCES };
+  return row
+    ? {
+        offersToAll: row.offersToAll,
+        offersToMe: row.offersToMe,
+        myOffers: row.myOffers,
+        myDayOffs: row.myDayOffs,
+        dayOffRequests: row.dayOffRequests,
+      }
+    : { ...DEFAULT_PREFERENCES };
 }
 
 export function setPreferences(userId: string, prefs: NotificationPreferences): NotificationPreferences {
@@ -35,10 +49,11 @@ export function setPreferences(userId: string, prefs: NotificationPreferences): 
   return prefs;
 }
 
-/** Exactly the three boolean switches; anything else is rejected. */
+/** Exactly the five boolean switches; anything else is rejected. */
 export function validatePreferences(body: unknown): NotificationPreferences | null {
   if (typeof body !== "object" || body === null) return null;
-  const { offersToAll, offersToMe, myOffers } = body as Record<string, unknown>;
-  if (typeof offersToAll !== "boolean" || typeof offersToMe !== "boolean" || typeof myOffers !== "boolean") return null;
-  return { offersToAll, offersToMe, myOffers };
+  const { offersToAll, offersToMe, myOffers, myDayOffs, dayOffRequests } = body as Record<string, unknown>;
+  const flags = [offersToAll, offersToMe, myOffers, myDayOffs, dayOffRequests];
+  if (!flags.every((flag) => typeof flag === "boolean")) return null;
+  return { offersToAll, offersToMe, myOffers, myDayOffs, dayOffRequests } as NotificationPreferences;
 }

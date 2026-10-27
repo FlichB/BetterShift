@@ -1568,6 +1568,10 @@
       "offersToMeHint": "When someone asks you directly about a duty.",
       "myOffers": "My offers",
       "myOffersHint": "When your offer is accepted, your request is declined or your duty is handed over.",
+      "myDayOffs": "My day off (lock, answers, changes)",
+      "myDayOffsHint": "When your day off is locked, answered, reset or cancelled.",
+      "dayOffRequests": "Day-off proposals from participants (managers)",
+      "dayOffRequestsHint": "When participants propose dates for a locked day off or are still waiting for your answer.",
       "notConfigured": "Email is not set up on this server. Your choice applies once it is.",
       "saveFailed": "Could not save the setting.",
       "loadFailed": "The settings could not be loaded."
@@ -1748,7 +1752,15 @@
         "forcedToAll": "Cover needed: {duty}",
         "forcedToMe": "You are covering: {duty}",
         "dutyTransferred": "Your duty was handed over: {duty}",
-        "counterChosen": "Counter duty for your duty: {duty}"
+        "counterChosen": "Counter duty for your duty: {duty}",
+        "dayOffLocked": "Your day off was locked",
+        "dayOffProposed": "Proposed dates for a day off",
+        "dayOffCountered": "Counter-proposal for your day off",
+        "dayOffAccepted": "Day off agreed",
+        "dayOffDeclined": "Proposal declined",
+        "dayOffReset": "Your day off changed",
+        "dayOffDropped": "Your day off is cancelled",
+        "dayOffReminder": "Open date proposals"
       },
       "lead": {
         "offerToAll": "{name} is offering the duty on {duty}.",
@@ -1758,7 +1770,15 @@
         "forcedToAll": "Someone is needed to cover {name}'s duty on {duty}. Whoever takes it picks one of their own duties in the next 3 months in return.",
         "forcedToMe": "{actor} assigned you to cover {name} on {duty}.",
         "dutyTransferred": "Your duty on {duty} was handed over to {name}.",
-        "counterChosen": "In return for your duty on {duty}, you take over the duty on {counter}."
+        "counterChosen": "In return for your duty on {duty}, you take over the duty on {counter}.",
+        "dayOffLocked": "Your day off after the duty on {duty} was locked. Please propose dates.",
+        "dayOffProposed": "{holder} proposes for the day off after the duty on {duty}: {dates}.",
+        "dayOffCountered": "For your day off after the duty on {duty}, {date} is proposed.",
+        "dayOffAccepted": "The day off after the duty on {duty} is on {date}.",
+        "dayOffDeclined": "The proposal {date} for the day off after the duty on {duty} was declined.",
+        "dayOffReset": "Your day off after the duty on {duty} is no longer valid and was reset.",
+        "dayOffDropped": "Your day off after the duty on {duty} is cancelled.",
+        "dayOffReminder": "The proposals by {holder} for the day off after the duty on {duty} have been waiting 3 days for an answer."
       },
       "kind": {
         "give": "Hand-over – whoever accepts takes the duty.",
@@ -1768,6 +1788,7 @@
       "chooseCounter": "Pick one of your duties on the swap board by {end} in return.",
       "youGet": "In return you take the duty on {duty}.",
       "note": "Note: {note}",
+      "reason": "Reason: {reason}",
       "allDay": "all day",
       "button": "Open swap board",
       "footer": "Change notifications",

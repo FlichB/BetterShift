@@ -1,6 +1,6 @@
 // [fork] Dienstfrei service (design 4). Every write runs inside the caller's synchronous
 // better-sqlite3 transaction; mails go through the outbox in the same transaction.
-import { and, asc, eq, gte, inArray, ne } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
 import { formatDateToLocal } from "@/lib/date-utils";
@@ -21,7 +21,7 @@ import {
   type RuleResult,
 } from "@/lib/dayoff/rules";
 import { dayOffProposals, dayOffs, type DayOff, type DayOffProposal } from "@/lib/dayoff/schema";
-import type { DayOffBoard, DayOffErrorCode, DayOffView, DropReason, MoveOption } from "@/lib/dayoff/types";
+import { REMINDER_AFTER_DAYS, type DayOffBoard, type DayOffErrorCode, type DayOffView, type DropReason, type MoveOption } from "@/lib/dayoff/types";
 import { counterWindowEnd, type SlotMove } from "@/lib/swap/rules";
 import { loadClosedSet, takenDates, type Tx } from "@/lib/dayoff/workdays";
 import { addDays } from "@/lib/rotation/dates";
@@ -275,6 +275,36 @@ export function reconcileAll(now: Date): void {
     events.push(...db.transaction((tx) => reconcileRotation(tx, id, now)).events);
   }
   logReconcileEventsLater(events);
+}
+
+/**
+ * Open holder proposals older than REMINDER_AFTER_DAYS that were not reminded yet: one
+ * manager reminder per Dienstfrei, then every proposal of the group is marked reminded.
+ */
+export function sendReminders(now: Date): number {
+  const cutoff = new Date(now.getTime() - REMINDER_AFTER_DAYS * 86_400_000);
+  return db.transaction((tx) => {
+    const due = tx
+      .select()
+      .from(dayOffProposals)
+      .where(
+        and(
+          eq(dayOffProposals.side, "holder"),
+          eq(dayOffProposals.status, "open"),
+          isNull(dayOffProposals.remindedAt),
+          lte(dayOffProposals.createdAt, cutoff)
+        )
+      )
+      .orderBy(asc(dayOffProposals.createdAt))
+      .all();
+    const groups = new Map<string, string[]>();
+    for (const p of due) groups.set(p.dayOffId, [...(groups.get(p.dayOffId) ?? []), p.id]);
+    for (const [dayOffId, ids] of groups) {
+      enqueueDayOff(tx, "day_off_reminder", dayOffId, "managers", null, now, ids[0]);
+      tx.update(dayOffProposals).set({ remindedAt: now }).where(inArray(dayOffProposals.id, ids)).run();
+    }
+    return groups.size;
+  });
 }
 
 /** Reconciles the rotation owning a duty shift (after a signup change) and logs the audit events. */

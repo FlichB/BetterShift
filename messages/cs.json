@@ -1568,6 +1568,10 @@
       "offersToMeHint": "Když tě někdo přímo požádá o službu.",
       "myOffers": "Moje nabídky",
       "myOffersHint": "Když je tvoje nabídka přijata, tvoje žádost odmítnuta nebo tvoje služba převedena.",
+      "myDayOffs": "Moje volno (zablokování, odpovědi, změny)",
+      "myDayOffsHint": "Když je tvé volno zablokováno, vyřízeno, obnoveno nebo zrušeno.",
+      "dayOffRequests": "Návrhy volna od účastníků (správa)",
+      "dayOffRequestsHint": "Když účastníci navrhují termíny pro zablokované volno nebo čekají na tvou odpověď.",
       "notConfigured": "Odesílání e-mailů není na tomto serveru nastaveno. Tvoje volba se uplatní, jakmile bude.",
       "saveFailed": "Nastavení se nepodařilo uložit.",
       "loadFailed": "Nastavení se nepodařilo načíst."
@@ -1748,7 +1752,15 @@
         "forcedToAll": "Hledá se zástup: {duty}",
         "forcedToMe": "Zaskakuješ: {duty}",
         "dutyTransferred": "Tvoje služba byla převedena: {duty}",
-        "counterChosen": "Vyrovnání za tvoji službu: {duty}"
+        "counterChosen": "Vyrovnání za tvoji službu: {duty}",
+        "dayOffLocked": "Tvé volno bylo zablokováno",
+        "dayOffProposed": "Navržené termíny volna",
+        "dayOffCountered": "Protinávrh k tvému volnu",
+        "dayOffAccepted": "Volno dohodnuto",
+        "dayOffDeclined": "Návrh zamítnut",
+        "dayOffReset": "Tvé volno se změnilo",
+        "dayOffDropped": "Tvé volno odpadá",
+        "dayOffReminder": "Nevyřízené návrhy termínů"
       },
       "lead": {
         "offerToAll": "{name} nabízí službu dne {duty}.",
@@ -1758,7 +1770,15 @@
         "forcedToAll": "Hledá se někdo, kdo převezme službu {name} dne {duty}. Kdo ji převezme, vybere si na oplátku jednu vlastní službu z následujících 3 měsíců.",
         "forcedToMe": "{actor} tě určil(a) jako zástup za {name} dne {duty}.",
         "dutyTransferred": "Tvoje služba dne {duty} byla převedena na {name}.",
-        "counterChosen": "Jako vyrovnání za tvoji službu dne {duty} přebíráš službu dne {counter}."
+        "counterChosen": "Jako vyrovnání za tvoji službu dne {duty} přebíráš službu dne {counter}.",
+        "dayOffLocked": "Tvé volno po službě dne {duty} bylo zablokováno. Navrhni prosím termíny.",
+        "dayOffProposed": "{holder} navrhuje pro volno po službě dne {duty}: {dates}.",
+        "dayOffCountered": "Pro tvé volno po službě dne {duty} se navrhuje {date}.",
+        "dayOffAccepted": "Volno po službě dne {duty} je {date}.",
+        "dayOffDeclined": "Návrh {date} pro volno po službě dne {duty} byl zamítnut.",
+        "dayOffReset": "Tvé volno po službě dne {duty} už neplatí a bylo obnoveno.",
+        "dayOffDropped": "Tvé volno po službě dne {duty} odpadá.",
+        "dayOffReminder": "Návrhy od {holder} pro volno po službě dne {duty} čekají na odpověď už 3 dny."
       },
       "kind": {
         "give": "Předání – kdo přijme, převezme službu.",
@@ -1768,6 +1788,7 @@
       "chooseCounter": "Vyber si na burze výměn do {end} jednu ze svých služeb jako vyrovnání.",
       "youGet": "Na oplátku přebíráš službu dne {duty}.",
       "note": "Poznámka: {note}",
+      "reason": "Důvod: {reason}",
       "allDay": "celý den",
       "button": "Otevřít burzu výměn",
       "footer": "Změnit upozornění",
