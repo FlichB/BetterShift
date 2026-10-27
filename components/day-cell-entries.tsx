@@ -136,7 +136,7 @@ export function useDayPress(
 export function signupBadgeLabel(shift: ShiftWithCalendar, enabled: boolean): string | null {
   if (!enabled) return null;
   const count = shift.signups?.length ?? 0;
-  const capacity = shift.signupCapacity ?? null;
+  const capacity = shift.signupCapacity || null; // [fork] 0 = Schließeintrag without Plätze: no "0/0" badge
   if (count === 0 && capacity == null) return null;
   return capacity != null ? `${count}/${capacity}` : String(count);
 }
@@ -146,7 +146,7 @@ export function SignupBadge({ shift, enabled }: { shift: ShiftWithCalendar; enab
   const t = useTranslations();
   const text = signupBadgeLabel(shift, enabled);
   if (text === null) return null;
-  const capacity = shift.signupCapacity ?? null;
+  const capacity = shift.signupCapacity || null; // [fork] 0 = Schließeintrag without Plätze: no "0/0" badge
   const label =
     capacity != null
       ? formatSignupCapacityLabel(t, shift.signups?.length ?? 0, capacity)

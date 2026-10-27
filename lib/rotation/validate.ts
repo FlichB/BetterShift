@@ -1,5 +1,5 @@
 import { isValidLocalDate, toDayNumber } from "@/lib/rotation/dates";
-import { ROTATION_PERIODS, type RotationPeriod } from "@/lib/rotation/types";
+import { ROTATION_PERIODS, type RotationPeriod, type SkipDate } from "@/lib/rotation/types";
 
 export interface RotationInput {
   name: string;
@@ -12,7 +12,10 @@ export interface RotationInput {
   startDate: string;
   startOffset: number;
   weekdays: number[];
-  skipDates: string[];
+  skipDates: SkipDate[];
+  closedTitle: string;
+  holidayCalendarId: string | null;
+  holidayOpenDates: string[];
 }
 
 export type RotationValidationError =
@@ -27,6 +30,9 @@ export type RotationValidationError =
   | "startOffset"
   | "weekdays"
   | "skipDates"
+  | "closedTitle"
+  | "holidayCalendar"
+  | "holidayOpenDates"
   | "range";
 
 export type ValidationResult<T> =
@@ -37,6 +43,8 @@ export const MAX_RANGE_DAYS = 366;
 const MAX_NAME = 100;
 const MAX_PER_SHIFT = 20;
 const MAX_PERIOD_DAYS = 365;
+const MAX_REASON = 100;
+const DEFAULT_CLOSED_TITLE = "Geschlossen"; // same as the closed_title column default
 
 const fail = (error: RotationValidationError) => ({ ok: false as const, error });
 const isInt = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v);
@@ -85,9 +93,26 @@ export function validateRotationInput(body: unknown): ValidationResult<RotationI
     return fail("weekdays");
   }
 
-  const skipDates = b.skipDates ?? [];
-  if (!Array.isArray(skipDates) || !skipDates.every((d) => typeof d === "string" && isValidLocalDate(d))) {
-    return fail("skipDates");
+  const rawSkips = b.skipDates ?? [];
+  if (!Array.isArray(rawSkips)) return fail("skipDates");
+  const skipByDate = new Map<string, string>();
+  for (const entry of rawSkips) {
+    if (typeof entry !== "object" || entry === null) return fail("skipDates");
+    const { date, reason } = entry as Record<string, unknown>;
+    if (typeof date !== "string" || !isValidLocalDate(date)) return fail("skipDates");
+    if (!isNonEmptyString(reason) || reason.trim().length > MAX_REASON) return fail("skipDates");
+    skipByDate.set(date, reason.trim()); // the last entry for a date wins
+  }
+
+  const closedTitle = b.closedTitle ?? DEFAULT_CLOSED_TITLE;
+  if (!isNonEmptyString(closedTitle) || closedTitle.trim().length > MAX_NAME) return fail("closedTitle");
+
+  const holidayCalendarId = b.holidayCalendarId ?? null;
+  if (holidayCalendarId !== null && !isNonEmptyString(holidayCalendarId)) return fail("holidayCalendar");
+
+  const holidayOpenDates = b.holidayOpenDates ?? [];
+  if (!Array.isArray(holidayOpenDates) || !holidayOpenDates.every((d) => typeof d === "string" && isValidLocalDate(d))) {
+    return fail("holidayOpenDates");
   }
 
   return {
@@ -103,7 +128,10 @@ export function validateRotationInput(body: unknown): ValidationResult<RotationI
       startDate: b.startDate,
       startOffset,
       weekdays: [...(weekdays as number[])].sort((x, y) => x - y),
-      skipDates: [...new Set(skipDates as string[])].sort(),
+      skipDates: [...skipByDate].map(([date, reason]) => ({ date, reason })).sort((x, y) => x.date.localeCompare(y.date)),
+      closedTitle: closedTitle.trim(),
+      holidayCalendarId,
+      holidayOpenDates: [...new Set(holidayOpenDates as string[])].sort(),
     },
   };
 }

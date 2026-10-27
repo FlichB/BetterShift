@@ -1411,7 +1411,16 @@
       "startOffset": "Beginnt mit",
       "weekdays": "Diensttage",
       "skipDates": "Ausfalltage",
-      "members": "Teilnehmer (Reihenfolge)"
+      "members": "Teilnehmer (Reihenfolge)",
+      "skipReason": "Grund",
+      "closedTitle": "Text bei Schließung",
+      "closedTitleDefault": "Geschlossen",
+      "closedTitleHint": "Erscheint an Schließtagen als „Text (Grund)“, z. B. „Geschlossen (Mariä Empfängnis)“.",
+      "holidayCalendar": "Feiertagskalender",
+      "holidayCalendarNone": "Keiner",
+      "holidayCalendarUnavailable": "Kalender ohne Zugriff",
+      "holidayCalendarHint": "Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. Am besten ein Kalender mit externer Synchronisierung eines Feiertags-Feeds.",
+      "holidayOpenDates": "Geöffnete Feiertage"
     },
     "period": {
       "day": "Tag",
@@ -1462,12 +1471,17 @@
       "fieldsChanged": "Zeit/Titel aus Preset",
       "overwriteNotice": "{count, plural, one {# Platz wird neu besetzt} other {# Plätze werden neu besetzt}}",
       "markSkip": "Fällt aus",
+      "openHoliday": "Feiertag: {name}",
+      "keepOpen": "Trotzdem Dienst",
+      "closeAgain": "Doch schließen",
       "warnings": "Hinweise",
       "warning": {
         "lockedNonMember": "{date}: {user} ist kein Teilnehmer mehr, hat aber einen getauschten Platz.",
         "lockedWithoutDuty": "{date}: Kein Dienst mehr geplant, aber getauschte Plätze vorhanden – der Dienst bleibt bestehen."
       },
-      "unlock": "Sperre aufheben"
+      "unlock": "Sperre aufheben",
+      "skipReason": "Grund des Ausfalls",
+      "skipConfirm": "Ausfall eintragen"
     },
     "outlook": {
       "toggle": "In Outlook (office@) eintragen",
@@ -1499,7 +1513,7 @@
       "startDate": "Datum ungültig.",
       "startOffset": "„Beginnt mit“ ungültig.",
       "weekdays": "Diensttage ungültig.",
-      "skipDates": "Ausfalltage ungültig.",
+      "skipDates": "Ausfalltage ungültig: Jeder braucht ein Datum und einen Grund (max. 100 Zeichen).",
       "range": "Zeitraum ungültig (höchstens 366 Tage).",
       "notFound": "Rotation nicht gefunden.",
       "presetMissing": "Das Preset der Rotation existiert nicht mehr.",
@@ -1508,7 +1522,11 @@
       "forbidden": "Keine Berechtigung.",
       "actor": "Ohne angemeldeten Benutzer kann nicht generiert werden.",
       "locks": "Sperre ungültig.",
-      "internal": "Unerwarteter Fehler."
+      "internal": "Unerwarteter Fehler.",
+      "closedTitle": "Bitte einen Text bei Schließung (max. 100 Zeichen) angeben.",
+      "holidayCalendar": "Feiertagskalender ungültig oder ohne Zugriff.",
+      "holidayCalendarSame": "Der Feiertagskalender muss ein anderer Kalender sein.",
+      "holidayOpenDates": "Geöffnete Feiertage ungültig."
     }
   },
   "swap": {
@@ -1623,6 +1641,7 @@
       "notDirect": "Nur Direktanfragen können abgelehnt werden.",
       "notBroadcast": "Nur Angebote an alle können ausgeblendet werden.",
       "dutySlotSwapOnly": "Plätze von Diensten wechseln nur über die Tauschbörse.",
+      "closedDuty": "An einem Schließtag gibt es keine Plätze.",
       "internal": "Unerwarteter Fehler."
     },
     "retry": "Erneut versuchen",

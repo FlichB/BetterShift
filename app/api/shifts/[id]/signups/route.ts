@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/sessions";
 import { getShiftSignupPermission, hasCapability } from "@/lib/auth/permissions"; // [fork] getShiftSignupPermission
-import { blocksSelfSignup } from "@/lib/swap/guard"; // [fork]
+import { blocksSelfSignup, isClosedDuty } from "@/lib/swap/guard"; // [fork]
 import { addShiftSignup, getShiftOrNull, getShiftSignupUsers } from "@/lib/shift-signups";
 
 // GET all signups for a shift
@@ -61,6 +61,11 @@ export async function POST(
 
     const body = await request.json().catch(() => ({}));
     const targetUserId: string = body.userId || user.id;
+
+    // [fork] Schließeinträge never have Plätze, not even for whoever may sign up others
+    if (isClosedDuty(shiftId)) {
+      return NextResponse.json({ error: "closedDuty" }, { status: 403 });
+    }
 
     // [fork] Duty Plätze change hands via the swap board only (spec 12.18)
     if (blocksSelfSignup(shiftId, user.id, targetUserId, await getShiftSignupPermission(user.id, shift.calendarId))) {

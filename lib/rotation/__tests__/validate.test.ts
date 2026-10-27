@@ -12,7 +12,10 @@ const valid = {
   startDate: "2026-11-02",
   startOffset: 0,
   weekdays: [6],
-  skipDates: ["2026-12-26"],
+  skipDates: [{ date: "2026-12-26", reason: "Inventur" }],
+  closedTitle: "HeimkinoWelt geschlossen",
+  holidayCalendarId: "holidays",
+  holidayOpenDates: ["2026-12-08"],
 };
 
 describe("validateRotationInput", () => {
@@ -22,10 +25,17 @@ describe("validateRotationInput", () => {
   });
 
   it("defaults optional fields", () => {
-    const { startOffset, skipDates, periodDays, ...rest } = valid;
-    void startOffset; void skipDates; void periodDays;
+    const { startOffset, skipDates, periodDays, closedTitle, holidayCalendarId, holidayOpenDates, ...rest } = valid;
+    void startOffset; void skipDates; void periodDays; void closedTitle; void holidayCalendarId; void holidayOpenDates;
     const result = validateRotationInput(rest);
-    expect(result.ok && result.value).toMatchObject({ startOffset: 0, skipDates: [], periodDays: null });
+    expect(result.ok && result.value).toMatchObject({
+      startOffset: 0,
+      skipDates: [],
+      periodDays: null,
+      closedTitle: "Geschlossen",
+      holidayCalendarId: null,
+      holidayOpenDates: [],
+    });
   });
 
   it.each([
@@ -44,9 +54,31 @@ describe("validateRotationInput", () => {
     [{ startOffset: 4 }, "startOffset"],
     [{ weekdays: [0] }, "weekdays"],
     [{ weekdays: [6, 6] }, "weekdays"],
-    [{ skipDates: ["morgen"] }, "skipDates"],
+    [{ skipDates: ["2026-12-26"] }, "skipDates"],
+    [{ skipDates: [{ date: "morgen", reason: "x" }] }, "skipDates"],
+    [{ skipDates: [{ date: "2026-12-26", reason: " " }] }, "skipDates"],
+    [{ skipDates: [{ date: "2026-12-26", reason: "x".repeat(101) }] }, "skipDates"],
+    [{ closedTitle: "" }, "closedTitle"],
+    [{ closedTitle: "x".repeat(101) }, "closedTitle"],
+    [{ holidayCalendarId: 5 }, "holidayCalendar"],
+    [{ holidayOpenDates: ["2026-02-30"] }, "holidayOpenDates"],
   ])("rejects %o with %s", (patch, error) => {
     expect(validateRotationInput({ ...valid, ...patch })).toEqual({ ok: false, error });
+  });
+
+  it("sorts Ausfalltage, trims reasons and keeps the last entry per date", () => {
+    const result = validateRotationInput({
+      ...valid,
+      skipDates: [
+        { date: "2026-12-31", reason: " Silvester " },
+        { date: "2026-12-24", reason: "Heiligabend" },
+        { date: "2026-12-31", reason: "Jahresabschluss" },
+      ],
+    });
+    expect(result.ok && result.value.skipDates).toEqual([
+      { date: "2026-12-24", reason: "Heiligabend" },
+      { date: "2026-12-31", reason: "Jahresabschluss" },
+    ]);
   });
 
   it("ignores periodDays unless period is days", () => {

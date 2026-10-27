@@ -1411,7 +1411,16 @@
       "startOffset": "Začíná s",
       "weekdays": "Dny služeb",
       "skipDates": "Dny bez služby",
-      "members": "Účastníci (pořadí)"
+      "members": "Účastníci (pořadí)",
+      "skipReason": "Důvod",
+      "closedTitle": "Text při zavření",
+      "closedTitleDefault": "Zavřeno",
+      "closedTitleHint": "Ve dnech zavření se zobrazí jako „Text (důvod)“, např. „Zavřeno (Boží hod)“.",
+      "holidayCalendar": "Kalendář svátků",
+      "holidayCalendarNone": "Žádný",
+      "holidayCalendarUnavailable": "Kalendář bez přístupu",
+      "holidayCalendarHint": "Každá položka tohoto kalendáře v den služby tento den uzavře. Nejlépe kalendář synchronizovaný s kanálem svátků.",
+      "holidayOpenDates": "Svátky se službou"
     },
     "period": {
       "day": "Den",
@@ -1462,12 +1471,17 @@
       "fieldsChanged": "Čas/název z předvolby",
       "overwriteNotice": "{count, plural, one {# místo bude obsazeno znovu} few {# místa budou obsazena znovu} many {# místa bude obsazeno znovu} other {# míst bude obsazeno znovu}}",
       "markSkip": "Odpadá",
+      "openHoliday": "Svátek: {name}",
+      "keepOpen": "Přesto služba",
+      "closeAgain": "Přece zavřít",
       "warnings": "Upozornění",
       "warning": {
         "lockedNonMember": "{date}: {user} už není účastník, ale má vyměněné místo.",
         "lockedWithoutDuty": "{date}: Žádná služba už není naplánovaná, ale existují vyměněná místa – služba zůstane."
       },
-      "unlock": "Odstranit zámek"
+      "unlock": "Odstranit zámek",
+      "skipReason": "Důvod zavření",
+      "skipConfirm": "Označit jako zavřeno"
     },
     "outlook": {
       "toggle": "Zapsat do Outlooku (office@)",
@@ -1499,7 +1513,7 @@
       "startDate": "Neplatné datum.",
       "startOffset": "Neplatné „Začíná s“.",
       "weekdays": "Neplatné dny služeb.",
-      "skipDates": "Neplatné dny bez služby.",
+      "skipDates": "Neplatné dny zavření: každý potřebuje datum a důvod (max. 100 znaků).",
       "range": "Neplatné období (nejvýše 366 dní).",
       "notFound": "Rotace nenalezena.",
       "presetMissing": "Předvolba rotace již neexistuje.",
@@ -1508,7 +1522,11 @@
       "forbidden": "Nemáš oprávnění.",
       "actor": "Bez přihlášeného uživatele nelze generovat.",
       "locks": "Neplatný zámek.",
-      "internal": "Neočekávaná chyba."
+      "internal": "Neočekávaná chyba.",
+      "closedTitle": "Zadej text pro dny zavření (max. 100 znaků).",
+      "holidayCalendar": "Kalendář svátků je neplatný nebo nepřístupný.",
+      "holidayCalendarSame": "Kalendář svátků musí být jiný kalendář.",
+      "holidayOpenDates": "Neplatné svátky se službou."
     }
   },
   "swap": {
@@ -1623,6 +1641,7 @@
       "notDirect": "Odmítnout lze jen přímé žádosti.",
       "notBroadcast": "Skrýt lze jen nabídky určené všem.",
       "dutySlotSwapOnly": "Místa ve službách se předávají jen přes burzu výměn.",
+      "closedDuty": "V den zavření nejsou žádná místa.",
       "internal": "Neočekávaná chyba."
     },
     "retry": "Zkusit znovu",

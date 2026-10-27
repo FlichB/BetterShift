@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dutyGroups, generateDuties, suggestStartOffset } from "@/lib/rotation/generate";
+import { dutyGroups, generateDays, generateDuties, suggestStartOffset } from "@/lib/rotation/generate";
 import type { RotationRule } from "@/lib/rotation/types";
 
 const eight = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -33,7 +33,8 @@ const saturdays: RotationRule = {
   startDate: "2026-11-02",
   startOffset: 0,
   weekdays: [6],
-  skipDates: [],
+  closedDates: [],
+  openHolidays: [],
 };
 
 describe("generateDuties", () => {
@@ -140,13 +141,35 @@ describe("generateDuties", () => {
     ]);
   });
 
-  it("Ausfalltag: the pair moves to the next Saturday", () => {
-    const rule: RotationRule = { ...saturdays, skipDates: ["2026-11-14"] };
-    const duties = generateDuties(rule, "2026-11-02", "2026-11-28");
-    expect(duties).toEqual([
-      { date: "2026-11-07", userIds: ["a", "b"] },
-      { date: "2026-11-21", userIds: ["c", "d"] },
-      { date: "2026-11-28", userIds: ["e", "f"] },
+  it("Schließtag: the pair moves to the next Saturday and the day becomes a closure", () => {
+    const rule: RotationRule = { ...saturdays, closedDates: [{ date: "2026-11-14", reason: "Inventur", source: "skip" }] };
+    expect(generateDays(rule, "2026-11-02", "2026-11-28")).toEqual({
+      duties: [
+        { date: "2026-11-07", userIds: ["a", "b"] },
+        { date: "2026-11-21", userIds: ["c", "d"] },
+        { date: "2026-11-28", userIds: ["e", "f"] },
+      ],
+      closures: [{ date: "2026-11-14", reason: "Inventur", source: "skip" }],
+    });
+  });
+
+  it("ignores a Feiertag on a weekday that is no Diensttag", () => {
+    const rule: RotationRule = { ...saturdays, closedDates: [{ date: "2026-12-08", reason: "Mariä Empfängnis", source: "holiday" }] };
+    const days = generateDays(rule, "2026-12-01", "2026-12-13");
+    expect(days.closures).toEqual([]);
+    expect(days.duties.map((d) => d.date)).toEqual(["2026-12-05", "2026-12-12"]);
+  });
+
+  it("a Schließtag before the window still shifts the Besetzung inside it", () => {
+    const closed: RotationRule = { ...saturdays, closedDates: [{ date: "2026-11-07", reason: "Inventur", source: "skip" }] };
+    expect(generateDuties(closed, "2026-11-14", "2026-11-14")).toEqual([{ date: "2026-11-14", userIds: ["a", "b"] }]);
+    expect(generateDays(closed, "2026-11-14", "2026-11-14").closures).toEqual([]);
+  });
+
+  it("marks a Geöffneter Feiertag on the duty", () => {
+    const rule: RotationRule = { ...saturdays, openHolidays: [{ date: "2029-12-08", name: "Mariä Empfängnis" }], startDate: "2029-12-03" };
+    expect(generateDuties(rule, "2029-12-03", "2029-12-09")).toEqual([
+      { date: "2029-12-08", userIds: ["a", "b"], openHoliday: "Mariä Empfängnis" },
     ]);
   });
 

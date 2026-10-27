@@ -18,7 +18,8 @@ export type SwapErrorCode =
   | "duplicateOffer"
   | "notDirect"
   | "notBroadcast"
-  | "dutySlotSwapOnly";
+  | "dutySlotSwapOnly"
+  | "closedDuty";
 
 export interface DutyInfo {
   shiftId: string;

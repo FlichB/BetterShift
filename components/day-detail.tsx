@@ -44,7 +44,7 @@ function ShiftSignupBadge({
 }) {
   const t = useTranslations();
   const signups = shift.signups ?? [];
-  const capacity = shift.signupCapacity ?? null;
+  const capacity = shift.signupCapacity || null; // [fork] 0 = Schließeintrag without Plätze: no "0/0" badge
   if (!signupsEnabled || (signups.length === 0 && capacity == null)) return null;
 
   const visible = signups.slice(0, 3);

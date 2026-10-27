@@ -1411,7 +1411,16 @@
       "startOffset": "Starts with",
       "weekdays": "Duty days",
       "skipDates": "Skipped days",
-      "members": "Participants (order)"
+      "members": "Participants (order)",
+      "skipReason": "Reason",
+      "closedTitle": "Text when closed",
+      "closedTitleDefault": "Closed",
+      "closedTitleHint": "Shown on closure days as \"Text (reason)\", e.g. \"Closed (Christmas Day)\".",
+      "holidayCalendar": "Holiday calendar",
+      "holidayCalendarNone": "None",
+      "holidayCalendarUnavailable": "Calendar without access",
+      "holidayCalendarHint": "Every entry of this calendar on a duty day closes that day. Best use a calendar that syncs a public-holiday feed.",
+      "holidayOpenDates": "Holidays with duty"
     },
     "period": {
       "day": "Day",
@@ -1462,12 +1471,17 @@
       "fieldsChanged": "Time/title from preset",
       "overwriteNotice": "{count, plural, one {# slot will be reassigned} other {# slots will be reassigned}}",
       "markSkip": "Skipped",
+      "openHoliday": "Holiday: {name}",
+      "keepOpen": "Duty anyway",
+      "closeAgain": "Close after all",
       "warnings": "Notes",
       "warning": {
         "lockedNonMember": "{date}: {user} is no longer a participant but has a swapped slot.",
         "lockedWithoutDuty": "{date}: No duty planned any more, but swapped slots exist – the duty stays."
       },
-      "unlock": "Remove lock"
+      "unlock": "Remove lock",
+      "skipReason": "Reason for closing",
+      "skipConfirm": "Mark as closed"
     },
     "outlook": {
       "toggle": "Add to Outlook (office@)",
@@ -1499,7 +1513,7 @@
       "startDate": "Invalid date.",
       "startOffset": "Invalid \"Starts with\".",
       "weekdays": "Invalid duty days.",
-      "skipDates": "Invalid skipped days.",
+      "skipDates": "Invalid closure days: each needs a date and a reason (max. 100 characters).",
       "range": "Invalid range (at most 366 days).",
       "notFound": "Rotation not found.",
       "presetMissing": "The rotation's preset no longer exists.",
@@ -1508,7 +1522,11 @@
       "forbidden": "Not permitted.",
       "actor": "Cannot generate without a signed-in user.",
       "locks": "Invalid lock.",
-      "internal": "Unexpected error."
+      "internal": "Unexpected error.",
+      "closedTitle": "Please enter a text for closure days (max. 100 characters).",
+      "holidayCalendar": "Holiday calendar invalid or not accessible.",
+      "holidayCalendarSame": "The holiday calendar must be a different calendar.",
+      "holidayOpenDates": "Invalid holidays with duty."
     }
   },
   "swap": {
@@ -1623,6 +1641,7 @@
       "notDirect": "Only direct requests can be declined.",
       "notBroadcast": "Only offers to everyone can be hidden.",
       "dutySlotSwapOnly": "Places on duties change hands only through the swap board.",
+      "closedDuty": "There are no places on a closure day.",
       "internal": "Unexpected error."
     },
     "retry": "Try again",

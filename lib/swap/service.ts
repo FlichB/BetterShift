@@ -50,7 +50,7 @@ export function loadSlot(tx: Reader, shiftId: string): SlotView | null {
     .select(dutyColumns)
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
-    .where(eq(rotationDuties.shiftId, shiftId))
+    .where(and(eq(rotationDuties.shiftId, shiftId), eq(rotationDuties.kind, "duty")))
     .get();
   if (!duty) return null;
   const holderIds = tx
@@ -69,7 +69,7 @@ export function dutiesOf(tx: Reader, userId: string): DutyTiming[] {
     .from(shiftSignups)
     .innerJoin(rotationDuties, eq(rotationDuties.shiftId, shiftSignups.shiftId))
     .innerJoin(shifts, eq(shifts.id, shiftSignups.shiftId))
-    .where(eq(shiftSignups.userId, userId))
+    .where(and(eq(shiftSignups.userId, userId), eq(rotationDuties.kind, "duty")))
     .all();
 }
 
@@ -389,7 +389,7 @@ export function listDuties(calendarId: string, userId: string, now: Date): DutyL
     .select(dutyColumns)
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
-    .where(eq(shifts.calendarId, calendarId))
+    .where(and(eq(shifts.calendarId, calendarId), eq(rotationDuties.kind, "duty")))
     .all()
     .filter((d) => !hasStarted(d.date, d.startTime, now))
     .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
@@ -423,7 +423,7 @@ export function calendarState(calendarId: string, now: Date): CalendarSwapState 
     .select({ shiftId: rotationDuties.shiftId })
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
-    .where(eq(shifts.calendarId, calendarId))
+    .where(and(eq(shifts.calendarId, calendarId), eq(rotationDuties.kind, "duty")))
     .all()
     .map((d) => d.shiftId);
   const openOfferShiftIds = db

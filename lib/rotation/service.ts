@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, lt, lte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendars, shiftPresets, shiftSignups, shifts } from "@/lib/db/schema";
-import { parseLocalDate } from "@/lib/date-utils";
+import { formatDateToLocal, parseLocalDate } from "@/lib/date-utils";
 import { replaceShiftSegments, withPresetSegments } from "@/lib/shift-time-ranges";
 import {
   readPresetCustomFieldValues,
@@ -9,11 +9,15 @@ import {
   replaceShiftCustomFieldValues,
 } from "@/lib/shift-custom-fields";
 import type { TimeRange } from "@/lib/time-ranges";
+import { CLOSURE_FIELDS, resolveClosedDates } from "@/lib/rotation/closures";
 import { hasStarted } from "@/lib/rotation/dates";
-import { generateDuties, suggestStartOffset } from "@/lib/rotation/generate";
+import { generateDays, suggestStartOffset } from "@/lib/rotation/generate";
+import { loadHolidays } from "@/lib/rotation/holidays";
 import {
+  planClosures,
   planGeneration,
   type DutyTemplate,
+  type ExistingClosure,
   type ExistingDuty,
   type GenerationPlan,
 } from "@/lib/rotation/plan";
@@ -24,7 +28,7 @@ import {
   rotations,
   type Rotation,
 } from "@/lib/rotation/schema";
-import type { RotationRule } from "@/lib/rotation/types";
+import type { ClosedDate, RotationRule } from "@/lib/rotation/types";
 import type { RotationInput } from "@/lib/rotation/validate";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -73,7 +77,40 @@ function loadRotation(tx: Tx | typeof db, id: string): RotationDetail {
   return withMembers(tx, rotation);
 }
 
-function toRule(r: RotationDetail): RotationRule {
+/**
+ * Schließeinträge this rotation already wrote up to today (a Schließeintrag has
+ * begun at 00:00). They keep counting as Schließtage even after their Feiertag
+ * left the Feiertagskalender (the sync only keeps a window around now) or the
+ * Ausfalltag was removed, so the round count of future duties stays put.
+ */
+function begunClosures(reader: Tx | typeof db, r: RotationDetail, today: string): ClosedDate[] {
+  return reader
+    .select({ date: rotationDuties.date, title: shifts.title })
+    .from(rotationDuties)
+    .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .where(
+      and(
+        eq(rotationDuties.rotationId, r.id),
+        eq(rotationDuties.kind, "closed"),
+        gte(rotationDuties.date, r.startDate),
+        lte(rotationDuties.date, today)
+      )
+    )
+    .all()
+    .map((row) => ({ date: row.date, reason: row.title, source: "holiday" }));
+}
+
+function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date): RotationRule {
+  const holidays = r.holidayCalendarId && to >= r.startDate ? loadHolidays(reader, r.holidayCalendarId, r.startDate, to) : [];
+  const resolved = resolveClosedDates(r.skipDates, holidays, r.holidayOpenDates);
+  // On begun days the written Schließeinträge are authoritative; Ausfalltage and the calendar decide the rest.
+  const past = begunClosures(reader, r, formatDateToLocal(now));
+  const pastDates = new Set(past.map((c) => c.date));
+  const resolvedDates = new Set(resolved.closedDates.map((c) => c.date));
+  const closedDates = [...resolved.closedDates, ...past.filter((c) => !resolvedDates.has(c.date))].sort((a, b) =>
+    a.date.localeCompare(b.date)
+  );
+  const openHolidays = resolved.openHolidays.filter((h) => !pastDates.has(h.date));
   return {
     memberIds: r.memberIds,
     perShift: r.perShift,
@@ -82,7 +119,8 @@ function toRule(r: RotationDetail): RotationRule {
     startDate: r.startDate,
     startOffset: r.startOffset,
     weekdays: r.weekdays,
-    skipDates: r.skipDates,
+    closedDates,
+    openHolidays,
   };
 }
 
@@ -104,6 +142,9 @@ function configValues(input: RotationInput) {
     startOffset: input.startOffset,
     weekdays: input.weekdays,
     skipDates: input.skipDates,
+    closedTitle: input.closedTitle,
+    holidayCalendarId: input.holidayCalendarId,
+    holidayOpenDates: input.holidayOpenDates,
   };
 }
 
@@ -166,7 +207,12 @@ function loadExistingDuties(tx: Tx, rotationId: string, from: string, to: string
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
     .where(
-      and(eq(rotationDuties.rotationId, rotationId), gte(rotationDuties.date, from), lte(rotationDuties.date, to))
+      and(
+        eq(rotationDuties.rotationId, rotationId),
+        eq(rotationDuties.kind, "duty"),
+        gte(rotationDuties.date, from),
+        lte(rotationDuties.date, to)
+      )
     )
     .all();
   if (rows.length === 0) return [];
@@ -197,6 +243,33 @@ function loadExistingDuties(tx: Tx, rotationId: string, from: string, to: string
   }));
 }
 
+function loadExistingClosures(tx: Tx, rotationId: string, from: string, to: string): ExistingClosure[] {
+  return tx
+    .select({
+      shiftId: rotationDuties.shiftId,
+      date: rotationDuties.date,
+      presetId: shifts.presetId,
+      signupCapacity: shifts.signupCapacity,
+      title: shifts.title,
+      startTime: shifts.startTime,
+      endTime: shifts.endTime,
+      color: shifts.color,
+      isAllDay: shifts.isAllDay,
+      notes: shifts.notes,
+    })
+    .from(rotationDuties)
+    .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .where(
+      and(
+        eq(rotationDuties.rotationId, rotationId),
+        eq(rotationDuties.kind, "closed"),
+        gte(rotationDuties.date, from),
+        lte(rotationDuties.date, to)
+      )
+    )
+    .all();
+}
+
 async function loadTemplate(rotation: RotationDetail): Promise<LoadedTemplate> {
   if (!rotation.presetId) throw new RotationServiceError("presetMissing");
   const preset = db.select().from(shiftPresets).where(eq(shiftPresets.id, rotation.presetId)).get();
@@ -224,19 +297,44 @@ async function loadTemplate(rotation: RotationDetail): Promise<LoadedTemplate> {
   };
 }
 
-function buildPlan(tx: Tx, rotation: RotationDetail, from: string, to: string, template: DutyTemplate, presetId: string, now: Date) {
+function buildPlan(
+  tx: Tx,
+  rotation: RotationDetail,
+  from: string,
+  to: string,
+  template: DutyTemplate,
+  presetId: string,
+  now: Date
+): GenerationPlan {
   // Duties before startDate belong to an earlier configuration and are left alone.
   const windowStart = from > rotation.startDate ? from : rotation.startDate;
-  if (windowStart > to) return { entries: [], warnings: [] };
-  return planGeneration({
-    desired: generateDuties(toRule(rotation), windowStart, to),
-    existing: loadExistingDuties(tx, rotation.id, windowStart, to),
+  if (windowStart > to) return { entries: [], warnings: [], closures: [], openHolidays: [] };
+  const rule = toRule(tx, rotation, to, now);
+  const days = generateDays(rule, windowStart, to);
+  // A day that has begun keeps what it holds: a Schließeintrag can no longer be written there,
+  // so a duty on a newly closed begun day stays instead of leaving a gap. (A begun Schließeintrag
+  // already counts as closed in the rule, so no duty is planned on its date.)
+  const begunClosedDays = new Set(
+    days.closures.filter((c) => hasStarted(c.date, CLOSURE_FIELDS.startTime, now)).map((c) => c.date)
+  );
+  const duties = planGeneration({
+    desired: days.duties,
+    existing: loadExistingDuties(tx, rotation.id, windowStart, to).filter((d) => !begunClosedDays.has(d.date)),
     template,
     presetId,
     memberIds: rotation.memberIds,
     perShift: rotation.perShift,
     now,
   });
+  const closures = planClosures({
+    desired: days.closures,
+    existing: loadExistingClosures(tx, rotation.id, windowStart, to),
+    closedTitle: rotation.closedTitle,
+    blockedDates: duties.warnings.filter((w) => w.kind === "lockedWithoutDuty").map((w) => w.date),
+    now,
+  });
+  const openHolidays = rule.openHolidays.filter((h) => h.date >= windowStart && h.date <= to);
+  return { ...duties, closures, openHolidays };
 }
 
 export async function previewGeneration(id: string, from: string, to: string, now: Date): Promise<GenerationPlan> {
@@ -260,6 +358,14 @@ export async function runGeneration(
     if (rotation.presetId !== loaded.presetId) throw new RotationServiceError("presetMissing");
     const plan = buildPlan(tx, rotation, from, to, template, loaded.presetId, now);
     const summary: GenerationSummary = { created: 0, updated: 0, deleted: 0, unchanged: 0, warnings: plan.warnings.length };
+
+    // Write order matters: the unique (rotation_id, date) index must never see two rows for one date.
+    // (1) closure deletes, (2) duties, (3) closure creates/updates.
+    for (const entry of plan.closures) {
+      if (entry.kind !== "delete") continue;
+      tx.delete(shifts).where(eq(shifts.id, entry.shiftId)).run();
+      summary.deleted++;
+    }
 
     for (const entry of plan.entries) {
       switch (entry.kind) {
@@ -318,6 +424,42 @@ export async function runGeneration(
           break;
       }
     }
+
+    for (const entry of plan.closures) {
+      switch (entry.kind) {
+        case "create": {
+          const shift = tx
+            .insert(shifts)
+            .values({
+              calendarId: rotation.calendarId,
+              presetId: null,
+              date: parseLocalDate(entry.date),
+              ...CLOSURE_FIELDS,
+              title: entry.title,
+              signupCapacity: 0,
+              createdBy: actorId,
+              createdAt: now,
+              updatedAt: now,
+            })
+            .returning()
+            .get();
+          tx.insert(rotationDuties).values({ shiftId: shift.id, rotationId: rotation.id, date: entry.date, kind: "closed" }).run();
+          summary.created++;
+          break;
+        }
+        case "update":
+          tx.update(shifts)
+            .set({ ...CLOSURE_FIELDS, title: entry.title, presetId: null, signupCapacity: 0, updatedAt: now })
+            .where(eq(shifts.id, entry.shiftId))
+            .run();
+          replaceShiftSegments(tx, entry.shiftId, []);
+          summary.updated++;
+          break;
+        case "unchanged":
+          summary.unchanged++;
+          break;
+      }
+    }
     return summary;
   });
 }
@@ -327,7 +469,7 @@ export function suggestOffsetFor(id: string, restartDate: string, memberIds: str
   const last = db
     .select({ shiftId: rotationDuties.shiftId })
     .from(rotationDuties)
-    .where(and(eq(rotationDuties.rotationId, id), lt(rotationDuties.date, restartDate)))
+    .where(and(eq(rotationDuties.rotationId, id), eq(rotationDuties.kind, "duty"), lt(rotationDuties.date, restartDate)))
     .orderBy(desc(rotationDuties.date))
     .limit(1)
     .get();
@@ -349,17 +491,23 @@ export function deleteRotation(
   return db.transaction((tx) => {
     let deletedDuties = 0;
     if (deleteFutureDuties) {
-      const duties = tx
-        .select({ shiftId: rotationDuties.shiftId, date: rotationDuties.date, startTime: shifts.startTime })
+      const entries = tx
+        .select({
+          shiftId: rotationDuties.shiftId,
+          date: rotationDuties.date,
+          kind: rotationDuties.kind,
+          startTime: shifts.startTime,
+        })
         .from(rotationDuties)
         .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
         .where(eq(rotationDuties.rotationId, id))
         .all()
         .filter((d) => !hasStarted(d.date, d.startTime, now));
-      if (duties.length > 0) {
-        tx.delete(shifts).where(inArray(shifts.id, duties.map((d) => d.shiftId))).run();
+      if (entries.length > 0) {
+        tx.delete(shifts).where(inArray(shifts.id, entries.map((d) => d.shiftId))).run();
       }
-      deletedDuties = duties.length;
+      // Schließeinträge go too, but only duties are reported.
+      deletedDuties = entries.filter((d) => d.kind === "duty").length;
     }
     // Remaining (past) shifts stay as plain shifts once their rotation_duties rows cascade away.
     const removed = tx.delete(rotations).where(eq(rotations.id, id)).returning().all();

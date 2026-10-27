@@ -1411,7 +1411,16 @@
       "startOffset": "Empieza con",
       "weekdays": "Días de turno",
       "skipDates": "Días sin servicio",
-      "members": "Participantes (orden)"
+      "members": "Participantes (orden)",
+      "skipReason": "Motivo",
+      "closedTitle": "Texto si está cerrado",
+      "closedTitleDefault": "Cerrado",
+      "closedTitleHint": "Aparece en los días de cierre como «Texto (motivo)», p. ej. «Cerrado (Navidad)».",
+      "holidayCalendar": "Calendario de festivos",
+      "holidayCalendarNone": "Ninguno",
+      "holidayCalendarUnavailable": "Calendario sin acceso",
+      "holidayCalendarHint": "Cada entrada de este calendario en un día de servicio cierra ese día. Lo mejor es un calendario que sincronice un feed de festivos.",
+      "holidayOpenDates": "Festivos con servicio"
     },
     "period": {
       "day": "Día",
@@ -1462,12 +1471,17 @@
       "fieldsChanged": "Hora/título del preajuste",
       "overwriteNotice": "{count, plural, one {# plaza se reasignará} other {# plazas se reasignarán}}",
       "markSkip": "No hay servicio",
+      "openHoliday": "Festivo: {name}",
+      "keepOpen": "Servicio igualmente",
+      "closeAgain": "Volver a cerrar",
       "warnings": "Avisos",
       "warning": {
         "lockedNonMember": "{date}: {user} ya no participa, pero tiene una plaza intercambiada.",
         "lockedWithoutDuty": "{date}: Ya no hay ningún turno previsto, pero existen plazas intercambiadas: el turno se mantiene."
       },
-      "unlock": "Quitar bloqueo"
+      "unlock": "Quitar bloqueo",
+      "skipReason": "Motivo del cierre",
+      "skipConfirm": "Marcar como cerrado"
     },
     "outlook": {
       "toggle": "Añadir a Outlook (office@)",
@@ -1499,7 +1513,7 @@
       "startDate": "Fecha no válida.",
       "startOffset": "“Empieza con” no válido.",
       "weekdays": "Días de turno no válidos.",
-      "skipDates": "Días sin servicio no válidos.",
+      "skipDates": "Días de cierre no válidos: cada uno necesita fecha y motivo (máx. 100 caracteres).",
       "range": "Intervalo no válido (máximo 366 días).",
       "notFound": "Rotación no encontrada.",
       "presetMissing": "El preajuste de la rotación ya no existe.",
@@ -1508,7 +1522,11 @@
       "forbidden": "Sin permiso.",
       "actor": "No se puede generar sin un usuario con sesión iniciada.",
       "locks": "Bloqueo no válido.",
-      "internal": "Error inesperado."
+      "internal": "Error inesperado.",
+      "closedTitle": "Indica un texto para los días de cierre (máx. 100 caracteres).",
+      "holidayCalendar": "Calendario de festivos no válido o sin acceso.",
+      "holidayCalendarSame": "El calendario de festivos debe ser otro calendario.",
+      "holidayOpenDates": "Festivos con servicio no válidos."
     }
   },
   "swap": {
@@ -1623,6 +1641,7 @@
       "notDirect": "Solo se pueden rechazar solicitudes directas.",
       "notBroadcast": "Solo se pueden ocultar las ofertas dirigidas a todos.",
       "dutySlotSwapOnly": "Las plazas de los turnos solo cambian de manos a través de la bolsa de cambios.",
+      "closedDuty": "En un día de cierre no hay plazas.",
       "internal": "Error inesperado."
     },
     "retry": "Reintentar",

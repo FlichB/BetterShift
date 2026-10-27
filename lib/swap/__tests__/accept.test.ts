@@ -108,6 +108,9 @@ describe("acceptOffer", () => {
         startOffset: 0,
         weekdays: [6],
         skipDates: [],
+        closedTitle: "Geschlossen",
+        holidayCalendarId: null,
+        holidayOpenDates: [],
       },
       s.team.ownerId
     );

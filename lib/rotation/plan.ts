@@ -1,5 +1,6 @@
 import { hasStarted } from "@/lib/rotation/dates";
-import type { PlannedDuty } from "@/lib/rotation/types";
+import { CLOSURE_FIELDS, closureTitle } from "@/lib/rotation/closures";
+import type { ClosedDate, ClosureSource, Holiday, PlannedDuty } from "@/lib/rotation/types";
 
 export interface DutyTemplate {
   title: string;
@@ -44,9 +45,27 @@ export type PlanWarning =
   | { kind: "lockedNonMember"; shiftId: string; date: string; userId: string }
   | { kind: "lockedWithoutDuty"; shiftId: string; date: string; userIds: string[] };
 
-export interface GenerationPlan {
+export interface ExistingClosure extends DutyTemplate {
+  shiftId: string;
+  date: string;
+  presetId: string | null;
+  signupCapacity: number | null;
+}
+
+export type ClosureEntry =
+  | { kind: "create"; date: string; title: string; source: ClosureSource }
+  | { kind: "update"; shiftId: string; date: string; title: string; source: ClosureSource }
+  | { kind: "unchanged"; shiftId: string; date: string; title: string; source: ClosureSource }
+  | { kind: "delete"; shiftId: string; date: string; title: string };
+
+export interface DutyPlan {
   entries: PlanEntry[];
   warnings: PlanWarning[];
+}
+
+export interface GenerationPlan extends DutyPlan {
+  closures: ClosureEntry[];
+  openHolidays: Holiday[];
 }
 
 export interface PlanInput {
@@ -72,7 +91,7 @@ function fieldsDiffer(a: DutyTemplate, b: DutyTemplate): boolean {
 }
 
 /** Diffs planned against stored duties; never plans anything for a started duty. */
-export function planGeneration(input: PlanInput): GenerationPlan {
+export function planGeneration(input: PlanInput): DutyPlan {
   const { desired, template, presetId, memberIds, perShift, now } = input;
   const members = new Set(memberIds);
   const existingByDate = new Map(input.existing.map((e) => [e.date, e]));
@@ -146,4 +165,41 @@ export function planGeneration(input: PlanInput): GenerationPlan {
   entries.sort((a, b) => a.date.localeCompare(b.date));
   warnings.sort((a, b) => a.date.localeCompare(b.date));
   return { entries, warnings };
+}
+
+export interface ClosurePlanInput {
+  desired: ClosedDate[];
+  existing: ExistingClosure[];
+  closedTitle: string;
+  /** Dates whose duty stays because of locked Plätze; no Schließeintrag there. */
+  blockedDates: string[];
+  now: Date;
+}
+
+/** Diffs planned against stored Schließeinträge; never plans anything for a started day. */
+export function planClosures(input: ClosurePlanInput): ClosureEntry[] {
+  const blocked = new Set(input.blockedDates);
+  const existingByDate = new Map(input.existing.map((e) => [e.date, e]));
+  const entries: ClosureEntry[] = [];
+  const target: DutyTemplate = { ...CLOSURE_FIELDS, title: "" };
+
+  for (const closure of input.desired) {
+    const current = existingByDate.get(closure.date);
+    existingByDate.delete(closure.date);
+    if (hasStarted(closure.date, CLOSURE_FIELDS.startTime, input.now) || blocked.has(closure.date)) continue;
+    const title = closureTitle(input.closedTitle, closure.reason);
+    if (!current) {
+      entries.push({ kind: "create", date: closure.date, title, source: closure.source });
+      continue;
+    }
+    const changed =
+      fieldsDiffer(current, { ...target, title }) || current.presetId !== null || current.signupCapacity !== 0;
+    entries.push({ kind: changed ? "update" : "unchanged", shiftId: current.shiftId, date: closure.date, title, source: closure.source });
+  }
+
+  for (const current of existingByDate.values()) {
+    if (hasStarted(current.date, current.startTime, input.now)) continue;
+    entries.push({ kind: "delete", shiftId: current.shiftId, date: current.date, title: current.title });
+  }
+  return entries.sort((a, b) => a.date.localeCompare(b.date));
 }
