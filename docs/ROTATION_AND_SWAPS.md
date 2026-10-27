@@ -85,6 +85,10 @@ Fällt ein Feiertag auf einen Diensttag, steht in der Vorschau „<Text bei Schl
 
 Der 24. und 31. Dezember sind keine gesetzlichen Feiertage und fehlen im Feed. Wenn du dort schließt, trage sie als Ausfalltag mit Grund ein. Ein Ausfalltag hat Vorrang vor einem Feiertag am selben Tag.
 
+Der Feiertagskalender enthält nur, was die Synchronisierung gerade vorhält: etwa 3 Monate zurück bis 1 Jahr nach dem letzten Sync. Generierst du weit in die Zukunft, synchronisiere den Kalender vorher, bevor du auf „Übernehmen“ klickst; sonst fehlen späte Feiertage, und diese Tage werden als normale Dienste geplant.
+
+Vergangene Schließtage zählen weiter, auch wenn ihr Feiertag später aus dem Feiertagskalender verschwindet (weil die Synchronisierung alte Termine entfernt, du ihn von Hand löschst oder den Feiertagskalender abwählst). Die künftige Besetzung verschiebt sich dadurch nicht. Für künftige Tage entscheidet weiter der Kalender. Löschst du dagegen einen vergangenen Schließeintrag von Hand im Teamkalender, zählt dieser Tag nur noch als Schließtag, solange er als Ausfalltag eingetragen ist oder im Feiertagskalender steht; sonst kann sich die künftige Besetzung beim nächsten „Übernehmen“ verschieben.
+
 ## 3. Generieren
 
 Im Abschnitt „Dienste erzeugen" einer Rotation wählst du „Von" und „Bis" (höchstens 366 Tage; „{n} Wochen" sind Schnellwahlen).
