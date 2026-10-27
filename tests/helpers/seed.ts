@@ -5,8 +5,10 @@ import {
   calendarPermissionBundles,
   calendarShares,
   shiftPresets,
+  shifts,
   user,
 } from "@/lib/db/schema";
+import { parseLocalDate } from "@/lib/date-utils";
 import { seedPermissionBundles } from "@/lib/auth/permissions";
 import { defaultBundleDefinitionsForNewCalendar } from "@/lib/permission-bundles";
 
@@ -68,4 +70,16 @@ export function seedTeam({ members = 8 }: { members?: number } = {}) {
     return id;
   });
   return { ownerId, memberIds, calendarId, presetId };
+}
+
+/** A plain calendar with one all-day shift per Feiertag, as an external sync would create it. */
+export function seedHolidays(ownerId: string, entries: { date: string; title: string }[]): string {
+  const calendarId = crypto.randomUUID();
+  db.insert(calendars).values({ id: calendarId, name: "Feiertage AT", color: "#ef4444", ownerId }).run();
+  for (const { date, title } of entries) {
+    db.insert(shifts)
+      .values({ calendarId, date: parseLocalDate(date), startTime: "00:00", endTime: "23:59", isAllDay: true, title })
+      .run();
+  }
+  return calendarId;
 }

@@ -13,7 +13,7 @@ import {
   RotationServiceError,
 } from "@/lib/rotation/service";
 import type { RotationInput } from "@/lib/rotation/validate";
-import { seedTeam } from "@/tests/helpers/seed";
+import { seedHolidays, seedTeam } from "@/tests/helpers/seed";
 
 const now = new Date(2026, 9, 21, 12, 0); // 2026-10-21 12:00
 
@@ -42,7 +42,7 @@ beforeEach(() => {
 
 function dutiesOf(rotationId: string) {
   return db
-    .select({ date: rotationDuties.date, shiftId: rotationDuties.shiftId })
+    .select({ date: rotationDuties.date, shiftId: rotationDuties.shiftId, kind: rotationDuties.kind })
     .from(rotationDuties)
     .where(eq(rotationDuties.rotationId, rotationId))
     .all()
@@ -50,6 +50,7 @@ function dutiesOf(rotationId: string) {
     .map((d) => ({
       date: d.date,
       shiftId: d.shiftId,
+      kind: d.kind,
       userIds: db
         .select({ userId: shiftSignups.userId })
         .from(shiftSignups)
@@ -163,7 +164,9 @@ describe("rotation service", () => {
     updateRotation(rotation.id, { ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] });
     const summary = await runGeneration(rotation.id, "2026-11-02", "2026-11-30", team.ownerId, now);
     expect(summary.deleted).toBe(1);
-    expect(dutiesOf(rotation.id).map((d) => d.date)).toEqual(["2026-11-07", "2026-11-21", "2026-11-28"]);
+    expect(dutiesOf(rotation.id).map((d) => [d.date, d.kind])).toEqual([
+      ["2026-11-07", "duty"], ["2026-11-14", "closed"], ["2026-11-21", "duty"], ["2026-11-28", "duty"],
+    ]);
   });
 
   it("syncs capacity when perShift changes", async () => {
@@ -222,5 +225,97 @@ describe("rotation service", () => {
     const [duty] = dutiesOf(rotation.id);
     const shift = db.select().from(shifts).where(eq(shifts.id, duty.shiftId)).get()!;
     expect(shift.notes).toBe("Schlüssel bei Chef");
+  });
+});
+
+describe("Schließtage", () => {
+  const titleOf = (shiftId: string) => db.select().from(shifts).where(eq(shifts.id, shiftId)).get()!;
+
+  it("writes a Schließeintrag for an Ausfalltag and moves the pair on", async () => {
+    const rotation = createRotation(
+      { ...input, closedTitle: "HeimkinoWelt geschlossen", skipDates: [{ date: "2026-11-14", reason: "Inventur" }] },
+      team.ownerId
+    );
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    const days = dutiesOf(rotation.id);
+    expect(days.map((d) => [d.date, d.kind])).toEqual([
+      ["2026-11-07", "duty"], ["2026-11-14", "closed"], ["2026-11-21", "duty"], ["2026-11-28", "duty"],
+    ]);
+    expect(days[1].userIds).toEqual([]);
+    expect(titleOf(days[1].shiftId)).toMatchObject({
+      title: "HeimkinoWelt geschlossen (Inventur)", isAllDay: true, startTime: "00:00", endTime: "23:59",
+      color: "#6b7280", presetId: null, signupCapacity: 0,
+    });
+    expect(days[2].userIds).toEqual([team.memberIds[2], team.memberIds[3]].sort());
+  });
+
+  it("reads Feiertage from the Feiertagskalender and honours Geöffnete Feiertage", async () => {
+    const holidays = seedHolidays(team.ownerId, [
+      { date: "2026-11-14", title: "Testfeiertag" },
+      { date: "2026-11-18", title: "Mittwochsfeiertag" },
+      { date: "2026-11-21", title: "Offener Feiertag" },
+    ]);
+    const rotation = createRotation({ ...input, holidayCalendarId: holidays, holidayOpenDates: ["2026-11-21"] }, team.ownerId);
+    const plan = await previewGeneration(rotation.id, "2026-11-02", "2026-11-28", now);
+    expect(plan.closures).toEqual([{ kind: "create", date: "2026-11-14", title: "Geschlossen (Testfeiertag)", source: "holiday" }]);
+    expect(plan.openHolidays).toEqual([{ date: "2026-11-21", name: "Offener Feiertag" }]);
+    expect(plan.entries.map((e) => e.date)).toEqual(["2026-11-07", "2026-11-21", "2026-11-28"]);
+  });
+
+  it("swaps duty and Schließeintrag on the same date in both directions", async () => {
+    const rotation = createRotation(input, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    updateRotation(rotation.id, { ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] });
+    const closing = await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    expect(closing).toMatchObject({ created: 1, deleted: 1 });
+    expect(dutiesOf(rotation.id).find((d) => d.date === "2026-11-14")!.kind).toBe("closed");
+
+    updateRotation(rotation.id, input);
+    const reopening = await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    expect(reopening).toMatchObject({ created: 1, deleted: 1 });
+    expect(dutiesOf(rotation.id).find((d) => d.date === "2026-11-14")!.kind).toBe("duty");
+  });
+
+  it("is idempotent with Schließeinträge", async () => {
+    const rotation = createRotation({ ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] }, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    expect(await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now)).toMatchObject({
+      created: 0, updated: 0, deleted: 0, unchanged: 4,
+    });
+  });
+
+  it("keeps a duty with a locked Platz and writes no Schließeintrag there", async () => {
+    const rotation = createRotation(input, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    const sat = dutiesOf(rotation.id).find((d) => d.date === "2026-11-14")!;
+    db.insert(rotationSlotLocks).values({ shiftId: sat.shiftId, userId: sat.userIds[0] }).run();
+    updateRotation(rotation.id, { ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] });
+    const plan = await previewGeneration(rotation.id, "2026-11-02", "2026-11-28", now);
+    expect(plan.warnings.map((w) => w.kind)).toEqual(["lockedWithoutDuty"]);
+    expect(plan.closures).toEqual([]);
+  });
+
+  it("never reads the rotation's own shifts as Feiertage", async () => {
+    const holidays = seedHolidays(team.ownerId, []);
+    const rotation = createRotation({ ...input, holidayCalendarId: holidays }, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    // Move one generated duty into the holiday calendar: it must still not count as a Feiertag.
+    const moved = dutiesOf(rotation.id)[0];
+    db.update(shifts).set({ calendarId: holidays }).where(eq(shifts.id, moved.shiftId)).run();
+    const plan = await previewGeneration(rotation.id, "2026-11-02", "2026-11-28", now);
+    expect(plan.closures).toEqual([]);
+  });
+
+  it("deletes future Schließeinträge with the rotation", async () => {
+    const rotation = createRotation({ ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] }, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    expect(deleteRotation(rotation.id, { deleteFutureDuties: true }, now)).toEqual({ deletedDuties: 4 });
+  });
+
+  it("ignores Schließeinträge when suggesting a restart offset", async () => {
+    const rotation = createRotation({ ...input, skipDates: [{ date: "2026-11-14", reason: "Inventur" }] }, team.ownerId);
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-28", team.ownerId, now);
+    // Last entry before 2026-11-15 is the closure; the suggestion must look at the duty of 2026-11-07 (M1, M2).
+    expect(suggestOffsetFor(rotation.id, "2026-11-15", team.memberIds)).toBe(2);
   });
 });
