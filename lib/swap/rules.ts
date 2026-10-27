@@ -75,7 +75,8 @@ export function checkOffer(input: OfferCheckInput): SwapErrorCode | null {
   if (started(offered.duty, input.now)) return "alreadyStarted";
   if (input.targetUserId === input.offererId) return "invalid";
   if (input.targetUserId && offered.holderIds.includes(input.targetUserId)) return "alreadyOnDuty";
-  if (input.type === "give" && requested) return "invalid";
+  // Only exchanges can be offered (spec D1); a forced swap goes through checkForce.
+  if (input.type !== "exchange") return "invalid";
   if (requested) {
     if (requested.duty.calendarId !== offered.duty.calendarId || requested.duty.shiftId === offered.duty.shiftId) {
       return "invalidShift";

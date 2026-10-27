@@ -13,9 +13,9 @@ import { FakeGraph } from "@/tests/helpers/fake-graph";
 
 let s: Awaited<ReturnType<typeof seedDuties>>;
 let graph: FakeGraph;
-const give = (shiftId: string, targetUserId: string | null = null) => ({
+const offer = (shiftId: string, targetUserId: string | null = null) => ({
   shiftId,
-  type: "give" as const,
+  type: "exchange" as const,
   targetUserId,
   requestedShiftId: null,
   note: null,
@@ -37,7 +37,7 @@ afterEach(() => vi.unstubAllEnvs());
 
 describe("dispatchNotifications", () => {
   it("sends an offer an alle in BCC to everyone who may swap, except the offerer", async () => {
-    const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    const swap = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     expect(await dispatch()).toMatchObject({ sent: 1, skipped: 0, failed: 0, authError: null });
     const [mail] = graph.mails;
     expect(mail.to).toEqual(["office@firma.at"]);
@@ -50,33 +50,33 @@ describe("dispatchNotifications", () => {
 
   it("respects switched-off preferences", async () => {
     setPreferences(s.m2, { offersToAll: false, offersToMe: true, myOffers: true });
-    createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     await dispatch();
     expect(graph.mails[0].bcc).not.toContain(emailOf(s.m2));
     expect(graph.mails[0].bcc.length).toBeGreaterThan(0);
   });
 
   it("does not address a co-holder of the offered duty", async () => {
-    createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     await dispatch();
     expect(graph.mails[0].bcc).not.toContain(emailOf(s.m1));
   });
 
   it("addresses a Direktanfrage and an acceptance to one person directly", async () => {
-    const direct = createOffer(give(s.duty("2026-11-14"), s.m4), s.m2, now);
+    const direct = createOffer(offer(s.duty("2026-11-14"), s.m4), s.m2, now);
     await dispatch();
     expect(graph.mails[0]).toMatchObject({ to: [emailOf(s.m4)], bcc: [] });
 
-    acceptOffer(direct.id, s.m4, null, now);
+    acceptOffer(direct.id, s.m4, s.duty("2026-11-21"), now);
     await dispatch();
     expect(graph.mails[1]).toMatchObject({ to: [emailOf(s.m2)], bcc: [] });
     expect(graph.mails[1].subject).toContain("angenommen");
   });
 
   it("skips offers that are no longer open and events without recipients", async () => {
-    const withdrawn = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    const withdrawn = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     withdrawOffer(withdrawn.id, s.m0, now);
-    const lonely = createOffer(give(s.duty("2026-11-14"), s.m4), s.m2, now);
+    const lonely = createOffer(offer(s.duty("2026-11-14"), s.m4), s.m2, now);
     setPreferences(s.m4, { offersToAll: true, offersToMe: false, myOffers: true });
     expect(await dispatch()).toMatchObject({ sent: 0, skipped: 2 });
     expect(statusOf(withdrawn.id)).toEqual([{ kind: "offer_to_all", status: "skipped" }]);
@@ -85,7 +85,7 @@ describe("dispatchNotifications", () => {
   });
 
   it("retries with backoff and gives up after the last attempt", async () => {
-    const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    const swap = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     graph.failures.push(new Error("smtp down"));
     await dispatch();
     const row = db.select().from(notificationOutbox).where(eq(notificationOutbox.swapId, swap.id)).get()!;
@@ -100,7 +100,7 @@ describe("dispatchNotifications", () => {
   });
 
   it("honours Retry-After when Graph throttles a mail", async () => {
-    const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    const swap = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     graph.failures.push(new GraphError(429, "429 TooManyRequests", 120_000));
     await dispatch();
     const row = db.select().from(notificationOutbox).where(eq(notificationOutbox.swapId, swap.id)).get()!;
@@ -108,8 +108,8 @@ describe("dispatchNotifications", () => {
   });
 
   it("treats a non-Graph exception as a failed attempt and keeps working through the queue", async () => {
-    const first = createOffer(give(s.duty("2026-11-07")), s.m0, now);
-    const second = createOffer(give(s.duty("2026-11-14"), s.m4), s.m2, now);
+    const first = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
+    const second = createOffer(offer(s.duty("2026-11-14"), s.m4), s.m2, now);
     const spy = vi.spyOn(graph, "sendMail").mockRejectedValueOnce(new TypeError("boom"));
     expect(await dispatch()).toMatchObject({ sent: 1, authError: null });
     spy.mockRestore();
@@ -119,7 +119,7 @@ describe("dispatchNotifications", () => {
   });
 
   it("stops at an auth error and keeps the event pending", async () => {
-    const swap = createOffer(give(s.duty("2026-11-07")), s.m0, now);
+    const swap = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     graph.failures.push(new GraphError(401, "401 InvalidAuthenticationToken"));
     expect(await dispatch()).toMatchObject({ sent: 0, authError: "401 InvalidAuthenticationToken" });
     expect(statusOf(swap.id)).toEqual([{ kind: "offer_to_all", status: "pending" }]);

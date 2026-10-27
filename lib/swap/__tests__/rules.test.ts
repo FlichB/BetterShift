@@ -67,7 +67,7 @@ describe("dutySpan", () => {
 
 describe("checkOffer", () => {
   const base = {
-    type: "give" as const,
+    type: "exchange" as const,
     offererId: "A",
     targetUserId: null,
     offered: slot(sat1, ["A", "B"]),
@@ -87,10 +87,14 @@ describe("checkOffer", () => {
     expect(checkOffer({ ...base, targetUserId: "A" })).toBe("invalid");
   });
 
+  it("refuses an Abgabe and a forced offer", () => {
+    expect(checkOffer({ ...base, type: "give" })).toBe("invalid");
+    expect(checkOffer({ ...base, type: "forced" })).toBe("invalid");
+  });
+
   it("checks a concrete counter duty", () => {
     const exchange = { ...base, type: "exchange" as const };
     expect(checkOffer({ ...exchange, requested: slot(sat2, ["C", "D"]) })).toBeNull();
-    expect(checkOffer({ ...base, requested: slot(sat2, ["C", "D"]) })).toBe("invalid");
     expect(checkOffer({ ...exchange, requested: slot(sat1, ["A", "B"]) })).toBe("invalidShift");
     expect(checkOffer({ ...exchange, requested: slot({ ...sat2, calendarId: "other" }, ["C"]) })).toBe("invalidShift");
     expect(checkOffer({ ...exchange, requested: slot(sat2, ["A", "D"]) })).toBe("alreadyOnDuty");

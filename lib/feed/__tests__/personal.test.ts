@@ -26,13 +26,13 @@ describe("loadPersonalDuties", () => {
 
   it("follows a swap", async () => {
     const offer = createOffer(
-      { shiftId: s.duty("2026-11-07"), type: "give", targetUserId: null, requestedShiftId: null, note: null },
+      { shiftId: s.duty("2026-11-07"), type: "exchange", targetUserId: null, requestedShiftId: null, note: null },
       s.m0,
       now
     );
-    acceptOffer(offer.id, s.m2, null, now);
-    expect(await dates(s.m0)).toEqual(["2026-12-12"]);
-    expect(await dates(s.m2)).toEqual(["2026-11-07", "2026-11-14", "2026-12-05"]);
+    acceptOffer(offer.id, s.m2, s.duty("2026-11-14"), now);
+    expect(await dates(s.m0)).toEqual(["2026-11-14", "2026-12-12"]);
+    expect(await dates(s.m2)).toEqual(["2026-11-07", "2026-12-05"]);
   });
 
   it("drops calendars the user can no longer read", async () => {

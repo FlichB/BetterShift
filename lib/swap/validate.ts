@@ -13,11 +13,10 @@ const optionalId = (v: unknown): string | null | undefined => (v == null ? null 
 
 export function validateOffer(body: unknown): Validated<OfferInput> {
   if (!isRecord(body) || !isId(body.shiftId)) return invalid;
-  if (body.type !== "give" && body.type !== "exchange") return invalid;
+  if (body.type !== "exchange") return invalid;
   const targetUserId = optionalId(body.targetUserId);
   const requestedShiftId = optionalId(body.requestedShiftId);
   if (targetUserId === undefined || requestedShiftId === undefined) return invalid;
-  if (body.type === "give" && requestedShiftId) return invalid;
   if (body.note != null && typeof body.note !== "string") return invalid;
   const note = typeof body.note === "string" ? body.note.trim() : "";
   if (note.length > MAX_NOTE) return invalid;

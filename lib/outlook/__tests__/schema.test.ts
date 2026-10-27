@@ -55,7 +55,7 @@ describe("phase 3 schema", () => {
   it("cascades outbox rows with their swap and defaults preferences to on", async () => {
     const s = await seedDuties();
     const swap = createOffer(
-      { shiftId: s.duty("2026-11-07"), type: "give", targetUserId: null, requestedShiftId: null, note: null },
+      { shiftId: s.duty("2026-11-07"), type: "exchange", targetUserId: null, requestedShiftId: null, note: null },
       s.m0,
       now
     );

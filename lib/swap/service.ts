@@ -111,7 +111,11 @@ export function expireDue(now: Date): ResolvedSwap[] {
     for (const swap of tx.select().from(shiftSwaps).where(eq(shiftSwaps.status, "open")).all()) {
       const offered = loadSlot(tx, swap.offeredShiftId);
       const requested = swap.requestedShiftId ? loadSlot(tx, swap.requestedShiftId) : null;
-      const status = dueStatus(swap.offeredByUserId, swap.targetUserId, offered, requested, swap.requestedShiftId, now);
+      // Abgaben can no longer be offered (spec D2); open ones end on the next run.
+      const status =
+        swap.type === "give"
+          ? "cancelled"
+          : dueStatus(swap.offeredByUserId, swap.targetUserId, offered, requested, swap.requestedShiftId, now);
       if (status) out.push({ swap: resolve(tx, swap.id, status, now), status });
     }
     return out;
@@ -157,7 +161,7 @@ export function createOffer(input: OfferInput, offererId: string, now: Date): Sh
         offeredShiftId: input.shiftId,
         offeredByUserId: offererId,
         targetUserId: input.targetUserId,
-        requestedShiftId: input.type === "exchange" ? input.requestedShiftId : null,
+        requestedShiftId: input.requestedShiftId,
         note: input.note,
         createdAt: now,
       })
