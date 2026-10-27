@@ -1637,6 +1637,7 @@
       "notDirect": "Solo se pueden rechazar solicitudes directas.",
       "notBroadcast": "Solo se pueden ocultar las ofertas dirigidas a todos.",
       "dutySlotSwapOnly": "Las plazas de los turnos solo cambian de manos a través de la bolsa de cambios.",
+      "closedDuty": "En un día de cierre no hay plazas.",
       "internal": "Error inesperado."
     },
     "retry": "Reintentar",

@@ -12,6 +12,7 @@ const STATUS: Record<SwapErrorCode, number> = {
   forbidden: 403,
   notTarget: 403,
   dutySlotSwapOnly: 403,
+  closedDuty: 403,
   invalid: 400,
   notDuty: 400,
   invalidShift: 400,

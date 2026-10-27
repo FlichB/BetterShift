@@ -1637,6 +1637,7 @@
       "notDirect": "Si possono rifiutare solo le richieste dirette.",
       "notBroadcast": "Si possono nascondere solo le offerte rivolte a tutti.",
       "dutySlotSwapOnly": "I posti dei turni cambiano di mano solo tramite la bacheca scambi.",
+      "closedDuty": "In un giorno di chiusura non ci sono posti.",
       "internal": "Errore imprevisto."
     },
     "retry": "Riprova",

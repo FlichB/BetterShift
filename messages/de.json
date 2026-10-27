@@ -1637,6 +1637,7 @@
       "notDirect": "Nur Direktanfragen können abgelehnt werden.",
       "notBroadcast": "Nur Angebote an alle können ausgeblendet werden.",
       "dutySlotSwapOnly": "Plätze von Diensten wechseln nur über die Tauschbörse.",
+      "closedDuty": "An einem Schließtag gibt es keine Plätze.",
       "internal": "Unerwarteter Fehler."
     },
     "retry": "Erneut versuchen",

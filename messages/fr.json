@@ -1637,6 +1637,7 @@
       "notDirect": "Seules les demandes directes peuvent être refusées.",
       "notBroadcast": "Seules les offres destinées à tous peuvent être masquées.",
       "dutySlotSwapOnly": "Les places des services ne changent de mains que via la bourse d'échange.",
+      "closedDuty": "Il n'y a pas de places un jour de fermeture.",
       "internal": "Erreur inattendue."
     },
     "retry": "Réessayer",

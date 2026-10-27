@@ -1637,6 +1637,7 @@
       "notDirect": "Odmítnout lze jen přímé žádosti.",
       "notBroadcast": "Skrýt lze jen nabídky určené všem.",
       "dutySlotSwapOnly": "Místa ve službách se předávají jen přes burzu výměn.",
+      "closedDuty": "V den zavření nejsou žádná místa.",
       "internal": "Neočekávaná chyba."
     },
     "retry": "Zkusit znovu",
