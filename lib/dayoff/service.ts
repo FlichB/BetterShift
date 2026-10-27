@@ -1,6 +1,6 @@
 // [fork] Dienstfrei service (design 4). Every write runs inside the caller's synchronous
 // better-sqlite3 transaction; mails go through the outbox in the same transaction.
-import { and, asc, eq, gte, inArray } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { shiftSignups } from "@/lib/db/schema";
 import { formatDateToLocal } from "@/lib/date-utils";
@@ -8,6 +8,7 @@ import { enqueueDayOff } from "@/lib/dayoff/enqueue";
 import { isFrozen, makeIsOff, revalidate, transferStatus, type IsOff } from "@/lib/dayoff/rules";
 import { dayOffProposals, dayOffs, type DayOff } from "@/lib/dayoff/schema";
 import type { DropReason } from "@/lib/dayoff/types";
+import type { SlotMove } from "@/lib/swap/rules";
 import { loadClosedSet, takenDates, type Tx } from "@/lib/dayoff/workdays";
 import { addDays } from "@/lib/rotation/dates";
 import { rotationDuties, rotations, type Rotation } from "@/lib/rotation/schema";
@@ -130,6 +131,18 @@ export function revalidateRow(tx: Tx, rowId: string, now: Date): "reset" | null 
   const { notify } = revalidateOne(tx, row, closedSetFor(tx, rotation, today), [], today, now);
   if (notify === "reset") enqueueDayOff(tx, "day_off_reset", row.id, "holder", null, now);
   return notify;
+}
+
+/** Hands the Dienstfrei of a moved Platz to its new holder and revalidates it for them (SPEC 12.38). */
+export function transferDayOff(tx: Tx, move: SlotMove, actorId: string | null, now: Date): void {
+  const row = tx
+    .select()
+    .from(dayOffs)
+    .where(and(eq(dayOffs.shiftId, move.shiftId), eq(dayOffs.userId, move.fromUserId), ne(dayOffs.status, "dropped")))
+    .get();
+  if (!row || isFrozen(row, formatDateToLocal(now))) return;
+  handOver(tx, row, move.toUserId, actorId, now);
+  revalidateRow(tx, row.id, now);
 }
 
 /**

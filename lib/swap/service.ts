@@ -3,6 +3,7 @@
 // in a separate transaction first, so their status sticks even if the request fails.
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { transferDayOff } from "@/lib/dayoff/service"; // [fork]
 import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
 import { enqueueSwapEvent, offerKind } from "@/lib/notify/enqueue";
 import { hasStarted } from "@/lib/rotation/dates";
@@ -273,6 +274,7 @@ function applyMove(tx: Tx, move: SlotMove, actorId: string, now: Date): void {
       })
       .run();
   }
+  transferDayOff(tx, move, actorId, now); // [fork] Dienstfrei follows the Platz (SPEC 12.38)
 }
 
 /** Cancels the open offers of Plätze their holder no longer has (or is about to lose). */
