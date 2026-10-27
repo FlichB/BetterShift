@@ -9,7 +9,8 @@ import {
   replaceShiftCustomFieldValues,
 } from "@/lib/shift-custom-fields";
 import type { TimeRange } from "@/lib/time-ranges";
-import { reconcileRotation } from "@/lib/dayoff/service"; // [fork] Dienstfrei
+import { reconcileRotation, type ReconcileEvent } from "@/lib/dayoff/service"; // [fork] Dienstfrei
+import { logReconcileEventsLater } from "@/lib/dayoff/audit"; // [fork] Dienstfrei
 import { CLOSURE_FIELDS, resolveClosedDates } from "@/lib/rotation/closures";
 import { hasStarted } from "@/lib/rotation/dates";
 import { generateDays, suggestStartOffset } from "@/lib/rotation/generate";
@@ -188,7 +189,8 @@ export function createRotation(input: RotationInput, actorId: string | null): Ro
 
 /** calendarId is fixed after creation; input.calendarId is ignored here. */
 export function updateRotation(id: string, input: RotationInput, now: Date = new Date()): RotationDetail {
-  return db.transaction((tx) => {
+  let dayOffEvents: ReconcileEvent[] = []; // [fork] Dienstfrei
+  const result = db.transaction((tx) => {
     const row = tx
       .update(rotations)
       .set({ ...configValues(input), updatedAt: now })
@@ -197,9 +199,11 @@ export function updateRotation(id: string, input: RotationInput, now: Date = new
       .get();
     if (!row) throw new RotationServiceError("notFound");
     writeMembers(tx, id, input.memberIds);
-    reconcileRotation(tx, id, now); // [fork] Dienstfrei
+    dayOffEvents = reconcileRotation(tx, id, now).events; // [fork] Dienstfrei
     return withMembers(tx, row);
   });
+  logReconcileEventsLater(dayOffEvents); // [fork] Dienstfrei
+  return result;
 }
 
 function loadExistingDuties(tx: Tx, rotationId: string, from: string, to: string): ExistingDuty[] {
@@ -365,7 +369,8 @@ export async function runGeneration(
   const loaded = await loadTemplate(loadRotation(db, id));
   const { template } = loaded;
 
-  return db.transaction((tx) => {
+  let dayOffEvents: ReconcileEvent[] = []; // [fork] Dienstfrei
+  const result = db.transaction((tx) => {
     const rotation = loadRotation(tx, id);
     if (rotation.presetId !== loaded.presetId) throw new RotationServiceError("presetMissing");
     const plan = buildPlan(tx, rotation, from, to, template, loaded.presetId, now);
@@ -474,9 +479,11 @@ export async function runGeneration(
           break;
       }
     }
-    reconcileRotation(tx, id, now); // [fork] Dienstfrei
+    dayOffEvents = reconcileRotation(tx, id, now).events; // [fork] Dienstfrei
     return summary;
   });
+  logReconcileEventsLater(dayOffEvents); // [fork] Dienstfrei
+  return result;
 }
 
 /** startOffset suggestion for restarting at restartDate with a new member order. */

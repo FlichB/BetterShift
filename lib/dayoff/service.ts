@@ -2,13 +2,27 @@
 // better-sqlite3 transaction; mails go through the outbox in the same transaction.
 import { and, asc, eq, gte, inArray, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { shiftSignups } from "@/lib/db/schema";
+import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
 import { formatDateToLocal } from "@/lib/date-utils";
+import { logReconcileEventsLater } from "@/lib/dayoff/audit";
 import { enqueueDayOff } from "@/lib/dayoff/enqueue";
-import { isFrozen, makeIsOff, revalidate, transferStatus, type IsOff } from "@/lib/dayoff/rules";
-import { dayOffProposals, dayOffs, type DayOff } from "@/lib/dayoff/schema";
-import type { DropReason } from "@/lib/dayoff/types";
-import type { SlotMove } from "@/lib/swap/rules";
+import {
+  checkAcceptDate,
+  checkCounter,
+  checkLock,
+  checkMove,
+  checkProposeDates,
+  isFrozen,
+  makeIsOff,
+  revalidate,
+  transferStatus,
+  weekOf,
+  type IsOff,
+  type RuleResult,
+} from "@/lib/dayoff/rules";
+import { dayOffProposals, dayOffs, type DayOff, type DayOffProposal } from "@/lib/dayoff/schema";
+import type { DayOffBoard, DayOffErrorCode, DayOffView, DropReason, MoveOption } from "@/lib/dayoff/types";
+import { counterWindowEnd, type SlotMove } from "@/lib/swap/rules";
 import { loadClosedSet, takenDates, type Tx } from "@/lib/dayoff/workdays";
 import { addDays } from "@/lib/rotation/dates";
 import { rotationDuties, rotations, type Rotation } from "@/lib/rotation/schema";
@@ -254,13 +268,294 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
   return result;
 }
 
+/** Reconciles every rotation, one transaction each, and logs the audit events afterwards. */
 export function reconcileAll(now: Date): void {
+  const events: ReconcileEvent[] = [];
   for (const { id } of db.select({ id: rotations.id }).from(rotations).all()) {
-    db.transaction((tx) => reconcileRotation(tx, id, now));
+    events.push(...db.transaction((tx) => reconcileRotation(tx, id, now)).events);
+  }
+  logReconcileEventsLater(events);
+}
+
+/** Reconciles the rotation owning a duty shift (after a signup change) and logs the audit events. */
+export function reconcileForShift(shiftId: string, now: Date): void {
+  const duty = db.select({ rotationId: rotationDuties.rotationId }).from(rotationDuties).where(eq(rotationDuties.shiftId, shiftId)).get();
+  if (!duty) return;
+  logReconcileEventsLater(db.transaction((tx) => reconcileRotation(tx, duty.rotationId, now)).events);
+}
+
+// ---------------------------------------------------------------------------
+// User actions (SPEC 12.36–12.37). The routes check everything beyond
+// "is the holder" and "is a manager" (passed in as actorIsManager).
+// ---------------------------------------------------------------------------
+
+export class DayOffServiceError extends Error {
+  constructor(public readonly code: DayOffErrorCode) {
+    super(code);
+    this.name = "DayOffServiceError";
   }
 }
 
-export function reconcileForShift(shiftId: string, now: Date): void {
-  const duty = db.select({ rotationId: rotationDuties.rotationId }).from(rotationDuties).where(eq(rotationDuties.shiftId, shiftId)).get();
-  if (duty) db.transaction((tx) => reconcileRotation(tx, duty.rotationId, now));
+function unwrap<T>(result: RuleResult<T>): T {
+  if (!result.ok) throw new DayOffServiceError(result.code);
+  return result.value;
+}
+
+function loadRow(tx: Tx, id: string): DayOff {
+  const row = tx.select().from(dayOffs).where(eq(dayOffs.id, id)).get();
+  if (!row) throw new DayOffServiceError("notFound");
+  return row;
+}
+
+function loadProposal(tx: Tx, id: string): DayOffProposal {
+  const proposal = tx.select().from(dayOffProposals).where(eq(dayOffProposals.id, id)).get();
+  if (!proposal) throw new DayOffServiceError("notFound");
+  return proposal;
+}
+
+/** The holder's non-Arbeitstage for this row: Schließtage of its rotation plus their other Dienstfreie. */
+function isOffFor(tx: Tx, row: DayOff, today: string): IsOff {
+  const rotation = tx.select().from(rotations).where(eq(rotations.id, row.rotationId)).get();
+  if (!rotation) throw new DayOffServiceError("notFound");
+  return makeIsOff(closedSetFor(tx, rotation, today), takenDates(tx, row.userId, row.id));
+}
+
+function openProposalDates(tx: Tx, dayOffId: string): string[] {
+  return tx
+    .select({ date: dayOffProposals.date })
+    .from(dayOffProposals)
+    .where(and(eq(dayOffProposals.dayOffId, dayOffId), eq(dayOffProposals.status, "open")))
+    .all()
+    .map((p) => p.date);
+}
+
+/** Holder moves a standard/moved Dienstfrei within its week. */
+export function moveDayOff(id: string, date: string, actorId: string, now: Date): DayOff {
+  return db.transaction((tx) => {
+    const row = loadRow(tx, id);
+    if (row.userId !== actorId) throw new DayOffServiceError("notHolder");
+    const today = formatDateToLocal(now);
+    const next = unwrap(checkMove(row, date, isOffFor(tx, row, today), today));
+    return tx.update(dayOffs).set({ status: next.status, date: next.date, updatedAt: now }).where(eq(dayOffs.id, id)).returning().get();
+  });
+}
+
+/** Manager locks a Dienstfrei: no date until one is agreed. Open proposals are voided. */
+export function lockDayOff(id: string, note: string | null, actorId: string, now: Date): DayOff {
+  return db.transaction((tx) => {
+    const row = loadRow(tx, id);
+    const today = formatDateToLocal(now);
+    unwrap(checkLock(row, today));
+    const updated = tx
+      .update(dayOffs)
+      .set({ status: "locked", date: null, lockedByUserId: actorId, lockNote: note?.trim() || null, agreedByUserId: null, updatedAt: now })
+      .where(eq(dayOffs.id, id))
+      .returning()
+      .get();
+    voidOpenProposals(tx, id, now);
+    enqueueDayOff(tx, "day_off_locked", id, "holder", actorId, now);
+    return updated;
+  });
+}
+
+/** Holder proposes dates for a locked Dienstfrei (or other dates for an agreed one). One mail per call. */
+export function proposeDates(id: string, dates: string[], actorId: string, now: Date): DayOffProposal[] {
+  return db.transaction((tx) => {
+    const row = loadRow(tx, id);
+    if (row.userId !== actorId) throw new DayOffServiceError("notHolder");
+    const today = formatDateToLocal(now);
+    const valid = unwrap(checkProposeDates(row, dates, openProposalDates(tx, id), isOffFor(tx, row, today), today));
+    const created = tx
+      .insert(dayOffProposals)
+      .values(valid.map((date) => ({ dayOffId: id, date, side: "holder" as const, proposedByUserId: actorId, status: "open" as const, createdAt: now })))
+      .returning()
+      .all();
+    enqueueDayOff(tx, "day_off_proposed", id, "managers", actorId, now, created[0].id);
+    return created;
+  });
+}
+
+/** Manager proposes a date to the holder. */
+export function counterPropose(id: string, date: string, actorId: string, now: Date): DayOffProposal {
+  return db.transaction((tx) => {
+    const row = loadRow(tx, id);
+    const today = formatDateToLocal(now);
+    const valid = unwrap(checkCounter(row, date, openProposalDates(tx, id), isOffFor(tx, row, today), today));
+    const created = tx
+      .insert(dayOffProposals)
+      .values({ dayOffId: id, date: valid, side: "manager", proposedByUserId: actorId, status: "open", createdAt: now })
+      .returning()
+      .get();
+    enqueueDayOff(tx, "day_off_countered", id, "holder", actorId, now, created.id);
+    return created;
+  });
+}
+
+/** A holder proposal is answered by a manager, a manager proposal by the holder. */
+function assertOtherSide(proposal: DayOffProposal, row: DayOff, actorId: string, actorIsManager: boolean): void {
+  const allowed = proposal.side === "holder" ? actorIsManager : row.userId === actorId;
+  if (!allowed) throw new DayOffServiceError("forbidden");
+}
+
+const otherSide = (proposal: DayOffProposal) => (proposal.side === "holder" ? "managers" : "holder");
+
+export function acceptProposal(proposalId: string, actorId: string, actorIsManager: boolean, now: Date): DayOff {
+  return db.transaction((tx) => {
+    const proposal = loadProposal(tx, proposalId);
+    if (proposal.status !== "open") throw new DayOffServiceError("proposalNotOpen");
+    const row = loadRow(tx, proposal.dayOffId);
+    assertOtherSide(proposal, row, actorId, actorIsManager);
+    const today = formatDateToLocal(now);
+    const date = unwrap(checkAcceptDate(row, proposal.date, isOffFor(tx, row, today), today));
+    const updated = tx
+      .update(dayOffs)
+      .set({ status: "agreed", date, agreedByUserId: actorId, updatedAt: now })
+      .where(eq(dayOffs.id, row.id))
+      .returning()
+      .get();
+    tx.update(dayOffProposals)
+      .set({ status: "accepted", resolvedByUserId: actorId, resolvedAt: now })
+      .where(eq(dayOffProposals.id, proposalId))
+      .run();
+    voidOpenProposals(tx, row.id, now);
+    enqueueDayOff(tx, "day_off_accepted", row.id, otherSide(proposal), actorId, now, proposalId);
+    return updated;
+  });
+}
+
+export function declineProposal(proposalId: string, reason: string | null, actorId: string, actorIsManager: boolean, now: Date): DayOffProposal {
+  return db.transaction((tx) => {
+    const proposal = loadProposal(tx, proposalId);
+    if (proposal.status !== "open") throw new DayOffServiceError("proposalNotOpen");
+    const row = loadRow(tx, proposal.dayOffId);
+    assertOtherSide(proposal, row, actorId, actorIsManager);
+    const declineReason = reason?.trim() || null;
+    // A manager turning down the holder's wish has to say why.
+    if (proposal.side === "holder" && !declineReason) throw new DayOffServiceError("reasonRequired");
+    const updated = tx
+      .update(dayOffProposals)
+      .set({ status: "declined", declineReason, resolvedByUserId: actorId, resolvedAt: now })
+      .where(eq(dayOffProposals.id, proposalId))
+      .returning()
+      .get();
+    enqueueDayOff(tx, "day_off_declined", row.id, otherSide(proposal), actorId, now, proposalId);
+    return updated;
+  });
+}
+
+/** Days of the standard week the holder may move to, with how many colleagues of the calendar are off then. */
+export function moveOptions(id: string, now: Date): MoveOption[] {
+  return db.transaction((tx) => {
+    const row = loadRow(tx, id);
+    if (!row.standardDate) return [];
+    const today = formatDateToLocal(now);
+    const isOff = isOffFor(tx, row, today);
+    const dates = weekOf(row.standardDate).filter((date) => date === row.date || checkMove(row, date, isOff, today).ok);
+    if (dates.length === 0) return [];
+    const rotation = tx.select({ calendarId: rotations.calendarId }).from(rotations).where(eq(rotations.id, row.rotationId)).get();
+    const others = tx
+      .select({ id: dayOffs.id, date: dayOffs.date })
+      .from(dayOffs)
+      .innerJoin(rotations, eq(rotations.id, dayOffs.rotationId))
+      .where(and(eq(rotations.calendarId, rotation?.calendarId ?? ""), inArray(dayOffs.date, dates), ne(dayOffs.status, "dropped")))
+      .all()
+      .filter((o) => o.id !== row.id);
+    return dates.map((date) => ({
+      date,
+      othersOff: others.filter((o) => o.date === date).length,
+      isCurrent: date === row.date,
+      isStandard: date === row.standardDate,
+    }));
+  });
+}
+
+/** How long begun and dropped Dienstfreie stay on the holder's board. */
+const BOARD_HISTORY_DAYS = 30;
+
+function toViews(rows: DayOff[]): DayOffView[] {
+  if (rows.length === 0) return [];
+  const rotationRows = db
+    .select({ id: rotations.id, calendarId: calendars.id, calendarName: calendars.name })
+    .from(rotations)
+    .innerJoin(calendars, eq(calendars.id, rotations.calendarId))
+    .where(inArray(rotations.id, [...new Set(rows.map((r) => r.rotationId))]))
+    .all();
+  const rotationById = new Map(rotationRows.map((r) => [r.id, r]));
+  const shiftIds = [...new Set(rows.map((r) => r.shiftId).filter((id): id is string => !!id))];
+  const titles = new Map(
+    shiftIds.length > 0
+      ? db.select({ id: shifts.id, title: shifts.title }).from(shifts).where(inArray(shifts.id, shiftIds)).all().map((s) => [s.id, s.title])
+      : []
+  );
+  const names = new Map(
+    db
+      .select({ id: user.id, name: user.name })
+      .from(user)
+      .where(inArray(user.id, [...new Set(rows.map((r) => r.userId))]))
+      .all()
+      .map((u) => [u.id, u.name])
+  );
+  const proposals = db
+    .select()
+    .from(dayOffProposals)
+    .where(inArray(dayOffProposals.dayOffId, rows.map((r) => r.id)))
+    .orderBy(asc(dayOffProposals.createdAt), asc(dayOffProposals.date))
+    .all();
+
+  return rows
+    .map((row): DayOffView => {
+      const rotation = rotationById.get(row.rotationId);
+      return {
+        id: row.id,
+        calendarId: rotation?.calendarId ?? "",
+        calendarName: rotation?.calendarName ?? "",
+        rotationId: row.rotationId,
+        dutyDate: row.dutyDate,
+        dutyTitle: (row.shiftId && titles.get(row.shiftId)) || "",
+        holder: { id: row.userId, name: names.get(row.userId) ?? "" },
+        status: row.status,
+        date: row.date,
+        standardDate: row.standardDate,
+        lockNote: row.lockNote,
+        dropReason: row.dropReason,
+        windowEnd: counterWindowEnd(row.dutyDate),
+        proposals: proposals
+          .filter((p) => p.dayOffId === row.id)
+          .map((p) => ({ id: p.id, date: p.date, side: p.side, status: p.status, declineReason: p.declineReason, createdAt: p.createdAt.toISOString() })),
+        canMove: false,
+      };
+    })
+    .sort((a, b) => a.dutyDate.localeCompare(b.dutyDate) || a.holder.name.localeCompare(b.holder.name) || a.id.localeCompare(b.id));
+}
+
+/**
+ * The Dienstfrei board: the user's own rows (active ones, plus begun and dropped ones for a month)
+ * and every active row of the calendars they manage (locked rows are never frozen, so they are in).
+ */
+export function listDayOffBoard(userId: string, manageCalendarIds: string[], now: Date): DayOffBoard {
+  const today = formatDateToLocal(now);
+  const historyFrom = addDays(today, -BOARD_HISTORY_DAYS);
+  const historySince = new Date(now.getTime() - BOARD_HISTORY_DAYS * 24 * 60 * 60 * 1000);
+  const mine = db
+    .select()
+    .from(dayOffs)
+    .where(eq(dayOffs.userId, userId))
+    .all()
+    .filter((row) => {
+      if (row.status === "dropped") return row.updatedAt >= historySince;
+      if (!isFrozen(row, today)) return true;
+      return !!row.date && row.date >= historyFrom;
+    });
+  const manage =
+    manageCalendarIds.length === 0
+      ? []
+      : db
+          .select({ row: dayOffs })
+          .from(dayOffs)
+          .innerJoin(rotations, eq(rotations.id, dayOffs.rotationId))
+          .where(and(inArray(rotations.calendarId, manageCalendarIds), ne(dayOffs.status, "dropped")))
+          .all()
+          .map((r) => r.row)
+          .filter((row) => !isFrozen(row, today));
+  return { mine: toViews(mine), manage: toViews(manage), manageCalendarIds };
 }

@@ -33,3 +33,25 @@ export const MAX_DATES_PER_PROPOSAL = 5;
 export const MAX_OPEN_PROPOSALS = 10;
 export const REMINDER_AFTER_DAYS = 3;
 export const DEFAULT_DAY_OFF_TITLE = "{Vorname} dienstfrei";
+
+export interface DayOffProposalView { id: string; date: string; side: ProposalSide; status: ProposalStatus; declineReason: string | null; createdAt: string }
+export interface DayOffView {
+  id: string;
+  calendarId: string;
+  calendarName: string;
+  rotationId: string;
+  dutyDate: string;
+  dutyTitle: string;
+  holder: { id: string; name: string };
+  status: DayOffStatus;
+  date: string | null;
+  standardDate: string | null;
+  lockNote: string | null;
+  dropReason: DropReason | null;
+  windowEnd: string;
+  proposals: DayOffProposalView[];
+  /** Filled by the route; the service always returns false. */
+  canMove: boolean;
+}
+export interface DayOffBoard { mine: DayOffView[]; manage: DayOffView[]; manageCalendarIds: string[] }
+export interface MoveOption { date: string; othersOff: number; isCurrent: boolean; isStandard: boolean }
