@@ -1763,6 +1763,79 @@
       "tooMany": "Too many open proposals.",
       "reasonRequired": "Please give a reason.",
       "proposalNotOpen": "This proposal is no longer open."
+    },
+    "tab": "Day off",
+    "mineTitle": "My days off",
+    "manageTitle": "Management",
+    "cardTitle": "Day off after the duty on {date}",
+    "status": {
+      "standard": "Standard",
+      "moved": "Moved",
+      "locked": "Locked",
+      "agreed": "Agreed",
+      "dropped": "Cancelled"
+    },
+    "proposalStatus": {
+      "open": "open",
+      "accepted": "accepted",
+      "declined": "declined",
+      "void": "void"
+    },
+    "open": "not set yet",
+    "windowEnd": "Proposals until {date}",
+    "actions": {
+      "move": "Move",
+      "propose": "Propose dates",
+      "changeRequest": "Request a change",
+      "lock": "Lock",
+      "counter": "Counter-proposal",
+      "accept": "Accept",
+      "decline": "Decline"
+    },
+    "othersOff": "{count, plural, =0 {nobody off} one {# is off} other {# are off}}",
+    "lockConfirm": "The day off loses its date. {name} will then propose dates.",
+    "reason": "Reason",
+    "note": "Note",
+    "proposalFrom": {
+      "holder": "Proposed by {name}",
+      "manager": "Counter-proposal by management"
+    },
+    "empty": "You have no days off.",
+    "emptyManage": "No days off to manage.",
+    "allCalendars": "All calendars",
+    "loadFailed": "The days off could not be loaded.",
+    "move": {
+      "title": "Move day off",
+      "text": "Pick another workday in the same week.",
+      "loadFailed": "The possible days could not be loaded.",
+      "none": "There is no other possible day."
+    },
+    "propose": {
+      "text": "Propose up to {max} dates until {date}. Management accepts one of them.",
+      "date": "Date {n}",
+      "add": "Add date",
+      "remove": "Remove date",
+      "submit": "Propose"
+    },
+    "counter": {
+      "text": "Propose a date until {date} to {name}.",
+      "date": "Date",
+      "submit": "Propose"
+    },
+    "decline": {
+      "title": "Decline proposal",
+      "text": "Decline the date {date}?"
+    },
+    "lock": {
+      "title": "Lock day off"
+    },
+    "done": {
+      "moved": "Day off moved.",
+      "proposed": "Dates proposed.",
+      "locked": "Day off locked.",
+      "countered": "Counter-proposal sent.",
+      "accepted": "Date agreed.",
+      "declined": "Proposal declined."
     }
   },
   "notifications": {
