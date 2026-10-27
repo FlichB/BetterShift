@@ -1193,7 +1193,8 @@
       "telemetrySent": "Telemetriedaten manuell gesendet",
       "telemetrySendFailed": "Manuelles Senden der Telemetriedaten fehlgeschlagen",
       "telemetryAutoSent": "Telemetriedaten automatisch gesendet",
-      "telemetryAutoSendFailed": "Automatisches Senden der Telemetriedaten fehlgeschlagen"
+      "telemetryAutoSendFailed": "Automatisches Senden der Telemetriedaten fehlgeschlagen",
+      "dayOffNotificationFailed": "Dienstfrei-Mail konnte nicht gesendet werden ({kind})"
     }
   },
   "adminUsers": {

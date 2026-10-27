@@ -3,15 +3,14 @@ import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
 import { logSystemEvent } from "@/lib/audit-log";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
+import type { DayOffNotificationFailedMetadata } from "@/lib/dayoff/audit";
 import { resolveDayOffRecipients } from "@/lib/dayoff/recipients";
 import { renderDayOffMail } from "@/lib/dayoff/render";
 import { dayOffOutbox, dayOffProposals, dayOffs } from "@/lib/dayoff/schema";
-import { MAX_MAIL_ATTEMPTS, type DispatchResult } from "@/lib/notify/dispatch";
+import { handleSendFailure, type DispatchResult } from "@/lib/notify/dispatch";
 import { getMailTranslator } from "@/lib/notify/translator";
-import type { NotificationFailedMetadata } from "@/lib/outlook/audit";
 import type { OutlookConfig } from "@/lib/outlook/config";
-import { GraphError, type GraphClient } from "@/lib/outlook/graph-client";
-import { backoffMs } from "@/lib/outlook/sync";
+import type { GraphClient } from "@/lib/outlook/graph-client";
 import { rotations } from "@/lib/rotation/schema";
 
 const MAILS_PER_RUN = 20;
@@ -88,30 +87,20 @@ export async function dispatchDayOffNotifications(client: GraphClient, config: O
       await client.sendMail({ ...mail, to: single ? emails : [config.organizer], bcc: single ? [] : emails });
       finish("sent");
     } catch (error) {
-      if (error instanceof GraphError && error.isAuth) {
-        result.authError = error.message;
-        return result;
-      }
-      // Any other error takes the normal retry path so one bad row cannot block the queue.
-      const attempts = row.attempts + 1;
-      const message = (error instanceof Error ? error.message : String(error)).slice(0, 500);
-      if (attempts >= MAX_MAIL_ATTEMPTS) {
-        db.update(dayOffOutbox).set({ status: "failed", attempts, lastError: message }).where(eq(dayOffOutbox.id, row.id)).run();
-        result.failed++;
-        await logSystemEvent<NotificationFailedMetadata>({
-          action: "notification.failed",
-          resourceType: "day_off",
-          resourceId: row.dayOffId,
-          // swapId carries the Dienstfrei id here; the metadata shape is shared with swap mails.
-          metadata: { kind: row.kind, swapId: row.dayOffId, message },
-        });
-      } else {
-        const wait = error instanceof GraphError && error.retryAfterMs !== null ? error.retryAfterMs : backoffMs(attempts);
-        db.update(dayOffOutbox)
-          .set({ attempts, nextAttemptAt: new Date(now.getTime() + wait), lastError: message })
-          .where(eq(dayOffOutbox.id, row.id))
-          .run();
-      }
+      const stop = await handleSendFailure(error, row, now, result, {
+        markFailed: (attempts, message) =>
+          db.update(dayOffOutbox).set({ status: "failed", attempts, lastError: message }).where(eq(dayOffOutbox.id, row.id)).run(),
+        scheduleRetry: (attempts, nextAttemptAt, message) =>
+          db.update(dayOffOutbox).set({ attempts, nextAttemptAt, lastError: message }).where(eq(dayOffOutbox.id, row.id)).run(),
+        logFailed: (message) =>
+          logSystemEvent<DayOffNotificationFailedMetadata>({
+            action: "dayoff.notification_failed",
+            resourceType: "day_off",
+            resourceId: row.dayOffId,
+            metadata: { kind: row.kind, dayOffId: row.dayOffId, attempts: row.attempts + 1, message },
+          }),
+      });
+      if (stop) return result;
     }
   }
   return result;

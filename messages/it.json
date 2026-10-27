@@ -1193,7 +1193,8 @@
       "telemetrySent": "Telemetria inviata manualmente",
       "telemetrySendFailed": "Invio manuale della telemetria non riuscito",
       "telemetryAutoSent": "Telemetria inviata automaticamente",
-      "telemetryAutoSendFailed": "Invio automatico della telemetria non riuscito"
+      "telemetryAutoSendFailed": "Invio automatico della telemetria non riuscito",
+      "dayOffNotificationFailed": "Impossibile inviare l'e-mail del giorno libero ({kind})"
     }
   },
   "adminUsers": {

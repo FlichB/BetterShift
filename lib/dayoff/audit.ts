@@ -6,7 +6,7 @@ import { calendars } from "@/lib/db/schema";
 import { logSystemEvent } from "@/lib/audit-log";
 import { dayOffs, type DayOff } from "@/lib/dayoff/schema";
 import type { ReconcileEvent } from "@/lib/dayoff/service";
-import type { DropReason, ProposalSide } from "@/lib/dayoff/types";
+import type { DayOffNotificationKind, DropReason, ProposalSide } from "@/lib/dayoff/types";
 import { rotations } from "@/lib/rotation/schema";
 
 export interface DayOffAuditBase {
@@ -42,6 +42,14 @@ export interface DayOffDeclinedMetadata extends DayOffAuditBase {
 export interface DayOffSystemMetadata extends DayOffAuditBase {
   kind: "reset" | "dropped";
   reason?: DropReason;
+}
+
+/** dayoff.notification_failed: a Dienstfrei mail gave up after its last attempt. */
+export interface DayOffNotificationFailedMetadata {
+  kind: DayOffNotificationKind;
+  dayOffId: string;
+  attempts: number;
+  message: string;
 }
 
 export function dayOffAuditBase(row: DayOff): DayOffAuditBase {

@@ -1193,7 +1193,8 @@
       "telemetrySent": "Telemetrie odeslána ručně",
       "telemetrySendFailed": "Ruční odeslání telemetrie se nezdařilo",
       "telemetryAutoSent": "Telemetrie odeslána automaticky",
-      "telemetryAutoSendFailed": "Automatické odeslání telemetrie se nezdařilo"
+      "telemetryAutoSendFailed": "Automatické odeslání telemetrie se nezdařilo",
+      "dayOffNotificationFailed": "E-mail o volnu se nepodařilo odeslat ({kind})"
     }
   },
   "adminUsers": {

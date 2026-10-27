@@ -1193,7 +1193,8 @@
       "telemetrySent": "Telemetría enviada manualmente",
       "telemetrySendFailed": "Error al enviar la telemetría manualmente",
       "telemetryAutoSent": "Telemetría enviada automáticamente",
-      "telemetryAutoSendFailed": "Error al enviar la telemetría automáticamente"
+      "telemetryAutoSendFailed": "Error al enviar la telemetría automáticamente",
+      "dayOffNotificationFailed": "No se pudo enviar el correo del día libre ({kind})"
     }
   },
   "adminUsers": {

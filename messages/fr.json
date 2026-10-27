@@ -1193,7 +1193,8 @@
       "telemetrySent": "Télémétrie envoyée manuellement",
       "telemetrySendFailed": "Échec de l'envoi manuel de la télémétrie",
       "telemetryAutoSent": "Télémétrie envoyée automatiquement",
-      "telemetryAutoSendFailed": "Échec de l'envoi automatique de la télémétrie"
+      "telemetryAutoSendFailed": "Échec de l'envoi automatique de la télémétrie",
+      "dayOffNotificationFailed": "Impossible d'envoyer l'e-mail du jour de repos ({kind})"
     }
   },
   "adminUsers": {
@@ -1771,12 +1772,12 @@
         "forcedToMe": "{actor} t'a désigné comme remplaçant de {name} le {duty}.",
         "dutyTransferred": "Ton service du {duty} a été transféré à {name}.",
         "counterChosen": "En compensation de ton service du {duty}, tu reprends le service du {counter}.",
-        "dayOffLocked": "Ton jour de repos après le service du {duty} a été verrouillé. Propose des dates, s’il te plaît.",
+        "dayOffLocked": "Ton jour de repos après le service du {duty} a été verrouillé. Propose des dates, s'il te plaît.",
         "dayOffProposed": "{holder} propose pour le jour de repos après le service du {duty} : {dates}.",
         "dayOffCountered": "Pour ton jour de repos après le service du {duty}, le {date} est proposé.",
         "dayOffAccepted": "Le jour de repos après le service du {duty} est le {date}.",
         "dayOffDeclined": "La proposition du {date} pour le jour de repos après le service du {duty} a été refusée.",
-        "dayOffReset": "Ton jour de repos après le service du {duty} n’est plus valable et a été réinitialisé.",
+        "dayOffReset": "Ton jour de repos après le service du {duty} n'est plus valable et a été réinitialisé.",
         "dayOffDropped": "Ton jour de repos après le service du {duty} est annulé.",
         "dayOffReminder": "Les propositions de {holder} pour le jour de repos après le service du {duty} attendent une réponse depuis 3 jours."
       },

@@ -1193,7 +1193,8 @@
       "telemetrySent": "Telemetry sent manually",
       "telemetrySendFailed": "Sending telemetry manually failed",
       "telemetryAutoSent": "Telemetry sent automatically",
-      "telemetryAutoSendFailed": "Sending telemetry automatically failed"
+      "telemetryAutoSendFailed": "Sending telemetry automatically failed",
+      "dayOffNotificationFailed": "Day-off mail could not be sent ({kind})"
     }
   },
   "adminUsers": {

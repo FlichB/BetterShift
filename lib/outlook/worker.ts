@@ -88,8 +88,12 @@ async function runOnce(): Promise<void> {
 
   const mails = await dispatchNotifications(client, config, now);
   if (mails.authError) return pause(mails.authError);
-  const dayOffMails = await dispatchDayOffNotifications(client, config, now); // [fork]
-  if (dayOffMails.authError) return pause(dayOffMails.authError); // [fork]
+  // [fork] Separate queue: a failure here must not skip the rest of the run.
+  const dayOffMails = await dispatchDayOffNotifications(client, config, now).catch((error) => {
+    console.error("[Outlook] Dienstfrei mail dispatch failed:", error);
+    return null;
+  });
+  if (dayOffMails?.authError) return pause(dayOffMails.authError);
   if (sync.remaining > 0) state.rerun = true;
 }
 

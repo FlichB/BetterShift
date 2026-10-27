@@ -1,6 +1,6 @@
 // [fork] Dienstfrei mails: recipients, rendering, dispatch, reminders.
 import { and, eq, ne } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
 import { dispatchDayOffNotifications } from "@/lib/dayoff/dispatch";
@@ -31,7 +31,6 @@ const emailOf = (id: string) => db.select({ email: user.email }).from(user).wher
 const outbox = () => db.select().from(dayOffOutbox).all();
 
 afterEach(() => vi.unstubAllEnvs());
-beforeEach(() => vi.unstubAllEnvs());
 
 describe("Dienstfrei mails", () => {
   it("lock enqueues one holder mail; recipients are the holder unless switched off", async () => {
@@ -62,9 +61,9 @@ describe("Dienstfrei mails", () => {
     const s = await setup();
     const row = s.of("2026-11-07", s.m0);
     lockDayOff(row.id, null, s.team.ownerId, now);
+    // The database is shared across this file: earlier tests left open proposals behind.
     db.delete(dayOffProposals).where(ne(dayOffProposals.dayOffId, row.id)).run();
     proposeDates(row.id, ["2026-11-18", "2026-11-19"], s.m0, now);
-    // The database is shared across this file: earlier tests left open proposals behind.
     db.delete(dayOffOutbox).run();
     expect(sendReminders(new Date(now.getTime() + 2 * 86_400_000))).toBe(0);
     const later = new Date(now.getTime() + 3 * 86_400_000);

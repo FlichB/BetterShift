@@ -233,6 +233,8 @@ export function useAuditDescription() {
         case "personal_feed.revoked":
           return t("adminAudit.describe.personalFeedRevoked");
         // [fork] Dienstfrei
+        case "dayoff.notification_failed":
+          return t("adminAudit.describe.dayOffNotificationFailed", { kind: text(m, "kind") });
         case "dayoff.moved":
           return t("adminAudit.describe.dayOffMoved", { date: text(m, "dutyDate"), from: text(m, "from"), to: text(m, "to"), calendar });
         case "dayoff.locked":
