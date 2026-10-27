@@ -1418,6 +1418,7 @@
       "closedTitleHint": "S'affiche les jours de fermeture sous la forme « Texte (motif) », p. ex. « Fermé (Noël) ».",
       "holidayCalendar": "Calendrier des jours fériés",
       "holidayCalendarNone": "Aucun",
+      "holidayCalendarUnavailable": "Calendrier sans accès",
       "holidayCalendarHint": "Chaque entrée de ce calendrier un jour de service ferme ce jour-là. Idéalement un calendrier synchronisé avec un flux de jours fériés.",
       "holidayOpenDates": "Jours fériés travaillés"
     },

@@ -1418,6 +1418,7 @@
       "closedTitleHint": "Erscheint an Schließtagen als „Text (Grund)“, z. B. „Geschlossen (Mariä Empfängnis)“.",
       "holidayCalendar": "Feiertagskalender",
       "holidayCalendarNone": "Keiner",
+      "holidayCalendarUnavailable": "Kalender ohne Zugriff",
       "holidayCalendarHint": "Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. Am besten ein Kalender mit externer Synchronisierung eines Feiertags-Feeds.",
       "holidayOpenDates": "Geöffnete Feiertage"
     },

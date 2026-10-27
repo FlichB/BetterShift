@@ -45,7 +45,7 @@ export async function PUT(request: NextRequest, { params }: Context) {
     if (input.calendarId !== existing.calendarId) {
       return NextResponse.json({ error: "calendarId" }, { status: 400 });
     }
-    const referenceError = await checkRotationReferences(input, user?.id);
+    const referenceError = await checkRotationReferences(input, user?.id, existing.holidayCalendarId);
     if (referenceError) return NextResponse.json({ error: referenceError }, { status: 400 });
 
     const rotation = updateRotation(id, input);

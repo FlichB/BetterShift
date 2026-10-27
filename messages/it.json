@@ -1418,6 +1418,7 @@
       "closedTitleHint": "Compare nei giorni di chiusura come «Testo (motivo)», ad es. «Chiuso (Natale)».",
       "holidayCalendar": "Calendario delle festività",
       "holidayCalendarNone": "Nessuno",
+      "holidayCalendarUnavailable": "Calendario senza accesso",
       "holidayCalendarHint": "Ogni voce di questo calendario in un giorno di turno chiude quel giorno. Meglio un calendario sincronizzato con un feed delle festività.",
       "holidayOpenDates": "Festività con turno"
     },

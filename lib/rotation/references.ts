@@ -4,8 +4,16 @@ import { calendars, shiftPresets } from "@/lib/db/schema";
 import { canViewCalendar } from "@/lib/auth/permissions";
 import type { RotationInput } from "@/lib/rotation/validate";
 
-/** Checks that need the database; returns an error code for rotation.errors.<code> or null. */
-export async function checkRotationReferences(input: RotationInput, actorId: string | undefined): Promise<string | null> {
+/**
+ * Checks that need the database; returns an error code for rotation.errors.<code> or null.
+ * previousHolidayCalendarId is the stored Feiertagskalender on an update: the actor's access to
+ * it is only checked when it changes, so a co-manager without access can still save the rotation.
+ */
+export async function checkRotationReferences(
+  input: RotationInput,
+  actorId: string | undefined,
+  previousHolidayCalendarId: string | null = null
+): Promise<string | null> {
   const calendar = db.select().from(calendars).where(eq(calendars.id, input.calendarId)).get();
   if (!calendar) return "calendarId";
   if (!calendar.signupsEnabled) return "signupsDisabled";
@@ -27,7 +35,9 @@ export async function checkRotationReferences(input: RotationInput, actorId: str
   if (input.holidayCalendarId !== null) {
     if (input.holidayCalendarId === input.calendarId) return "holidayCalendarSame";
     const holidays = db.select({ id: calendars.id }).from(calendars).where(eq(calendars.id, input.holidayCalendarId)).get();
-    if (!holidays || !(await canViewCalendar(actorId, input.holidayCalendarId))) return "holidayCalendar";
+    if (!holidays) return "holidayCalendar";
+    const changed = input.holidayCalendarId !== previousHolidayCalendarId;
+    if (changed && !(await canViewCalendar(actorId, input.holidayCalendarId))) return "holidayCalendar";
   }
   return null;
 }

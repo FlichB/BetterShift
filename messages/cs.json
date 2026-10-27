@@ -1418,6 +1418,7 @@
       "closedTitleHint": "Ve dnech zavření se zobrazí jako „Text (důvod)“, např. „Zavřeno (Boží hod)“.",
       "holidayCalendar": "Kalendář svátků",
       "holidayCalendarNone": "Žádný",
+      "holidayCalendarUnavailable": "Kalendář bez přístupu",
       "holidayCalendarHint": "Každá položka tohoto kalendáře v den služby tento den uzavře. Nejlépe kalendář synchronizovaný s kanálem svátků.",
       "holidayOpenDates": "Svátky se službou"
     },

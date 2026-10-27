@@ -1418,6 +1418,7 @@
       "closedTitleHint": "Aparece en los días de cierre como «Texto (motivo)», p. ej. «Cerrado (Navidad)».",
       "holidayCalendar": "Calendario de festivos",
       "holidayCalendarNone": "Ninguno",
+      "holidayCalendarUnavailable": "Calendario sin acceso",
       "holidayCalendarHint": "Cada entrada de este calendario en un día de servicio cierra ese día. Lo mejor es un calendario que sincronice un feed de festivos.",
       "holidayOpenDates": "Festivos con servicio"
     },

@@ -223,6 +223,10 @@ export function RotationForm({
                   {c.name}
                 </SelectItem>
               ))}
+            {state.holidayCalendarId && !calendars.some((c) => c.id === state.holidayCalendarId) && (
+              // Chosen by another Verantwortlicher; this user cannot see it but may keep it.
+              <SelectItem value={state.holidayCalendarId}>{t("rotation.fields.holidayCalendarUnavailable")}</SelectItem>
+            )}
           </SelectContent>
         </Select>
       </Field>

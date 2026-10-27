@@ -1418,6 +1418,7 @@
       "closedTitleHint": "Shown on closure days as \"Text (reason)\", e.g. \"Closed (Christmas Day)\".",
       "holidayCalendar": "Holiday calendar",
       "holidayCalendarNone": "None",
+      "holidayCalendarUnavailable": "Calendar without access",
       "holidayCalendarHint": "Every entry of this calendar on a duty day closes that day. Best use a calendar that syncs a public-holiday feed.",
       "holidayOpenDates": "Holidays with duty"
     },
