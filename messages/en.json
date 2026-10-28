@@ -1992,7 +1992,8 @@
       "begun": "Past days and today can no longer be changed.",
       "overlap": "The period overlaps another vacation.",
       "wrongStatus": "That is no longer possible in this state.",
-      "changePending": "There is already an open change request."
+      "changePending": "There is already an open change request.",
+      "rotationUnavailable": "A rotation of this person cannot be replanned right now (template missing or sign-ups off). Please check the rotation."
     },
     "tab": "Vacation",
     "mine": "My vacations",

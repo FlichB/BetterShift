@@ -2,6 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionUser } from "@/lib/auth/sessions";
 import { rateLimit } from "@/lib/rate-limiter";
+import { RotationServiceError } from "@/lib/rotation/service";
 import { swapsDisabled } from "@/lib/swap/http";
 import { VacationServiceError } from "@/lib/vacation/errors";
 import { isManagerOf } from "@/lib/vacation/permissions";
@@ -18,6 +19,7 @@ export const STATUS: Record<VacationErrorCode, number> = {
   overlap: 409,
   wrongStatus: 409,
   changePending: 409,
+  rotationUnavailable: 409,
 };
 
 export const vacationError = (code: VacationErrorCode) => NextResponse.json({ error: code }, { status: STATUS[code] });
@@ -25,6 +27,8 @@ export const vacationError = (code: VacationErrorCode) => NextResponse.json({ er
 /** Maps service errors to `{ error: code }` responses the UI translates via vacation.errors.<code>. */
 export function vacationErrorResponse(error: unknown, fallback: string): NextResponse {
   if (error instanceof VacationServiceError) return vacationError(error.code);
+  // A rotation of the person cannot be planned (preset gone or archived, sign-ups off).
+  if (error instanceof RotationServiceError) return vacationError("rotationUnavailable");
   console.error(fallback, error);
   return NextResponse.json({ error: "internal" }, { status: 500 });
 }

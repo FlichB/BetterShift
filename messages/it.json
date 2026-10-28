@@ -1992,7 +1992,8 @@
       "begun": "I giorni passati e oggi non possono più essere modificati.",
       "overlap": "Il periodo si sovrappone ad altre ferie.",
       "wrongStatus": "Non è più possibile in questo stato.",
-      "changePending": "C'è già una richiesta di modifica aperta."
+      "changePending": "C'è già una richiesta di modifica aperta.",
+      "rotationUnavailable": "Al momento non è possibile ripianificare una rotazione di questa persona (modello mancante o iscrizioni disattivate). Controlla la rotazione."
     },
     "tab": "Ferie",
     "mine": "Le mie ferie",

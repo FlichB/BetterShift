@@ -278,11 +278,11 @@ Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die bei
 **Neuplanung.** Jede wirksame Aktion (Genehmigen, direkter Eintrag, Änderung, Storno) zeigt zuerst eine Vorschau mit allen betroffenen Plätzen (vorher → nachher). Nach dem Bestätigen generiert die App in einem Schritt jede Rotation der Person neu, vom ersten nicht begonnenen Diensttag im (früheren) Zeitraum bis zum bisherigen Planende. Das kann viele Plätze verschieben und damit viele Outlook-Einladungen und -Absagen auslösen; die Vorschau weist darauf hin.
 
 - Urlaub ist im Generator eine harte Regel. „Nie zwei Diensttage in Folge“, Partnerwechsel und Abstände dürfen dafür gebrochen werden.
-- Der Platz wird zuerst innerhalb der Runde verschoben; sonst springt ein Ersatz ein.
+- Der Platz wird zuerst innerhalb der Runde verschoben; sonst springt ein Ersatz ein. Dienste vor dem ersten neu geplanten Tag bleiben dabei, wie sie sind.
 - **Nachholen.** Wer wegen Urlaubs einen Platz verpasst, holt ihn im selben Kalenderjahr des jeweiligen Dienstes nach (das Nachhol-Konto wird pro Kalenderjahr des Dienstes geführt). Was am Jahresende übrig bleibt, verfällt; bei „Gerecht pro Kalenderjahr“ geht es über das Delta ins Folgejahr.
 - **Abstand im Kalenderjahr.** Dass die Plätze pro Kalenderjahr höchstens um 1 abweichen, ist nur mit eingeschaltetem Jahresausgleich garantiert. Ohne ihn laufen die Runden wie bisher über den Jahreswechsel.
 - **Offene Plätze.** Sind in einem Dienst zu wenige Personen verfügbar, bleibt der Platz offen.
-- **Dienstfrei weicht Urlaub aus.** Urlaubstage sind keine Arbeitstage; ein Dienstfrei liegt nie auf einem Urlaubstag (siehe [Dienstfrei](#4a-dienstfrei)).
+- **Dienstfrei weicht Urlaub aus.** Urlaubstage gelten fürs Dienstfrei nicht als Arbeitstag; ein Dienstfrei wird beim nächsten Abgleich vom Urlaub weg verschoben (siehe [Dienstfrei](#4a-dienstfrei)).
 - **Gesperrte Plätze.** Gesperrte Plätze der Person an Urlaubstagen werden freigegeben, Tauschangebote darauf verfallen.
 
 **Tausch an Urlaubstagen gesperrt.** An einem Tag, an dem eine Person Urlaub hat, kann sie keinen Platz per Tausch übernehmen. Der Versuch endet mit „An diesem Tag ist die Person auf Urlaub.“
@@ -291,7 +291,7 @@ Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die bei
 
 - Teamkalender: genehmigter Urlaub erscheint als ganztägiger Eintrag „{Vorname} Urlaub“; ein Klick in der Tagesansicht führt zum Reiter „Urlaub“. Der Eintrag ist keine Schicht und lässt sich nicht bearbeiten.
 - Persönlicher Feed: ganztägiger Termin.
-- Outlook: ganztägiger Termin im Kalender von office@ mit der Person als einzigem Teilnehmer und Status „Abwesend“. Er gehört zur ersten Outlook-fähigen Rotation der Person (nach Namen sortiert). Der Termin eines bereits begonnenen Urlaubs wird nie mehr aktualisiert: Wird ein laufender Urlaub verkürzt, bleibt er in Outlook in voller Länge stehen.
+- Outlook: ganztägiger Termin im Kalender von office@ mit der Person als einzigem Teilnehmer und Status „Abwesend“. Er gehört zur ersten Outlook-fähigen Rotation der Person (nach Namen sortiert). Der Termin gilt erst an seinem letzten Urlaubstag als begonnen: Wird ein laufender Urlaub verlängert, verkürzt oder storniert, zieht Outlook mit. Ab dem letzten Urlaubstag wird der Termin nicht mehr angefasst.
 - Urlaubskalender (Verwaltung): eine Übersicht aller Urlaube pro Jahr; auf dem Handy als Liste, am Desktop als Balken.
 
 **Mails.** Wie bei Tausch und Dienstfrei über Microsoft Graph. Die Verwaltung erhält Anträge und Änderungsanträge, die Person Entscheidungen (genehmigt, abgelehnt, geändert, storniert) und direkte Einträge der Verwaltung. Zwei Schalter unter „Benachrichtigungen“ auf `/swaps`:
@@ -538,6 +538,6 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
   - Es gibt keinen Urlaubsanspruch und keine Resttage-Verwaltung.
   - Es gibt keine halben Tage; Urlaub zählt immer ganze Kalendertage.
   - Krankenstand läuft weiter über den [erzwungenen Tausch](#erzwungener-tausch-krankenstand).
-  - Ein laufender Urlaub, der verkürzt wird, bleibt in Outlook in voller Länge stehen (begonnene Termine werden nicht angefasst).
+  - Ab dem letzten Urlaubstag wird der Outlook-Termin nicht mehr angefasst; eine Änderung an diesem Tag erreicht Outlook nicht mehr.
   - Die Neuplanung kann viele Outlook-Mails auslösen.
 - Ohne Anmeldung (`AUTH_ENABLED=false`) gibt es weder Tausch-Mails noch Outlook-Sync noch einen persönlichen Feed.

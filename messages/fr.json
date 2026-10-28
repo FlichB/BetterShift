@@ -1992,7 +1992,8 @@
       "begun": "Les jours passés et aujourd'hui ne peuvent plus être modifiés.",
       "overlap": "La période chevauche un autre congé.",
       "wrongStatus": "Ce n'est plus possible dans cet état.",
-      "changePending": "Une demande de modification est déjà ouverte."
+      "changePending": "Une demande de modification est déjà ouverte.",
+      "rotationUnavailable": "Une rotation de cette personne ne peut pas être replanifiée pour le moment (modèle manquant ou inscriptions désactivées). Vérifie la rotation."
     },
     "tab": "Congés",
     "mine": "Mes congés",

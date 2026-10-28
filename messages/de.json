@@ -1992,7 +1992,8 @@
       "begun": "Vergangene oder heutige Tage lassen sich nicht mehr ändern.",
       "overlap": "Der Zeitraum überschneidet sich mit einem anderen Urlaub.",
       "wrongStatus": "Das geht in diesem Status nicht mehr.",
-      "changePending": "Es gibt schon einen offenen Änderungsantrag."
+      "changePending": "Es gibt schon einen offenen Änderungsantrag.",
+      "rotationUnavailable": "Eine Rotation dieser Person kann gerade nicht neu geplant werden (Vorlage fehlt oder Anmeldungen sind aus). Bitte die Rotation prüfen."
     },
     "tab": "Urlaub",
     "mine": "Meine Urlaube",

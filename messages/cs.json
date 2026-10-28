@@ -1992,7 +1992,8 @@
       "begun": "Minulé dny a dnešek už nelze měnit.",
       "overlap": "Období se překrývá s jinou dovolenou.",
       "wrongStatus": "V tomto stavu to už nejde.",
-      "changePending": "Žádost o změnu už je otevřená."
+      "changePending": "Žádost o změnu už je otevřená.",
+      "rotationUnavailable": "Rotaci této osoby teď nelze znovu naplánovat (chybí šablona nebo jsou přihlášky vypnuté). Zkontroluj rotaci."
     },
     "tab": "Dovolená",
     "mine": "Moje dovolené",

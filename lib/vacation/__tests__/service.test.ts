@@ -16,6 +16,9 @@ import {
   withdrawVacation,
 } from "@/lib/vacation/service";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
+import { createRotation, runGeneration, RotationServiceError } from "@/lib/rotation/service";
+import { rotations } from "@/lib/rotation/schema";
+import { vacationErrorResponse } from "@/lib/vacation/http";
 
 // No request scope in tests: the access resolver reads the token cookie.
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
@@ -120,5 +123,59 @@ describe("write-time guards", () => {
     const v = await requestVacation(s.m1, { startDate: "2026-12-01", endDate: "2026-12-03", note: null }, now);
     db.update(vacations).set({ status: "withdrawn" }).where(eq(vacations.id, v.id)).run();
     await expect(approveVacation(v.id, s.team.ownerId, now)).rejects.toMatchObject({ code: "wrongStatus" });
+  });
+});
+
+describe("rotations that cannot be planned (final review I1)", () => {
+  const second = async (s: Awaited<ReturnType<typeof seedDuties>>, generate: boolean) => {
+    const r = createRotation(
+      {
+        name: "Zweite",
+        calendarId: s.team.calendarId,
+        presetId: s.team.presetId,
+        memberIds: [s.m1, s.m2],
+        perShift: 1,
+        period: "week",
+        periodDays: null,
+        startDate: "2026-11-02",
+        startOffset: 0,
+        weekdays: [5],
+        skipDates: [],
+        closedTitle: "Geschlossen",
+        entryTitle: "{Vorname} Dienst",
+        dayOffEnabled: false,
+        dayOffTitle: "{Vorname} dienstfrei",
+        dayOffTiming: "after",
+        dayOffExcludedIds: [],
+        yearlyFairness: false,
+        minPresent: null,
+        reinforcedDates: [],
+        holidayCalendarId: null,
+        holidayOpenDates: [],
+      },
+      s.team.ownerId
+    );
+    if (generate) await runGeneration(r.id, "2026-11-02", "2026-12-27", s.team.ownerId, now);
+    db.update(rotations).set({ presetId: null }).where(eq(rotations.id, r.id)).run(); // the preset was deleted
+    return r;
+  };
+
+  it("enters a vacation when another rotation of the person has nothing planned", async () => {
+    const s = await seedDuties();
+    await second(s, false);
+    const v = await enterVacation(s.m1, { startDate: "2026-11-07", endDate: "2026-11-07", note: null }, s.team.ownerId, now);
+    expect(v.status).toBe("approved");
+    expect(s.holders(s.duty("2026-11-07"))).not.toContain(s.m1);
+  });
+
+  it("answers 409 rotationUnavailable when a rotation to replan has no template", async () => {
+    const s = await seedDuties();
+    await second(s, true);
+    const error = await enterVacation(s.m1, { startDate: "2026-11-07", endDate: "2026-11-07", note: null }, s.team.ownerId, now).catch((e) => e);
+    expect(error).toBeInstanceOf(RotationServiceError);
+    const res = vacationErrorResponse(error, "x");
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: "rotationUnavailable" });
+    expect(db.select().from(vacations).where(eq(vacations.userId, s.m1)).all()).toEqual([]);
   });
 });

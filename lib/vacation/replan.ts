@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { calendars, user } from "@/lib/db/schema";
 import { formatDateToLocal } from "@/lib/date-utils";
 import { logReconcileEventsLater } from "@/lib/dayoff/audit";
-import type { ReconcileEvent } from "@/lib/dayoff/service";
+import { reconcileRotation, type ReconcileEvent } from "@/lib/dayoff/service";
 import { addDays } from "@/lib/rotation/dates";
 import {
   applyPlan,
@@ -74,17 +74,33 @@ const names = (ids: string[]) => {
   return new Map(db.select({ id: user.id, name: user.name }).from(user).where(inArray(user.id, ids)).all().map((u) => [u.id, u.name]));
 };
 
+/** Whether the rotation has written duties from `changedFrom` on, i.e. anything to replan. */
+const reaches = (reader: Reader, rotationId: string, changedFrom: string): boolean => {
+  const to = planEnd(reader, rotationId);
+  return to !== null && changedFrom <= to;
+};
+
+/**
+ * Templates of the rotations that have something to replan. A rotation planned only up to before
+ * `changedFrom` is not prepared, so its preset or sign-up settings cannot block the vacation.
+ */
+async function prepareReaching(rotationIds: string[], changedFrom: string): Promise<Map<string, PreparedGeneration>> {
+  const ids = rotationIds.filter((id) => reaches(db, id, changedFrom));
+  return new Map(await Promise.all(ids.map(async (id) => [id, await prepareGeneration(id)] as const)));
+}
+
 /** What each rotation of the person would change; nothing is written. */
 export async function previewAction(action: VacationAction, now: Date): Promise<VacationPreview> {
   const today = formatDateToLocal(now);
   const { userId, override, changedFrom } = resolveAction(db, action, today);
   const list = rotationsOfMember(db, userId);
-  const prepared = await Promise.all(list.map((r) => prepareGeneration(r.id)));
+  const prepared = await prepareReaching(list.map((r) => r.id), changedFrom);
   const calendarNames = new Map(db.select({ id: calendars.id, name: calendars.name }).from(calendars).all().map((c) => [c.id, c.name]));
   const rotations = db.transaction((tx) =>
-    list.map((r, i) => {
+    list.map((r) => {
       const to = planEnd(tx, r.id);
-      const plan = to && changedFrom <= to ? planInTx(tx, prepared[i], changedFrom, to, now, override) : null;
+      const p = prepared.get(r.id);
+      const plan = p && to && changedFrom <= to ? planInTx(tx, p, changedFrom, to, now, override) : null;
       const entries = (plan?.entries ?? []).filter((e) => e.kind === "update" && (e.add.length > 0 || e.remove.length > 0));
       const people = names([...new Set(entries.flatMap((e) => (e.kind === "update" ? [...e.userIds, ...e.remove] : [])))]);
       return {
@@ -106,13 +122,18 @@ export async function previewAction(action: VacationAction, now: Date): Promise<
 /** Runs `write` and regenerates every rotation of the user from `changedFrom` to its Planende, all in one transaction. */
 export async function runWithReplan<T>(userId: string, changedFrom: string, actorId: string, now: Date, write: (tx: Tx) => T): Promise<T> {
   const list = rotationsOfMember(db, userId);
-  const prepared: PreparedGeneration[] = await Promise.all(list.map((r) => prepareGeneration(r.id)));
+  const prepared = await prepareReaching(list.map((r) => r.id), changedFrom);
   let events: ReconcileEvent[] = [];
   const result = db.transaction((tx) => {
     const value = write(tx);
-    for (const p of prepared) {
-      const to = planEnd(tx, p.rotationId);
-      if (!to || changedFrom > to) continue;
+    for (const r of list) {
+      const p = prepared.get(r.id);
+      const to = planEnd(tx, r.id);
+      if (!p || !to || changedFrom > to) {
+        // Nothing to replan; the Dienstfreie still move off the new vacation days.
+        events = [...events, ...reconcileRotation(tx, r.id, now).events];
+        continue;
+      }
       const applied = applyPlan(tx, p, planInTx(tx, p, changedFrom, to, now), actorId, now);
       events = [...events, ...applied.dayOffEvents];
     }

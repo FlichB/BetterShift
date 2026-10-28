@@ -171,7 +171,9 @@ export function desiredVacationEvent(v: VacationForSync): PlaceEvent {
     shiftId: v.id,
     userId: v.userId,
     rotationId: v.rotationId,
-    date: v.startDate,
+    // The sync treats an event as begun from date/startTime on and never cancels it after that:
+    // a vacation counts as begun on its last day, so a running one can still be changed or cancelled.
+    date: v.endDate,
     startTime: "00:00",
     event: {
       subject: v.title,

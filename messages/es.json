@@ -1992,7 +1992,8 @@
       "begun": "Los días pasados y el día de hoy ya no se pueden modificar.",
       "overlap": "El período se solapa con otras vacaciones.",
       "wrongStatus": "Ya no es posible en este estado.",
-      "changePending": "Ya hay una solicitud de cambio abierta."
+      "changePending": "Ya hay una solicitud de cambio abierta.",
+      "rotationUnavailable": "Ahora mismo no se puede volver a planificar una rotación de esta persona (falta la plantilla o las inscripciones están desactivadas). Revisa la rotación."
     },
     "tab": "Vacaciones",
     "mine": "Mis vacaciones",

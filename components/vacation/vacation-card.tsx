@@ -36,6 +36,8 @@ function vacationErrorText(t: T, code: string): string | null {
       return t("vacation.errors.wrongStatus");
     case "changePending":
       return t("vacation.errors.changePending");
+    case "rotationUnavailable":
+      return t("vacation.errors.rotationUnavailable");
     default:
       return null;
   }

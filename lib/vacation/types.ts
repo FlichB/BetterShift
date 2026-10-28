@@ -24,6 +24,7 @@ export type VacationErrorCode =
   | "overlap"
   | "wrongStatus"
   | "changePending"
+  | "rotationUnavailable"
   | "reasonRequired";
 
 export const MAX_VACATION_DAYS = 366;

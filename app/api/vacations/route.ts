@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
     if (!range.ok) return vacationError(range.error);
     const now = new Date();
     const target = (body as Record<string, unknown>).userId;
-    if (typeof target === "string" && target !== session.userId) {
+    // An explicit userId is the Verwaltung entering a vacation, also their own (as a Teilnehmer).
+    if (typeof target === "string") {
       const denied = await requireManagerOf(session.userId, target);
       if (denied) return denied;
       const entered = await enterVacation(target, range.value, session.userId, now);
