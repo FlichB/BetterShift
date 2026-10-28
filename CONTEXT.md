@@ -165,6 +165,21 @@ Ein Dienstfrei, dessen Termin die Verwaltung angenommen hat; der Inhaber kann es
 **Entfallenes Dienstfrei**:
 Ein Dienstfrei, dessen Dienst weggefallen ist, z. B. weil der Diensttag zum Schließtag wurde.
 
+## Urlaub
+
+**Urlaub**:
+Zeitraum ganzer Kalendertage, in dem eine Person keinen Platz bekommt; er gehört der Person und gilt in allen ihren Rotationen. Genehmigt wird er von der Rotations-Verwaltung der Person.
+_Avoid_: Abwesenheit, Krankenstand (der läuft über den erzwungenen Tausch)
+
+**Urlaubsantrag**:
+Beantragter Urlaub, den die Verwaltung genehmigt oder ablehnt; Änderungs- und Storno-Anträge betreffen einen genehmigten Urlaub.
+
+**Neuplanung**:
+Das automatische Neugenerieren aller Rotationen der Person ab dem ersten betroffenen Diensttag bis zum bisherigen Planende, nach Vorschau, in einem Schritt.
+
+**Nachhol-Schuld**:
+Plätze, die jemand wegen Urlaubs verpasst hat und im selben Kalenderjahr des jeweiligen Dienstes nachholt; was übrig bleibt, verfällt bzw. geht über das Delta (Jahresausgleich) ins Folgejahr.
+
 ## Mindestbesetzung
 
 **Mindestbesetzung**:

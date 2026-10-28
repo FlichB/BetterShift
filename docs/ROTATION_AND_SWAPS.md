@@ -9,6 +9,7 @@ Diese Anleitung beschreibt die Fork-Erweiterungen von BetterShift: Dienste reihu
 3. [Generieren](#3-generieren)
 4. [Tauschbörse](#4-tauschbörse)
    - [Dienstfrei](#4a-dienstfrei)
+   - [Urlaub](#4b-urlaub)
 5. [Rechte](#5-rechte)
 6. [Benachrichtigungen und Outlook](#6-benachrichtigungen-und-outlook)
 7. [Persönlicher Kalender-Feed](#7-persönlicher-kalender-feed)
@@ -255,7 +256,7 @@ Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die bei
 
 **Grenzen.**
 
-- Arbeitstage pro Person, Urlaub und Krankheit kennt die App nicht. Bei Bedarf sperrt die Verwaltung, und der Termin wird neu vereinbart.
+- Arbeitstage pro Person und Krankheit kennt die App nicht; genehmigter Urlaub zählt nicht als Arbeitstag. Bei Bedarf sperrt die Verwaltung, und der Termin wird neu vereinbart.
 - Beim Neugenerieren werden verwaiste Dienstfreie in fester Reihenfolge den neuen Inhabern zugeordnet; ein gesperrtes kann so an eine andere Person gehen (es bleibt gesperrt).
 - Kollisionen mit eigenen Diensten anderer Rotationen an Werktagen werden nicht geprüft.
 - Manuelles Umbesetzen über „Andere eintragen" (`signUpOthers`) gilt nicht als Platzwechsel: Das alte Dienstfrei entfällt (mit Mail), der neue Inhaber bekommt ein neues auf dem Standardtag; eine Sperre oder Vereinbarung geht verloren. Für Umbesetzungen ist der erzwungene Tausch gedacht, der das Dienstfrei übergibt.
@@ -263,6 +264,44 @@ Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die bei
 - Wird eine Rotation gelöscht, verschwinden alle ihre Dienstfreie (auch vergangene und gesperrte) ohne Mail an die Inhaber.
 - Die Verwaltung erhält Mails nur, wenn sie Besitzer ist oder eine Freigabe mit „Kalendereinstellungen verwalten" hat; globale Administratoren ohne Freigabe nicht.
 - Mails nur mit konfiguriertem Outlook.
+
+## 4b. Urlaub
+
+**Urlaub** gehört der Person, nicht einer Rotation: ein Zeitraum ganzer Kalendertage (1 bis 366 Tage), in dem sie keinen Platz bekommt. Er gilt in allen Rotationen, in denen sie Teilnehmer ist. Urlaube derselben Person überschneiden sich nicht. Bedient wird alles auf `/swaps` im Reiter „Urlaub“.
+
+**Antrag und Entscheidung.** Ein Teilnehmer beantragt mit „Urlaub beantragen“ Zeitraum und optional eine Notiz (bis 500 Zeichen); der Start muss nach heute liegen. Die Rotations-Verwaltung der Person (wer in einer ihrer Rotationen Rotationen verwalten darf) sieht den Antrag unter „Offene Anträge“ und genehmigt oder lehnt ab; eine Ablehnung braucht eine Begründung. Den eigenen offenen Antrag zieht der Antragsteller zurück. Anträge sehen nur Antragsteller und Verwaltung.
+
+**Direkte Einträge.** Die Verwaltung kann Urlaub mit „Urlaub eintragen“ direkt für einen Teilnehmer eintragen, ändern und stornieren, ohne Antrag. Die Person bekommt eine Mail.
+
+**Änderung und Storno.** Ein genehmigter Urlaub lässt sich für den Mitarbeiter nur über einen Änderungs- oder Storno-Antrag ändern, den die Verwaltung genehmigt oder ablehnt (höchstens ein offener Antrag je Urlaub). Ein genehmigter Storno-Antrag verschickt die Mail „Urlaub storniert“. Begonnene Urlaubstage sind unveränderlich: Neue und geänderte Startdaten müssen nach heute liegen.
+
+**Neuplanung.** Jede wirksame Aktion (Genehmigen, direkter Eintrag, Änderung, Storno) zeigt zuerst eine Vorschau mit allen betroffenen Plätzen (vorher → nachher). Nach dem Bestätigen generiert die App in einem Schritt jede Rotation der Person neu, vom ersten nicht begonnenen Diensttag im (früheren) Zeitraum bis zum bisherigen Planende. Das kann viele Plätze verschieben und damit viele Outlook-Einladungen und -Absagen auslösen; die Vorschau weist darauf hin.
+
+- Urlaub ist im Generator eine harte Regel. „Nie zwei Diensttage in Folge“, Partnerwechsel und Abstände dürfen dafür gebrochen werden.
+- Der Platz wird zuerst innerhalb der Runde verschoben; sonst springt ein Ersatz ein.
+- **Nachholen.** Wer wegen Urlaubs einen Platz verpasst, holt ihn im selben Kalenderjahr des jeweiligen Dienstes nach (das Nachhol-Konto wird pro Kalenderjahr des Dienstes geführt). Was am Jahresende übrig bleibt, verfällt; bei „Gerecht pro Kalenderjahr“ geht es über das Delta ins Folgejahr.
+- **Abstand im Kalenderjahr.** Dass die Plätze pro Kalenderjahr höchstens um 1 abweichen, ist nur mit eingeschaltetem Jahresausgleich garantiert. Ohne ihn laufen die Runden wie bisher über den Jahreswechsel.
+- **Offene Plätze.** Sind in einem Dienst zu wenige Personen verfügbar, bleibt der Platz offen.
+- **Dienstfrei weicht Urlaub aus.** Urlaubstage sind keine Arbeitstage; ein Dienstfrei liegt nie auf einem Urlaubstag (siehe [Dienstfrei](#4a-dienstfrei)).
+- **Gesperrte Plätze.** Gesperrte Plätze der Person an Urlaubstagen werden freigegeben, Tauschangebote darauf verfallen.
+
+**Tausch an Urlaubstagen gesperrt.** An einem Tag, an dem eine Person Urlaub hat, kann sie keinen Platz per Tausch übernehmen. Der Versuch endet mit „An diesem Tag ist die Person auf Urlaub.“
+
+**Anzeige.**
+
+- Teamkalender: genehmigter Urlaub erscheint als ganztägiger Eintrag „{Vorname} Urlaub“; ein Klick in der Tagesansicht führt zum Reiter „Urlaub“. Der Eintrag ist keine Schicht und lässt sich nicht bearbeiten.
+- Persönlicher Feed: ganztägiger Termin.
+- Outlook: ganztägiger Termin im Kalender von office@ mit der Person als einzigem Teilnehmer und Status „Abwesend“. Er gehört zur ersten Outlook-fähigen Rotation der Person (nach Namen sortiert). Der Termin eines bereits begonnenen Urlaubs wird nie mehr aktualisiert: Wird ein laufender Urlaub verkürzt, bleibt er in Outlook in voller Länge stehen.
+- Urlaubskalender (Verwaltung): eine Übersicht aller Urlaube pro Jahr; auf dem Handy als Liste, am Desktop als Balken.
+
+**Mails.** Wie bei Tausch und Dienstfrei über Microsoft Graph. Die Verwaltung erhält Anträge und Änderungsanträge, die Person Entscheidungen (genehmigt, abgelehnt, geändert, storniert) und direkte Einträge der Verwaltung. Zwei Schalter unter „Benachrichtigungen“ auf `/swaps`:
+
+| Anlass | An wen | Schalter |
+| --- | --- | --- |
+| Entscheidungen, Einträge, Änderungen und Stornos der Verwaltung | die Person | „Meine Urlaube“ |
+| neue Anträge und Änderungsanträge | die Verwaltung | „Urlaubsanträge“ |
+
+Mails nur mit konfiguriertem Outlook. Mitglieder, die aus der Rotation ausscheiden, behalten ihre Urlaube.
 
 ## 5. Rechte
 
@@ -495,4 +534,10 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
   - Hat ein Jahr weniger Diensttage, als der Ausgleich braucht, entfällt der Rest des Ausgleichs. Er wird nicht ins nächste Jahr übertragen.
   - Bei 3 Personen pro Dienst kann der Jahresmodus in Konfigurationen, in denen schon der normale Plan Partner wiederholt, ein paar Wiederholungen mehr erzeugen als der normale Plan.
 - **Dienstfrei:** Grenzen siehe [Dienstfrei](#4a-dienstfrei).
+- **Urlaub:**
+  - Es gibt keinen Urlaubsanspruch und keine Resttage-Verwaltung.
+  - Es gibt keine halben Tage; Urlaub zählt immer ganze Kalendertage.
+  - Krankenstand läuft weiter über den [erzwungenen Tausch](#erzwungener-tausch-krankenstand).
+  - Ein laufender Urlaub, der verkürzt wird, bleibt in Outlook in voller Länge stehen (begonnene Termine werden nicht angefasst).
+  - Die Neuplanung kann viele Outlook-Mails auslösen.
 - Ohne Anmeldung (`AUTH_ENABLED=false`) gibt es weder Tausch-Mails noch Outlook-Sync noch einen persönlichen Feed.
