@@ -85,6 +85,13 @@
       "when": 1793196588137,
       "tag": "0011_rotation_yearly_fairness",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1793204099179,
+      "tag": "0012_rotation_joined_on_restart",
+      "breakpoints": true
     }
   ]
 }
