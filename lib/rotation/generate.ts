@@ -239,6 +239,10 @@ export interface YearlyHooks {
 export interface AbsenceHooks {
   allowed: (userId: string, duty: number) => boolean;
   yearOf: (duty: number) => number;
+  /** True when the duty is no longer rewritten (its period ends before rule.frozenBefore). */
+  frozen?: (duty: number) => boolean;
+  /** What the database holds for a frozen duty; undefined = not known, planned as usual. */
+  heldBy?: (duty: number) => readonly string[] | undefined;
 }
 
 /** [fork] Urlaub: orders by Nachhol-Konto (dir 1 = lowest first), then member order. */
@@ -349,6 +353,102 @@ function repairAbsences(
   return changed;
 }
 
+/** [fork] Urlaub: a Nachhol-Konto change found while rebuilding a round around frozen duties. */
+interface Booking {
+  year: number;
+  userId: string;
+  amount: number;
+}
+
+/**
+ * [fork] Urlaub: rebuilds a round some of whose duties must keep what the database holds (`held`).
+ * Those duties take the held groups and become fixed; the other duties get the round's remaining
+ * seats (the drawn seats minus what the held groups used), so everyone's count over the round stays
+ * as drawn. Seats that do not balance are what makeUp and repairAbsences booked when the held duties
+ * were planned: a Nachholplatz (a creditor short, a debtor over) goes before makeUp, a Platz missed
+ * on vacation (that person short, the substitute over) after it. Any other difference (an edit by
+ * hand, a changed member list) is not booked.
+ */
+function freezeRound(
+  drawn: string[][],
+  drawnFixed: number[],
+  duties: number[],
+  held: (readonly string[] | undefined)[],
+  absence: AbsenceHooks,
+  year: number,
+  balance: (userId: string) => number,
+  ordered: string[]
+): { groups: string[][]; fixed: number[]; beforeMakeUp: Booking[]; afterMakeUp: Booking[]; madeUp: string[] } {
+  const left = new Map<string, number>(ordered.map((u) => [u, 0]));
+  const add = (u: string, w: number) => left.set(u, (left.get(u) ?? 0) + w);
+  drawn.forEach((g, j) => g.forEach((u, i) => i >= drawnFixed[j] && add(u, 1)));
+  held.forEach((h, j) => {
+    if (!h) return;
+    for (const u of h) add(u, -1);
+    for (let i = 0; i < drawnFixed[j]; i++) add(drawn[j][i], 1); // a carried seat was drawn by the round before
+  });
+
+  const groups: string[][] = [];
+  const fixed: number[] = [];
+  const free: number[] = []; // a duty index per seat whose drawn holder has no seat left
+  drawn.forEach((g, j) => {
+    const h = held[j];
+    if (h) {
+      groups.push([...h]);
+      fixed.push(h.length);
+      return;
+    }
+    const group = g.slice(0, drawnFixed[j]);
+    for (const u of g.slice(drawnFixed[j])) {
+      if ((left.get(u) as number) > 0) {
+        group.push(u);
+        add(u, -1);
+      } else free.push(j);
+    }
+    groups.push(group);
+    fixed.push(drawnFixed[j]);
+  });
+  for (const j of free) {
+    const owed = [...left].filter(([, c]) => c > 0).map(([u]) => u);
+    const u =
+      owed.find((v) => !groups[j].includes(v) && absence.allowed(v, duties[j])) ?? owed.find((v) => !groups[j].includes(v)) ?? owed[0];
+    if (u === undefined) continue;
+    groups[j].push(u);
+    add(u, -1);
+  }
+
+  const short = new Map([...left].filter(([, c]) => c > 0));
+  const over = new Map([...left].filter(([, c]) => c < 0).map(([u, c]) => [u, -c]));
+  const booked = new Map<string, number>();
+  const current = (u: string) => balance(u) + (booked.get(u) ?? 0);
+  const beforeMakeUp: Booking[] = [];
+  const afterMakeUp: Booking[] = [];
+  const madeUp: string[] = [];
+  const book = (list: Booking[], userId: string, amount: number, from: Map<string, number>) => {
+    list.push({ year, userId, amount });
+    booked.set(userId, (booked.get(userId) ?? 0) + amount);
+    from.set(userId, (from.get(userId) as number) - 1);
+  };
+  for (const v of short.keys()) {
+    while ((short.get(v) as number) > 0 && current(v) > 0) {
+      const u = [...over.keys()].find((x) => (over.get(x) as number) > 0 && current(x) < 0);
+      if (u === undefined) break;
+      book(beforeMakeUp, v, -1, short);
+      book(beforeMakeUp, u, 1, over);
+      madeUp.push(u);
+    }
+  }
+  const onVacation = (u: string) => held.some((h, j) => h !== undefined && !absence.allowed(u, duties[j]));
+  for (const u of short.keys()) {
+    while (onVacation(u) && (short.get(u) as number) > 0) {
+      book(afterMakeUp, u, -1, short);
+      const y = [...over.keys()].find((x) => (over.get(x) as number) > 0);
+      if (y !== undefined) book(afterMakeUp, y, 1, over);
+    }
+  }
+  return { groups, fixed, beforeMakeUp, afterMakeUp, madeUp };
+}
+
 /**
  * Teilnehmer per duty, in duty order. Seats come in rounds of lcm(n, perShift) in which every
  * Teilnehmer appears equally often; each duty draws sizeOf(duty) seats (capped at n, at least
@@ -358,7 +458,7 @@ function repairAbsences(
  * duty at perShift this is exactly the former duty-round generator. With yearly hooks, rounds end
  * at the last duty of a year and a year starts with an Ausgleichsphase (SPEC 12.41). With absence
  * hooks, nobody sits on a duty touching their Urlaub; missed Plätze are made up within the
- * calendar year (SPEC 12.43).
+ * calendar year (SPEC 12.43), and frozen duties keep what the database holds (freezeRound).
  */
 export function* dutyGroups(
   rule: RotationRule,
@@ -532,29 +632,63 @@ export function* dutyGroups(
         seat += take;
       }
     }
-    repairDuplicates(groups, fixed, rule.memberIds);
-    let touched = false; // [fork] Urlaub: did an absence or a Nachholplatz change this round?
-    if (absence) {
-      // [fork] Urlaub (SPEC 12.43)
-      // No duty of a year before the round's first duty can come up again.
-      for (const year of balances.keys()) if (year < absence.yearOf(duty)) balances.delete(year);
-      touched = makeUp(groups, fixed, duties, absence, konten, position, beatless);
-      touched = repairAbsences(groups, fixed, duties, absence, konten, position, rule.memberIds) || touched;
-    }
-    if (round > 0 || offBeat || touched) {
-      // [fork] Urlaub: a duty left with an open Platz keeps its place.
-      const movable = groups.map((g, j) => fixed[j] === 0 && complete[j] && g.length === capacity(duties[j]));
-      const settle = owed;
-      const allowedAt = absence ? (u: string, j: number) => absence.allowed(u, duties[j]) : undefined; // [fork] Urlaub
-      groups = improveRound(
-        groups,
-        fixed,
-        movable,
-        (g) =>
-          roundCost(g, duties, history, idealGap, pos, !offBeat, yearly !== undefined, beatless) +
-          (settle ? owedFirstCost(g, settle) : 0),
-        allowedAt
-      );
+    // [fork] Urlaub (SPEC 12.43): no duty of a year before the round's first duty can come up again.
+    if (absence) for (const year of balances.keys()) if (year < absence.yearOf(duty)) balances.delete(year);
+    // [fork] Urlaub: duties no longer rewritten keep what the database holds (see freezeRound).
+    const heldGroups = absence?.frozen ? duties.map((d, j) => (complete[j] && absence.frozen!(d) ? absence.heldBy?.(d) : undefined)) : [];
+    const drawn = heldGroups.some(Boolean) ? groups.map((g) => [...g]) : null;
+    const drawnFixed = [...fixed];
+    const saved = drawn ? { balances: [...balances].map(([y, m]) => [y, new Map(m)] as const), beatless: [...beatless] } : null;
+    const book = (list: Booking[]) => {
+      for (const b of list) konten(b.year).set(b.userId, (konten(b.year).get(b.userId) ?? 0) + b.amount);
+    };
+
+    const settleRound = (beforeMakeUp: Booking[] = [], afterMakeUp: Booking[] = [], rebuilt = false): boolean => {
+      repairDuplicates(groups, fixed, rule.memberIds);
+      let touched = false; // [fork] Urlaub: did an absence or a Nachholplatz change this round?
+      if (absence) {
+        // [fork] Urlaub (SPEC 12.43)
+        book(beforeMakeUp);
+        touched = makeUp(groups, fixed, duties, absence, konten, position, beatless);
+        book(afterMakeUp);
+        touched = repairAbsences(groups, fixed, duties, absence, konten, position, rule.memberIds) || touched;
+      }
+      if (round > 0 || offBeat || touched || rebuilt) {
+        // [fork] Urlaub: a duty left with an open Platz keeps its place.
+        const movable = groups.map((g, j) => fixed[j] === 0 && complete[j] && g.length === capacity(duties[j]));
+        const settle = owed;
+        const allowedAt = absence ? (u: string, j: number) => absence.allowed(u, duties[j]) : undefined; // [fork] Urlaub
+        groups = improveRound(
+          groups,
+          fixed,
+          movable,
+          (g) =>
+            roundCost(g, duties, history, idealGap, pos, !offBeat, yearly !== undefined, beatless) +
+            (settle ? owedFirstCost(g, settle) : 0),
+          allowedAt
+        );
+      }
+      return touched;
+    };
+    const touched = settleRound();
+    // [fork] Urlaub: when the round being rewritten from frozenBefore, or a frozen round with an
+    // absence or a Nachholplatz, ends up with other holders on a frozen duty, plan it again around
+    // what the database holds there. Any other frozen round stays as the generator plans it.
+    const replanned = () =>
+      touched || duties.some((d) => !absence!.frozen!(d) || rule.memberIds.some((u) => !absence!.allowed(u, d)));
+    if (absence && drawn && saved && replanned() && heldGroups.some((h, j) => h && !(h.length === groups[j].length && h.every((u) => groups[j].includes(u))))) {
+      balances.clear();
+      for (const [y, m] of saved.balances) balances.set(y, m);
+      beatless.clear();
+      for (const u of saved.beatless) beatless.add(u);
+      let last = heldGroups.length - 1;
+      while (!heldGroups[last]) last--;
+      const year = absence.yearOf(duties[last]);
+      const rebuilt = freezeRound(drawn, drawnFixed, duties, heldGroups, absence, year, (u) => konten(year).get(u) ?? 0, ordered);
+      groups = rebuilt.groups;
+      fixed.splice(0, fixed.length, ...rebuilt.fixed);
+      for (const u of rebuilt.madeUp) beatless.add(u);
+      settleRound(rebuilt.beforeMakeUp, rebuilt.afterMakeUp, true);
     }
 
     carry = [];
@@ -658,11 +792,15 @@ function planner(rule: RotationRule) {
   // [fork] Urlaub (SPEC 12.43)
   const ranges = new Map<string, { from: string; to: string }[]>();
   for (const a of rule.absences ?? []) ranges.set(a.userId, [...(ranges.get(a.userId) ?? []), a]);
+  const { frozenBefore, frozenDuties = {} } = rule;
   const absence: AbsenceHooks | undefined =
     ranges.size > 0
       ? {
           allowed: (u, duty) => !(ranges.get(u) ?? []).some((r) => periodAt(duty).dates.some((d) => r.from <= d && d <= r.to)),
           yearOf: (duty) => yearOfDate(periodAt(duty).dates[0]),
+          // A period reaching frozenBefore is rewritten from there on, so it is still planned.
+          frozen: frozenBefore ? (duty) => periodAt(duty).dates[periodAt(duty).dates.length - 1] < frozenBefore : undefined,
+          heldBy: (duty) => frozenDuties[periodAt(duty).dates[0]],
         }
       : undefined;
   return { periodAt, groups: dutyGroups(rule, (d) => periodAt(d).size, yearly, absence) };

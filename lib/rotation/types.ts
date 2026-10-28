@@ -68,6 +68,14 @@ export interface RotationRule {
   deltaOverrides?: Record<number, Record<string, number>>;
   /** [fork] Urlaub: approved vacations; a Teilnehmer gets no Platz on a duty touching one. */
   absences?: Absence[];
+  /**
+   * [fork] Urlaub: a duty whose period ends before this date keeps its holders from frozenDuties
+   * (when given there); only read together with absences. Replanning from a date sets it so the
+   * rest of a round cannot move a Platz into a duty that is no longer rewritten.
+   */
+  frozenBefore?: string;
+  /** [fork] Urlaub: holders per Diensttag before frozenBefore, as the plan sees them (a swap's taker counts as the one replaced). */
+  frozenDuties?: Record<string, string[]>;
 }
 
 export interface PlannedDuty {

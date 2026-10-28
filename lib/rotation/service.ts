@@ -158,6 +158,39 @@ function loadHeldDuties(reader: Tx | typeof db, rotationId: string, today: strin
   return held;
 }
 
+/**
+ * [fork] Urlaub: holders per Diensttag in [from, before) as the plan sees them: a swap's taker
+ * (a Gesperrter Platz with replacesUserId) counts as the Teilnehmer they replaced, as in planGeneration.
+ */
+function loadFrozenDuties(reader: Tx | typeof db, rotationId: string, from: string, before: string): Record<string, string[]> {
+  const rows = reader
+    .select({ shiftId: rotationDuties.shiftId, date: rotationDuties.date, userId: shiftSignups.userId })
+    .from(rotationDuties)
+    .leftJoin(shiftSignups, eq(shiftSignups.shiftId, rotationDuties.shiftId))
+    .where(
+      and(eq(rotationDuties.rotationId, rotationId), eq(rotationDuties.kind, "duty"), gte(rotationDuties.date, from), lt(rotationDuties.date, before))
+    )
+    .all();
+  const replaced = new Map(
+    reader
+      .select({ shiftId: rotationSlotLocks.shiftId, userId: rotationSlotLocks.userId, replacesUserId: rotationSlotLocks.replacesUserId })
+      .from(rotationSlotLocks)
+      .innerJoin(rotationDuties, eq(rotationDuties.shiftId, rotationSlotLocks.shiftId))
+      .where(and(eq(rotationDuties.rotationId, rotationId), gte(rotationDuties.date, from), lt(rotationDuties.date, before)))
+      .all()
+      .filter((l) => l.replacesUserId)
+      .map((l) => [`${l.shiftId}|${l.userId}`, l.replacesUserId as string])
+  );
+  const held: Record<string, string[]> = {};
+  for (const row of rows) {
+    const list = (held[row.date] ??= []);
+    if (!row.userId) continue;
+    const planned = replaced.get(`${row.shiftId}|${row.userId}`) ?? row.userId;
+    list.push(list.includes(planned) ? row.userId : planned);
+  }
+  return held;
+}
+
 function loadDeltaOverrides(reader: Tx | typeof db, rotationId: string): Record<number, Record<string, number>> {
   const overrides: Record<number, Record<string, number>> = {};
   for (const row of reader.select().from(rotationYearDeltas).where(eq(rotationYearDeltas.rotationId, rotationId)).all()) {
@@ -436,6 +469,12 @@ function buildPlan(
   if (windowStart > to) return { entries: [], warnings: [], closures: [], openHolidays: [] };
   const absences = loadAbsences(tx, rotation.memberIds, override); // [fork] Urlaub
   const rule = toRule(tx, rotation, to, now, absences);
+  // [fork] Urlaub: a round reaching back before windowStart must not move a Platz into a duty that is
+  // not rewritten (a vacation would cost a seat without a Nachholplatz), so those duties keep their holders.
+  if (rule.absences?.length) {
+    rule.frozenBefore = windowStart;
+    rule.frozenDuties = loadFrozenDuties(tx, rotation.id, rotation.startDate, windowStart);
+  }
   const days = generateDays(rule, windowStart, to);
   // A day that has begun keeps what it holds: a Schließeintrag can no longer be written there,
   // so a duty on a newly closed begun day stays instead of leaving a gap. (A begun Schließeintrag
