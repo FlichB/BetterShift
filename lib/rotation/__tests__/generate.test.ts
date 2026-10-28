@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dutyGroups, generateDays, generateDuties, suggestStartOffset, yearSummary } from "@/lib/rotation/generate";
-import type { RotationRule } from "@/lib/rotation/types";
+import type { Absence, RotationRule } from "@/lib/rotation/types";
 
 const eight = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const six = eight.slice(0, 6);
@@ -531,5 +531,102 @@ describe("Jahresausgleich (SPEC 12.41)", () => {
     expect(generateDays({ ...saturdays, yearlyFairness: false, deltaOverrides: { 2027: { c: 3 } } }, "2026-11-01", "2028-12-31")).toEqual(
       generateDays(saturdays, "2026-11-01", "2028-12-31")
     );
+  });
+});
+
+describe("Urlaub (SPEC 12.43)", () => {
+  const rule = (absences: Absence[], extra: Partial<RotationRule> = {}): RotationRule => ({
+    ...saturdays,
+    memberIds: eight,
+    startDate: "2027-01-01",
+    startOffset: 0,
+    ...extra,
+    absences,
+  });
+  const held = (r: RotationRule, from: string, to: string) => {
+    const counts = new Map<string, number>(r.memberIds.map((u) => [u, 0]));
+    for (const d of generateDuties(r, from, to)) for (const u of d.userIds) counts.set(u, (counts.get(u) ?? 0) + 1);
+    return counts;
+  };
+  const on = (r: RotationRule, user: string, range: { from: string; to: string }) =>
+    generateDuties(r, range.from, range.to)
+      .filter((d) => d.userIds.includes(user))
+      .map((d) => d.date);
+
+  it("is identical without absences", () => {
+    const base = rule([]);
+    const without: RotationRule = { ...base };
+    delete without.absences;
+    expect(generateDays(base, "2027-01-01", "2028-12-31")).toEqual(generateDays(without, "2027-01-01", "2028-12-31"));
+  });
+
+  it("never seats someone on a vacation day", () => {
+    const a = eight[2];
+    const range = { from: "2027-03-01", to: "2027-03-31" };
+    expect(on(rule([{ userId: a, ...range }]), a, range)).toEqual([]);
+  });
+
+  it("moves a one-day absence within the round without changing the year's counts", () => {
+    const a = eight[0];
+    const plain = rule([]);
+    const firstDate = on(plain, a, { from: "2027-01-01", to: "2027-12-31" })[0];
+    const r = rule([{ userId: a, from: firstDate, to: firstDate }]);
+    expect(on(r, a, { from: firstDate, to: firstDate })).toEqual([]);
+    expect(held(r, "2027-01-01", "2027-12-31")).toEqual(held(plain, "2027-01-01", "2027-12-31"));
+  });
+
+  it.each([
+    ["8/2", eight, 2],
+    ["6/2", eight.slice(0, 6), 2],
+    ["8/3", eight, 3],
+  ])("makes up a three-week absence within the year (%s)", (_, members, perShift) => {
+    const a = members[1];
+    const r = rule([{ userId: a, from: "2027-05-01", to: "2027-05-23" }], { memberIds: members, perShift });
+    const counts = [...held(r, "2027-01-01", "2027-12-31").values()];
+    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
+    expect(on(r, a, { from: "2027-05-01", to: "2027-05-23" })).toEqual([]);
+  });
+
+  it("keeps fairness with Verstärkte Tage and Schließtage", () => {
+    const a = eight[3];
+    const r = rule([{ userId: a, from: "2027-06-01", to: "2027-06-20" }], {
+      reinforcedDates: [{ date: "2027-09-04", perShift: 4 }],
+      closedDates: [{ date: "2027-08-14", reason: "Feiertag", source: "skip" }],
+    });
+    const counts = [...held(r, "2027-01-01", "2027-12-31").values()];
+    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
+  });
+
+  it("resets the Konto at New Year (no make-up in the next year)", () => {
+    const a = eight[4];
+    const r = rule([{ userId: a, from: "2027-12-01", to: "2027-12-31" }]);
+    const plain = rule([]);
+    expect(on(r, a, { from: "2027-12-01", to: "2027-12-31" })).toEqual([]);
+    // 2028 has 53 Saturdays, so who gets the extra Platz depends on the round order; no make-up means
+    // e stays within what the plain plan gives anyone in 2028.
+    const plainMax = Math.max(...held(plain, "2028-01-01", "2028-12-31").values());
+    expect(held(r, "2028-01-01", "2028-12-31").get(a)!).toBeLessThanOrEqual(plainMax);
+  });
+
+  it("with yearly fairness the missed Platz flows into the Delta", () => {
+    const a = eight[5];
+    const r = rule([{ userId: a, from: "2027-12-04", to: "2027-12-31" }], { yearlyFairness: true, memberSince: {} });
+    expect(on(r, a, { from: "2027-12-04", to: "2027-12-31" })).toEqual([]);
+    const counts2028 = held(r, "2028-01-01", "2028-12-31");
+    const others = [...counts2028.entries()].filter(([u]) => u !== a).map(([, c]) => c);
+    expect(counts2028.get(a)!).toBeGreaterThanOrEqual(Math.max(...others));
+  });
+
+  it("leaves a Platz open when too few are available", () => {
+    const six = eight.slice(0, 6);
+    const absences = six.slice(0, 5).map((userId) => ({ userId, from: "2027-04-03", to: "2027-04-03" }));
+    const duty = generateDuties(rule(absences, { memberIds: six }), "2027-04-03", "2027-04-03")[0];
+    expect(duty.userIds).toEqual([six[5]]);
+    expect(duty.capacity).toBe(2);
+  });
+
+  it("is deterministic", () => {
+    const r = rule([{ userId: eight[6], from: "2027-02-01", to: "2027-02-20" }]);
+    expect(generateDays(r, "2027-01-01", "2027-12-31")).toEqual(generateDays(r, "2027-01-01", "2027-12-31"));
   });
 });

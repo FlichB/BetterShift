@@ -31,6 +31,13 @@ export interface ReinforcedDate {
   perShift: number;
 }
 
+/** [fork] Urlaub (SPEC 12.43): an approved vacation of a Teilnehmer, both ends inclusive. */
+export interface Absence {
+  userId: string;
+  from: string;
+  to: string;
+}
+
 /** Everything the round-robin needs; no database identifiers beyond user ids. */
 export interface RotationRule {
   /** Teilnehmer in rotation order (index = position). */
@@ -59,6 +66,8 @@ export interface RotationRule {
   heldDuties?: Record<string, string[]>;
   /** Year that settles → userId → Delta set by a manager. */
   deltaOverrides?: Record<number, Record<string, number>>;
+  /** [fork] Urlaub: approved vacations; a Teilnehmer gets no Platz on a duty touching one. */
+  absences?: Absence[];
 }
 
 export interface PlannedDuty {

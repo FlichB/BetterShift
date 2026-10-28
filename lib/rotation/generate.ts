@@ -72,7 +72,8 @@ function roundCost(
   idealGap: number,
   pos: (duty: number) => number,
   withDrift = true,
-  anchorNew = false
+  anchorNew = false,
+  beatless?: ReadonlySet<string> // [fork] Urlaub: beat restarts at their next duty, priced without drift
 ): number {
   const lastDuty = new Map<string, number>();
   const lastGroup = new Map<string, string[]>();
@@ -96,7 +97,7 @@ function roundCost(
         continue;
       }
       if (t - prev <= 1) cost += BACK_TO_BACK;
-      if (withDrift) {
+      if (withDrift && !beatless?.has(u)) {
         const count = served.get(u) ?? (history.served.get(u) as number);
         const anchor = firstPos.get(u) ?? (history.firstPos.get(u) as number);
         const drift = Math.abs(pos(t) - anchor - count * idealGap);
@@ -143,7 +144,13 @@ function owedFirstCost(groups: string[][], owed: ReadonlyMap<string, number>): n
 }
 
 /** Deterministic best-improvement search over seat swaps and duty order. */
-function improveRound(groups: string[][], fixed: number[], movable: boolean[], price: (g: string[][]) => number): string[][] {
+function improveRound(
+  groups: string[][],
+  fixed: number[],
+  movable: boolean[],
+  price: (g: string[][]) => number,
+  allowed?: (u: string, j: number) => boolean // [fork] Urlaub: j = index into groups
+): string[][] {
   let best = price(groups);
   for (let step = 0; step < MAX_IMPROVEMENTS && best > 0; step++) {
     let bestMove: (() => void) | null = null;
@@ -155,6 +162,7 @@ function improveRound(groups: string[][], fixed: number[], movable: boolean[], p
           for (let j = fixed[b]; j < gb.length; j++) {
             const [x, y] = [ga[i], gb[j]];
             if (x === y || ga.includes(y) || gb.includes(x)) continue;
+            if (allowed && (!allowed(y, a) || !allowed(x, b))) continue; // [fork] Urlaub is a hard rule
             ga[i] = y;
             gb[j] = x;
             const cost = price(groups);
@@ -170,6 +178,7 @@ function improveRound(groups: string[][], fixed: number[], movable: boolean[], p
           }
         }
         if (!movable[a] || !movable[b] || ga.length !== gb.length) continue;
+        if (allowed && (!gb.every((u) => allowed(u, a)) || !ga.every((u) => allowed(u, b)))) continue; // [fork] Urlaub
         groups[a] = gb;
         groups[b] = ga;
         const cost = price(groups);
@@ -226,6 +235,95 @@ export interface YearlyHooks {
   deltasAt: (year: number, duty: number, planned: readonly string[][]) => ReadonlyMap<string, number>;
 }
 
+/** [fork] Urlaub (SPEC 12.43): who may sit in a duty, and the year a duty belongs to (Nachhol-Konten reset at New Year). */
+export interface AbsenceHooks {
+  allowed: (userId: string, duty: number) => boolean;
+  yearOf: (duty: number) => number;
+}
+
+/** [fork] Urlaub: orders by Nachhol-Konto (dir 1 = lowest first), then member order. */
+const byBalance =
+  (balance: ReadonlyMap<string, number>, position: ReadonlyMap<string, number>, dir: 1 | -1) => (a: string, b: string) =>
+    dir * ((balance.get(a) ?? 0) - (balance.get(b) ?? 0)) || (position.get(a) as number) - (position.get(b) as number);
+
+/** [fork] Urlaub: each debtor takes one Platz of a creditor per round, where allowed. True if a seat changed. */
+function makeUp(
+  groups: string[][],
+  fixed: number[],
+  duties: number[],
+  absence: AbsenceHooks,
+  balance: Map<string, number>,
+  position: ReadonlyMap<string, number>,
+  beatless: Set<string>
+): boolean {
+  let changed = false;
+  const debtors = [...balance.keys()].filter((u) => (balance.get(u) ?? 0) < 0).sort(byBalance(balance, position, 1));
+  for (const u of debtors) {
+    const creditors = [...balance.keys()].filter((v) => (balance.get(v) ?? 0) > 0).sort(byBalance(balance, position, -1));
+    let done = false;
+    for (const v of creditors) {
+      for (let j = 0; j < groups.length && !done; j++) {
+        if (groups[j].includes(u) || !absence.allowed(u, duties[j])) continue;
+        const i = groups[j].indexOf(v);
+        if (i < fixed[j]) continue; // not seated here, or a carried seat
+        groups[j][i] = u;
+        balance.set(u, (balance.get(u) ?? 0) + 1);
+        balance.set(v, (balance.get(v) ?? 0) - 1);
+        beatless.add(u);
+        done = true;
+        changed = true;
+      }
+      if (done) break;
+    }
+  }
+  return changed;
+}
+
+/** [fork] Urlaub: no seat on a blocked duty: swap within the round, else a substitute, else leave the Platz open. True if a seat changed. */
+function repairAbsences(
+  groups: string[][],
+  fixed: number[],
+  duties: number[],
+  absence: AbsenceHooks,
+  balance: Map<string, number>,
+  position: ReadonlyMap<string, number>,
+  memberIds: string[]
+): boolean {
+  let changed = false;
+  for (let j = 0; j < groups.length; j++) {
+    for (let i = fixed[j]; i < groups[j].length; i++) {
+      const u = groups[j][i];
+      if (absence.allowed(u, duties[j])) continue;
+      changed = true;
+      let swapped = false;
+      for (let h = 0; h < groups.length && !swapped; h++) {
+        if (h === j || !absence.allowed(u, duties[h]) || groups[h].includes(u)) continue;
+        for (let k = fixed[h]; k < groups[h].length; k++) {
+          const y = groups[h][k];
+          if (groups[j].includes(y) || !absence.allowed(y, duties[j])) continue;
+          groups[j][i] = y;
+          groups[h][k] = u;
+          swapped = true;
+          break;
+        }
+      }
+      if (swapped) continue;
+      const substitute = memberIds
+        .filter((id) => !groups[j].includes(id) && absence.allowed(id, duties[j]))
+        .sort(byBalance(balance, position, 1))[0];
+      balance.set(u, (balance.get(u) ?? 0) - 1);
+      if (substitute) {
+        groups[j][i] = substitute;
+        balance.set(substitute, (balance.get(substitute) ?? 0) + 1);
+      } else {
+        groups[j].splice(i, 1);
+        i--;
+      }
+    }
+  }
+  return changed;
+}
+
 /**
  * Teilnehmer per duty, in duty order. Seats come in rounds of lcm(n, perShift) in which every
  * Teilnehmer appears equally often; each duty draws sizeOf(duty) seats (capped at n, at least
@@ -233,12 +331,15 @@ export interface YearlyHooks {
  * round robin from startOffset; every later round is rearranged so that nobody serves two duties
  * in a row, nobody keeps the partner of their previous duty, and the gaps stay even. With every
  * duty at perShift this is exactly the former duty-round generator. With yearly hooks, rounds end
- * at the last duty of a year and a year starts with an Ausgleichsphase (SPEC 12.41).
+ * at the last duty of a year and a year starts with an Ausgleichsphase (SPEC 12.41). With absence
+ * hooks, nobody sits on a duty touching their Urlaub; missed Plätze are made up within the
+ * calendar year (SPEC 12.43).
  */
 export function* dutyGroups(
   rule: RotationRule,
   sizeOf: (duty: number) => number = () => rule.perShift,
-  yearly?: YearlyHooks
+  yearly?: YearlyHooks,
+  absence?: AbsenceHooks // [fork] Urlaub
 ): Generator<string[]> {
   const n = rule.memberIds.length;
   const k = rule.perShift;
@@ -272,6 +373,11 @@ export function* dutyGroups(
   const planned: string[][] = []; // every yielded group, by duty
   const yearCount = new Map<string, number>(); // Plätze in the current year
   let yearDelta: ReadonlyMap<string, number> = new Map(); // Delta the current year settles
+
+  // [fork] Urlaub: Nachhol-Konto per Teilnehmer (-1 = owes a Platz), reset at New Year; beatless = beat restarts at next duty.
+  const balance = new Map<string, number>();
+  let balanceYear: number | null = null;
+  const beatless = new Set<string>();
 
   /**
    * [fork] Seats of a yearly round in drawing order, `total` of them. A round gives everyone
@@ -397,11 +503,29 @@ export function* dutyGroups(
       }
     }
     repairDuplicates(groups, fixed, rule.memberIds);
-    if (round > 0 || offBeat) {
-      const movable = groups.map((_, j) => fixed[j] === 0 && complete[j]);
+    let touched = false; // [fork] Urlaub: did an absence or a Nachholplatz change this round?
+    if (absence) {
+      // [fork] Urlaub (SPEC 12.43)
+      if (absence.yearOf(duty) !== balanceYear) {
+        balance.clear();
+        balanceYear = absence.yearOf(duty);
+      }
+      touched = makeUp(groups, fixed, duties, absence, balance, position, beatless);
+      touched = repairAbsences(groups, fixed, duties, absence, balance, position, rule.memberIds) || touched;
+    }
+    if (round > 0 || offBeat || touched) {
+      // [fork] Urlaub: a duty left with an open Platz keeps its place.
+      const movable = groups.map((g, j) => fixed[j] === 0 && complete[j] && g.length === capacity(duties[j]));
       const settle = owed;
-      groups = improveRound(groups, fixed, movable, (g) =>
-        roundCost(g, duties, history, idealGap, pos, !offBeat, yearly !== undefined) + (settle ? owedFirstCost(g, settle) : 0)
+      const allowedAt = absence ? (u: string, j: number) => absence.allowed(u, duties[j]) : undefined; // [fork] Urlaub
+      groups = improveRound(
+        groups,
+        fixed,
+        movable,
+        (g) =>
+          roundCost(g, duties, history, idealGap, pos, !offBeat, yearly !== undefined, beatless) +
+          (settle ? owedFirstCost(g, settle) : 0),
+        allowedAt
       );
     }
 
@@ -420,11 +544,17 @@ export function* dutyGroups(
         }
       }
       for (const u of group) {
+        if (beatless.delete(u)) {
+          // [fork] Urlaub: restart the beat after an absence or a Nachholplatz
+          history.firstPos.set(u, pos(duty));
+          history.served.set(u, 0);
+        }
         if (!history.firstPos.has(u)) history.firstPos.set(u, pos(duty));
         history.served.set(u, (history.served.get(u) ?? 0) + 1);
         history.lastDuty.set(u, duty);
         history.lastGroup.set(u, group);
       }
+      if (absence) for (const u of rule.memberIds) if (!absence.allowed(u, duty)) beatless.add(u); // [fork] Urlaub
       duty++;
       const sorted = [...group].sort(byPosition);
       if (yearly) {
@@ -497,7 +627,17 @@ function planner(rule: RotationRule) {
         },
       }
     : undefined;
-  return { periodAt, groups: dutyGroups(rule, (d) => periodAt(d).size, yearly) };
+  // [fork] Urlaub (SPEC 12.43)
+  const ranges = new Map<string, { from: string; to: string }[]>();
+  for (const a of rule.absences ?? []) ranges.set(a.userId, [...(ranges.get(a.userId) ?? []), a]);
+  const absence: AbsenceHooks | undefined =
+    ranges.size > 0
+      ? {
+          allowed: (u, duty) => !(ranges.get(u) ?? []).some((r) => periodAt(duty).dates.some((d) => r.from <= d && d <= r.to)),
+          yearOf: (duty) => yearOfDate(periodAt(duty).dates[0]),
+        }
+      : undefined;
+  return { periodAt, groups: dutyGroups(rule, (d) => periodAt(d).size, yearly, absence) };
 }
 
 /**
