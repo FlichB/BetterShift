@@ -1,5 +1,6 @@
 import { fromDayNumber, isoWeekday, mondayOf, toDayNumber } from "@/lib/rotation/dates";
 import type { PlannedDays, PlannedDuty, RotationRule } from "@/lib/rotation/types";
+import { compensationSeats, yearDeltaRows, type YearDeltaRow, type YearTally } from "@/lib/rotation/yearly";
 
 function assertRule(rule: RotationRule): void {
   if (!Number.isInteger(rule.perShift) || rule.perShift < 1) {
@@ -62,7 +63,14 @@ const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
 const pairKey = (u: string, v: string) => (u < v ? `${u}\u0000${v}` : `${v}\u0000${u}`);
 
 /** Walks a round as it would continue the history and prices it. */
-function roundCost(groups: string[][], duties: number[], history: History, idealGap: number, pos: (duty: number) => number): number {
+function roundCost(
+  groups: string[][],
+  duties: number[],
+  history: History,
+  idealGap: number,
+  pos: (duty: number) => number,
+  withDrift = true
+): number {
   const lastDuty = new Map<string, number>();
   const lastGroup = new Map<string, string[]>();
   const pairs = new Map<string, PairStat>();
@@ -75,10 +83,12 @@ function roundCost(groups: string[][], duties: number[], history: History, ideal
       const prev = lastDuty.get(u) ?? history.lastDuty.get(u);
       if (prev === undefined) continue;
       if (t - prev <= 1) cost += BACK_TO_BACK;
-      const count = served.get(u) ?? (history.served.get(u) as number);
-      const drift = Math.abs(pos(t) - pos(history.firstDuty.get(u) as number) - count * idealGap);
-      cost += DRIFT * drift ** 2 + (drift > DRIFT_LIMIT ? OFF_BEAT : 0);
-      served.set(u, count + 1);
+      if (withDrift) {
+        const count = served.get(u) ?? (history.served.get(u) as number);
+        const drift = Math.abs(pos(t) - pos(history.firstDuty.get(u) as number) - count * idealGap);
+        cost += DRIFT * drift ** 2 + (drift > DRIFT_LIMIT ? OFF_BEAT : 0);
+        served.set(u, count + 1);
+      }
       const before = lastGroup.get(u) ?? history.lastGroup.get(u);
       if (before && group.some((v) => v !== u && before.includes(v))) cost += SAME_PARTNER;
     }
@@ -176,15 +186,28 @@ function repairDuplicates(groups: string[][], fixed: number[], memberIds: string
   }
 }
 
+/** [fork] Jahresausgleich (SPEC 12.41): lets dutyGroups cut rounds at year ends and settle Deltas. */
+export interface YearlyHooks {
+  /** Calendar year of a duty: the year of its first Diensttag. */
+  yearOf: (duty: number) => number;
+  /** Delta per Teilnehmer that `year` settles; `duty` is its first duty, `planned` every earlier duty's group. */
+  deltasAt: (year: number, duty: number, planned: readonly string[][]) => ReadonlyMap<string, number>;
+}
+
 /**
  * Teilnehmer per duty, in duty order. Seats come in rounds of lcm(n, perShift) in which every
  * Teilnehmer appears equally often; each duty draws sizeOf(duty) seats (capped at n, at least
  * perShift), so a duty of a Verstärkter Tag may straddle two rounds. The first round is plain
  * round robin from startOffset; every later round is rearranged so that nobody serves two duties
  * in a row, nobody keeps the partner of their previous duty, and the gaps stay even. With every
- * duty at perShift this is exactly the former duty-round generator.
+ * duty at perShift this is exactly the former duty-round generator. With yearly hooks, rounds end
+ * at the last duty of a year and a year starts with an Ausgleichsphase (SPEC 12.41).
  */
-export function* dutyGroups(rule: RotationRule, sizeOf: (duty: number) => number = () => rule.perShift): Generator<string[]> {
+export function* dutyGroups(
+  rule: RotationRule,
+  sizeOf: (duty: number) => number = () => rule.perShift,
+  yearly?: YearlyHooks
+): Generator<string[]> {
   const n = rule.memberIds.length;
   const k = rule.perShift;
   const ordered = Array.from({ length: n }, (_, i) => rule.memberIds[(rule.startOffset + i) % n]);
@@ -210,6 +233,7 @@ export function* dutyGroups(rule: RotationRule, sizeOf: (duty: number) => number
     pairs: new Map(),
   };
 
+  const planned: string[][] = []; // every yielded group, by duty
   let duty = 0;
   let carry: string[] = []; // seats of `duty` already drawn in the previous round
   for (let round = 0; ; round++) {
@@ -217,19 +241,39 @@ export function* dutyGroups(rule: RotationRule, sizeOf: (duty: number) => number
     const duties: number[] = [];
     const fixed: number[] = [];
     const complete: boolean[] = [];
-    for (let d = duty, seat = 0; seat < seatsPerRound; d++) {
-      const held = d === duty ? carry : [];
-      const take = Math.min(capacity(d) - held.length, seatsPerRound - seat);
-      groups.push([...held, ...Array.from({ length: take }, (_, s) => ordered[(seat + s) % n])]);
-      duties.push(d);
-      fixed.push(held.length);
-      complete.push(held.length + take === capacity(d));
-      seat += take;
+    const sameYear = (d: number) => !yearly || d === duty || yearly.yearOf(d) === yearly.yearOf(duty);
+
+    // [fork] Jahresausgleich: the first round of a year settles the Deltas of the year before.
+    let seats: string[] = [];
+    if (yearly && carry.length === 0 && (duty === 0 || yearly.yearOf(duty) !== yearly.yearOf(duty - 1))) {
+      seats = compensationSeats(ordered, yearly.deltasAt(yearly.yearOf(duty), duty, planned));
+    }
+    const compensating = seats.length > 0;
+    if (compensating) {
+      for (let d = duty, seat = 0; seat < seats.length && sameYear(d); d++) {
+        const group = seats.slice(seat, seat + capacity(d));
+        seat += group.length;
+        groups.push(group);
+        duties.push(d);
+        fixed.push(0);
+        // A short last duty is finished by the next round, like a duty straddling two rounds.
+        complete.push(group.length === capacity(d));
+      }
+    } else {
+      for (let d = duty, seat = 0; seat < seatsPerRound && sameYear(d); d++) {
+        const held = d === duty ? carry : [];
+        const take = Math.min(capacity(d) - held.length, seatsPerRound - seat);
+        groups.push([...held, ...Array.from({ length: take }, (_, s) => ordered[(seat + s) % n])]);
+        duties.push(d);
+        fixed.push(held.length);
+        complete.push(held.length + take === capacity(d));
+        seat += take;
+      }
     }
     repairDuplicates(groups, fixed, rule.memberIds);
-    if (round > 0) {
+    if (round > 0 || compensating) {
       const movable = groups.map((_, j) => fixed[j] === 0 && complete[j]);
-      groups = improveRound(groups, fixed, movable, (g) => roundCost(g, duties, history, idealGap, pos));
+      groups = improveRound(groups, fixed, movable, (g) => roundCost(g, duties, history, idealGap, pos, !compensating));
     }
 
     carry = [];
@@ -253,7 +297,16 @@ export function* dutyGroups(rule: RotationRule, sizeOf: (duty: number) => number
         history.lastGroup.set(u, group);
       }
       duty++;
-      yield [...group].sort(byPosition);
+      const sorted = [...group].sort(byPosition);
+      planned.push(sorted);
+      yield sorted;
+    }
+    if (compensating) {
+      // Everyone restarts their beat after the Ausgleichsphase, so sitting out is not drift.
+      for (const [u, last] of history.lastDuty) {
+        history.firstDuty.set(u, last);
+        history.served.set(u, 1);
+      }
     }
   }
 }
@@ -288,6 +341,63 @@ function* periods(rule: RotationRule): Generator<Period> {
   }
 }
 
+const yearOfDate = (date: string) => Number(date.slice(0, 4));
+
+/** The period stream and the duty groups for it; with yearlyFairness the groups settle Deltas. */
+function planner(rule: RotationRule) {
+  const stream = periods(rule);
+  const seen: Period[] = [];
+  const periodAt = (i: number): Period => {
+    while (seen.length <= i) seen.push(stream.next().value as Period);
+    return seen[i];
+  };
+  const yearly: YearlyHooks | undefined = rule.yearlyFairness
+    ? {
+        yearOf: (duty) => yearOfDate(periodAt(duty).dates[0]),
+        deltasAt: (year, duty, planned) => {
+          // A restart inside a year must not settle the year before a second time.
+          if (duty === 0 && tallyYear(rule, periodAt, [], year).firstDate !== null) return new Map();
+          const rows = yearDeltaRows(rule.memberIds, rule.memberSince, tallyYear(rule, periodAt, planned, year - 1), rule.deltaOverrides?.[year]);
+          return new Map((rows ?? []).map((r) => [r.userId, r.delta]));
+        },
+      }
+    : undefined;
+  return { periodAt, groups: dutyGroups(rule, (d) => periodAt(d).size, yearly) };
+}
+
+/**
+ * Plätze per person in `year`: the planned duties of that year (a date's real holders from
+ * heldDuties win; a period with several dates counts 1 / dates per date) and held dates before
+ * startDate, which belong to an earlier configuration.
+ */
+function tallyYear(rule: RotationRule, periodAt: (i: number) => Period, planned: readonly string[][], year: number): YearTally {
+  const counts = new Map<string, number>();
+  const add = (u: string, w: number) => counts.set(u, (counts.get(u) ?? 0) + w);
+  let firstDate: string | null = null;
+  const held = rule.heldDuties ?? {};
+  for (const [date, holders] of Object.entries(held)) {
+    if (date >= rule.startDate || yearOfDate(date) !== year) continue;
+    if (firstDate === null || date < firstDate) firstDate = date;
+    for (const u of holders) add(u, 1);
+  }
+  planned.forEach((group, i) => {
+    const { dates } = periodAt(i);
+    if (yearOfDate(dates[0]) !== year) return;
+    if (firstDate === null || dates[0] < firstDate) firstDate = dates[0];
+    for (const date of dates) for (const u of held[date] ?? group) add(u, 1 / dates.length);
+  });
+  return { counts, firstDate };
+}
+
+/** [fork] Jahresausgleich: the Delta rows that `year` settles (null = nothing counted in year − 1). */
+export function yearSummary(rule: RotationRule, year: number): YearDeltaRow[] | null {
+  assertRule(rule);
+  const { periodAt, groups } = planner(rule);
+  const planned: string[][] = [];
+  for (let i = 0; periodAt(i).dates[0] < `${year}-01-01`; i++) planned.push(groups.next().value as string[]);
+  return yearDeltaRows(rule.memberIds, rule.memberSince, tallyYear(rule, periodAt, planned, year - 1), rule.deltaOverrides?.[year]);
+}
+
 /**
  * Duties and Schließtage for every Diensttag in [from, to] on or after rule.startDate.
  * Duties are counted from startDate so the result for a date never depends on the requested
@@ -304,13 +414,7 @@ export function generateDays(rule: RotationRule, from: string, to: string): Plan
   const open = new Map(rule.openHolidays.map((h) => [h.date, h.name]));
   const weekdays = new Set(rule.weekdays);
 
-  const stream = periods(rule);
-  const seen: Period[] = [];
-  const periodAt = (i: number): Period => {
-    while (seen.length <= i) seen.push(stream.next().value as Period);
-    return seen[i];
-  };
-  const groups = dutyGroups(rule, (d) => periodAt(d).size);
+  const { periodAt, groups } = planner(rule);
 
   const duties: PlannedDuty[] = [];
   for (let i = 0; toDayNumber(periodAt(i).dates[0]) <= last; i++) {

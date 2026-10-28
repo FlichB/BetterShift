@@ -51,6 +51,14 @@ export interface RotationRule {
   openHolidays: Holiday[];
   /** Verstärkte Tage; on these dates a duty has perShift Plätze instead of rule.perShift. */
   reinforcedDates: ReinforcedDate[];
+  // [fork] Jahresausgleich (SPEC 12.41); all optional, absent = off.
+  yearlyFairness?: boolean;
+  /** userId → since when a Teilnehmer (local YYYY-MM-DD); absent = since forever. */
+  memberSince?: Record<string, string>;
+  /** Real holders per Diensttag where the database knows them; win over the plan when counting Plätze. */
+  heldDuties?: Record<string, string[]>;
+  /** Year that settles → userId → Delta set by a manager. */
+  deltaOverrides?: Record<number, Record<string, number>>;
 }
 
 export interface PlannedDuty {
