@@ -58,6 +58,7 @@ describe("Schließeinträge", () => {
         dayOffTiming: "after",
         dayOffExcludedIds: [],
         yearlyFairness: false,
+        minPresent: null,
         reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],

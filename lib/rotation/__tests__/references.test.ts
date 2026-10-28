@@ -30,6 +30,7 @@ beforeEach(() => {
     dayOffTiming: "after",
     dayOffExcludedIds: [],
     yearlyFairness: false,
+    minPresent: null,
     reinforcedDates: [],
   };
 });

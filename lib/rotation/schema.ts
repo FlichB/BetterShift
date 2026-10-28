@@ -40,6 +40,7 @@ export const rotations = sqliteTable(
     dayOffTiming: text("day_off_timing").$type<DayOffTiming>().notNull().default("after"), // [fork] SPEC 12.42
     // [fork] Jahresausgleich (SPEC 12.41): cut rounds at year ends and settle the previous year's Delta.
     yearlyFairness: integer("yearly_fairness", { mode: "boolean" }).notNull().default(false),
+    minPresent: integer("min_present"), // [fork] Mindestbesetzung an Werktagen, null = off (SPEC 12.44)
     // [fork phase 3] Mirror this rotation's duties into the office@ calendar (spec 12.24).
     outlookEnabled: integer("outlook_enabled", { mode: "boolean" }).notNull().default(false),
     createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),

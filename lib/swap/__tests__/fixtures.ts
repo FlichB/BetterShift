@@ -32,6 +32,7 @@ export async function seedDuties() {
       dayOffTiming: "after",
       dayOffExcludedIds: [],
       yearlyFairness: false,
+      minPresent: null,
       reinforcedDates: [],
       holidayCalendarId: null,
       holidayOpenDates: [],

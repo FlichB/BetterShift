@@ -256,6 +256,7 @@ function configValues(input: RotationInput) {
     dayOffTitle: input.dayOffTitle, // [fork] Dienstfrei
     dayOffTiming: input.dayOffTiming, // [fork] Dienstfrei
     yearlyFairness: input.yearlyFairness, // [fork] Jahresausgleich
+    minPresent: input.minPresent, // [fork] Mindestbesetzung
   };
 }
 

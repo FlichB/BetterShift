@@ -30,6 +30,7 @@ export interface RotationInput {
   dayOffExcludedIds: string[];
   /** [fork] Jahresausgleich (SPEC 12.41). */
   yearlyFairness: boolean;
+  minPresent: number | null; // [fork] Mindestbesetzung
 }
 
 export type RotationValidationError =
@@ -54,6 +55,7 @@ export type RotationValidationError =
   | "dayOffTiming"
   | "dayOffExcluded"
   | "yearlyFairness"
+  | "minPresent"
   | "yearDelta"
   | "range";
 
@@ -154,6 +156,9 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
   // [fork] Jahresausgleich: off unless switched on, so API callers keep today's plan.
   const yearlyFairness = b.yearlyFairness ?? false;
   if (typeof yearlyFairness !== "boolean") return fail("yearlyFairness");
+  // [fork] Mindestbesetzung: off unless set; at least one Teilnehmer must be able to be away.
+  const minPresent = b.minPresent ?? null;
+  if (minPresent !== null && (!isInt(minPresent) || minPresent < 1 || minPresent > memberIds.length - 1)) return fail("minPresent");
 
   // Past entries are kept untouched: the plan is counted from startDate, so dropping one would
   // shift the future Besetzung. Only future entries must fit the current rotation.
@@ -193,6 +198,7 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
       dayOffTiming, // [fork] Dienstfrei
       dayOffExcludedIds: [...new Set(dayOffExcludedIds as string[])], // [fork] Dienstfrei
       yearlyFairness, // [fork] Jahresausgleich
+      minPresent, // [fork] Mindestbesetzung
     },
   };
 }

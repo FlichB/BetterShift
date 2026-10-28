@@ -32,6 +32,7 @@ describe("phase 3 schema", () => {
         dayOffTiming: "after",
         dayOffExcludedIds: [],
         yearlyFairness: false,
+        minPresent: null,
         reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],

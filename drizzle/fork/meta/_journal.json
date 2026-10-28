@@ -106,6 +106,13 @@
       "when": 1793209322947,
       "tag": "0014_vacations",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1793214815124,
+      "tag": "0015_lucky_nomad",
+      "breakpoints": true
     }
   ]
 }

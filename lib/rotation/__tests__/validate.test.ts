@@ -22,6 +22,7 @@ const valid = {
   dayOffTiming: "after",
   dayOffExcludedIds: [] as string[],
   yearlyFairness: false,
+  minPresent: null as number | null,
   reinforcedDates: [] as { date: string; perShift: number }[],
 };
 
@@ -254,5 +255,25 @@ describe("validateYearDeltaOverride", () => {
     [null],
   ])("rejects %j", (body) => {
     expect(validateYearDeltaOverride(body)).toEqual({ ok: false, error: "yearDelta" });
+  });
+});
+
+describe("minPresent", () => {
+  it("defaults minPresent to null (off)", () => {
+    const { minPresent, ...rest } = valid;
+    void minPresent;
+    const r = validateRotationInput(rest);
+    expect(r.ok && r.value.minPresent).toBeNull();
+  });
+  it("accepts minPresent between 1 and Teilnehmer - 1", () => {
+    for (const n of [1, valid.memberIds.length - 1]) {
+      const r = validateRotationInput({ ...valid, minPresent: n });
+      expect(r.ok && r.value.minPresent).toBe(n);
+    }
+  });
+  it("rejects minPresent outside 1 … Teilnehmer - 1 or not an integer", () => {
+    for (const n of [0, valid.memberIds.length, 2.5, "3"]) {
+      expect(validateRotationInput({ ...valid, minPresent: n })).toEqual({ ok: false, error: "minPresent" });
+    }
   });
 });

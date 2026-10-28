@@ -31,6 +31,7 @@ describe("Schließeinträge in Outlook and the personal feed", () => {
         dayOffTiming: "after",
         dayOffExcludedIds: [],
         yearlyFairness: false,
+        minPresent: null,
         reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],

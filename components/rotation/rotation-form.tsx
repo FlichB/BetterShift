@@ -340,6 +340,35 @@ export function RotationForm({
         )}
       </div>
 
+      {/* [fork] Mindestbesetzung an Werktagen (SPEC 12.44) */}
+      <div className="space-y-3 rounded-[11px] border border-control px-3.5 py-2.5">
+        <ToggleRow
+          id="rotation-min-present"
+          title={t("rotation.fields.minPresentEnabled")}
+          description={t("rotation.fields.minPresentEnabledHint")}
+          checked={state.minPresent !== null}
+          onCheckedChange={(checked) => set("minPresent", checked ? Math.max(1, state.memberIds.length - 1) : null)}
+          disabled={state.memberIds.length < 2}
+        />
+        {state.minPresent !== null && (
+          <Field
+            label={t("rotation.fields.minPresent")}
+            hint={t("rotation.fields.minPresentHint", { count: state.memberIds.length })}
+            htmlFor="rotation-min-present-value"
+          >
+            <Input
+              id="rotation-min-present-value"
+              type="number"
+              min={1}
+              max={Math.max(1, state.memberIds.length - 1)}
+              value={state.minPresent}
+              onChange={(e) => set("minPresent", e.target.value === "" ? 1 : Number(e.target.value))}
+              className={inputClass}
+            />
+          </Field>
+        )}
+      </div>
+
       {/* [fork] Jahresausgleich (SPEC 12.41) */}
       <div className="space-y-3 rounded-[11px] border border-control px-3.5 py-2.5">
         <ToggleRow

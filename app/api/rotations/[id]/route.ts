@@ -44,7 +44,10 @@ export async function PUT(request: NextRequest, { params }: Context) {
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     // [fork] Jahresausgleich: a caller that leaves the switch out keeps the stored value.
     const keepsSwitch = (body as Record<string, unknown>).yearlyFairness === undefined; // validated: an object
-    const input = keepsSwitch ? { ...parsed.value, yearlyFairness: existing.yearlyFairness } : parsed.value;
+    // [fork] Mindestbesetzung: the same for the minimum staffing.
+    const keepsMinPresent = (body as Record<string, unknown>).minPresent === undefined;
+    const kept = keepsSwitch ? { ...parsed.value, yearlyFairness: existing.yearlyFairness } : parsed.value;
+    const input = keepsMinPresent ? { ...kept, minPresent: existing.minPresent } : kept;
     if (input.calendarId !== existing.calendarId) {
       return NextResponse.json({ error: "calendarId" }, { status: 400 });
     }

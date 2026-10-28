@@ -1,0 +1,1 @@
+ALTER TABLE `rotations` ADD `min_present` integer;
