@@ -21,10 +21,12 @@ import {
   type RuleResult,
 } from "@/lib/dayoff/rules";
 import { dayOffProposals, dayOffs, type DayOff, type DayOffProposal } from "@/lib/dayoff/schema";
-import { REMINDER_AFTER_DAYS, type DayOffBoard, type DayOffTiming, type DayOffErrorCode, type DayOffView, type DropReason, type MoveOption } from "@/lib/dayoff/types";
+import { REMINDER_AFTER_DAYS, type DayOffBoard, type DayOffTiming, type DayOffErrorCode, type DayOffView, type DropReason, type MoveOption, type StaffingDetail } from "@/lib/dayoff/types";
 import { counterWindowEnd, type SlotMove } from "@/lib/swap/rules";
 import { loadClosedSet, takenDates, type Tx } from "@/lib/dayoff/workdays";
 import { addDays } from "@/lib/rotation/dates";
+import type { StaffingIndex } from "@/lib/staffing/index";
+import { loadStaffing } from "@/lib/staffing/load";
 import { rotationDuties, rotationMembers, rotationSlotLocks, rotations, type Rotation } from "@/lib/rotation/schema";
 
 export type { Reader, Tx } from "@/lib/dayoff/workdays";
@@ -65,6 +67,16 @@ function excludedHolders(tx: Tx, rotationId: string): Set<string> {
 function closedSetFor(tx: Tx, rotation: Rotation, today: string): Set<string> {
   return loadClosedSet(tx, rotation, addDays(today, CLOSED_FROM_DAYS), addDays(today, CLOSED_TO_DAYS));
 }
+
+/** Mindestbesetzung of the given holders (SPEC 12.44), from tomorrow over the Schließtage window. */
+function staffingFor(tx: Tx, userIds: readonly string[], today: string, excludeDayOffIds: Iterable<string>): StaffingIndex {
+  return loadStaffing(tx, userIds, addDays(today, 1), addDays(today, CLOSED_TO_DAYS), { excludeDayOffIds });
+}
+
+const detailOf = (staffing: StaffingIndex, userId: string, date: string): StaffingDetail | undefined => {
+  const gap = staffing.gapIfAbsent(userId, date);
+  return gap ? { date, present: gap.present, minimum: gap.minimum } : undefined;
+};
 
 /** Sets open proposals of a Dienstfrei to void (optionally only those matching `which`); no mail. */
 function voidOpenProposals(tx: Tx, dayOffId: string, now: Date, which?: (date: string) => boolean): void {
@@ -124,11 +136,11 @@ function handOver(tx: Tx, row: DayOff, newUserId: string, now: Date): DayOff {
  * Re-checks one row against the Arbeitstage (SPEC 12.38) and writes back any change.
  * `extraTaken` holds dates assigned to the same user earlier in the same pass.
  */
-function revalidateOne(tx: Tx, row: DayOff, closed: ReadonlySet<string>, extraTaken: Iterable<string>, today: string, now: Date, timing: DayOffTiming): { date: string | null; notify: "reset" | null } {
+function revalidateOne(tx: Tx, row: DayOff, closed: ReadonlySet<string>, extraTaken: Iterable<string>, today: string, now: Date, timing: DayOffTiming, isFull: IsOff = () => false): { date: string | null; notify: "reset" | null } {
   const taken = takenDates(tx, row.userId, row.id);
   for (const date of extraTaken) taken.add(date);
   const isOff: IsOff = makeIsOff(closed, taken);
-  const next = revalidate(row, isOff, today, timing);
+  const next = revalidate(row, isOff, today, timing, isFull);
   if (next.status !== row.status || next.date !== row.date || next.standardDate !== row.standardDate) {
     tx.update(dayOffs)
       .set({
@@ -155,7 +167,8 @@ export function revalidateRow(tx: Tx, rowId: string, now: Date): "reset" | null 
   if (isFrozen(row, today)) return null;
   const rotation = tx.select().from(rotations).where(eq(rotations.id, row.rotationId)).get();
   if (!rotation) return null;
-  const { notify } = revalidateOne(tx, row, closedSetFor(tx, rotation, today), [], today, now, rotation.dayOffTiming);
+  const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+  const { notify } = revalidateOne(tx, row, closedSetFor(tx, rotation, today), [], today, now, rotation.dayOffTiming, staffing.isFull(row.userId));
   if (notify === "reset") enqueueDayOff(tx, "day_off_reset", row.id, "holder", null, now);
   return notify;
 }
@@ -360,20 +373,24 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
     }
   }
 
-  // 7. Revalidate every non-frozen row against the current Arbeitstage, per user in duty order,
-  //    so earlier duties pick their day first. Dates assigned in this pass count as taken.
+  // 7. Revalidate every non-frozen row against the current Arbeitstage, per duty date, so earlier
+  //    duties pick their day first (SPEC 12.44); per user the order is the same as before.
+  //    Dates assigned in this pass count as taken.
   const closed = closedSetFor(tx, rotation, today);
   const rows = tx
     .select()
     .from(dayOffs)
     .where(eq(dayOffs.rotationId, rotationId))
-    .orderBy(asc(dayOffs.userId), asc(dayOffs.dutyDate), asc(dayOffs.id))
+    .orderBy(asc(dayOffs.dutyDate), asc(dayOffs.userId), asc(dayOffs.id))
     .all()
     .filter((r) => !isFrozen(r, today));
+  // Standard rows are placed anew in this order, so they leave the index first; fixed rows stay in it.
+  const staffing = staffingFor(tx, [...new Set(rows.map((r) => r.userId))], today, rows.filter((r) => r.status === "standard").map((r) => r.id));
   const assigned = new Map<string, Set<string>>();
   for (const row of rows) {
     const mine = assigned.get(row.userId) ?? new Set<string>();
-    const { date, notify } = revalidateOne(tx, row, closed, mine, today, now, rotation.dayOffTiming);
+    const { date, notify } = revalidateOne(tx, row, closed, mine, today, now, rotation.dayOffTiming, staffing.isFull(row.userId));
+    staffing.place(row.id, row.userId, date);
     if (date) mine.add(date);
     assigned.set(row.userId, mine);
     // New rows only get their first date here; that is not a reset.
@@ -447,15 +464,26 @@ export function reconcileForShift(shiftId: string, now: Date): void {
 // ---------------------------------------------------------------------------
 
 export class DayOffServiceError extends Error {
-  constructor(public readonly code: DayOffErrorCode) {
+  readonly detail: StaffingDetail | null;
+  constructor(public readonly code: DayOffErrorCode, detail?: StaffingDetail) {
     super(code);
     this.name = "DayOffServiceError";
+    this.detail = detail ?? null;
   }
 }
 
 function unwrap<T>(result: RuleResult<T>): T {
   if (!result.ok) throw new DayOffServiceError(result.code);
   return result.value;
+}
+
+/** Like unwrap, but a full day carries its staffing detail for the UI (SPEC 12.44). */
+function unwrapStaffed<T>(result: RuleResult<T>, staffing: StaffingIndex, userId: string, dates: readonly string[]): T {
+  if (!result.ok && result.code === "belowMinimum") {
+    const date = dates.find((d) => staffing.isFull(userId)(d)) ?? dates[0];
+    throw new DayOffServiceError("belowMinimum", detailOf(staffing, userId, date));
+  }
+  return unwrap(result);
 }
 
 function loadRow(tx: Tx, id: string): DayOff {
@@ -493,7 +521,8 @@ export function moveDayOff(id: string, date: string, actorId: string, now: Date)
     if (row.userId !== actorId) throw new DayOffServiceError("notHolder");
     const today = formatDateToLocal(now);
     const { isOff, timing } = rowContext(tx, row, today);
-    const next = unwrap(checkMove(row, date, isOff, today, timing));
+    const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+    const next = unwrapStaffed(checkMove(row, date, isOff, today, timing, staffing.isFull(row.userId)), staffing, row.userId, [date]);
     return tx.update(dayOffs).set({ status: next.status, date: next.date, updatedAt: now }).where(eq(dayOffs.id, id)).returning().get();
   });
 }
@@ -522,7 +551,13 @@ export function proposeDates(id: string, dates: string[], actorId: string, now: 
     const row = loadRow(tx, id);
     if (row.userId !== actorId) throw new DayOffServiceError("notHolder");
     const today = formatDateToLocal(now);
-    const valid = unwrap(checkProposeDates(row, dates, openProposalDates(tx, id), rowContext(tx, row, today).isOff, today));
+    const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+    const valid = unwrapStaffed(
+      checkProposeDates(row, dates, openProposalDates(tx, id), rowContext(tx, row, today).isOff, today, staffing.isFull(row.userId)),
+      staffing,
+      row.userId,
+      dates
+    );
     const created = tx
       .insert(dayOffProposals)
       .values(valid.map((date) => ({ dayOffId: id, date, side: "holder" as const, proposedByUserId: actorId, status: "open" as const, createdAt: now })))
@@ -533,12 +568,18 @@ export function proposeDates(id: string, dates: string[], actorId: string, now: 
   });
 }
 
-/** Manager proposes a date to the holder. */
-export function counterPropose(id: string, date: string, actorId: string, now: Date): DayOffProposal {
+/** Manager proposes a date to the holder; a full day needs `override` (SPEC 12.44). */
+export function counterPropose(id: string, date: string, actorId: string, now: Date, override = false): DayOffProposal {
   return db.transaction((tx) => {
     const row = loadRow(tx, id);
     const today = formatDateToLocal(now);
-    const valid = unwrap(checkCounter(row, date, openProposalDates(tx, id), rowContext(tx, row, today).isOff, today));
+    const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+    const valid = unwrapStaffed(
+      checkCounter(row, date, openProposalDates(tx, id), rowContext(tx, row, today).isOff, today, override ? () => false : staffing.isFull(row.userId)),
+      staffing,
+      row.userId,
+      [date]
+    );
     const created = tx
       .insert(dayOffProposals)
       .values({ dayOffId: id, date: valid, side: "manager", proposedByUserId: actorId, status: "open", createdAt: now })
@@ -557,14 +598,17 @@ function assertOtherSide(proposal: DayOffProposal, row: DayOff, actorId: string,
 
 const otherSide = (proposal: DayOffProposal) => (proposal.side === "holder" ? "managers" : "holder");
 
-export function acceptProposal(proposalId: string, actorId: string, actorIsManager: boolean, now: Date): DayOff {
+export function acceptProposal(proposalId: string, actorId: string, actorIsManager: boolean, now: Date, override = false): DayOff {
   return db.transaction((tx) => {
     const proposal = loadProposal(tx, proposalId);
     if (proposal.status !== "open") throw new DayOffServiceError("proposalNotOpen");
     const row = loadRow(tx, proposal.dayOffId);
     assertOtherSide(proposal, row, actorId, actorIsManager);
     const today = formatDateToLocal(now);
-    const date = unwrap(checkAcceptDate(row, proposal.date, rowContext(tx, row, today).isOff, today));
+    const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+    // A manager proposal was already decided by the Verwaltung; only holder proposals are checked (SPEC 12.44).
+    const isFull = proposal.side === "holder" && !override ? staffing.isFull(row.userId) : () => false;
+    const date = unwrapStaffed(checkAcceptDate(row, proposal.date, rowContext(tx, row, today).isOff, today, isFull), staffing, row.userId, [proposal.date]);
     const updated = tx
       .update(dayOffs)
       .set({ status: "agreed", date, agreedByUserId: actorId, updatedAt: now })
@@ -601,7 +645,10 @@ export function declineProposal(proposalId: string, reason: string | null, actor
   });
 }
 
-/** Days of the standard week the holder may move to, with how many colleagues of the calendar are off then. */
+/**
+ * Days of the standard week the holder may move to, with how many colleagues of the calendar are off then
+ * and whether the day is full (SPEC 12.44).
+ */
 export function moveOptions(id: string, now: Date): MoveOption[] {
   return db.transaction((tx) => {
     const row = loadRow(tx, id);
@@ -609,6 +656,8 @@ export function moveOptions(id: string, now: Date): MoveOption[] {
     if ((row.status !== "standard" && row.status !== "moved") || !row.standardDate) return [];
     const today = formatDateToLocal(now);
     const { isOff, timing } = rowContext(tx, row, today);
+    // Full days stay listed (checkMove without isFull) and are only marked.
+    const isFull = staffingFor(tx, [row.userId], today, [row.id]).isFull(row.userId);
     const dates = moveRange(row, timing).filter((date) => date === row.date || checkMove(row, date, isOff, today, timing).ok);
     if (dates.length === 0) return [];
     const rotation = tx.select({ calendarId: rotations.calendarId }).from(rotations).where(eq(rotations.id, row.rotationId)).get();
@@ -624,7 +673,7 @@ export function moveOptions(id: string, now: Date): MoveOption[] {
       othersOff: others.filter((o) => o.date === date).length,
       isCurrent: date === row.date,
       isStandard: date === row.standardDate,
-      full: false, // [fork] wired to the staffing index in the service task
+      full: date !== row.date && isFull(date),
     }));
   });
 }
