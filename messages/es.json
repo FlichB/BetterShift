@@ -1194,7 +1194,8 @@
       "telemetrySendFailed": "Error al enviar la telemetría manualmente",
       "telemetryAutoSent": "Telemetría enviada automáticamente",
       "telemetryAutoSendFailed": "Error al enviar la telemetría automáticamente",
-      "dayOffNotificationFailed": "No se pudo enviar el correo del día libre ({kind})"
+      "dayOffNotificationFailed": "No se pudo enviar el correo del día libre ({kind})",
+      "rotationYearDeltaSet": "Rotación «{name}»: delta de {year} modificado"
     }
   },
   "adminUsers": {
@@ -1440,6 +1441,8 @@
       "dayOffTitle": "Texto del día libre",
       "dayOffMembers": "Día libre por participante",
       "dayOffMembersHint": "Desactívalo para participantes sin día libre, p. ej. con contrato all-in. Si alguien así asume un turno, se pierde el día libre de esa plaza.",
+      "yearlyFairness": "Justo por año natural",
+      "yearlyFairnessHint": "Cada año empieza una nueva ronda. Quien tuvo más turnos el año anterior descansa en proporción al inicio del año.",
       "entryTitleInfo": "Sobre la plantilla de entrada",
       "entryTitleHelp": "Marcadores: '{Vorname}' = primera palabra del nombre, '{Name}' = nombre completo, '{Dienst}' = título del turno. Debe aparecer '{Vorname}' o '{Name}'. Ejemplo: «'{Vorname}' Dienst» → «Günther Dienst».",
       "entryTitlePreview": "Vista previa: {title}",
@@ -1448,6 +1451,18 @@
       "holidayCalendarUnavailable": "Calendario sin acceso",
       "holidayCalendarHint": "Cada entrada de este calendario en un día de servicio cierra ese día. Lo mejor es un calendario que sincronice un feed de festivos.",
       "holidayOpenDates": "Festivos con servicio"
+    },
+    "yearly": {
+      "hint": "Delta = turnos del año anterior menos los turnos del participante de año completo con menos turnos. Un valor propio sustituye al automático; se aplica en la próxima generación.",
+      "tableTitle": "Arrastre {from} → {to}",
+      "member": "Participante",
+      "held": "Turnos {year}",
+      "autoDelta": "Delta",
+      "override": "Valor propio",
+      "overrideFor": "Valor propio para {name} ({year})",
+      "newSince": "nuevo desde {date}",
+      "reset": "Usar el valor automático",
+      "noData": "Aún no hubo turnos el año anterior: no hay nada que arrastrar."
     },
     "period": {
       "day": "Día",
@@ -1561,7 +1576,10 @@
       "entryTitle": "Plantilla de entrada no válida: necesita '{Vorname}' o '{Name}' y solo puede contener '{Vorname}', '{Name}' y '{Dienst}' (máx. 100 caracteres).",
       "dayOffTitle": "La plantilla de entrada del día libre no es válida.",
       "dayOffExcluded": "Día libre por participante no válido: solo se pueden excluir participantes de la rotación.",
-      "reinforcedDates": "Días reforzados no válidos: una entrada por fecha; los días futuros necesitan más personas que «Personas por turno» y como máximo tantas como participantes."
+      "reinforcedDates": "Días reforzados no válidos: una entrada por fecha; los días futuros necesitan más personas que «Personas por turno» y como máximo tantas como participantes.",
+      "yearlyFairness": "Ajuste no válido para el reparto anual.",
+      "yearDelta": "Delta no válido (0–52).",
+      "notMember": "Esta persona no participa en la rotación."
     }
   },
   "swap": {

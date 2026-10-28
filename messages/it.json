@@ -1194,7 +1194,8 @@
       "telemetrySendFailed": "Invio manuale della telemetria non riuscito",
       "telemetryAutoSent": "Telemetria inviata automaticamente",
       "telemetryAutoSendFailed": "Invio automatico della telemetria non riuscito",
-      "dayOffNotificationFailed": "Impossibile inviare l'e-mail del giorno libero ({kind})"
+      "dayOffNotificationFailed": "Impossibile inviare l'e-mail del giorno libero ({kind})",
+      "rotationYearDeltaSet": "Rotazione «{name}»: delta {year} modificato"
     }
   },
   "adminUsers": {
@@ -1440,6 +1441,8 @@
       "dayOffTitle": "Testo del giorno libero",
       "dayOffMembers": "Giorno libero per partecipante",
       "dayOffMembersHint": "Disattiva per i partecipanti senza giorno libero, ad es. con contratto all-in. Se uno di loro prende un turno, il giorno libero di quel posto decade.",
+      "yearlyFairness": "Equo per anno solare",
+      "yearlyFairnessHint": "Ogni anno inizia un nuovo giro. Chi ha avuto più turni l’anno precedente salta i turni corrispondenti a inizio anno.",
       "entryTitleInfo": "Informazioni sul modello di voce",
       "entryTitleHelp": "Segnaposto: '{Vorname}' = prima parola del nome, '{Name}' = nome completo, '{Dienst}' = titolo del turno. Deve comparire '{Vorname}' o '{Name}'. Esempio: «'{Vorname}' Dienst» → «Günther Dienst».",
       "entryTitlePreview": "Anteprima: {title}",
@@ -1448,6 +1451,18 @@
       "holidayCalendarUnavailable": "Calendario senza accesso",
       "holidayCalendarHint": "Ogni voce di questo calendario in un giorno di turno chiude quel giorno. Meglio un calendario sincronizzato con un feed delle festività.",
       "holidayOpenDates": "Festività con turno"
+    },
+    "yearly": {
+      "hint": "Delta = turni dell’anno precedente meno il minor numero di turni di un partecipante presente tutto l’anno. Un valore personalizzato sostituisce quello automatico; si applica alla prossima generazione.",
+      "tableTitle": "Riporto {from} → {to}",
+      "member": "Partecipante",
+      "held": "Turni {year}",
+      "autoDelta": "Delta",
+      "override": "Valore personalizzato",
+      "overrideFor": "Valore personalizzato per {name} ({year})",
+      "newSince": "nuovo dal {date}",
+      "reset": "Usa il valore automatico",
+      "noData": "Nessun turno nell’anno precedente: nulla da riportare."
     },
     "period": {
       "day": "Giorno",
@@ -1561,7 +1576,10 @@
       "entryTitle": "Modello di voce non valido: serve '{Vorname}' o '{Name}' e può contenere solo '{Vorname}', '{Name}' e '{Dienst}' (max. 100 caratteri).",
       "dayOffTitle": "Il modello di voce del giorno libero non è valido.",
       "dayOffExcluded": "Giorno libero per partecipante non valido: si possono escludere solo partecipanti della rotazione.",
-      "reinforcedDates": "Giorni rinforzati non validi: una voce per data; i giorni futuri richiedono più persone di «Persone per turno» e al massimo quanti sono i partecipanti."
+      "reinforcedDates": "Giorni rinforzati non validi: una voce per data; i giorni futuri richiedono più persone di «Persone per turno» e al massimo quanti sono i partecipanti.",
+      "yearlyFairness": "Impostazione non valida per l’equità annuale.",
+      "yearDelta": "Delta non valido (0–52).",
+      "notMember": "Questa persona non partecipa alla rotazione."
     }
   },
   "swap": {

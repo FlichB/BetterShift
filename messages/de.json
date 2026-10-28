@@ -1441,6 +1441,8 @@
       "dayOffTitle": "Text für Dienstfrei",
       "dayOffMembers": "Dienstfrei je Teilnehmer",
       "dayOffMembersHint": "Ausschalten für Teilnehmer ohne Dienstfrei, z. B. mit All-in-Vertrag. Übernimmt so jemand einen Dienst, entfällt das Dienstfrei dieses Platzes.",
+      "yearlyFairness": "Gerecht pro Kalenderjahr",
+      "yearlyFairnessHint": "Jedes Jahr beginnt eine neue Runde. Wer im Vorjahr mehr Dienste hatte, setzt am Jahresanfang entsprechend aus.",
       "entryTitleInfo": "Erklärung zur Eintragsvorlage",
       "entryTitleHelp": "Platzhalter: '{Vorname}' = erstes Wort des Namens, '{Name}' = ganzer Name, '{Dienst}' = Titel des Dienstes. '{Vorname}' oder '{Name}' muss vorkommen. Beispiel: „'{Vorname}' Dienst“ → „Günther Dienst“.",
       "entryTitlePreview": "Vorschau: {title}",
@@ -1449,6 +1451,18 @@
       "holidayCalendarUnavailable": "Kalender ohne Zugriff",
       "holidayCalendarHint": "Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. Am besten ein Kalender mit externer Synchronisierung eines Feiertags-Feeds.",
       "holidayOpenDates": "Geöffnete Feiertage"
+    },
+    "yearly": {
+      "hint": "Delta = Dienste im Vorjahr minus die wenigsten Dienste eines Ganzjahres-Teilnehmers. Ein eigener Wert gilt statt des automatischen; wirksam beim nächsten Generieren.",
+      "tableTitle": "Übertrag {from} → {to}",
+      "member": "Teilnehmer",
+      "held": "Dienste {year}",
+      "autoDelta": "Delta",
+      "override": "Eigener Wert",
+      "overrideFor": "Eigener Wert für {name} ({year})",
+      "newSince": "neu seit {date}",
+      "reset": "Automatischen Wert verwenden",
+      "noData": "Im Vorjahr gab es noch keine Dienste – kein Übertrag."
     },
     "period": {
       "day": "Tag",
@@ -1562,7 +1576,10 @@
       "entryTitle": "Eintragsvorlage ungültig: Sie braucht '{Vorname}' oder '{Name}' und darf nur '{Vorname}', '{Name}' und '{Dienst}' enthalten (max. 100 Zeichen).",
       "dayOffTitle": "Die Vorlage für Dienstfrei ist ungültig.",
       "dayOffExcluded": "Dienstfrei je Teilnehmer ungültig: Nur Teilnehmer der Rotation können ausgenommen werden.",
-      "reinforcedDates": "Verstärkte Tage ungültig: Je Datum ein Eintrag, und künftige Tage brauchen mehr Personen als „Personen pro Dienst“, höchstens so viele wie Teilnehmer."
+      "reinforcedDates": "Verstärkte Tage ungültig: Je Datum ein Eintrag, und künftige Tage brauchen mehr Personen als „Personen pro Dienst“, höchstens so viele wie Teilnehmer.",
+      "yearlyFairness": "Ungültige Einstellung für den Jahresausgleich.",
+      "yearDelta": "Ungültiger Wert für das Delta (0–52).",
+      "notMember": "Diese Person ist kein Teilnehmer der Rotation."
     }
   },
   "swap": {

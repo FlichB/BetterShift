@@ -1194,7 +1194,8 @@
       "telemetrySendFailed": "Ruční odeslání telemetrie se nezdařilo",
       "telemetryAutoSent": "Telemetrie odeslána automaticky",
       "telemetryAutoSendFailed": "Automatické odeslání telemetrie se nezdařilo",
-      "dayOffNotificationFailed": "E-mail o volnu se nepodařilo odeslat ({kind})"
+      "dayOffNotificationFailed": "E-mail o volnu se nepodařilo odeslat ({kind})",
+      "rotationYearDeltaSet": "Rotace „{name}“: delta pro {year} změněna"
     }
   },
   "adminUsers": {
@@ -1440,6 +1441,8 @@
       "dayOffTitle": "Text volna",
       "dayOffMembers": "Volno pro každého účastníka",
       "dayOffMembersHint": "Vypněte u účastníků bez volna, např. se smlouvou all-in. Převezme-li takový účastník službu, volno tohoto místa odpadá.",
+      "yearlyFairness": "Spravedlivě za kalendářní rok",
+      "yearlyFairnessHint": "Každý rok začíná nové kolo. Kdo měl loni více služeb, na začátku roku odpovídajícím způsobem vynechá.",
       "entryTitleInfo": "O šabloně záznamu",
       "entryTitleHelp": "Zástupné symboly: '{Vorname}' = první slovo jména, '{Name}' = celé jméno, '{Dienst}' = název služby. Musí se objevit '{Vorname}' nebo '{Name}'. Příklad: „'{Vorname}' Dienst“ → „Günther Dienst“.",
       "entryTitlePreview": "Náhled: {title}",
@@ -1448,6 +1451,18 @@
       "holidayCalendarUnavailable": "Kalendář bez přístupu",
       "holidayCalendarHint": "Každá položka tohoto kalendáře v den služby tento den uzavře. Nejlépe kalendář synchronizovaný s kanálem svátků.",
       "holidayOpenDates": "Svátky se službou"
+    },
+    "yearly": {
+      "hint": "Delta = služby v minulém roce minus nejmenší počet služeb účastníka za celý rok. Vlastní hodnota nahrazuje automatickou; použije se při příštím generování.",
+      "tableTitle": "Převod {from} → {to}",
+      "member": "Účastník",
+      "held": "Služby {year}",
+      "autoDelta": "Delta",
+      "override": "Vlastní hodnota",
+      "overrideFor": "Vlastní hodnota pro {name} ({year})",
+      "newSince": "nový od {date}",
+      "reset": "Použít automatickou hodnotu",
+      "noData": "V minulém roce ještě nebyly žádné služby – nic k převodu."
     },
     "period": {
       "day": "Den",
@@ -1561,7 +1576,10 @@
       "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků).",
       "dayOffTitle": "Šablona záznamu volného dne je neplatná.",
       "dayOffExcluded": "Volno pro každého účastníka je neplatné: vyloučit lze jen účastníky rotace.",
-      "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků."
+      "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků.",
+      "yearlyFairness": "Neplatné nastavení ročního vyrovnání.",
+      "yearDelta": "Neplatná delta (0–52).",
+      "notMember": "Tato osoba není účastníkem rotace."
     }
   },
   "swap": {

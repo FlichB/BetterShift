@@ -12,6 +12,7 @@ import { ChoiceChips, Field, ToggleRow, inputClass } from "@/components/form-kit
 import { ENTRY_TITLE_MAX, entryTitle, validateEntryTitle } from "@/lib/rotation/entry-title"; // [fork] Dienstfrei
 import { EntryTitleField } from "@/components/rotation/entry-title-field";
 import { MemberOrderList } from "@/components/rotation/member-order-list";
+import { YearDeltaPanel } from "@/components/rotation/year-delta-panel"; // [fork] Jahresausgleich
 import { useRotationForm } from "@/components/rotation/use-rotation-form";
 import { fetchSuggestedOffset, RotationApiError, useSaveRotation, type RotationCalendar } from "@/hooks/useRotations";
 import { useCalendars } from "@/hooks/useCalendars";
@@ -323,6 +324,18 @@ export function RotationForm({
             </ul>
           </Field>
         )}
+      </div>
+
+      {/* [fork] Jahresausgleich (SPEC 12.41) */}
+      <div className="space-y-3 rounded-[11px] border border-control px-3.5 py-2.5">
+        <ToggleRow
+          id="rotation-yearly-fairness"
+          title={t("rotation.fields.yearlyFairness")}
+          description={t("rotation.fields.yearlyFairnessHint")}
+          checked={state.yearlyFairness}
+          onCheckedChange={(checked) => set("yearlyFairness", checked)}
+        />
+        {rotation && state.yearlyFairness && <YearDeltaPanel rotationId={rotation.id} members={calendar.members} />}
       </div>
 
       <Field label={t("rotation.fields.closedTitle")} hint={t("rotation.fields.closedTitleHint")}>

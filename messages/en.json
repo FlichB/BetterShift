@@ -1194,7 +1194,8 @@
       "telemetrySendFailed": "Sending telemetry manually failed",
       "telemetryAutoSent": "Telemetry sent automatically",
       "telemetryAutoSendFailed": "Sending telemetry automatically failed",
-      "dayOffNotificationFailed": "Day-off mail could not be sent ({kind})"
+      "dayOffNotificationFailed": "Day-off mail could not be sent ({kind})",
+      "rotationYearDeltaSet": "Rotation “{name}”: delta for {year} changed"
     }
   },
   "adminUsers": {
@@ -1440,6 +1441,8 @@
       "dayOffTitle": "Day-off entry text",
       "dayOffMembers": "Day off per member",
       "dayOffMembersHint": "Switch off for members without a day off, e.g. on an all-in contract. If such a member takes over a duty, that seat's day off is dropped.",
+      "yearlyFairness": "Fair per calendar year",
+      "yearlyFairnessHint": "Each year starts a new round. Whoever had more duties last year sits out correspondingly at the start of the year.",
       "entryTitleInfo": "About the entry template",
       "entryTitleHelp": "Placeholders: '{Vorname}' = first word of the name, '{Name}' = full name, '{Dienst}' = title of the duty. '{Vorname}' or '{Name}' must appear. Example: \"'{Vorname}' Dienst\" → \"Günther Dienst\".",
       "entryTitlePreview": "Preview: {title}",
@@ -1448,6 +1451,18 @@
       "holidayCalendarUnavailable": "Calendar without access",
       "holidayCalendarHint": "Every entry of this calendar on a duty day closes that day. Best use a calendar that syncs a public-holiday feed.",
       "holidayOpenDates": "Holidays with duty"
+    },
+    "yearly": {
+      "hint": "Delta = duties last year minus the fewest duties of a full-year participant. A custom value replaces the automatic one; applied at the next generation.",
+      "tableTitle": "Carry-over {from} → {to}",
+      "member": "Participant",
+      "held": "Duties {year}",
+      "autoDelta": "Delta",
+      "override": "Custom value",
+      "overrideFor": "Custom value for {name} ({year})",
+      "newSince": "new since {date}",
+      "reset": "Use the automatic value",
+      "noData": "No duties in the previous year yet – nothing to carry over."
     },
     "period": {
       "day": "Day",
@@ -1561,7 +1576,10 @@
       "entryTitle": "Invalid entry template: it needs '{Vorname}' or '{Name}' and may only contain '{Vorname}', '{Name}' and '{Dienst}' (max. 100 characters).",
       "dayOffTitle": "The day-off entry template is invalid.",
       "dayOffExcluded": "Day off per member is invalid: only members of the rotation can be excluded.",
-      "reinforcedDates": "Invalid reinforced days: one entry per date; future days need more people than \"People per duty\" and at most as many as there are participants."
+      "reinforcedDates": "Invalid reinforced days: one entry per date; future days need more people than \"People per duty\" and at most as many as there are participants.",
+      "yearlyFairness": "Invalid setting for yearly fairness.",
+      "yearDelta": "Invalid delta (0–52).",
+      "notMember": "This person is not a participant of the rotation."
     }
   },
   "swap": {

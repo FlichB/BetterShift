@@ -1194,7 +1194,8 @@
       "telemetrySendFailed": "Échec de l'envoi manuel de la télémétrie",
       "telemetryAutoSent": "Télémétrie envoyée automatiquement",
       "telemetryAutoSendFailed": "Échec de l'envoi automatique de la télémétrie",
-      "dayOffNotificationFailed": "Impossible d'envoyer l'e-mail du jour de repos ({kind})"
+      "dayOffNotificationFailed": "Impossible d'envoyer l'e-mail du jour de repos ({kind})",
+      "rotationYearDeltaSet": "Rotation « {name} » : delta {year} modifié"
     }
   },
   "adminUsers": {
@@ -1440,6 +1441,8 @@
       "dayOffTitle": "Texte du jour de congé",
       "dayOffMembers": "Jour de repos par participant",
       "dayOffMembersHint": "Désactivez-le pour les participants sans jour de repos, p. ex. avec un contrat all-in. Si l’un d’eux reprend un service, le jour de repos de cette place est supprimé.",
+      "yearlyFairness": "Équitable par année civile",
+      "yearlyFairnessHint": "Chaque année commence un nouveau tour. Qui a eu plus de services l’année précédente est dispensé d’autant en début d’année.",
       "entryTitleInfo": "À propos du modèle d'entrée",
       "entryTitleHelp": "Espaces réservés : '{Vorname}' = premier mot du nom, '{Name}' = nom complet, '{Dienst}' = titre du service. '{Vorname}' ou '{Name}' doit apparaître. Exemple : « '{Vorname}' Dienst » → « Günther Dienst ».",
       "entryTitlePreview": "Aperçu : {title}",
@@ -1448,6 +1451,18 @@
       "holidayCalendarUnavailable": "Calendrier sans accès",
       "holidayCalendarHint": "Chaque entrée de ce calendrier un jour de service ferme ce jour-là. Idéalement un calendrier synchronisé avec un flux de jours fériés.",
       "holidayOpenDates": "Jours fériés travaillés"
+    },
+    "yearly": {
+      "hint": "Delta = services de l’année précédente moins le plus petit nombre de services d’un participant présent toute l’année. Une valeur personnalisée remplace la valeur automatique ; appliquée à la prochaine génération.",
+      "tableTitle": "Report {from} → {to}",
+      "member": "Participant",
+      "held": "Services {year}",
+      "autoDelta": "Delta",
+      "override": "Valeur personnalisée",
+      "overrideFor": "Valeur personnalisée pour {name} ({year})",
+      "newSince": "nouveau depuis le {date}",
+      "reset": "Utiliser la valeur automatique",
+      "noData": "Aucun service l’année précédente – rien à reporter."
     },
     "period": {
       "day": "Jour",
@@ -1561,7 +1576,10 @@
       "entryTitle": "Modèle d'entrée invalide : il te faut '{Vorname}' ou '{Name}', et seuls '{Vorname}', '{Name}' et '{Dienst}' sont autorisés (100 caractères max.).",
       "dayOffTitle": "Le modèle d'entrée du jour de repos est invalide.",
       "dayOffExcluded": "Jour de repos par participant invalide : seuls les participants de la rotation peuvent être exclus.",
-      "reinforcedDates": "Jours renforcés invalides : une entrée par date ; les jours à venir ont besoin de plus de personnes que « Personnes par service », au maximum autant que de participants."
+      "reinforcedDates": "Jours renforcés invalides : une entrée par date ; les jours à venir ont besoin de plus de personnes que « Personnes par service », au maximum autant que de participants.",
+      "yearlyFairness": "Réglage invalide pour l’équité annuelle.",
+      "yearDelta": "Delta invalide (0–52).",
+      "notMember": "Cette personne ne participe pas à la rotation."
     }
   },
   "swap": {
