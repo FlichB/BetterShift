@@ -141,6 +141,12 @@ _Avoid_: Diensttag (der ist der Tag des Dienstes)
 **Standardtag**:
 Der erste Arbeitstag nach dem Dienst, auf dem das Dienstfrei ohne weiteres Zutun liegt.
 
+**Dienstfrei vor dem Dienst**:
+Einstellung der Rotation („Dienstfrei liegt: vor dem Dienst“): Der Standardtag liegt in der Dienstwoche vor dem Diensttag, meist am Montag, statt nach dem Dienst.
+
+**Gehaltenes Dienstfrei**:
+Bei „vor dem Dienst“ ein Dienstfrei, das nach Tausch, erzwungenem Tausch oder Ausgleich mit Datum und Status beim bisherigen Inhaber bleibt; der neue Inhaber des Platzes bekommt keines.
+
 **Verschieben**:
 Das selbständige Verlegen des eigenen Dienstfreis auf einen anderen Arbeitstag derselben Arbeitswoche.
 _Avoid_: Umbuchen
