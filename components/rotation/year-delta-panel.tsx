@@ -1,6 +1,7 @@
 "use client";
 
 // [fork] Jahresausgleich (SPEC 12.41): Delta per Teilnehmer with a manager's override.
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
@@ -8,19 +9,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { inputClass } from "@/components/form-kit";
 import { useSetYearDelta, useYearDeltas } from "@/hooks/useRotationYearDeltas";
+import { handleRateLimitError } from "@/lib/rate-limit-client";
 import { MAX_YEAR_DELTA } from "@/lib/rotation/yearly";
 import type { CalendarMember } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+// Codes the year-deltas routes answer with; anything else shows the generic error.
+const KNOWN_ERRORS = new Set(["yearDelta", "notMember", "forbidden", "notFound", "internal"]);
 
 export function YearDeltaPanel({ rotationId, members }: { rotationId: string; members: CalendarMember[] }) {
   const t = useTranslations();
   const { data: tables, isLoading } = useYearDeltas(rotationId);
   const setDelta = useSetYearDelta(rotationId);
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? id;
+  // Bumped after a rejected save so every input remounts with the rolled-back value.
+  const [failures, setFailures] = useState(0);
   const save = (year: number, userId: string, delta: number | null) =>
     setDelta.mutate(
       { year, userId, delta },
-      { onError: (error) => toast.error(t(`rotation.errors.${error.code === "notMember" ? "notMember" : "yearDelta"}`)) }
+      {
+        onError: (error) => {
+          setFailures((n) => n + 1);
+          if (error.status === 429) {
+            // An empty body makes the helper show its generic rate-limit toast
+            void handleRateLimitError(new Response(null, { status: 429 }), t);
+          } else {
+            toast.error(t(`rotation.errors.${KNOWN_ERRORS.has(error.code) ? error.code : "internal"}`));
+          }
+        },
+      }
     );
 
   if (isLoading || !tables) return null;
@@ -54,7 +71,7 @@ export function YearDeltaPanel({ rotationId, members }: { rotationId: string; me
                   <td className="py-1.5">
                     <div className="flex items-center justify-end gap-1">
                       <Input
-                        key={`${row.userId}-${row.override}`}
+                        key={`${row.userId}-${row.override}-${failures}`}
                         type="number"
                         inputMode="numeric"
                         min={0}
