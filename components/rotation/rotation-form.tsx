@@ -291,7 +291,7 @@ export function RotationForm({
           onCheckedChange={(checked) => set("dayOffEnabled", checked)}
         />
         {state.dayOffEnabled && (
-          <Field label={t("rotation.fields.dayOffTiming")} hint={t("rotation.fields.dayOffTimingHint")}>
+          <Field label={t("rotation.fields.dayOffTiming")} htmlFor="rotation-day-off-timing" hint={t("rotation.fields.dayOffTimingHint")}>
             <Select value={state.dayOffTiming} onValueChange={(v) => set("dayOffTiming", v as DayOffTiming)}>
               <SelectTrigger id="rotation-day-off-timing" className={cn(inputClass, "w-full")}>
                 <SelectValue />

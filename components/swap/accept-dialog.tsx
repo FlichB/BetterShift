@@ -50,7 +50,7 @@ export function AcceptDialog({
       confirmDisabled={pickCounter && !counterId}
       onConfirm={() => onConfirm(pickCounter ? counterId : undefined)}
     >
-      {entry.offered.dayOffStays && <p className="text-xs text-fg-tertiary">{t("swap.dayOffStays")}</p>}
+      {entry.offered.dayOffStays && <p className="text-xs text-fg-tertiary">{t("swap.dayOffStaysAccept")}</p>}
       {pickCounter && (
         <div role="radiogroup" aria-label={t("swap.confirm.pickCounter")} className="flex flex-col gap-1.5">
           {duties.isLoading && <p className="text-[13px] text-fg-secondary">{t("swap.confirm.loadingDuties")}</p>}

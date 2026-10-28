@@ -1590,6 +1590,7 @@
   "swap": {
     "dayOffStays": "Dein Dienstfrei zu diesem Dienst bleibt bei dir; wer ihn übernimmt, bekommt dafür keines.",
     "dayOffStaysForced": "Das Dienstfrei bleibt beim bisherigen Inhaber; der Einspringer bekommt dafür keines.",
+    "dayOffStaysAccept": "Für diesen Dienst bekommst du kein Dienstfrei; es bleibt beim bisherigen Inhaber.",
     "notifications": {
       "open": "Benachrichtigungen",
       "title": "Benachrichtigungen",
@@ -1797,6 +1798,7 @@
     "manageTitle": "Verwaltung",
     "cardTitle": "Dienstfrei zum Dienst am {date}",
     "keptOnSwap": "Aus getauschtem Dienst – das Dienstfrei bleibt bei dir.",
+    "keptOnSwapManage": "Aus getauschtem Dienst – das Dienstfrei bleibt bei {name}.",
     "status": {
       "standard": "Standard",
       "moved": "Verschoben",

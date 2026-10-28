@@ -95,7 +95,11 @@ export function DayOffCard({
         </div>
       )}
 
-      {dayOff.keptOnSwap && <p className="text-xs text-fg-tertiary">{t("dayOff.keptOnSwap")}</p>}
+      {dayOff.keptOnSwap && status !== "dropped" && (
+        <p className="text-xs text-fg-tertiary">
+          {mode === "manage" ? t("dayOff.keptOnSwapManage", { name: dayOff.holder.name }) : t("dayOff.keptOnSwap")}
+        </p>
+      )}
 
       {dayOff.lockNote && <p className="text-[13px] italic text-fg-secondary">„{dayOff.lockNote}“</p>}
 

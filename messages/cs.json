@@ -1320,7 +1320,7 @@
       "manageAnyNotesEvents": "Spravovat všechny poznámky a události",
       "signUpSelf": "Přihlásit se sám",
       "signUpOthers": "Přihlašovat ostatní",
-      "moveOwnDayOff": "Přesouvat vlastní volno po službě",
+      "moveOwnDayOff": "Přesouvat vlastní volno",
       "createPreset": "Vytvářet předvolby",
       "manageOwnPresets": "Spravovat vlastní předvolby",
       "manageAnyPresets": "Spravovat všechny předvolby",
@@ -1345,7 +1345,7 @@
       "manageAnyNotesEvents": "Upravovat nebo mazat i ty vytvořené jinými",
       "signUpSelf": "Přihlašovat se a odhlašovat ze směn s volnými místy",
       "signUpOthers": "Přihlašovat a odhlašovat jiné osoby ze směn",
-      "moveOwnDayOff": "Přesunout vlastní volno po službě v rámci pracovního týdne",
+      "moveOwnDayOff": "Přesunout vlastní volno v rámci pracovního týdne",
       "createPreset": "Vytvářet nové předvolby",
       "manageOwnPresets": "Upravovat nebo mazat předvolby, které sám vytvořil",
       "manageAnyPresets": "Upravovat i předvolby vytvořené jinými; řídí také společné pořadí",
@@ -1590,6 +1590,7 @@
   "swap": {
     "dayOffStays": "Tvoje volno ke službě ti zůstává; kdo ji převezme, žádné nedostane.",
     "dayOffStaysForced": "Volno zůstává dosavadnímu držiteli; zastupující za něj žádné nedostane.",
+    "dayOffStaysAccept": "Za tuto službu nedostaneš žádné volno; zůstává dosavadnímu držiteli.",
     "notifications": {
       "open": "Oznámení",
       "title": "Oznámení",
@@ -1797,6 +1798,7 @@
     "manageTitle": "Správa",
     "cardTitle": "Volno ke službě {date}",
     "keptOnSwap": "Z vyměněné služby – volno ti zůstává.",
+    "keptOnSwapManage": "Z vyměněné služby – volno zůstává {name}.",
     "status": {
       "standard": "Standard",
       "moved": "Přesunuto",

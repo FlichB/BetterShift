@@ -1590,6 +1590,7 @@
   "swap": {
     "dayOffStays": "Tu día libre de este servicio se queda contigo; quien lo asuma no recibe ninguno por él.",
     "dayOffStaysForced": "El día libre se queda con el titular anterior; quien sustituye no recibe ninguno por él.",
+    "dayOffStaysAccept": "No recibes ningún día libre por este servicio; se queda con el titular anterior.",
     "notifications": {
       "open": "Notificaciones",
       "title": "Notificaciones",
@@ -1797,6 +1798,7 @@
     "manageTitle": "Gestión",
     "cardTitle": "Día libre para el servicio del {date}",
     "keptOnSwap": "De un servicio intercambiado: el día libre se queda contigo.",
+    "keptOnSwapManage": "De un servicio intercambiado: el día libre se queda con {name}.",
     "status": {
       "standard": "Estándar",
       "moved": "Movido",
