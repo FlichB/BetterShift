@@ -48,7 +48,9 @@ export function loadStaffing(
       minimum: rotation.minPresent!,
       participants: [...new Set(members.filter((m) => m.rotationId === rotation.id).map((m) => m.userId))],
       closed: loadClosedSet(reader, rotation, from, to),
-    }));
+    }))
+    // A minimum that is not below the headcount (e.g. after a member was deleted) can never be met: ignore it.
+    .filter((scope) => scope.minimum < scope.participants.length);
 
   const people = [...new Set(scopes.flatMap((s) => s.participants))];
   const statuses = options.fixedOnly ? (["moved", "agreed"] as const) : (["standard", "moved", "agreed"] as const);

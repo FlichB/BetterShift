@@ -31,6 +31,8 @@ const isWerktag = (scope: StaffingScope, date: string) => isoWeekday(toDayNumber
 
 export class StaffingIndex {
   private readonly dayOffs = new Map<string, { userId: string; date: string }>();
+  /** userId -> date -> ids of the placed Dienstfreie there, so isAbsent is a lookup. */
+  private readonly byUser = new Map<string, Map<string, Set<string>>>();
   private readonly ranges: Map<string, readonly DateRange[]>;
 
   constructor(
@@ -39,13 +41,28 @@ export class StaffingIndex {
     dayOffs: readonly PlacedDayOff[]
   ) {
     this.ranges = new Map(vacations);
-    for (const d of dayOffs) this.dayOffs.set(d.id, { userId: d.userId, date: d.date });
+    for (const d of dayOffs) this.place(d.id, d.userId, d.date);
   }
 
   /** Sets (or with null removes) the date of a Dienstfrei, e.g. while the Abgleich assigns dates one by one. */
   place(id: string, userId: string, date: string | null): void {
-    if (date) this.dayOffs.set(id, { userId, date });
-    else this.dayOffs.delete(id);
+    const old = this.dayOffs.get(id);
+    if (old) {
+      const dates = this.byUser.get(old.userId);
+      const ids = dates?.get(old.date);
+      ids?.delete(id);
+      if (ids?.size === 0) dates?.delete(old.date);
+    }
+    if (!date) {
+      this.dayOffs.delete(id);
+      return;
+    }
+    this.dayOffs.set(id, { userId, date });
+    let dates = this.byUser.get(userId);
+    if (!dates) this.byUser.set(userId, (dates = new Map()));
+    let ids = dates.get(date);
+    if (!ids) dates.set(date, (ids = new Set()));
+    ids.add(id);
   }
 
   /** Replaces the approved vacations of one person (hypothetical state of a preview). */
@@ -55,8 +72,7 @@ export class StaffingIndex {
 
   isAbsent(userId: string, date: string): boolean {
     if ((this.ranges.get(userId) ?? []).some((r) => r.from <= date && date <= r.to)) return true;
-    for (const d of this.dayOffs.values()) if (d.userId === userId && d.date === date) return true;
-    return false;
+    return (this.byUser.get(userId)?.get(date)?.size ?? 0) > 0;
   }
 
   private present(scope: StaffingScope, date: string, without: string | null): number {

@@ -55,4 +55,12 @@ describe("loadStaffing", () => {
     expect(loadStaffing(db, [s.m0], "2026-11-01", "2026-12-31", { fixedOnly: true }).isFull(s.m0)(MON)).toBe(false);
     expect(loadStaffing(db, [s.m0], "2026-11-01", "2026-12-31", { excludeDayOffIds: [standard] }).isFull(s.m0)(MON)).toBe(false);
   });
+
+  it("ignores a minimum that is not below the number of Teilnehmer", async () => {
+    const s = await setup(8); // 8 Teilnehmer: the minimum can never be met
+    s.dayOff(s.m2, MON, "moved");
+    const index = loadStaffing(db, [s.m0], "2026-11-01", "2026-12-31");
+    expect(index.isFull(s.m0)(MON)).toBe(false);
+    expect(index.gapsFor(s.m0, [MON])).toEqual([]);
+  });
 });
