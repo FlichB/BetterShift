@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DAY_OFF_COLOR, dayOffEntries, dayOffEntriesForDays, expandDutyPlaces, placeTitles } from "@/lib/rotation/places";
+import { DAY_OFF_COLOR, VACATION_COLOR, vacationIndexEntries, dayOffEntries, dayOffEntriesForDays, expandDutyPlaces, placeTitles } from "@/lib/rotation/places";
 import { formatDateToLocal } from "@/lib/date-utils";
 import { sortShifts } from "@/lib/shift-display";
 import type { ShiftWithCalendar } from "@/lib/types";
@@ -115,4 +115,17 @@ describe("dayOffEntriesForDays", () => {
       expect(sortShifts([entry, duty], "title", order).map((s) => s.id)).toEqual(["s1", "dayoff:d1"]);
     }
   });
+});
+
+it("[fork] renders vacation entries with their own colour and marker", () => {
+  const index = { templates: new Map(), dayOffs: new Map([["2026-12-07", [{ id: "v1", calendarId: "c1", title: "Mia Urlaub", kind: "vacation" as const }]]]) };
+  const [entry] = dayOffEntries("2026-12-07", null, index);
+  expect(entry).toMatchObject({ id: "vacation:v1:2026-12-07", title: "Mia Urlaub", color: VACATION_COLOR, vacation: { id: "v1" } });
+  expect(entry.dayOff).toBeUndefined();
+});
+
+it("[fork] expands a vacation range into one index entry per day", () => {
+  const map = vacationIndexEntries([{ id: "v1", startDate: "2026-12-07", endDate: "2026-12-09", name: "Mia Muster", email: null }], "c1", (name) => `${name} Urlaub`);
+  expect([...map.keys()]).toEqual(["2026-12-07", "2026-12-08", "2026-12-09"]);
+  expect(map.get("2026-12-08")).toEqual([{ id: "v1", calendarId: "c1", title: "Mia Urlaub", kind: "vacation" }]);
 });

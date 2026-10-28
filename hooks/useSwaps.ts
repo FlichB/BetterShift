@@ -9,7 +9,8 @@ import { dayOffQueryKeys } from "@/lib/dayoff/query-keys"; // [fork]
 import { swapQueryKeys } from "@/lib/swap/query-keys";
 import type { SlotMove } from "@/lib/swap/rules";
 import type { Board, CalendarSwapState, CounterCandidatesResponse, DutiesResponse } from "@/lib/swap/types";
-import type { DayOffIndexEntry } from "@/lib/rotation/places"; // [fork]
+import { vacationIndexEntries, type DayOffIndexEntry } from "@/lib/rotation/places"; // [fork]
+import { useTranslations } from "next-intl"; // [fork]
 
 export class SwapApiError extends Error {
   constructor(
@@ -52,8 +53,13 @@ export function useSwapDuties(calendarId: string | undefined) {
   });
 }
 
-// [fork] Dienstfreie of one calendar by date, in the shape of DutyPlaceIndex.dayOffs
-function dayOffsByDate(calendarId: string | undefined, rows: CalendarSwapState["dayOffs"]): Map<string, DayOffIndexEntry[]> {
+// [fork] Dienstfreie and Urlaube of one calendar by date, in the shape of DutyPlaceIndex.dayOffs
+function dayOffsByDate(
+  calendarId: string | undefined,
+  rows: CalendarSwapState["dayOffs"],
+  vacationRows: CalendarSwapState["vacations"],
+  vacationTitle: (name: string) => string
+): Map<string, DayOffIndexEntry[]> {
   const map = new Map<string, DayOffIndexEntry[]>();
   if (!calendarId) return map;
   for (const d of rows) {
@@ -62,11 +68,17 @@ function dayOffsByDate(calendarId: string | undefined, rows: CalendarSwapState["
     if (list) list.push(entry);
     else map.set(d.date, [entry]);
   }
+  for (const [date, entries] of vacationIndexEntries(vacationRows, calendarId, vacationTitle)) {
+    const list = map.get(date);
+    if (list) list.push(...entries);
+    else map.set(date, entries);
+  }
   return map;
 }
 
 /** Which shifts are duties and which carry an open offer; empty when auth is off. */
 export function useSwapCalendarState(calendarId: string | undefined) {
+  const t = useTranslations(); // [fork]
   const { isAuthEnabled } = useAuthFeatures();
   const { data } = useQuery({
     queryKey: swapQueryKeys.calendarState(calendarId ?? ""),
@@ -81,9 +93,9 @@ export function useSwapCalendarState(calendarId: string | undefined) {
       openOfferShiftIds: new Set(data?.openOfferShiftIds ?? []),
       entryTemplates: new Map(Object.entries(data?.entryTemplates ?? {})),
       openOfferKeys: new Set((data?.openOffers ?? []).map((o) => `${o.shiftId}:${o.userId}`)),
-      dayOffs: dayOffsByDate(calendarId, data?.dayOffs ?? []), // [fork]
+      dayOffs: dayOffsByDate(calendarId, data?.dayOffs ?? [], data?.vacations ?? [], (name) => t("vacation.entryTitle", { name })), // [fork]
     }),
-    [data, calendarId] // [fork] calendarId tags the Dienstfreie
+    [data, calendarId, t] // [fork] calendarId tags the Dienstfreie, t titles the Urlaube
   );
 }
 

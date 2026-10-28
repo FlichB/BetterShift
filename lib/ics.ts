@@ -19,8 +19,8 @@ export interface IcsOnly {
   calendarName: string;
   /** [fork] per shift id: the title of the user's own Platz (Eintragsvorlage) */
   titles: Map<string, string>;
-  /** [fork] all-day events that are not shifts (Dienstfreie), rendered after the shift events */
-  extraEvents?: { uid: string; date: string; summary: string; description?: string }[];
+  /** [fork] all-day events that are not shifts (Dienstfreie, Urlaube), rendered after the shift events */
+  extraEvents?: { uid: string; date: string; endDate?: string; summary: string; description?: string }[]; // [fork] endDate: inclusive last day of a multi-day entry
 }
 
 export async function buildIcsCalendar({
@@ -188,7 +188,7 @@ export async function buildIcsCalendar({
     event.summary = extra.summary;
     if (extra.description) event.description = extra.description;
     event.startDate = ICAL.Time.fromDateString(extra.date);
-    event.endDate = ICAL.Time.fromDateString(addDays(extra.date, 1));
+    event.endDate = ICAL.Time.fromDateString(addDays(extra.endDate ?? extra.date, 1));
     cal.addSubcomponent(vevent);
   }
 

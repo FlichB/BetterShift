@@ -99,6 +99,7 @@ export interface CalendarSwapState {
   openOffers: { shiftId: string; userId: string }[];
   /** [fork] Dated Dienstfreie of the calendar's rotations (from today − 60 days), titled by the Dienstfrei-Vorlage. */
   dayOffs: { id: string; userId: string; date: string; title: string }[];
+  vacations: { id: string; userId: string; startDate: string; endDate: string; name: string; email: string | null }[]; // [fork] Urlaub
   /** the caller may force swaps in this calendar */
   canForce: boolean;
 }

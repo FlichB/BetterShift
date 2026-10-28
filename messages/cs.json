@@ -1963,12 +1963,15 @@
     "calendarName": "Moje služby",
     "with": "S: {names}",
     "swapLink": "Výměna: {url}",
-    "dayOffLink": "Volno: {url}"
+    "dayOffLink": "Volno: {url}",
+    "vacationLink": "Spravovat dovolenou: {url}"
   },
   "announcements": {
     "dismiss": "Skrýt oznámení"
   },
   "vacation": {
+    "entryTitle": "{name} dovolená",
+    "calendarHint": "Dovolená – podrobnosti v sekci Dovolená",
     "errors": {
       "notFound": "Dovolená nebyla nalezena.",
       "forbidden": "K tomu nemáš oprávnění.",

@@ -1963,12 +1963,15 @@
     "calendarName": "Mes services",
     "with": "Avec : {names}",
     "swapLink": "Échanger : {url}",
-    "dayOffLink": "Jour de repos : {url}"
+    "dayOffLink": "Jour de repos : {url}",
+    "vacationLink": "Gérer les congés : {url}"
   },
   "announcements": {
     "dismiss": "Masquer l'annonce"
   },
   "vacation": {
+    "entryTitle": "{name} congés",
+    "calendarHint": "Congés – détails sous Congés",
     "errors": {
       "notFound": "Congé introuvable.",
       "forbidden": "Tu n'as pas l'autorisation de faire cela.",

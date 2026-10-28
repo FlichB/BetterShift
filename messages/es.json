@@ -1963,12 +1963,15 @@
     "calendarName": "Mis turnos",
     "with": "Con: {names}",
     "swapLink": "Intercambiar: {url}",
-    "dayOffLink": "Día libre: {url}"
+    "dayOffLink": "Día libre: {url}",
+    "vacationLink": "Gestionar vacaciones: {url}"
   },
   "announcements": {
     "dismiss": "Ocultar anuncio"
   },
   "vacation": {
+    "entryTitle": "{name} vacaciones",
+    "calendarHint": "Vacaciones – detalles en Vacaciones",
     "errors": {
       "notFound": "Vacaciones no encontradas.",
       "forbidden": "No tienes permiso para hacer eso.",

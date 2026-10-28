@@ -1,4 +1,4 @@
-// [fork] Duty templates and Dienstfreie of every shown calendar, for one calendar entry per Platz (spec 12.32).
+// [fork] Duty templates, Dienstfreie and Urlaube of every shown calendar, for one calendar entry per Platz (spec 12.32).
 "use client";
 
 import { useMemo } from "react";
@@ -10,7 +10,7 @@ import { LIVE_REFETCH_INTERVAL } from "@/lib/query-client";
 import { swapQueryKeys } from "@/lib/swap/query-keys";
 import type { CalendarSwapState } from "@/lib/swap/types";
 import { useCalendars } from "@/hooks/useCalendars";
-import type { CalendarRef, DayOffIndexEntry, DutyPlaceIndex } from "@/lib/rotation/places";
+import { vacationIndexEntries, type CalendarRef, type DayOffIndexEntry, type DutyPlaceIndex } from "@/lib/rotation/places"; // [fork] vacationIndexEntries
 
 export interface DutyPlaces {
   index: DutyPlaceIndex;
@@ -52,10 +52,16 @@ export function useDutyPlaces(calendarIds: string[], dayOffCalendarId?: string):
         if (list) list.push(entry);
         else map.set(d.date, [entry]);
       }
+      // [fork] Urlaub: one entry per day of each vacation
+      for (const [date, entries] of vacationIndexEntries(r.data?.vacations ?? [], ids[i], (name) => t("vacation.entryTitle", { name }))) {
+        const list = map.get(date);
+        if (list) list.push(...entries);
+        else map.set(date, entries);
+      }
     });
     return map;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- see templates above; uniqueKey orders the same results
-  }, [dataVersion, uniqueKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see templates above; uniqueKey orders the same results, t only changes with the locale
+  }, [dataVersion, uniqueKey, t]);
   const index = useMemo(() => ({ templates, dayOffs }), [templates, dayOffs]);
   const dayOffCalendar = calendars.find((c) => c.id === dayOffCalendarId);
   const dayOffName = dayOffCalendar?.name ?? "";

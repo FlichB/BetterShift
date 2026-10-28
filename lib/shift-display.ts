@@ -48,7 +48,9 @@ export function sortShifts(
   order: ShiftSortOrder = "asc"
 ): ShiftWithCalendar[] {
   return [...shifts].sort((a, b) => {
-    if (!!a.dayOff !== !!b.dayOff) return a.dayOff ? 1 : -1; // [fork] Dienstfreie after real shifts, so they never push one behind "+N"
+    const aMarker = !!(a.dayOff || a.vacation); // [fork] Dienstfreie and Urlaube come after real shifts, so they never push one behind "+N"
+    const bMarker = !!(b.dayOff || b.vacation);
+    if (aMarker !== bMarker) return aMarker ? 1 : -1;
     let comparison = 0;
     switch (type) {
       case "startTime":

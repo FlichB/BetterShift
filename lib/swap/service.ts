@@ -10,7 +10,8 @@ import { transferDayOff } from "@/lib/dayoff/service"; // [fork]
 import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
 import { enqueueSwapEvent, offerKind } from "@/lib/notify/enqueue";
 import { addDays, hasStarted } from "@/lib/rotation/dates"; // [fork] addDays
-import { rotationDuties, rotationSlotLocks, rotations } from "@/lib/rotation/schema";
+import { rotationDuties, rotationMembers, rotationSlotLocks, rotations } from "@/lib/rotation/schema"; // [fork] rotationMembers
+import { vacations } from "@/lib/vacation/schema"; // [fork]
 import { isOnVacation } from "@/lib/vacation/dates"; // [fork]
 import { logResolved } from "@/lib/swap/audit";
 import {
@@ -696,11 +697,28 @@ export function calendarState(calendarId: string, now: Date): Omit<CalendarSwapS
     .where(and(eq(rotations.calendarId, calendarId), eq(rotations.dayOffEnabled, true), isNotNull(dayOffs.shiftId), gte(dayOffs.date, addDays(formatDateToLocal(now), -60))))
     .all()
     .filter((r) => r.date && ["standard", "moved", "agreed"].includes(r.status));
+  // [fork] Urlaub: approved vacations of Teilnehmer of this calendar's rotations, from 60 days back
+  const members = db
+    .select({ userId: rotationMembers.userId })
+    .from(rotationMembers)
+    .innerJoin(rotations, eq(rotations.id, rotationMembers.rotationId))
+    .where(eq(rotations.calendarId, calendarId))
+    .all()
+    .map((r) => r.userId);
+  const vacationRows = members.length
+    ? db
+        .select({ id: vacations.id, userId: vacations.userId, startDate: vacations.startDate, endDate: vacations.endDate, name: user.name, email: user.email })
+        .from(vacations)
+        .innerJoin(user, eq(user.id, vacations.userId))
+        .where(and(inArray(vacations.userId, [...new Set(members)]), eq(vacations.status, "approved"), gte(vacations.endDate, addDays(formatDateToLocal(now), -60))))
+        .all()
+    : [];
   return {
     dutyShiftIds: duties.map((d) => d.shiftId),
     openOfferShiftIds: [...new Set(openOffers.map((o) => o.shiftId))],
     entryTemplates: Object.fromEntries(duties.map((d) => [d.shiftId, d.entryTitle])),
     openOffers,
     dayOffs: dayOffRows.map((r) => ({ id: r.id, userId: r.userId, date: r.date!, title: entryTitle(r.template, r, r.dutyTitle ?? "") })), // [fork]
+    vacations: vacationRows, // [fork] Urlaub
   };
 }

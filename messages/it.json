@@ -1963,12 +1963,15 @@
     "calendarName": "I miei turni",
     "with": "Con: {names}",
     "swapLink": "Scambia: {url}",
-    "dayOffLink": "Giorno libero: {url}"
+    "dayOffLink": "Giorno libero: {url}",
+    "vacationLink": "Gestisci le ferie: {url}"
   },
   "announcements": {
     "dismiss": "Nascondi annuncio"
   },
   "vacation": {
+    "entryTitle": "{name} ferie",
+    "calendarHint": "Ferie – dettagli sotto Ferie",
     "errors": {
       "notFound": "Ferie non trovate.",
       "forbidden": "Non hai il permesso di farlo.",

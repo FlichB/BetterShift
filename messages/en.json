@@ -1963,12 +1963,15 @@
     "calendarName": "My duties",
     "with": "With: {names}",
     "swapLink": "Swap: {url}",
-    "dayOffLink": "Day off: {url}"
+    "dayOffLink": "Day off: {url}",
+    "vacationLink": "Manage vacation: {url}"
   },
   "announcements": {
     "dismiss": "Dismiss announcement"
   },
   "vacation": {
+    "entryTitle": "{name} vacation",
+    "calendarHint": "Vacation – details under Vacation",
     "errors": {
       "notFound": "Vacation not found.",
       "forbidden": "You are not allowed to do that.",

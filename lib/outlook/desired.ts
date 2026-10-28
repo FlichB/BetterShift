@@ -48,7 +48,7 @@ export interface DesiredEvent {
   start: GraphDateTime;
   end: GraphDateTime;
   isAllDay: boolean;
-  showAs: "free" | "busy" | "oof"; // [fork] oof = Dienstfrei
+  showAs: "free" | "busy" | "oof"; // [fork] oof = Dienstfrei, Urlaub
   attendees: Attendee[];
   details: EventDetails;
 }
@@ -145,6 +145,41 @@ export function desiredDayOffEvent(d: DayOffForSync): PlaceEvent {
       isAllDay: true,
       showAs: "oof",
       attendees: [{ address, name: d.holder.name }],
+      details: { time: null, partners: [] },
+    },
+  };
+}
+
+/** [fork] Urlaub (SPEC 12.43): an approved vacation as the Outlook sync sees it. */
+export interface VacationForSync {
+  id: string;
+  rotationId: string;
+  userId: string;
+  startDate: string;
+  endDate: string;
+  title: string;
+  holder: PlaceHolder;
+}
+
+export const vacationKey = (id: string): string => `vacation:${id}`;
+
+/** One all-day out-of-office event over the whole vacation, only the person invited. */
+export function desiredVacationEvent(v: VacationForSync): PlaceEvent {
+  const address = v.holder.email?.trim().toLowerCase() ?? "";
+  return {
+    key: vacationKey(v.id),
+    shiftId: v.id,
+    userId: v.userId,
+    rotationId: v.rotationId,
+    date: v.startDate,
+    startTime: "00:00",
+    event: {
+      subject: v.title,
+      start: at(v.startDate, "00:00"),
+      end: at(addDays(v.endDate, 1), "00:00"),
+      isAllDay: true,
+      showAs: "oof",
+      attendees: [{ address, name: v.holder.name }],
       details: { time: null, partners: [] },
     },
   };

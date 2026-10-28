@@ -1963,12 +1963,15 @@
     "calendarName": "Meine Dienste",
     "with": "Mit: {names}",
     "swapLink": "Tauschen: {url}",
-    "dayOffLink": "Dienstfrei: {url}"
+    "dayOffLink": "Dienstfrei: {url}",
+    "vacationLink": "Urlaub verwalten: {url}"
   },
   "announcements": {
     "dismiss": "Ankündigung ausblenden"
   },
   "vacation": {
+    "entryTitle": "{name} Urlaub",
+    "calendarHint": "Urlaub – Details unter Urlaub",
     "errors": {
       "notFound": "Urlaub nicht gefunden.",
       "forbidden": "Dafür fehlt dir die Berechtigung.",
