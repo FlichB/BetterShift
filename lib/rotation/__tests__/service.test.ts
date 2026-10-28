@@ -9,13 +9,19 @@ import {
   deleteRotation,
   getYearDeltaTables,
   getRotation,
+  planEnd,
+  planInTx,
+  prepareGeneration,
   previewGeneration,
   runGeneration,
   setYearDeltaOverride,
   suggestOffsetFor,
   updateRotation,
   RotationServiceError,
+  rotationsOfMember,
 } from "@/lib/rotation/service";
+import { now as seedNow, seedDuties } from "@/lib/swap/__tests__/fixtures"; // [fork] Urlaub
+import { vacations } from "@/lib/vacation/schema"; // [fork] Urlaub
 import type { RotationInput } from "@/lib/rotation/validate";
 import { seedHolidays, seedTeam } from "@/tests/helpers/seed";
 
@@ -535,5 +541,45 @@ describe("Jahresausgleich", () => {
       "2027-03-31"
     );
     expect(dutiesOf(off.id).map((d) => d.userIds.sort().join())).toEqual(plain.map((d) => [...d.userIds].sort().join()));
+  });
+});
+
+describe("[fork] Urlaub in generation (SPEC 12.43)", () => {
+  const now = seedNow;
+
+  async function approve(userId: string, from: string, to: string) {
+    db.insert(vacations).values({ userId, startDate: from, endDate: to, status: "approved", requestedBy: userId }).run();
+  }
+
+  it("keeps a Teilnehmer off duties during an approved vacation on regenerate", async () => {
+    const s = await seedDuties();
+    await approve(s.m0, "2026-11-01", "2026-11-30");
+    await runGeneration(s.rotation.id, "2026-11-02", "2026-12-27", s.team.ownerId, now);
+    for (const date of ["2026-11-07", "2026-11-14", "2026-11-21", "2026-11-28"]) expect(s.holders(s.duty(date))).not.toContain(s.m0);
+  });
+
+  it("frees a locked Platz of the person on a vacation day and deletes the lock", async () => {
+    const s = await seedDuties();
+    const shiftId = s.duty("2026-11-14");
+    db.insert(rotationSlotLocks).values({ shiftId, userId: s.m2, replacesUserId: null, lockedAt: now }).run();
+    await approve(s.m2, "2026-11-14", "2026-11-14");
+    await runGeneration(s.rotation.id, "2026-11-02", "2026-12-27", s.team.ownerId, now);
+    expect(s.holders(shiftId)).not.toContain(s.m2);
+    expect(s.locks(shiftId)).toEqual([]);
+  });
+
+  it("previews a hypothetical vacation without writing", async () => {
+    const s = await seedDuties();
+    const prepared = await prepareGeneration(s.rotation.id);
+    const plan = db.transaction((tx) => planInTx(tx, prepared, "2026-11-02", "2026-12-27", now, { userId: s.m0, ranges: [{ from: "2026-11-07", to: "2026-11-07" }] }));
+    const first = plan.entries.find((e) => e.date === "2026-11-07");
+    expect(first?.kind).toBe("update");
+    expect(s.holders(s.duty("2026-11-07"))).toContain(s.m0); // nothing written
+  });
+
+  it("knows the plan end and the rotations of a member", async () => {
+    const s = await seedDuties();
+    expect(planEnd(db, s.rotation.id)).toBe("2026-12-26");
+    expect(rotationsOfMember(db, s.m3).map((r) => r.id)).toEqual([s.rotation.id]);
   });
 });

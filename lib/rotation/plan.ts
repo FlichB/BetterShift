@@ -48,7 +48,8 @@ export type PlanEntry =
 export type PlanWarning =
   | { kind: "lockedNonMember"; shiftId: string; date: string; userId: string }
   | { kind: "lockedWithoutDuty"; shiftId: string; date: string; userIds: string[] }
-  | { kind: "lockedOverCapacity"; shiftId: string; date: string; userIds: string[]; capacity: number };
+  | { kind: "lockedOverCapacity"; shiftId: string; date: string; userIds: string[]; capacity: number }
+  | { kind: "understaffed"; shiftId: string | null; date: string; capacity: number; filled: number }; // [fork] Urlaub
 
 export interface ExistingClosure extends DutyTemplate {
   shiftId: string;
@@ -107,6 +108,10 @@ export function planGeneration(input: PlanInput): DutyPlan {
     const capacity = duty.capacity ?? perShift;
     const current = existingByDate.get(duty.date);
     existingByDate.delete(duty.date);
+    if (duty.userIds.length < capacity) {
+      // [fork] Urlaub (SPEC 12.43): not enough Teilnehmer available, the rest stays an Offener Platz
+      warnings.push({ kind: "understaffed", shiftId: current?.shiftId ?? null, date: duty.date, capacity, filled: duty.userIds.length });
+    }
 
     if (!current) {
       if (!hasStarted(duty.date, template.startTime, now)) {
