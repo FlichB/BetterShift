@@ -9,7 +9,7 @@ import type { Recipient } from "@/lib/notify/recipients";
 import { canManageRotations } from "@/lib/rotation/permissions";
 
 /** Owner and share users of a calendar who may manage its rotations. */
-async function managerIds(calendarId: string): Promise<string[]> {
+export async function calendarManagerIds(calendarId: string): Promise<string[]> {
   const owner = db.select({ id: calendars.ownerId }).from(calendars).where(eq(calendars.id, calendarId)).get();
   const shared = db.select({ id: calendarShares.userId }).from(calendarShares).where(eq(calendarShares.calendarId, calendarId)).all();
   const ids = new Set([owner?.id, ...shared.map((r) => r.id)].filter((id): id is string => Boolean(id)));
@@ -25,7 +25,7 @@ export async function resolveDayOffRecipients(
   actorUserId: string | null
 ): Promise<Recipient[]> {
   const pref = audience === "holder" ? "myDayOffs" : "dayOffRequests";
-  const ids = (audience === "holder" ? [row.userId] : await managerIds(calendarId)).filter((id) => id !== actorUserId);
+  const ids = (audience === "holder" ? [row.userId] : await calendarManagerIds(calendarId)).filter((id) => id !== actorUserId);
   if (ids.length === 0) return [];
   return db
     .select({ id: user.id, email: user.email, name: user.name, banned: user.banned })

@@ -1888,7 +1888,16 @@
         "dayOffDeclined": "Návrh zamítnut",
         "dayOffReset": "Tvé volno se změnilo",
         "dayOffDropped": "Tvé volno odpadá",
-        "dayOffReminder": "Nevyřízené návrhy termínů"
+        "dayOffReminder": "Nevyřízené návrhy termínů",
+        "vacationRequested": "Nová žádost o dovolenou",
+        "vacationChangeRequested": "Požadována změna dovolené",
+        "vacationApproved": "Dovolená schválena",
+        "vacationRejected": "Dovolená zamítnuta",
+        "vacationChangeApproved": "Změna dovolené schválena",
+        "vacationChangeRejected": "Změna dovolené zamítnuta",
+        "vacationEntered": "Dovolená zapsána",
+        "vacationChanged": "Dovolená změněna",
+        "vacationCancelled": "Dovolená zrušena"
       },
       "lead": {
         "offerToAll": "{name} nabízí službu dne {duty}.",
@@ -1906,7 +1915,16 @@
         "dayOffDeclined": "Návrh {date} pro volno ke službě dne {duty} byl zamítnut.",
         "dayOffReset": "Tvé volno ke službě dne {duty} už neplatí a bylo obnoveno.",
         "dayOffDropped": "Tvé volno ke službě dne {duty} odpadá.",
-        "dayOffReminder": "Návrhy od {holder} pro volno ke službě dne {duty} čekají na odpověď už 3 dny."
+        "dayOffReminder": "Návrhy od {holder} pro volno ke službě dne {duty} čekají na odpověď už 3 dny.",
+        "vacationRequested": "{holder} žádá o dovolenou od {from} do {to}.",
+        "vacationChangeRequested": "{holder} chce změnit nebo zrušit dovolenou od {from} do {to}.",
+        "vacationApproved": "Tvoje dovolená od {from} do {to} je schválena. Tvé služby v tomto období byly přerozděleny.",
+        "vacationRejected": "Tvoje žádost o dovolenou od {from} do {to} byla zamítnuta.",
+        "vacationChangeApproved": "Tvoje změna je schválena: dovolená nyní od {from} do {to} (dříve {previous}).",
+        "vacationChangeRejected": "Tvoje změna dovolené od {from} do {to} byla zamítnuta.",
+        "vacationEntered": "Byla pro tebe zapsána dovolená od {from} do {to}. Tvé služby v tomto období byly přerozděleny.",
+        "vacationChanged": "Tvoje dovolená byla změněna: nyní od {from} do {to} (dříve {previous}).",
+        "vacationCancelled": "Tvoje dovolená od {from} do {to} byla zrušena."
       },
       "kind": {
         "give": "Předání – kdo přijme, převezme službu.",
@@ -1920,7 +1938,8 @@
       "allDay": "celý den",
       "button": "Otevřít burzu výměn",
       "footer": "Změnit upozornění",
-      "someone": "Někdo"
+      "someone": "Někdo",
+      "vacationRange": "od {from} do {to}"
     }
   },
   "outlook": {

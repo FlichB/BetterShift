@@ -1888,7 +1888,16 @@
         "dayOffDeclined": "Proposal declined",
         "dayOffReset": "Your day off changed",
         "dayOffDropped": "Your day off is cancelled",
-        "dayOffReminder": "Open date proposals"
+        "dayOffReminder": "Open date proposals",
+        "vacationRequested": "New vacation request",
+        "vacationChangeRequested": "Vacation change requested",
+        "vacationApproved": "Vacation approved",
+        "vacationRejected": "Vacation declined",
+        "vacationChangeApproved": "Vacation change approved",
+        "vacationChangeRejected": "Vacation change declined",
+        "vacationEntered": "Vacation entered",
+        "vacationChanged": "Vacation changed",
+        "vacationCancelled": "Vacation cancelled"
       },
       "lead": {
         "offerToAll": "{name} is offering the duty on {duty}.",
@@ -1906,7 +1915,16 @@
         "dayOffDeclined": "The proposal {date} for the day off for the duty on {duty} was declined.",
         "dayOffReset": "Your day off for the duty on {duty} is no longer valid and was reset.",
         "dayOffDropped": "Your day off for the duty on {duty} is cancelled.",
-        "dayOffReminder": "The proposals by {holder} for the day off for the duty on {duty} have been waiting 3 days for an answer."
+        "dayOffReminder": "The proposals by {holder} for the day off for the duty on {duty} have been waiting 3 days for an answer.",
+        "vacationRequested": "{holder} requests vacation from {from} to {to}.",
+        "vacationChangeRequested": "{holder} wants to change or cancel the vacation from {from} to {to}.",
+        "vacationApproved": "Your vacation from {from} to {to} is approved. Your duties in that period were reassigned.",
+        "vacationRejected": "Your vacation request from {from} to {to} was declined.",
+        "vacationChangeApproved": "Your change is approved: vacation now {from} to {to} (before {previous}).",
+        "vacationChangeRejected": "Your change to the vacation from {from} to {to} was declined.",
+        "vacationEntered": "Vacation from {from} to {to} was entered for you. Your duties in that period were reassigned.",
+        "vacationChanged": "Your vacation was changed: now {from} to {to} (before {previous}).",
+        "vacationCancelled": "Your vacation from {from} to {to} was cancelled."
       },
       "kind": {
         "give": "Hand-over – whoever accepts takes the duty.",
@@ -1920,7 +1938,8 @@
       "allDay": "all day",
       "button": "Open swap board",
       "footer": "Change notifications",
-      "someone": "Someone"
+      "someone": "Someone",
+      "vacationRange": "{from} to {to}"
     }
   },
   "outlook": {

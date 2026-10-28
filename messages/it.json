@@ -1888,7 +1888,16 @@
         "dayOffDeclined": "Proposta rifiutata",
         "dayOffReset": "Il tuo giorno libero è cambiato",
         "dayOffDropped": "Il tuo giorno libero è annullato",
-        "dayOffReminder": "Proposte di data in sospeso"
+        "dayOffReminder": "Proposte di data in sospeso",
+        "vacationRequested": "Nuova richiesta di ferie",
+        "vacationChangeRequested": "Modifica delle ferie richiesta",
+        "vacationApproved": "Ferie approvate",
+        "vacationRejected": "Ferie rifiutate",
+        "vacationChangeApproved": "Modifica delle ferie approvata",
+        "vacationChangeRejected": "Modifica delle ferie rifiutata",
+        "vacationEntered": "Ferie registrate",
+        "vacationChanged": "Ferie modificate",
+        "vacationCancelled": "Ferie annullate"
       },
       "lead": {
         "offerToAll": "{name} offre il turno del {duty}.",
@@ -1906,7 +1915,16 @@
         "dayOffDeclined": "La proposta del {date} per il giorno libero per il turno del {duty} è stata rifiutata.",
         "dayOffReset": "Il tuo giorno libero per il turno del {duty} non è più valido ed è stato reimpostato.",
         "dayOffDropped": "Il tuo giorno libero per il turno del {duty} è annullato.",
-        "dayOffReminder": "Le proposte di {holder} per il giorno libero per il turno del {duty} sono in attesa di risposta da 3 giorni."
+        "dayOffReminder": "Le proposte di {holder} per il giorno libero per il turno del {duty} sono in attesa di risposta da 3 giorni.",
+        "vacationRequested": "{holder} richiede ferie dal {from} al {to}.",
+        "vacationChangeRequested": "{holder} vuole modificare o annullare le ferie dal {from} al {to}.",
+        "vacationApproved": "Le tue ferie dal {from} al {to} sono approvate. I tuoi turni in questo periodo sono stati riassegnati.",
+        "vacationRejected": "La tua richiesta di ferie dal {from} al {to} è stata rifiutata.",
+        "vacationChangeApproved": "La tua modifica è approvata: ferie ora dal {from} al {to} (prima: {previous}).",
+        "vacationChangeRejected": "La tua modifica delle ferie dal {from} al {to} è stata rifiutata.",
+        "vacationEntered": "Sono state registrate per te ferie dal {from} al {to}. I tuoi turni in questo periodo sono stati riassegnati.",
+        "vacationChanged": "Le tue ferie sono state modificate: ora dal {from} al {to} (prima: {previous}).",
+        "vacationCancelled": "Le tue ferie dal {from} al {to} sono state annullate."
       },
       "kind": {
         "give": "Cessione – chi accetta prende il turno.",
@@ -1920,7 +1938,8 @@
       "allDay": "tutto il giorno",
       "button": "Apri la bacheca degli scambi",
       "footer": "Modifica le notifiche",
-      "someone": "Qualcuno"
+      "someone": "Qualcuno",
+      "vacationRange": "dal {from} al {to}"
     }
   },
   "outlook": {
