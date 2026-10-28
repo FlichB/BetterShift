@@ -624,6 +624,7 @@ export function moveOptions(id: string, now: Date): MoveOption[] {
       othersOff: others.filter((o) => o.date === date).length,
       isCurrent: date === row.date,
       isStandard: date === row.standardDate,
+      full: false, // [fork] wired to the staffing index in the service task
     }));
   });
 }

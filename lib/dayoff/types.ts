@@ -30,7 +30,8 @@ export type DayOffErrorCode =
   | "duplicate"
   | "tooMany"
   | "reasonRequired"
-  | "proposalNotOpen";
+  | "proposalNotOpen"
+  | "belowMinimum";
 
 export const MAX_DATES_PER_PROPOSAL = 5;
 export const MAX_OPEN_PROPOSALS = 10;
@@ -59,4 +60,13 @@ export interface DayOffView {
   canMove: boolean;
 }
 export interface DayOffBoard { mine: DayOffView[]; manage: DayOffView[]; manageCalendarIds: string[] }
-export interface MoveOption { date: string; othersOff: number; isCurrent: boolean; isStandard: boolean }
+/** Why a day is full (SPEC 12.44): present after the change vs. the Mindestbesetzung. */
+export interface StaffingDetail { date: string; present: number; minimum: number }
+export interface MoveOption {
+  date: string;
+  othersOff: number;
+  isCurrent: boolean;
+  isStandard: boolean;
+  /** Voller Tag (SPEC 12.44): not selectable for the holder. */
+  full: boolean;
+}

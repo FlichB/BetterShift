@@ -26,6 +26,7 @@ export const STATUS: Record<DayOffErrorCode, number> = {
   duplicate: 409,
   tooMany: 409,
   proposalNotOpen: 409,
+  belowMinimum: 409,
 };
 
 export const dayOffError = (code: DayOffErrorCode) => NextResponse.json({ error: code }, { status: STATUS[code] });
