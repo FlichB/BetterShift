@@ -608,6 +608,19 @@ describe("Urlaub (SPEC 12.43)", () => {
     expect(held(r, "2028-01-01", "2028-12-31").get(a)!).toBeLessThanOrEqual(plainMax);
   });
 
+  it.each(["a", "c", "e", "h"])("books a round crossing New Year in each duty's own year (absent %s)", (a) => {
+    // From 2028-01-15 a round of four Saturdays runs Dec 16 – Jan 6.
+    const range = { from: "2028-12-16", to: "2029-01-06" };
+    const r = rule([{ userId: a, ...range }], { startDate: "2028-01-15" });
+    expect(on(r, a, range)).toEqual([]);
+    // Rounds: 2028-12-16..2029-01-06 (crosses New Year), full rounds from 2029-01-13 to 2029-12-08,
+    // then 2029-12-15..2030-01-05 (crosses again). A seat lost on 2029-01-06 is a 2029 debt and is
+    // made up in the round of 2029-01-13 (absent h), so from 2029-02-10 to 2029-12-08 (eleven full
+    // rounds) everyone holds the same count. Plain rounds cross New Year, so an even count per
+    // calendar year is the promise of yearlyFairness (SPEC 12.41), not of the Nachhol-Konto.
+    expect(new Set(held(r, "2029-02-10", "2029-12-08").values()).size).toBe(1);
+  });
+
   it("with yearly fairness the missed Platz flows into the Delta", () => {
     const a = eight[5];
     const r = rule([{ userId: a, from: "2027-12-04", to: "2027-12-31" }], { yearlyFairness: true, memberSince: {} });

@@ -246,8 +246,31 @@ const byBalance =
   (balance: ReadonlyMap<string, number>, position: ReadonlyMap<string, number>, dir: 1 | -1) => (a: string, b: string) =>
     dir * ((balance.get(a) ?? 0) - (balance.get(b) ?? 0)) || (position.get(a) as number) - (position.get(b) as number);
 
-/** [fork] Urlaub: each debtor takes one Platz of a creditor per round, where allowed. True if a seat changed. */
+/** [fork] Urlaub: Nachhol-Konten of one calendar year (userId → balance), created on first use. */
+type Konten = (year: number) => Map<string, number>;
+
+/**
+ * [fork] Urlaub: per calendar year of the round's duties, each debtor of that year takes one Platz
+ * of a creditor of the same year on a duty of that year, where allowed. True if a seat changed.
+ */
 function makeUp(
+  groups: string[][],
+  fixed: number[],
+  duties: number[],
+  absence: AbsenceHooks,
+  konten: Konten,
+  position: ReadonlyMap<string, number>,
+  beatless: Set<string>
+): boolean {
+  let changed = false;
+  for (const year of new Set(duties.map((d) => absence.yearOf(d)))) {
+    if (makeUpIn(year, groups, fixed, duties, absence, konten(year), position, beatless)) changed = true;
+  }
+  return changed;
+}
+
+function makeUpIn(
+  year: number,
   groups: string[][],
   fixed: number[],
   duties: number[],
@@ -263,6 +286,7 @@ function makeUp(
     let done = false;
     for (const v of creditors) {
       for (let j = 0; j < groups.length && !done; j++) {
+        if (absence.yearOf(duties[j]) !== year) continue; // a Nachholplatz stays in its calendar year
         if (groups[j].includes(u) || !absence.allowed(u, duties[j])) continue;
         const i = groups[j].indexOf(v);
         if (i < fixed[j]) continue; // not seated here, or a carried seat
@@ -285,12 +309,13 @@ function repairAbsences(
   fixed: number[],
   duties: number[],
   absence: AbsenceHooks,
-  balance: Map<string, number>,
+  konten: Konten,
   position: ReadonlyMap<string, number>,
   memberIds: string[]
 ): boolean {
   let changed = false;
   for (let j = 0; j < groups.length; j++) {
+    const balance = konten(absence.yearOf(duties[j])); // booked in the calendar year of the repaired duty
     for (let i = fixed[j]; i < groups[j].length; i++) {
       const u = groups[j][i];
       if (absence.allowed(u, duties[j])) continue;
@@ -374,9 +399,14 @@ export function* dutyGroups(
   const yearCount = new Map<string, number>(); // Plätze in the current year
   let yearDelta: ReadonlyMap<string, number> = new Map(); // Delta the current year settles
 
-  // [fork] Urlaub: Nachhol-Konto per Teilnehmer (-1 = owes a Platz), reset at New Year; beatless = beat restarts at next duty.
-  const balance = new Map<string, number>();
-  let balanceYear: number | null = null;
+  // [fork] Urlaub: Nachhol-Konto per calendar year and Teilnehmer (-1 = owes a Platz); a new year
+  // starts at 0. beatless = beat restarts at next duty.
+  const balances = new Map<number, Map<string, number>>();
+  const konten: Konten = (year) => {
+    let map = balances.get(year);
+    if (!map) balances.set(year, (map = new Map()));
+    return map;
+  };
   const beatless = new Set<string>();
 
   /**
@@ -506,12 +536,10 @@ export function* dutyGroups(
     let touched = false; // [fork] Urlaub: did an absence or a Nachholplatz change this round?
     if (absence) {
       // [fork] Urlaub (SPEC 12.43)
-      if (absence.yearOf(duty) !== balanceYear) {
-        balance.clear();
-        balanceYear = absence.yearOf(duty);
-      }
-      touched = makeUp(groups, fixed, duties, absence, balance, position, beatless);
-      touched = repairAbsences(groups, fixed, duties, absence, balance, position, rule.memberIds) || touched;
+      // No duty of a year before the round's first duty can come up again.
+      for (const year of balances.keys()) if (year < absence.yearOf(duty)) balances.delete(year);
+      touched = makeUp(groups, fixed, duties, absence, konten, position, beatless);
+      touched = repairAbsences(groups, fixed, duties, absence, konten, position, rule.memberIds) || touched;
     }
     if (round > 0 || offBeat || touched) {
       // [fork] Urlaub: a duty left with an open Platz keeps its place.
