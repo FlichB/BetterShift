@@ -77,6 +77,8 @@ describe("phase 3 schema", () => {
       myOffers: true,
       myDayOffs: true,
       dayOffRequests: true,
+      myVacations: true,
+      vacationRequests: true,
     });
   });
 });

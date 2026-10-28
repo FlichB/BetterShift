@@ -5,6 +5,8 @@ export interface NotificationPreferences {
   myOffers: boolean;
   myDayOffs: boolean;
   dayOffRequests: boolean;
+  myVacations: boolean; // [fork] Urlaub
+  vacationRequests: boolean; // [fork] Urlaub
 }
 
 export interface NotificationSettings {

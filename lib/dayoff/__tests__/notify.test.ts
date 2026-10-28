@@ -41,7 +41,7 @@ describe("Dienstfrei mails", () => {
     expect(outbox()).toMatchObject([{ kind: "day_off_locked", audience: "holder" }]);
     const calendarId = s.team.calendarId;
     expect((await resolveDayOffRecipients("holder", row, calendarId, s.team.ownerId)).map((r) => r.id)).toEqual([s.m0]);
-    setPreferences(s.m0, { offersToAll: true, offersToMe: true, myOffers: true, myDayOffs: false, dayOffRequests: true });
+    setPreferences(s.m0, { offersToAll: true, offersToMe: true, myOffers: true, myDayOffs: false, dayOffRequests: true, myVacations: true, vacationRequests: true });
     expect(await resolveDayOffRecipients("holder", row, calendarId, s.team.ownerId)).toEqual([]);
   });
 

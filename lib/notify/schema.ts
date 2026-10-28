@@ -52,4 +52,6 @@ export const notificationPreferences = sqliteTable("notification_preferences", {
   // [fork] Dienstfrei
   myDayOffs: integer("my_day_offs", { mode: "boolean" }).notNull().default(true),
   dayOffRequests: integer("day_off_requests", { mode: "boolean" }).notNull().default(true),
+  myVacations: integer("my_vacations", { mode: "boolean" }).notNull().default(true), // [fork] Urlaub
+  vacationRequests: integer("vacation_requests", { mode: "boolean" }).notNull().default(true), // [fork] Urlaub
 });
