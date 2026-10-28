@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { shiftSignups, shifts } from "@/lib/db/schema";
 import { dayOffs } from "@/lib/dayoff/schema";
 import { reconcileRotation } from "@/lib/dayoff/service";
-import { rotations } from "@/lib/rotation/schema";
+import { rotationMembers, rotations } from "@/lib/rotation/schema";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
 import { seedHolidays } from "@/tests/helpers/seed";
 
@@ -95,5 +95,36 @@ describe("reconcileRotation", () => {
     db.update(rotations).set({ skipDates: [{ date: "2026-11-18", reason: "Inventur" }] }).where(eq(rotations.id, s.rotation.id)).run();
     expect(run(s.rotation.id).reset).toBe(1);
     expect(db.select().from(dayOffs).where(eq(dayOffs.id, row.id)).get()).toMatchObject({ status: "locked", date: null });
+  });
+
+  it("gives a Teilnehmer without Dienstfrei none and drops the active ones they had", async () => {
+    const s = await seedDuties();
+    enable(s.rotation.id);
+    run(s.rotation.id);
+    db.update(rotationMembers)
+      .set({ dayOff: false })
+      .where(and(eq(rotationMembers.rotationId, s.rotation.id), eq(rotationMembers.userId, s.m0)))
+      .run();
+    // m0 holds 11-07 and 12-12
+    const result = run(s.rotation.id);
+    expect(result).toMatchObject({ created: 0, dropped: 2 });
+    const rows = rowsOf(s.duty("2026-11-07"));
+    expect(rows.find((r) => r.userId === s.m0)).toMatchObject({ status: "dropped", dropReason: "excluded" });
+    expect(rows.find((r) => r.userId === s.m1)).toMatchObject({ status: "standard", date: "2026-11-09" });
+    expect(run(s.rotation.id)).toMatchObject({ created: 0, dropped: 0 });
+  });
+
+  it("gives a Platz a Dienstfrei once its holder without one leaves it", async () => {
+    const s = await seedDuties();
+    db.update(rotationMembers)
+      .set({ dayOff: false })
+      .where(and(eq(rotationMembers.rotationId, s.rotation.id), eq(rotationMembers.userId, s.m0)))
+      .run();
+    enable(s.rotation.id);
+    expect(run(s.rotation.id).created).toBe(14);
+    const shiftId = s.duty("2026-11-07");
+    db.update(shiftSignups).set({ userId: s.m5 }).where(and(eq(shiftSignups.shiftId, shiftId), eq(shiftSignups.userId, s.m0))).run();
+    expect(run(s.rotation.id).created).toBe(1);
+    expect(rowsOf(shiftId).find((r) => r.userId === s.m5)).toMatchObject({ status: "standard", date: "2026-11-09" });
   });
 });

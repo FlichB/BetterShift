@@ -71,6 +71,13 @@
       "when": 1793138651326,
       "tag": "0009_easy_vance_astro",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1793188213989,
+      "tag": "0010_rotation_member_day_off",
+      "breakpoints": true
     }
   ]
 }

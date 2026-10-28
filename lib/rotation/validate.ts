@@ -24,6 +24,8 @@ export interface RotationInput {
   // [fork] Dienstfrei (SPEC 12.34)
   dayOffEnabled: boolean;
   dayOffTitle: string;
+  /** Teilnehmer who get no Dienstfrei, e.g. on an all-in contract (SPEC 12.40). */
+  dayOffExcludedIds: string[];
 }
 
 export type RotationValidationError =
@@ -45,6 +47,7 @@ export type RotationValidationError =
   | "reinforcedDates"
   | "dayOffEnabled"
   | "dayOffTitle"
+  | "dayOffExcluded"
   | "range";
 
 export type ValidationResult<T> =
@@ -135,6 +138,10 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
   if (typeof dayOffEnabled !== "boolean") return fail("dayOffEnabled");
   const dayOffTitle = b.dayOffTitle ?? DEFAULT_DAY_OFF_TITLE;
   if (typeof dayOffTitle !== "string" || validateEntryTitle(dayOffTitle) !== "ok") return fail("dayOffTitle");
+  const dayOffExcludedIds = b.dayOffExcludedIds ?? [];
+  if (!Array.isArray(dayOffExcludedIds) || !dayOffExcludedIds.every((id) => typeof id === "string" && memberIds.includes(id))) {
+    return fail("dayOffExcluded");
+  }
 
   // Past entries are kept untouched: the plan is counted from startDate, so dropping one would
   // shift the future Besetzung. Only future entries must fit the current rotation.
@@ -171,6 +178,7 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
       reinforcedDates: [...reinforcedByDate].map(([date, perShift]) => ({ date, perShift })).sort((x, y) => x.date.localeCompare(y.date)),
       dayOffEnabled, // [fork] Dienstfrei
       dayOffTitle: dayOffTitle.trim(), // [fork] Dienstfrei
+      dayOffExcludedIds: [...new Set(dayOffExcludedIds as string[])], // [fork] Dienstfrei
     },
   };
 }

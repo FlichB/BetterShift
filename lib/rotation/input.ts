@@ -22,5 +22,6 @@ export function inputFromRotation(rotation: RotationDetail): RotationInput {
     reinforcedDates: rotation.reinforcedDates,
     dayOffEnabled: rotation.dayOffEnabled,
     dayOffTitle: rotation.dayOffTitle,
+    dayOffExcludedIds: rotation.dayOffExcludedIds,
   };
 }

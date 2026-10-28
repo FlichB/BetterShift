@@ -27,6 +27,7 @@ beforeEach(() => {
     entryTitle: "{Vorname} Dienst",
     dayOffEnabled: false,
     dayOffTitle: "{Vorname} dienstfrei",
+    dayOffExcludedIds: [],
     reinforcedDates: [],
   };
 });

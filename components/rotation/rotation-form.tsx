@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { ChoiceChips, Field, ToggleRow, inputClass } from "@/components/form-kit";
 import { ENTRY_TITLE_MAX, entryTitle, validateEntryTitle } from "@/lib/rotation/entry-title"; // [fork] Dienstfrei
 import { EntryTitleField } from "@/components/rotation/entry-title-field";
@@ -43,6 +44,7 @@ export function RotationForm({
     updateReinforcedDate,
     removeReinforcedDate,
     removeOpenDate,
+    toggleMemberDayOff,
     toInput,
   } =
     useRotationForm(calendar, rotation, { closedTitle: t("rotation.fields.closedTitleDefault") });
@@ -301,6 +303,24 @@ export function RotationForm({
                 {t("rotation.fields.entryTitlePreview", { title: entryTitle(state.dayOffTitle, previewHolder, "") })}
               </p>
             )}
+          </Field>
+        )}
+        {state.dayOffEnabled && state.memberIds.length > 0 && (
+          <Field label={t("rotation.fields.dayOffMembers")} hint={t("rotation.fields.dayOffMembersHint")}>
+            <ul className="divide-y divide-line rounded-[9px] border border-line">
+              {state.memberIds.map((id) => (
+                <li key={id} className="flex items-center gap-2 px-3 py-1.5">
+                  <label htmlFor={`rotation-day-off-${id}`} className="min-w-0 flex-1 cursor-pointer truncate">
+                    {calendar.members.find((m) => m.id === id)?.name ?? id}
+                  </label>
+                  <Switch
+                    id={`rotation-day-off-${id}`}
+                    checked={!state.dayOffExcludedIds.includes(id)}
+                    onCheckedChange={(on) => toggleMemberDayOff(id, on)}
+                  />
+                </li>
+              ))}
+            </ul>
           </Field>
         )}
       </div>

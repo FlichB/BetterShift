@@ -1,0 +1,1 @@
+ALTER TABLE `rotation_members` ADD `day_off` integer DEFAULT true NOT NULL;

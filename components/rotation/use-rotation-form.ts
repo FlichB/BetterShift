@@ -25,9 +25,10 @@ export interface RotationFormState {
   entryTitle: string;
   reinforcedDates: ReinforcedDate[];
   memberIds: string[];
-  // [fork] Dienstfrei: carried through unchanged until the form gets its own fields
+  // [fork] Dienstfrei
   dayOffEnabled: boolean;
   dayOffTitle: string;
+  dayOffExcludedIds: string[];
 }
 
 function nextMonday(): string {
@@ -57,6 +58,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           memberIds: rotation.memberIds,
           dayOffEnabled: rotation.dayOffEnabled, // [fork] Dienstfrei
           dayOffTitle: rotation.dayOffTitle, // [fork] Dienstfrei
+          dayOffExcludedIds: rotation.dayOffExcludedIds, // [fork] Dienstfrei
         }
       : {
           name: "",
@@ -76,6 +78,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           memberIds: [],
           dayOffEnabled: false, // [fork] Dienstfrei
           dayOffTitle: DEFAULT_DAY_OFF_TITLE, // [fork] Dienstfrei
+          dayOffExcludedIds: [], // [fork] Dienstfrei
         }
   );
 
@@ -94,6 +97,10 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
         ? state.weekdays.filter((d) => d !== day)
         : [...state.weekdays, day].sort((a, b) => a - b)
     );
+
+  // [fork] Dienstfrei per Teilnehmer
+  const toggleMemberDayOff = (id: string, on: boolean) =>
+    set("dayOffExcludedIds", on ? state.dayOffExcludedIds.filter((x) => x !== id) : [...state.dayOffExcludedIds, id]);
 
   const addSkipDate = () => set("skipDates", [...state.skipDates, { date: state.startDate, reason: "" }]);
   const updateSkipDate = (index: number, patch: Partial<SkipDate>) =>
@@ -148,6 +155,8 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
     reinforcedDates: state.reinforcedDates,
     dayOffEnabled: state.dayOffEnabled, // [fork] Dienstfrei
     dayOffTitle: state.dayOffTitle, // [fork] Dienstfrei
+    // a removed Teilnehmer leaves no stale entry behind
+    dayOffExcludedIds: state.dayOffExcludedIds.filter((id) => state.memberIds.includes(id)), // [fork] Dienstfrei
   });
 
   return {
@@ -161,6 +170,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
     updateReinforcedDate,
     removeReinforcedDate,
     removeOpenDate,
+    toggleMemberDayOff,
     toInput,
   };
 }

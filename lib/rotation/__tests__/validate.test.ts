@@ -19,6 +19,7 @@ const valid = {
   entryTitle: "{Vorname} Dienst",
   dayOffEnabled: false,
   dayOffTitle: "{Vorname} dienstfrei",
+  dayOffExcludedIds: [] as string[],
   reinforcedDates: [] as { date: string; perShift: number }[],
 };
 
@@ -204,5 +205,12 @@ describe("dayOff fields", () => {
   it("rejects an empty template and a non-boolean switch", () => {
     expect(validateRotationInput({ ...valid, dayOffTitle: "" })).toEqual({ ok: false, error: "dayOffTitle" });
     expect(validateRotationInput({ ...valid, dayOffEnabled: "yes" })).toEqual({ ok: false, error: "dayOffEnabled" });
+  });
+
+  it("accepts Teilnehmer without Dienstfrei only from the member list", () => {
+    const excluded = validateRotationInput({ ...valid, dayOffExcludedIds: [valid.memberIds[1], valid.memberIds[1]] });
+    expect(excluded.ok && excluded.value.dayOffExcludedIds).toEqual([valid.memberIds[1]]);
+    expect(validateRotationInput({ ...valid, dayOffExcludedIds: ["stranger"] })).toEqual({ ok: false, error: "dayOffExcluded" });
+    expect(validateRotationInput({ ...valid, dayOffExcludedIds: "u1" })).toEqual({ ok: false, error: "dayOffExcluded" });
   });
 });
