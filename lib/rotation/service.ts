@@ -171,7 +171,7 @@ function toRule(
   r: RotationDetail,
   to: string,
   now: Date,
-  absences: Map<string, DateRange[]> = new Map() // [fork] Urlaub
+  absences: Map<string, DateRange[]> // [fork] Urlaub
 ): RotationRule {
   // Seat rounds make a duty depend on the sizes of later duties in its round, so a Feiertag
   // after `to` can still matter. Closures after the last verstärkter Tag cannot change the
@@ -672,7 +672,8 @@ export function getYearDeltaTables(id: string, now: Date): YearDeltaTable[] {
   const rotation = loadRotation(db, id);
   const year = now.getFullYear();
   // Counted as if switched on, so a manager sees the numbers before turning it on.
-  const rule = toRule(db, { ...rotation, yearlyFairness: true }, `${year + 1}-12-31`, now);
+  // [fork] Urlaub: count with the approved vacations, as generation does.
+  const rule = toRule(db, { ...rotation, yearlyFairness: true }, `${year + 1}-12-31`, now, loadAbsences(db, rotation.memberIds));
   return [year, year + 1].flatMap((y) => {
     const rows = yearSummary(rule, y);
     return rows ? [{ year: y, rows: rows.map((r) => ({ ...r, joinedOn: rotation.memberSince[r.userId] ?? rotation.startDate })) }] : [];

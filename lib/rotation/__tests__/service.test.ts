@@ -531,6 +531,20 @@ describe("Jahresausgleich", () => {
     expect(short).toEqual(await november("2026-12-31"));
   });
 
+  it("[fork] counts approved vacations in the Delta table as generation does", () => {
+    const r = createRotation({ ...input, yearlyFairness: true }, team.ownerId, now);
+    const m1 = team.memberIds[0];
+    const table = () => getYearDeltaTables(r.id, now)[0].rows;
+    const before = table();
+    expect(before.find((x) => x.userId === m1)).toMatchObject({ held: 2, autoDelta: 0 });
+    // m1 misses every December duty, and 2026 has no later duty to make up on
+    db.insert(vacations).values({ userId: m1, startDate: "2026-12-01", endDate: "2026-12-31", status: "approved", requestedBy: m1 }).run();
+    const after = table();
+    expect(after.find((x) => x.userId === m1)!.held).toBeLessThan(2);
+    expect(after.some((x) => x.autoDelta > 0)).toBe(true);
+    expect(after).not.toEqual(before);
+  });
+
   it("leaves the plan unchanged while the switch is off", async () => {
     const off = createRotation(input, team.ownerId, now);
     setYearDeltaOverride(off.id, { year: 2027, userId: team.memberIds[0], delta: 3 }, team.ownerId, now);
