@@ -8,6 +8,7 @@ Diese Anleitung beschreibt die Fork-Erweiterungen von BetterShift: Dienste reihu
 2. [Rotation anlegen](#2-rotation-anlegen)
 3. [Generieren](#3-generieren)
 4. [Tauschbörse](#4-tauschbörse)
+   - [Dienstfrei](#4a-dienstfrei)
 5. [Rechte](#5-rechte)
 6. [Benachrichtigungen und Outlook](#6-benachrichtigungen-und-outlook)
 7. [Persönlicher Kalender-Feed](#7-persönlicher-kalender-feed)
@@ -32,6 +33,7 @@ Die wichtigsten Begriffe (das vollständige Glossar steht in [`CONTEXT.md`](../C
 | **Ausfalltag** | Ein Schließtag aus eigenem Grund, mit Datum und Grund eingetragen. |
 | **Feiertagskalender** | Ein Kalender, aus dem eine Rotation Feiertage liest; jeder Eintrag darin gilt an seinem Datum als Feiertag. |
 | **Schließeintrag** | Die ganztägige Schicht ohne Plätze, die eine Rotation an einem Schließtag anlegt. |
+| **Dienstfrei** | Der freie Arbeitstag, den ein Platz seinem Inhaber mitbringt; er wechselt mit dem Platz den Inhaber (siehe [Dienstfrei](#4a-dienstfrei)). |
 | **Dienst** | Ein einzelner Kalendertag-Eintrag im Teamkalender, den eine Rotation erzeugt hat und der eine feste Zahl an Plätzen hat. |
 | **Platz** | Die Zuordnung genau eines Teilnehmers zu einem Dienst. |
 | **Gesperrter Platz** | Ein Platz, der durch einen Tausch entstanden ist. Neues Generieren überschreibt ihn nie. |
@@ -67,10 +69,11 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 | Beginn | Erster Tag der ersten Periode. |
 | Beginnt mit | Welcher Teilnehmer in der ersten Periode Dienst hat. „Vorschlag übernehmen" setzt einen passenden Wert. |
 | Diensttage | Wochentage Mo bis So, an denen in einer Periode tatsächlich Dienst ist („Alle Tage" setzt alle). |
-| Ausfalltage | Einzelne Tage ohne Dienst, jeweils mit Grund. Mit „Ausfalltag hinzufügen“ ergänzen. |
+| Ausfalltage | Einzelne Tage ohne Dienst, jeweils mit Grund. Mit „Ausfalltag hinzufügen“ ergänzen. Ein Ausfalltag darf auch auf einen Werktag ohne Dienst fallen und erscheint dort ebenfalls als Schließeintrag (Teamkalender, Outlook); die Rundennummerierung zählt weiter nur Diensttage. |
 | Verstärkte Tage | Einzelne Daten, an denen mehr Personen Dienst haben als „Personen pro Dienst“ (höchstens so viele wie Teilnehmer). Mit „Verstärkten Tag hinzufügen“ ergänzen. |
 | Text bei Schließung | Erscheint an Schließtagen als „Text (Grund)“, z. B. „HeimkinoWelt geschlossen (Inventur)“. |
 | Feiertagskalender | Optional. Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. |
+| Dienstfrei nach Dienst / Text für Dienstfrei | Schaltet das Dienstfrei ein und legt die Vorlage des Kalendereintrags fest (siehe [Dienstfrei](#4a-dienstfrei)). |
 | Teilnehmer (Reihenfolge) | Die Reihenfolge bestimmt die erste Runde; danach mischt der Generator die Paare selbst. Mit „Nach oben" / „Nach unten" sortieren, mit „Teilnehmer hinzufügen" ergänzen, mit „Entfernen" streichen. |
 
 Beispiel „Samstagsdienst": Periode „Woche (ab Montag)", Diensttag Sa, 2 Personen pro Dienst, 8 Teilnehmer. Jede Person hat dann einmal pro 4 Wochen Dienst. Die erste Runde folgt der Reihenfolge, danach werden die Paare neu gemischt: Niemand hat zwei Samstage hintereinander Dienst, niemand hat zweimal hintereinander denselben Partner, und pro Quartal weicht die Anzahl der Dienste höchstens um 1 ab. Bei wenigen Teilnehmern (z. B. 6) liegt dafür manchmal nur ein freier Samstag zwischen zwei Diensten. Mit „Speichern" wird die Rotation gesichert; erzeugt sind die Dienste damit noch nicht.
@@ -179,12 +182,69 @@ Regeln, die die App durchsetzt:
 - **Plätze von Diensten wechseln nur über die Tauschbörse.** Sich selbst im Dienst ein- oder auszutragen ist für Rotationsdienste gesperrt. Ausnahme: Wer das Recht „Andere eintragen" (`signUpOthers`) hat, kann Plätze weiterhin von Hand umbesetzen.
 - Alle Tauschvorgänge stehen im Audit-Log (`swap.offered`, `swap.accepted`, `swap.declined`, `swap.withdrawn`, `swap.forced`, `swap.counter_chosen`, `swap.counter_waived`).
 
+## 4a. Dienstfrei
+
+Wer einen Platz in einem Dienst hat, bekommt danach einen Arbeitstag frei: das **Dienstfrei**. Es hängt am Platz (nicht an der Person) und wechselt bei einem Tausch mit dem Platz den Inhaber.
+
+**Einschalten.** Im Rotationsformular den Schalter „Dienstfrei nach Dienst" aktivieren und bei „Text für Dienstfrei" die Vorlage anpassen (Standard `{Vorname} dienstfrei`, Platzhalter wie bei der Eintragsvorlage). Beim nächsten Generieren bekommen alle künftigen Dienste ihr Dienstfrei, auch bereits erzeugte. Rückwirkend entsteht nichts. Beim Ausschalten entfernt die App alle künftigen Dienstfreie und benachrichtigt die Inhaber; vergangene bleiben als Historie.
+
+**Wer bekommt eins.** Jeder besetzte Platz eines Dienstes, auch Zusatzplätze, geöffnete Feiertage sowie Einspringer- und Ausgleichsplätze. Ein Schließtag bringt keines. Wird der Diensttag nachträglich zum Schließtag, entfällt das Dienstfrei (mit Mail an den Inhaber).
+
+**Standardtag.** Der erste Arbeitstag nach dem Dienst. Ein Arbeitstag ist ein Werktag Mo bis Fr, der kein Feiertag aus dem Feiertagskalender, kein Ausfalltag der Rotation und kein anderes eigenes Dienstfrei derselben Person ist. Hat die ganze Folgewoche keinen Arbeitstag, gilt der nächste danach. Arbeitstage pro Person (Teilzeit) kennt die App nicht: Wer an dem Tag ohnehin nicht arbeitet, verschiebt selbst.
+
+**Ausfalltage auf Werktagen.** Ausfalltage dürfen jetzt auch auf Mo bis Fr fallen, obwohl dort kein Dienst ist. Sie erscheinen dann ebenfalls als Schließeintrag im Teamkalender und in Outlook (Feiertage an Nicht-Diensttagen nicht, sie stehen im Feiertagskalender). Die Rundennummerierung zählt weiter nur Diensttage.
+
+**Zustände.**
+
+| Zustand | Bedeutung |
+| --- | --- |
+| Standard | Das Dienstfrei liegt auf dem Standardtag. |
+| Verschoben | Der Inhaber hat es innerhalb der Woche verlegt. |
+| Gesperrt | Die Verwaltung hat es gesperrt. Es hat kein Datum und keinen Kalendereintrag. |
+| Vereinbart | Die Verwaltung hat einen vorgeschlagenen Termin angenommen. |
+| Entfallen | Der Dienst ist weggefallen oder die Funktion wurde ausgeschaltet. |
+
+**Verschieben.** Wer das Recht „Dienstfrei selbst verschieben" hat, verlegt sein Dienstfrei auf `/swaps` im Reiter „Dienstfrei" mit „Verschieben" auf einen anderen Arbeitstag derselben Woche Mo bis Fr. Hat ein Tag schon andere Dienstfreie, steht „{n} haben frei" dabei; das ist nur ein Hinweis, keine Sperre. Zurück auf den Standardtag ergibt wieder „Standard". Verschieben, Sperren und Vereinbaren gehen nur, solange weder der alte noch der neue Tag begonnen hat. Wird das Recht später entzogen, bleiben bereits verschobene Tage bestehen.
+
+**Sperren und vereinbaren.** Die Rotations-Verwaltung kann ein Dienstfrei im Abschnitt „Verwaltung" des Reiters „Dienstfrei" mit „Sperren" (optional mit Notiz) sperren, auch ein vereinbartes. Der Inhaber erhält eine Mail und schlägt mit „Termine vorschlagen" bis zu 5 Termine vor (höchstens 10 offene); jeder muss ein Arbeitstag ab jetzt bis 3 Monate nach dem Diensttag sein. Die Verwaltung
+
+- **nimmt** einen Termin **an** (die übrigen Vorschläge verfallen, das Dienstfrei ist „Vereinbart"),
+- **lehnt ab**, mit Pflicht-Begründung, oder
+- macht einen **Gegenvorschlag** (ohne 3-Monats-Grenze). Den nimmt der Inhaber an oder lehnt ihn ohne Begründung ab. Das wiederholt sich, bis ein Termin feststeht.
+
+Ein vereinbartes Dienstfrei kann der Inhaber nicht selbst verschieben; er beantragt mit „Änderung beantragen" neue Termine. Der vereinbarte Termin gilt bis zur Annahme eines neuen. Bleiben Vorschläge 3 Tage unbeantwortet, erhält die Verwaltung eine Erinnerung. Ein offenes Dienstfrei verfällt nie stillschweigend, auch nicht nach Ablauf der 3 Monate. Ist ein Verwalter selbst Teilnehmer, kann er seine eigenen Vorschläge annehmen.
+
+**Bei Tausch und Neugenerieren.** Bei jedem Platzwechsel (Tausch, erzwungener Tausch, Ausgleich, Neugenerieren) gilt für den neuen Inhaber: Aus „Standard" oder „Verschoben" wird „Standard", „Gesperrt" bleibt gesperrt (offene Vorschläge des alten Inhabers verfallen), aus „Vereinbart" wird „Gesperrt" (mit Mail an den neuen Inhaber). Wird das Datum nachträglich ungültig (neuer Feiertag oder Ausfalltag, anderes eigenes Dienstfrei), wandert ein Standard-Dienstfrei still weiter, ein verschobenes fällt mit Mail auf den Standardtag zurück, ein vereinbartes wird mit Mail gesperrt. Dienstfreie, deren Datum begonnen hat, ändern sich nie mehr.
+
+**Mails.** Über Microsoft Graph, wie bei der Tauschbörse:
+
+| Anlass | An wen | Schalter |
+| --- | --- | --- |
+| Sperre, Annahme, Ablehnung, Gegenvorschlag, zurückgesetzt, entfallen | der Inhaber | „Mein Dienstfrei (Sperre, Antworten, Änderungen)" |
+| neue Vorschläge, Änderungsantrag, Erinnerung | die Verwaltung | „Dienstfrei-Vorschläge der Teilnehmer (Verwaltung)" |
+
+Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die beiden Schalter stellst du unter „Benachrichtigungen" auf `/swaps` ein.
+
+**Anzeige.** Das Dienstfrei erscheint als ganztägiger Eintrag „{Vorname} dienstfrei" (Vorlage der Rotation) im Teamkalender; ein Klick in der Tagesansicht führt zum Reiter „Dienstfrei". Im persönlichen Feed ist es ein ganztägiger Termin. In Outlook wird es bei eingeschaltetem Schalter ein ganztägiger Termin im Kalender von office@ mit dem Inhaber als einzigem Teilnehmer und Status „Abwesend". Gesperrte Dienstfreie haben kein Datum und erscheinen nirgends. Der Eintrag ist keine Schicht und lässt sich nicht bearbeiten.
+
+**Grenzen.**
+
+- Arbeitstage pro Person, Urlaub und Krankheit kennt die App nicht. Bei Bedarf sperrt die Verwaltung, und der Termin wird neu vereinbart.
+- Beim Neugenerieren werden verwaiste Dienstfreie in fester Reihenfolge den neuen Inhabern zugeordnet; ein gesperrtes kann so an eine andere Person gehen (es bleibt gesperrt).
+- Kollisionen mit eigenen Diensten anderer Rotationen an Werktagen werden nicht geprüft.
+- Manuelles Umbesetzen über „Andere eintragen" (`signUpOthers`) gilt nicht als Platzwechsel: Das alte Dienstfrei entfällt (mit Mail), der neue Inhaber bekommt ein neues auf dem Standardtag; eine Sperre oder Vereinbarung geht verloren. Für Umbesetzungen ist der erzwungene Tausch gedacht, der das Dienstfrei übergibt.
+- Wird ein Samstag nachträglich zum Ausfalltag, entfällt sein Dienstfrei erst beim nächsten Generieren (wie der Schließeintrag selbst).
+- Die Verwaltung erhält Mails nur, wenn sie Besitzer ist oder eine Freigabe mit „Kalendereinstellungen verwalten" hat; globale Administratoren ohne Freigabe nicht.
+- Mails nur mit konfiguriertem Outlook.
+
 ## 5. Rechte
 
 | Wer | Was | Voraussetzung |
 | --- | --- | --- |
 | Verwaltung von Rotationen | Rotationen anlegen, ändern, generieren, Outlook-Schalter | Besitzer des Kalenders, Recht „Kalendereinstellungen verwalten" im Kalender oder Administrator der Instanz |
 | Tausch erzwingen | Tausch erzwingen, Gegendienst stellvertretend wählen, Ausgleich erlassen | wie Verwaltung von Rotationen |
+| Dienstfrei selbst verschieben | Das eigene Dienstfrei innerhalb der Arbeitswoche verlegen | Recht „Dienstfrei selbst verschieben" (`moveOwnDayOff`), in allen Bündeln standardmäßig angehakt. Zählt nur für Besitzer und Freigaben an Benutzer, nie für Freigabe-Links oder Gäste |
+| Dienstfrei sperren und vereinbaren | Sperren, Vorschläge annehmen oder ablehnen, Gegenvorschlag | wie Verwaltung von Rotationen |
 | Tauschen | Dienste anbieten und annehmen | Angemeldet, im Kalender das Recht „Sich selbst eintragen" (`signUpSelf`) und Anmeldungen im Kalender eingeschaltet |
 | Persönlicher Feed | Eigenen Feed einrichten | Angemeldet; im Feed erscheinen nur Dienste aus Kalendern, die der Benutzer sehen darf |
 
@@ -206,7 +266,7 @@ Kurzfassung; die vollständige Einrichtung steht in [`OUTLOOK_SETUP.md`](OUTLOOK
   | „Ausgleich für deinen Dienst: …" | der Ausfallende, sobald der Gegendienst gewählt ist | „Meine Angebote" |
 
   Das Erlassen eines Ausgleichs löst keine Mail aus. Jeder Benutzer schaltet unter „Benachrichtigungen" auf `/swaps` die Arten „Neue Angebote an alle", „Anfragen an mich" und „Meine Angebote" einzeln ab.
-- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Platz wird ein ganztägiger Termin im Kalender von office@ (Status „Frei", Titel aus der Eintragsvorlage); eingeladen ist nur der Inhaber des Platzes. Bei Tausch oder Umbesetzung sagt die App den Termin des bisherigen Inhabers ab und lädt den neuen Inhaber ein; Exchange verschickt die Absage sowie Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
+- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Platz (und bei eingeschaltetem Dienstfrei jedes Dienstfrei, siehe [Dienstfrei](#4a-dienstfrei)) wird ein ganztägiger Termin im Kalender von office@ (Status „Frei", Titel aus der Eintragsvorlage); eingeladen ist nur der Inhaber des Platzes. Bei Tausch oder Umbesetzung sagt die App den Termin des bisherigen Inhabers ab und lädt den neuen Inhaber ein; Exchange verschickt die Absage sowie Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
 - **Ohne Konfiguration** bleibt alles aus; die Rotationsseite zeigt den Schalter deaktiviert („nicht eingerichtet"), und die Tausch-Mails entfallen.
 - Wer die Einladungen von office@ erhält, braucht den [Kalender-Feed](#7-persönlicher-kalender-feed) nicht zusätzlich in Outlook.
 
@@ -400,4 +460,5 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
   - Ein offener Ausgleich hat keine Frist und keine Erinnerungsmail. Die Verwaltung sieht ihn im Reiter „Verwaltung".
   - Die 3 Monate des Ausgleichsfensters sind fest im Code, keine Einstellung pro Rotation.
   - Der Ausfallende kann einen erzwungenen Tausch weder verhindern noch rückgängig machen. Ein Fehler der Verwaltung lässt sich nur durch einen weiteren Tausch oder durch Umbesetzen mit „Andere eintragen" (`signUpOthers`) korrigieren.
+- **Dienstfrei:** Grenzen siehe [Dienstfrei](#4a-dienstfrei).
 - Ohne Anmeldung (`AUTH_ENABLED=false`) gibt es weder Tausch-Mails noch Outlook-Sync noch einen persönlichen Feed.

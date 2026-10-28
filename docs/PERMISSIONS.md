@@ -55,6 +55,7 @@ The bundle editor groups capabilities by area:
 **Signups**
 - Sign up self — join or leave shifts that have open slots
 - Sign up others — add or remove other people from a shift's signups; this also lets you see the calendar's members (owner + shares), since that list is how you pick who to add
+- Move own day off *(fork)* — move your own Dienstfrei (the free day after a rotation duty) to another working day of the same week; see [`ROTATION_AND_SWAPS.md`](ROTATION_AND_SWAPS.md#4a-dienstfrei). Ticked by default in every bundle, including the four starters, and added to all existing bundles by a migration. It only counts for the owner and for users the calendar is shared with: a share link or guest access never grants it, whatever the bundle contains. It is deliberately not on the guest lockout list below: that would make the bundle unassignable to share links and guest access altogether, so the check itself ignores those sources instead. It only has an effect for rotation participants who hold a seat. Revoking it later leaves days that were already moved as they are.
 
 **Presets**
 - Create presets — add new presets
