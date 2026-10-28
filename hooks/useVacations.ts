@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request, type SwapApiError } from "@/hooks/useSwaps";
 import { dayOffQueryKeys } from "@/lib/dayoff/query-keys";
 import { queryKeys } from "@/lib/query-keys";
+import { rotationQueryKeys } from "@/lib/rotation/query-keys";
 import { swapQueryKeys } from "@/lib/swap/query-keys";
 import { vacationQueryKeys } from "@/lib/vacation/query-keys";
 import type { VacationAction, VacationBoard, VacationPreview } from "@/lib/vacation/types";
@@ -55,6 +56,7 @@ function useVacationMutation<TVars>(mutationFn: (vars: TVars) => Promise<unknown
         queryClient.invalidateQueries({ queryKey: swapQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: dayOffQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: queryKeys.shifts.all }),
+        queryClient.invalidateQueries({ queryKey: rotationQueryKeys.all }),
       ]),
   });
 }

@@ -55,9 +55,9 @@ export function expandDutyPlaces(shifts: ShiftWithCalendar[], index: DutyPlaceIn
  */
 export function dayOffEntries(date: string, base: ShiftWithCalendar | null, index: DutyPlaceIndex): ShiftWithCalendar[] {
   const entries = (index.dayOffs.get(date) ?? []).filter((d) => !base || d.calendarId === base.calendarId);
-    return entries.map((d) => {
-      const vacation = d.kind === "vacation"; // [fork] Urlaub: own colour and marker, no dayOff
-      return {
+  return entries.map((d) => {
+    const vacation = d.kind === "vacation"; // [fork] Urlaub: own colour and marker, no dayOff
+    return {
       id: vacation ? `vacation:${d.id}:${date}` : `dayoff:${d.id}`,
       calendarId: d.calendarId,
       calendar: base?.calendar,
@@ -74,9 +74,9 @@ export function dayOffEntries(date: string, base: ShiftWithCalendar | null, inde
       signupCapacity: null,
       signups: [],
       ...(vacation ? { vacation: { id: d.id } } : { dayOff: { id: d.id } }),
-    createdBy: null,
-    createdAt: null,
-    updatedAt: null,
+      createdBy: null,
+      createdAt: null,
+      updatedAt: null,
     };
   });
 }

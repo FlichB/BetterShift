@@ -34,7 +34,10 @@ export interface VacationAuditMetadata {
   note?: string | null;
 }
 
-/** Audit entry for a vacation action; `vacation` is the row after the action. */
+/**
+ * Audit entry for a vacation action; `vacation` is the row after the action. Never throws: the
+ * action is already committed, so a failed audit write must not answer 500.
+ */
 export async function logVacationAction(
   action: VacationAuditAction,
   actorId: string,
@@ -42,12 +45,16 @@ export async function logVacationAction(
   request: Request,
   extra: Partial<VacationAuditMetadata> = {}
 ): Promise<void> {
-  await logUserAction<VacationAuditMetadata>({
-    action,
-    userId: actorId,
-    resourceType: "vacation",
-    resourceId: vacation.id,
-    metadata: { vacationId: vacation.id, holderUserId: vacation.userId, startDate: vacation.startDate, endDate: vacation.endDate, ...extra },
-    request,
-  });
+  try {
+    await logUserAction<VacationAuditMetadata>({
+      action,
+      userId: actorId,
+      resourceType: "vacation",
+      resourceId: vacation.id,
+      metadata: { vacationId: vacation.id, holderUserId: vacation.userId, startDate: vacation.startDate, endDate: vacation.endDate, ...extra },
+      request,
+    });
+  } catch (error) {
+    console.error(`[Urlaub] Audit entry ${action} for vacation ${vacation.id} failed:`, error);
+  }
 }

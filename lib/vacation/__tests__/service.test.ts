@@ -179,3 +179,27 @@ describe("rotations that cannot be planned (final review I1)", () => {
     expect(db.select().from(vacations).where(eq(vacations.userId, s.m1)).all()).toEqual([]);
   });
 });
+
+describe("change approval and approve-time guards (final review M4)", () => {
+  it("approving a change request moves the dates and mails the approval", async () => {
+    const s = await seedDuties();
+    const v = await enterVacation(s.m3, { startDate: "2026-11-12", endDate: "2026-11-16", note: null }, s.team.ownerId, now);
+    const c = await requestChange(v.id, s.m3, { kind: "change", startDate: "2026-12-10", endDate: "2026-12-14", note: null }, now);
+    const approved = await approveChange(c.id, s.team.ownerId, now);
+    expect(approved.status).toBe("approved");
+    const row = db.select().from(vacations).where(eq(vacations.id, v.id)).get();
+    expect(row).toMatchObject({ status: "approved", startDate: "2026-12-10", endDate: "2026-12-14" });
+    expect(kinds()).toContain("vacation_change_approved");
+    expect(s.holders(s.duty("2026-11-14"))).toContain(s.m3); // back on the duty the old range blocked
+    expect(s.holders(s.duty("2026-12-12"))).not.toContain(s.m3);
+  });
+
+  it("refuses to approve a request that overlaps a vacation approved meanwhile", async () => {
+    const s = await seedDuties();
+    const v = await requestVacation(s.m1, { startDate: "2026-12-01", endDate: "2026-12-03", note: null }, now);
+    // Approved meanwhile, e.g. entered by another Verwaltung in a second tab.
+    db.insert(vacations).values({ userId: s.m1, startDate: "2026-12-03", endDate: "2026-12-05", status: "approved", requestedBy: s.team.ownerId }).run();
+    await expect(approveVacation(v.id, s.team.ownerId, now)).rejects.toMatchObject({ code: "overlap" });
+    expect(db.select().from(vacations).where(eq(vacations.id, v.id)).get()?.status).toBe("pending");
+  });
+});
