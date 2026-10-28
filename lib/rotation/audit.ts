@@ -17,3 +17,4 @@ export type RotationGeneratedMetadata = RotationAuditBase & {
   deleted: number;
 };
 export type RotationLockRemovedMetadata = RotationAuditBase & { shiftId: string; userId: string };
+export type RotationYearDeltaSetMetadata = RotationAuditBase & { year: number; userId: string; delta: number | null };

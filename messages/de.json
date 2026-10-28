@@ -1127,6 +1127,7 @@
       "rotationDeleted": "Rotation „{name}“ in „{calendar}“ gelöscht",
       "rotationGenerated": "Rotation „{name}“: Dienste {from} – {to} erzeugt",
       "rotationLockRemoved": "Rotation „{name}“: Sperre eines Platzes aufgehoben",
+      "rotationYearDeltaSet": "Rotation „{name}“: Delta für {year} geändert",
       "swapOffered": "Dienst am {date} in „{calendar}“ angeboten",
       "swapAccepted": "Dienst am {date} in „{calendar}“ übernommen",
       "swapExchanged": "Dienste am {date} und {other} in „{calendar}“ getauscht",

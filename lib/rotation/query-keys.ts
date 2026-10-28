@@ -4,4 +4,5 @@ export const rotationQueryKeys = {
   calendars: ["rotations", "calendars"] as const,
   byCalendar: (calendarId: string) => ["rotations", "calendar", calendarId] as const,
   outlook: (rotationId: string) => ["rotations", "outlook", rotationId] as const,
+  yearDeltas: (rotationId: string) => ["rotations", "yearDeltas", rotationId] as const,
 };

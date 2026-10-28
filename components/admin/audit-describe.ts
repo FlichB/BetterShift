@@ -189,6 +189,8 @@ export function useAuditDescription() {
           });
         case "rotation.lock_removed":
           return t("adminAudit.describe.rotationLockRemoved", { name: text(m, "rotationName") });
+        case "rotation.year_delta_set":
+          return t("adminAudit.describe.rotationYearDeltaSet", { name: text(m, "rotationName"), year: text(m, "year") });
         // [fork] Swap events
         case "swap.offered":
           return t("adminAudit.describe.swapOffered", { date: text(m, "offeredDate"), calendar });
