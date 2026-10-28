@@ -348,7 +348,7 @@ export function RotationForm({
           description={t("rotation.fields.minPresentEnabledHint")}
           checked={state.minPresent !== null}
           onCheckedChange={(checked) => set("minPresent", checked ? Math.max(1, state.memberIds.length - 1) : null)}
-          disabled={state.memberIds.length < 2}
+          disabled={state.memberIds.length < 2 && state.minPresent === null}
         />
         {state.minPresent !== null && (
           <Field
