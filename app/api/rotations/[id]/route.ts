@@ -39,9 +39,12 @@ export async function PUT(request: NextRequest, { params }: Context) {
     const rateLimitResponse = rateLimit(request, user?.id, "bundle-mutations", existing.calendarId);
     if (rateLimitResponse) return rateLimitResponse;
 
-    const parsed = validateRotationInput(await readJson(request));
+    const body = await readJson(request);
+    const parsed = validateRotationInput(body);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
-    const input = parsed.value;
+    // [fork] Jahresausgleich: a caller that leaves the switch out keeps the stored value.
+    const keepsSwitch = (body as Record<string, unknown>).yearlyFairness === undefined; // validated: an object
+    const input = keepsSwitch ? { ...parsed.value, yearlyFairness: existing.yearlyFairness } : parsed.value;
     if (input.calendarId !== existing.calendarId) {
       return NextResponse.json({ error: "calendarId" }, { status: 400 });
     }
