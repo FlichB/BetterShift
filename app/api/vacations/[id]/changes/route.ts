@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { outlookWorker } from "@/lib/outlook/worker";
 import { logVacationAction } from "@/lib/vacation/audit";
 import { readJson, vacationError, vacationErrorResponse, vacationSession } from "@/lib/vacation/http";
 import { vacations } from "@/lib/vacation/schema";
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const change = await requestChange(id, session.userId, { kind, startDate, endDate, note }, new Date());
     const vacation = db.select().from(vacations).where(eq(vacations.id, id)).get();
     if (vacation) await logVacationAction("vacation.change_requested", session.userId, vacation, request, { changeKind: kind, note });
+    outlookWorker.kick();
     return NextResponse.json(change, { status: 201 });
   } catch (error) {
     return vacationErrorResponse(error, "Failed to request vacation change:");
