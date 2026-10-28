@@ -220,8 +220,8 @@ Ein vereinbartes Dienstfrei kann der Inhaber nicht selbst verschieben; er beantr
 
 | Anlass | An wen | Schalter |
 | --- | --- | --- |
-| Sperre, Annahme, Ablehnung, Gegenvorschlag, zurückgesetzt, entfallen | der Inhaber | „Mein Dienstfrei (Sperre, Antworten, Änderungen)" |
-| neue Vorschläge, Änderungsantrag, Erinnerung | die Verwaltung | „Dienstfrei-Vorschläge der Teilnehmer (Verwaltung)" |
+| Sperre, Annahme oder Ablehnung seiner Vorschläge, Gegenvorschlag, zurückgesetzt, entfallen | der Inhaber | „Mein Dienstfrei (Sperre, Antworten, Änderungen)" |
+| neue Vorschläge, Änderungsantrag, Erinnerung, Annahme oder Ablehnung eines Gegenvorschlags durch den Inhaber | die Verwaltung | „Dienstfrei-Vorschläge der Teilnehmer (Verwaltung)" |
 
 Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die beiden Schalter stellst du unter „Benachrichtigungen" auf `/swaps` ein.
 
@@ -234,6 +234,7 @@ Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die bei
 - Kollisionen mit eigenen Diensten anderer Rotationen an Werktagen werden nicht geprüft.
 - Manuelles Umbesetzen über „Andere eintragen" (`signUpOthers`) gilt nicht als Platzwechsel: Das alte Dienstfrei entfällt (mit Mail), der neue Inhaber bekommt ein neues auf dem Standardtag; eine Sperre oder Vereinbarung geht verloren. Für Umbesetzungen ist der erzwungene Tausch gedacht, der das Dienstfrei übergibt.
 - Wird ein Samstag nachträglich zum Ausfalltag, entfällt sein Dienstfrei erst beim nächsten Generieren (wie der Schließeintrag selbst).
+- Wird eine Rotation gelöscht, verschwinden alle ihre Dienstfreie (auch vergangene und gesperrte) ohne Mail an die Inhaber.
 - Die Verwaltung erhält Mails nur, wenn sie Besitzer ist oder eine Freigabe mit „Kalendereinstellungen verwalten" hat; globale Administratoren ohne Freigabe nicht.
 - Mails nur mit konfiguriertem Outlook.
 
@@ -266,7 +267,7 @@ Kurzfassung; die vollständige Einrichtung steht in [`OUTLOOK_SETUP.md`](OUTLOOK
   | „Ausgleich für deinen Dienst: …" | der Ausfallende, sobald der Gegendienst gewählt ist | „Meine Angebote" |
 
   Das Erlassen eines Ausgleichs löst keine Mail aus. Jeder Benutzer schaltet unter „Benachrichtigungen" auf `/swaps` die Arten „Neue Angebote an alle", „Anfragen an mich" und „Meine Angebote" einzeln ab.
-- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Platz (und bei eingeschaltetem Dienstfrei jedes Dienstfrei, siehe [Dienstfrei](#4a-dienstfrei)) wird ein ganztägiger Termin im Kalender von office@ (Status „Frei", Titel aus der Eintragsvorlage); eingeladen ist nur der Inhaber des Platzes. Bei Tausch oder Umbesetzung sagt die App den Termin des bisherigen Inhabers ab und lädt den neuen Inhaber ein; Exchange verschickt die Absage sowie Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
+- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Platz (und bei eingeschaltetem Dienstfrei jedes Dienstfrei, siehe [Dienstfrei](#4a-dienstfrei)) wird ein ganztägiger Termin im Kalender von office@ (Status „Frei", Titel aus der Eintragsvorlage); eingeladen ist nur der Inhaber des Platzes. Dienstfrei-Termine haben dagegen den Status „Abwesend" und den Titel aus der Vorlage „Text für Dienstfrei". Bei Tausch oder Umbesetzung sagt die App den Termin des bisherigen Inhabers ab und lädt den neuen Inhaber ein; Exchange verschickt die Absage sowie Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
 - **Ohne Konfiguration** bleibt alles aus; die Rotationsseite zeigt den Schalter deaktiviert („nicht eingerichtet"), und die Tausch-Mails entfallen.
 - Wer die Einladungen von office@ erhält, braucht den [Kalender-Feed](#7-persönlicher-kalender-feed) nicht zusätzlich in Outlook.
 
