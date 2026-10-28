@@ -1900,7 +1900,8 @@
   "personalFeed": {
     "calendarName": "I miei turni",
     "with": "Con: {names}",
-    "swapLink": "Scambia: {url}"
+    "swapLink": "Scambia: {url}",
+    "dayOffLink": "Giorno libero: {url}"
   },
   "announcements": {
     "dismiss": "Nascondi annuncio"

@@ -1900,7 +1900,8 @@
   "personalFeed": {
     "calendarName": "Mes services",
     "with": "Avec : {names}",
-    "swapLink": "Échanger : {url}"
+    "swapLink": "Échanger : {url}",
+    "dayOffLink": "Jour de repos : {url}"
   },
   "announcements": {
     "dismiss": "Masquer l'annonce"

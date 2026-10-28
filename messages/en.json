@@ -1900,7 +1900,8 @@
   "personalFeed": {
     "calendarName": "My duties",
     "with": "With: {names}",
-    "swapLink": "Swap: {url}"
+    "swapLink": "Swap: {url}",
+    "dayOffLink": "Day off: {url}"
   },
   "announcements": {
     "dismiss": "Dismiss announcement"

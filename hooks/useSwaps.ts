@@ -5,6 +5,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useAuthFeatures } from "@/hooks/useAuthFeatures";
 import { LIVE_REFETCH_INTERVAL } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
+import { dayOffQueryKeys } from "@/lib/dayoff/query-keys"; // [fork]
 import { swapQueryKeys } from "@/lib/swap/query-keys";
 import type { SlotMove } from "@/lib/swap/rules";
 import type { Board, CalendarSwapState, CounterCandidatesResponse, DutiesResponse } from "@/lib/swap/types";
@@ -96,6 +97,7 @@ function useSwapMutation<TVars, TResult = unknown>(mutationFn: (vars: TVars) => 
       queryClient.invalidateQueries({ queryKey: swapQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.shifts.all });
       queryClient.invalidateQueries({ queryKey: ["shift-signups"] });
+      queryClient.invalidateQueries({ queryKey: dayOffQueryKeys.all }); // [fork] a swap moves Dienstfreie with the Platz
     },
   });
 }

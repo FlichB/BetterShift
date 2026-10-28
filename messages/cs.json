@@ -1900,7 +1900,8 @@
   "personalFeed": {
     "calendarName": "Moje služby",
     "with": "S: {names}",
-    "swapLink": "Výměna: {url}"
+    "swapLink": "Výměna: {url}",
+    "dayOffLink": "Volno: {url}"
   },
   "announcements": {
     "dismiss": "Skrýt oznámení"

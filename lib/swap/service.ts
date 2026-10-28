@@ -1,7 +1,7 @@
 // [fork] Swap board service. Every write runs in one synchronous better-sqlite3
 // transaction: read state, ask lib/swap/rules.ts, write. Due offers are settled
 // in a separate transaction first, so their status sticks even if the request fails.
-import { and, eq, gte, inArray, ne } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { dayOffs } from "@/lib/dayoff/schema"; // [fork]
 import { formatDateToLocal } from "@/lib/date-utils"; // [fork]
@@ -668,7 +668,7 @@ export function calendarState(calendarId: string, now: Date): Omit<CalendarSwapS
     .innerJoin(shifts, eq(shifts.id, shiftSwaps.offeredShiftId))
     .where(and(eq(shiftSwaps.status, "open"), eq(shifts.calendarId, calendarId)))
     .all();
-  // [fork] Dienstfreie as calendar entries (spec 12.32 approach): dated, not locked or dropped, last 60 days on.
+  // [fork] Dienstfreie as calendar entries (spec 12.32 approach): dated, not locked or dropped, still on a duty (a deleted one waits for reconcile), last 60 days on.
   const dayOffRows = db
     .select({
       id: dayOffs.id,
@@ -684,7 +684,7 @@ export function calendarState(calendarId: string, now: Date): Omit<CalendarSwapS
     .innerJoin(rotations, eq(rotations.id, dayOffs.rotationId))
     .innerJoin(user, eq(user.id, dayOffs.userId))
     .leftJoin(shifts, eq(shifts.id, dayOffs.shiftId))
-    .where(and(eq(rotations.calendarId, calendarId), eq(rotations.dayOffEnabled, true), gte(dayOffs.date, addDays(formatDateToLocal(now), -60))))
+    .where(and(eq(rotations.calendarId, calendarId), eq(rotations.dayOffEnabled, true), isNotNull(dayOffs.shiftId), gte(dayOffs.date, addDays(formatDateToLocal(now), -60))))
     .all()
     .filter((r) => r.date && ["standard", "moved", "agreed"].includes(r.status));
   return {

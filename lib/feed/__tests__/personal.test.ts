@@ -3,7 +3,8 @@ import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { calendarShares, user } from "@/lib/db/schema";
-import { buildPersonalFeed, isUserBanned, loadPersonalDuties } from "@/lib/feed/personal";
+import { buildPersonalFeed, isUserBanned, loadPersonalDayOffs, loadPersonalDuties } from "@/lib/feed/personal";
+import { dayOffs } from "@/lib/dayoff/schema";
 import { reconcileRotation } from "@/lib/dayoff/service";
 import { rotations } from "@/lib/rotation/schema";
 import { acceptOffer, createOffer } from "@/lib/swap/service";
@@ -89,6 +90,13 @@ describe("buildPersonalFeed", () => {
     expect(ics).toContain("DTSTART;VALUE=DATE:20261109");
     expect(ics).toContain("DTEND;VALUE=DATE:20261110");
     expect(ics).toMatch(/UID:dayoff-.+-me/);
-    expect(ics).toMatch(/Tauschen: https?:\/\/.+\/swaps\?tab=dayOffs/);
+    expect(ics).toMatch(/Dienstfrei: https?:\/\/.+\/swaps\?tab=dayOffs/);
+  });
+
+  it("leaves out a Dienstfrei whose duty was deleted before reconcile ran", async () => {
+    db.update(rotations).set({ dayOffEnabled: true }).where(eq(rotations.id, s.rotation.id)).run();
+    db.transaction((tx) => reconcileRotation(tx, s.rotation.id, now));
+    db.update(dayOffs).set({ shiftId: null }).where(and(eq(dayOffs.userId, s.m0), eq(dayOffs.dutyDate, "2026-11-07"))).run();
+    expect((await loadPersonalDayOffs(s.m0, now)).map((d) => d.date)).toEqual(["2026-12-14"]);
   });
 });

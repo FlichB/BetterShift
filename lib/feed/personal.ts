@@ -1,6 +1,6 @@
 // [fork] Personal ICS feed "nur meine Dienste" (spec 12.20): every duty the user currently holds a
 // Platz in, across calendars, so swaps show up on the next client refresh without further action.
-import { and, eq, gte, inArray, ne } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendars as calendarsTable, shiftSignups, shifts, user } from "@/lib/db/schema";
 import { canReadFeed } from "@/lib/calendar-feed";
@@ -104,7 +104,7 @@ export async function loadPersonalDayOffs(userId: string, now: Date): Promise<Pe
     .from(dayOffs)
     .innerJoin(rotations, eq(rotations.id, dayOffs.rotationId))
     .leftJoin(shifts, eq(shifts.id, dayOffs.shiftId))
-    .where(and(eq(dayOffs.userId, userId), eq(rotations.dayOffEnabled, true), gte(dayOffs.date, from)))
+    .where(and(eq(dayOffs.userId, userId), eq(rotations.dayOffEnabled, true), isNotNull(dayOffs.shiftId), gte(dayOffs.date, from)))
     .all()
     .filter((r) => r.date && ["standard", "moved", "agreed"].includes(r.status));
   if (rows.length === 0) return [];
@@ -123,7 +123,7 @@ export async function buildPersonalFeed(userId: string, now: Date): Promise<stri
   const { t, locale } = await getMailTranslator();
   const { calendars, duties } = await loadPersonalDuties(userId, now);
   const swapLine = t("personalFeed.swapLink", { url: `${getAppUrl()}/swaps` });
-  const dayOffLine = t("personalFeed.swapLink", { url: `${getAppUrl()}/swaps?tab=dayOffs` }); // [fork]
+  const dayOffLine = t("personalFeed.dayOffLink", { url: `${getAppUrl()}/swaps?tab=dayOffs` }); // [fork]
   const dayOffEvents = (await loadPersonalDayOffs(userId, now)).map((d) => ({
     uid: `dayoff-${d.id}-me`,
     date: d.date,

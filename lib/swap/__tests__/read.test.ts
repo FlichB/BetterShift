@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { acceptOffer, calendarState, chooseCounter, createOffer, declineOffer, forceSwap, hideOffer, listBoard, listDuties, withdrawOffer } from "@/lib/swap/service";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
+import { dayOffs } from "@/lib/dayoff/schema";
 import { reconcileRotation } from "@/lib/dayoff/service";
 import { rotations } from "@/lib/rotation/schema";
 import { now, seedDuties } from "./fixtures";
@@ -151,6 +152,15 @@ describe("calendarState Dienstfreie", () => {
     expect(state.dayOffs).toHaveLength(16);
     const first = db.select({ name: user.name }).from(user).where(eq(user.id, s.m0)).get()!.name!.split(" ")[0];
     expect(state.dayOffs).toContainEqual(expect.objectContaining({ userId: s.m0, date: "2026-11-09", title: `${first} dienstfrei` }));
+  });
+
+  it("leaves out a Dienstfrei whose duty was deleted before reconcile ran", () => {
+    enable(true);
+    const row = db.select().from(dayOffs).where(and(eq(dayOffs.shiftId, s.duty("2026-11-07")), eq(dayOffs.userId, s.m0))).get()!;
+    db.update(dayOffs).set({ shiftId: null }).where(eq(dayOffs.id, row.id)).run();
+    const state = calendarState(s.team.calendarId, now);
+    expect(state.dayOffs).toHaveLength(15);
+    expect(state.dayOffs.map((d) => d.id)).not.toContain(row.id);
   });
 
   it("lists none after switching them off", () => {

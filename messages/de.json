@@ -1900,7 +1900,8 @@
   "personalFeed": {
     "calendarName": "Meine Dienste",
     "with": "Mit: {names}",
-    "swapLink": "Tauschen: {url}"
+    "swapLink": "Tauschen: {url}",
+    "dayOffLink": "Dienstfrei: {url}"
   },
   "announcements": {
     "dismiss": "Ankündigung ausblenden"
