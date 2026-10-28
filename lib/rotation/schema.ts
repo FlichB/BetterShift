@@ -59,6 +59,8 @@ export const rotationMembers = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     position: integer("position").notNull(),
+    // [fork] Dienstfrei per Teilnehmer (SPEC 12.40): false = no Dienstfrei, e.g. an all-in contract.
+    dayOff: integer("day_off", { mode: "boolean" }).notNull().default(true),
   },
   (table) => [primaryKey({ columns: [table.rotationId, table.userId] })]
 );

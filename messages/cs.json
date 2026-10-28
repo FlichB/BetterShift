@@ -1438,6 +1438,8 @@
       "dayOffEnabled": "Volno po službě",
       "dayOffEnabledHint": "Každé místo dostane následující pracovní den (po–pá) po službě volno.",
       "dayOffTitle": "Text volna",
+      "dayOffMembers": "Volno pro každého účastníka",
+      "dayOffMembersHint": "Vypněte u účastníků bez volna, např. se smlouvou all-in. Převezme-li takový účastník službu, volno tohoto místa odpadá.",
       "entryTitleInfo": "O šabloně záznamu",
       "entryTitleHelp": "Zástupné symboly: '{Vorname}' = první slovo jména, '{Name}' = celé jméno, '{Dienst}' = název služby. Musí se objevit '{Vorname}' nebo '{Name}'. Příklad: „'{Vorname}' Dienst“ → „Günther Dienst“.",
       "entryTitlePreview": "Náhled: {title}",
@@ -1558,6 +1560,7 @@
       "holidayOpenDates": "Neplatné svátky se službou.",
       "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků).",
       "dayOffTitle": "Šablona záznamu volného dne je neplatná.",
+      "dayOffExcluded": "Volno pro každého účastníka je neplatné: vyloučit lze jen účastníky rotace.",
       "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků."
     }
   },

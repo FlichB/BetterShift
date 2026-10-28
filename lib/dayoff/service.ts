@@ -25,7 +25,7 @@ import { REMINDER_AFTER_DAYS, type DayOffBoard, type DayOffErrorCode, type DayOf
 import { counterWindowEnd, type SlotMove } from "@/lib/swap/rules";
 import { loadClosedSet, takenDates, type Tx } from "@/lib/dayoff/workdays";
 import { addDays } from "@/lib/rotation/dates";
-import { rotationDuties, rotations, type Rotation } from "@/lib/rotation/schema";
+import { rotationDuties, rotationMembers, rotations, type Rotation } from "@/lib/rotation/schema";
 
 export type { Reader, Tx } from "@/lib/dayoff/workdays";
 
@@ -49,6 +49,18 @@ const CLOSED_FROM_DAYS = -31;
 const CLOSED_TO_DAYS = 400;
 /** Duties older than this are no longer compared with their holders. */
 const DUTY_LOOKBACK_DAYS = -31;
+
+/** Teilnehmer switched to "no Dienstfrei" (SPEC 12.40). Holders outside the rotation always get one. */
+function excludedHolders(tx: Tx, rotationId: string): Set<string> {
+  return new Set(
+    tx
+      .select({ userId: rotationMembers.userId })
+      .from(rotationMembers)
+      .where(and(eq(rotationMembers.rotationId, rotationId), eq(rotationMembers.dayOff, false)))
+      .all()
+      .map((m) => m.userId)
+  );
+}
 
 function closedSetFor(tx: Tx, rotation: Rotation, today: string): Set<string> {
   return loadClosedSet(tx, rotation, addDays(today, CLOSED_FROM_DAYS), addDays(today, CLOSED_TO_DAYS));
@@ -148,16 +160,47 @@ export function revalidateRow(tx: Tx, rowId: string, now: Date): "reset" | null 
   return notify;
 }
 
-/** Hands the Dienstfrei of a moved Platz to its new holder and revalidates it for them (SPEC 12.38). */
+/**
+ * Hands the Dienstfrei of a moved Platz to its new holder and revalidates it for them (SPEC 12.38).
+ * A new holder without Dienstfrei drops it; a Platz coming from such a holder gets a fresh one (SPEC 12.40).
+ */
 export function transferDayOff(tx: Tx, move: SlotMove, now: Date): void {
+  const today = formatDateToLocal(now);
   const row = tx
     .select()
     .from(dayOffs)
     .where(and(eq(dayOffs.shiftId, move.shiftId), eq(dayOffs.userId, move.fromUserId), ne(dayOffs.status, "dropped")))
     .get();
-  if (!row || isFrozen(row, formatDateToLocal(now))) return;
-  handOver(tx, row, move.toUserId, now);
-  revalidateRow(tx, row.id, now);
+  if (row) {
+    if (isFrozen(row, today)) return;
+    if (excludedHolders(tx, row.rotationId).has(move.toUserId)) {
+      dropRow(tx, row, "excluded", now, { created: 0, transferred: 0, dropped: 0, reset: 0, events: [] });
+      return;
+    }
+    handOver(tx, row, move.toUserId, now);
+    revalidateRow(tx, row.id, now);
+    return;
+  }
+  const duty = tx
+    .select({ rotationId: rotationDuties.rotationId, date: rotationDuties.date, enabled: rotations.dayOffEnabled })
+    .from(rotationDuties)
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId))
+    .where(and(eq(rotationDuties.shiftId, move.shiftId), eq(rotationDuties.kind, "duty")))
+    .get();
+  if (!duty?.enabled || duty.date < today || excludedHolders(tx, duty.rotationId).has(move.toUserId)) return;
+  const existing = tx
+    .select({ id: dayOffs.id })
+    .from(dayOffs)
+    .where(and(eq(dayOffs.shiftId, move.shiftId), eq(dayOffs.userId, move.toUserId), ne(dayOffs.status, "dropped")))
+    .get();
+  if (existing) return;
+  // The date is assigned by the revalidation, as in reconcileRotation.
+  const created = tx
+    .insert(dayOffs)
+    .values({ rotationId: duty.rotationId, shiftId: move.shiftId, dutyDate: duty.date, userId: move.toUserId, status: "standard", createdAt: now, updatedAt: now })
+    .returning({ id: dayOffs.id })
+    .get();
+  revalidateRow(tx, created.id, now);
 }
 
 /**
@@ -210,9 +253,14 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
   }
 
   // 6. Per duty: pair orphaned rows with new holders, drop the rest, create missing rows.
+  //    Holders switched to "no Dienstfrei" lose theirs and never receive one (SPEC 12.40).
+  const excluded = excludedHolders(tx, rotationId);
   const created = new Set<string>();
   for (const duty of duties) {
     const holders = new Set(holdersByShift.get(duty.shiftId) ?? []);
+    for (const row of active) {
+      if (row.shiftId === duty.shiftId && holders.has(row.userId) && excluded.has(row.userId)) dropRow(tx, row, "excluded", now, result);
+    }
     // Every non-dropped row counts as "has a Dienstfrei", including begun ones, so a holder never gets a second row.
     const rowsOfDuty = allRows.filter((r) => r.shiftId === duty.shiftId && r.status !== "dropped");
     const withRow = new Set(rowsOfDuty.map((r) => r.userId));
@@ -220,7 +268,7 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
     const orphans = active
       .filter((r) => r.shiftId === duty.shiftId && !holders.has(r.userId))
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id));
-    const newcomers = [...holders].filter((u) => !withRow.has(u)).sort();
+    const newcomers = [...holders].filter((u) => !withRow.has(u) && !excluded.has(u)).sort();
 
     while (orphans.length > 0 && newcomers.length > 0) {
       handOver(tx, orphans.shift()!, newcomers.shift()!, now);

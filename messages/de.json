@@ -1438,6 +1438,8 @@
       "dayOffEnabled": "Dienstfrei nach Dienst",
       "dayOffEnabledHint": "Jeder Platz bekommt den nächsten Arbeitstag (Mo–Fr) nach dem Dienst frei.",
       "dayOffTitle": "Text für Dienstfrei",
+      "dayOffMembers": "Dienstfrei je Teilnehmer",
+      "dayOffMembersHint": "Ausschalten für Teilnehmer ohne Dienstfrei, z. B. mit All-in-Vertrag. Übernimmt so jemand einen Dienst, entfällt das Dienstfrei dieses Platzes.",
       "entryTitleInfo": "Erklärung zur Eintragsvorlage",
       "entryTitleHelp": "Platzhalter: '{Vorname}' = erstes Wort des Namens, '{Name}' = ganzer Name, '{Dienst}' = Titel des Dienstes. '{Vorname}' oder '{Name}' muss vorkommen. Beispiel: „'{Vorname}' Dienst“ → „Günther Dienst“.",
       "entryTitlePreview": "Vorschau: {title}",
@@ -1558,6 +1560,7 @@
       "holidayOpenDates": "Geöffnete Feiertage ungültig.",
       "entryTitle": "Eintragsvorlage ungültig: Sie braucht '{Vorname}' oder '{Name}' und darf nur '{Vorname}', '{Name}' und '{Dienst}' enthalten (max. 100 Zeichen).",
       "dayOffTitle": "Die Vorlage für Dienstfrei ist ungültig.",
+      "dayOffExcluded": "Dienstfrei je Teilnehmer ungültig: Nur Teilnehmer der Rotation können ausgenommen werden.",
       "reinforcedDates": "Verstärkte Tage ungültig: Je Datum ein Eintrag, und künftige Tage brauchen mehr Personen als „Personen pro Dienst“, höchstens so viele wie Teilnehmer."
     }
   },

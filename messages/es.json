@@ -1438,6 +1438,8 @@
       "dayOffEnabled": "Día libre tras el servicio",
       "dayOffEnabledHint": "Cada plaza recibe libre el siguiente día laborable (lun–vie) tras el servicio.",
       "dayOffTitle": "Texto del día libre",
+      "dayOffMembers": "Día libre por participante",
+      "dayOffMembersHint": "Desactívalo para participantes sin día libre, p. ej. con contrato all-in. Si alguien así asume un turno, se pierde el día libre de esa plaza.",
       "entryTitleInfo": "Sobre la plantilla de entrada",
       "entryTitleHelp": "Marcadores: '{Vorname}' = primera palabra del nombre, '{Name}' = nombre completo, '{Dienst}' = título del turno. Debe aparecer '{Vorname}' o '{Name}'. Ejemplo: «'{Vorname}' Dienst» → «Günther Dienst».",
       "entryTitlePreview": "Vista previa: {title}",
@@ -1558,6 +1560,7 @@
       "holidayOpenDates": "Festivos con servicio no válidos.",
       "entryTitle": "Plantilla de entrada no válida: necesita '{Vorname}' o '{Name}' y solo puede contener '{Vorname}', '{Name}' y '{Dienst}' (máx. 100 caracteres).",
       "dayOffTitle": "La plantilla de entrada del día libre no es válida.",
+      "dayOffExcluded": "Día libre por participante no válido: solo se pueden excluir participantes de la rotación.",
       "reinforcedDates": "Días reforzados no válidos: una entrada por fecha; los días futuros necesitan más personas que «Personas por turno» y como máximo tantas como participantes."
     }
   },
