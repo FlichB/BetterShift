@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import {
   checkAcceptDate, checkCounter, checkLock, checkMove, checkProposeDates, isFrozen, makeIsOff,
-  revalidate, standardDate, transferStatus, weekOf, type DayOffState,
+  moveRange, revalidate, standardDate, transferStatus, weekOf, type DayOffState,
 } from "@/lib/dayoff/rules";
 
 const none = makeIsOff(new Set(), new Set());
@@ -140,4 +140,45 @@ describe("isFrozen", () => {
     expect(isFrozen(row({ status: "locked", date: null }), "2027-01-01")).toBe(false);
     expect(isFrozen(row({ status: "dropped" }), today)).toBe(true);
   });
+});
+
+describe("timing before", () => {
+  it("standard is the Monday of the duty week", () => expect(standardDate("2026-11-14", none, "before")).toBe("2026-11-09"));
+  it("skips Easter Monday", () => expect(standardDate("2026-04-11", makeIsOff(new Set(["2026-04-06"]), new Set()), "before")).toBe("2026-04-07"));
+  it("skips a date taken by another own Dienstfrei", () => expect(standardDate("2026-11-14", makeIsOff(new Set(), new Set(["2026-11-09"])), "before")).toBe("2026-11-10"));
+  it("falls back to after the duty when the week before is closed", () => {
+    const closed = new Set(["2026-12-28", "2026-12-29", "2026-12-30", "2026-12-31", "2027-01-01"]);
+    expect(standardDate("2027-01-02", makeIsOff(closed, new Set()), "before")).toBe("2027-01-04");
+  });
+  it("a Monday duty has no day before: falls back to after", () => expect(standardDate("2026-11-09", none, "before")).toBe("2026-11-10"));
+
+  it("moveRange is Mo–Fr before the duty", () =>
+    expect(moveRange({ dutyDate: "2026-11-14", standardDate: "2026-11-09" }, "before")).toEqual(["2026-11-09", "2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13"]));
+  it("moveRange of a Wednesday duty stops before it", () =>
+    expect(moveRange({ dutyDate: "2026-11-11", standardDate: "2026-11-09" }, "before")).toEqual(["2026-11-09", "2026-11-10"]));
+  it("moveRange in the fallback case is the old rule", () =>
+    expect(moveRange({ dutyDate: "2026-11-09", standardDate: "2026-11-10" }, "before")).toEqual(["2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13"]));
+  it("moveRange after is unchanged", () =>
+    expect(moveRange({ dutyDate: "2026-11-07", standardDate: "2026-11-09" }, "after")).toEqual(weekOf("2026-11-09")));
+
+  const before = (p: Partial<DayOffState> = {}): DayOffState => ({ status: "standard", date: "2026-11-09", standardDate: "2026-11-09", dutyDate: "2026-11-14", ...p });
+  it("moves within the week before", () =>
+    expect(checkMove(before(), "2026-11-12", none, today, "before")).toEqual({ ok: true, value: { status: "moved", date: "2026-11-12" } }));
+  it("rejects the week after and the duty day", () => {
+    expect(checkMove(before(), "2026-11-16", none, today, "before")).toEqual({ ok: false, code: "outsideWeek" });
+    expect(checkMove(before(), "2026-11-14", none, today, "before")).toEqual({ ok: false, code: "outsideWeek" });
+  });
+
+  it("past Monday: next workday from tomorrow before the duty", () =>
+    expect(revalidate(before(), none, "2026-11-10", "before")).toMatchObject({ status: "standard", date: "2026-11-11", standardDate: "2026-11-11" }));
+  it("whole week before has begun: next workday after the duty", () =>
+    expect(revalidate(before(), none, "2026-11-13", "before")).toMatchObject({ status: "standard", date: "2026-11-16", standardDate: "2026-11-16" }));
+  it("a moved day outside the before-range falls back with a notice (after → before)", () =>
+    expect(revalidate(before({ status: "moved", date: "2026-11-17", standardDate: "2026-11-16" }), none, today, "before")).toEqual({ status: "standard", date: "2026-11-09", standardDate: "2026-11-09", notify: "reset" }));
+  it("a valid moved day before the duty stays", () =>
+    expect(revalidate(before({ status: "moved", date: "2026-11-12" }), none, today, "before")).toEqual({ status: "moved", date: "2026-11-12", standardDate: "2026-11-09", notify: null }));
+  it("a moved day before the duty falls back under after (before → after)", () =>
+    expect(revalidate(before({ status: "moved", date: "2026-11-12" }), none, today, "after")).toEqual({ status: "standard", date: "2026-11-16", standardDate: "2026-11-16", notify: "reset" }));
+  it("agreed stays when switching", () =>
+    expect(revalidate(before({ status: "agreed", date: "2026-11-25" }), none, today, "before")).toMatchObject({ status: "agreed", date: "2026-11-25" }));
 });
