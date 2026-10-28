@@ -1195,7 +1195,18 @@
       "telemetryAutoSent": "Telemetrie odeslána automaticky",
       "telemetryAutoSendFailed": "Automatické odeslání telemetrie se nezdařilo",
       "dayOffNotificationFailed": "E-mail o volnu se nepodařilo odeslat ({kind})",
-      "rotationYearDeltaSet": "Rotace „{name}“: delta pro {year} změněna"
+      "rotationYearDeltaSet": "Rotace „{name}“: delta pro {year} změněna",
+      "vacationRequested": "Dovolená {from}–{to} požádána",
+      "vacationApproved": "Dovolená {from}–{to} schválena",
+      "vacationRejected": "Dovolená {from}–{to} zamítnuta",
+      "vacationWithdrawn": "Dovolená {from}–{to} stažena",
+      "vacationEntered": "Dovolená {from}–{to} zadána",
+      "vacationChanged": "Dovolená {from}–{to} změněna",
+      "vacationCancelled": "Dovolená {from}–{to} zrušena",
+      "vacationChangeRequested": "Změna dovolené {from}–{to} požádána",
+      "vacationChangeApproved": "Změna dovolené {from}–{to} schválena",
+      "vacationChangeRejected": "Změna dovolené {from}–{to} zamítnuta",
+      "vacationChangeWithdrawn": "Změna dovolené {from}–{to} stažena"
     }
   },
   "adminUsers": {
@@ -1956,5 +1967,19 @@
   },
   "announcements": {
     "dismiss": "Skrýt oznámení"
+  },
+  "vacation": {
+    "errors": {
+      "notFound": "Dovolená nebyla nalezena.",
+      "forbidden": "K tomu nemáš oprávnění.",
+      "invalid": "Zkontroluj zadané údaje.",
+      "reasonRequired": "Uveď prosím důvod.",
+      "tooLong": "Dovolená může trvat nejvýše 366 dní.",
+      "notParticipant": "Dovolenou mohou mít jen účastníci rotace.",
+      "begun": "Minulé dny a dnešek už nelze měnit.",
+      "overlap": "Období se překrývá s jinou dovolenou.",
+      "wrongStatus": "V tomto stavu to už nejde.",
+      "changePending": "Žádost o změnu už je otevřená."
+    }
   }
 }

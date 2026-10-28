@@ -1195,7 +1195,18 @@
       "telemetryAutoSent": "Télémétrie envoyée automatiquement",
       "telemetryAutoSendFailed": "Échec de l'envoi automatique de la télémétrie",
       "dayOffNotificationFailed": "Impossible d'envoyer l'e-mail du jour de repos ({kind})",
-      "rotationYearDeltaSet": "Rotation « {name} » : delta {year} modifié"
+      "rotationYearDeltaSet": "Rotation « {name} » : delta {year} modifié",
+      "vacationRequested": "Congé {from}–{to} demandé",
+      "vacationApproved": "Congé {from}–{to} approuvé",
+      "vacationRejected": "Congé {from}–{to} refusé",
+      "vacationWithdrawn": "Congé {from}–{to} retiré",
+      "vacationEntered": "Congé {from}–{to} saisi",
+      "vacationChanged": "Congé {from}–{to} modifié",
+      "vacationCancelled": "Congé {from}–{to} annulé",
+      "vacationChangeRequested": "Modification du congé {from}–{to} demandée",
+      "vacationChangeApproved": "Modification du congé {from}–{to} approuvée",
+      "vacationChangeRejected": "Modification du congé {from}–{to} refusée",
+      "vacationChangeWithdrawn": "Modification du congé {from}–{to} retirée"
     }
   },
   "adminUsers": {
@@ -1956,5 +1967,19 @@
   },
   "announcements": {
     "dismiss": "Masquer l'annonce"
+  },
+  "vacation": {
+    "errors": {
+      "notFound": "Congé introuvable.",
+      "forbidden": "Tu n'as pas l'autorisation de faire cela.",
+      "invalid": "Vérifie tes saisies.",
+      "reasonRequired": "Indique un motif.",
+      "tooLong": "Un congé peut durer 366 jours au maximum.",
+      "notParticipant": "Seuls les participants d'une rotation peuvent avoir des congés.",
+      "begun": "Les jours passés et aujourd'hui ne peuvent plus être modifiés.",
+      "overlap": "La période chevauche un autre congé.",
+      "wrongStatus": "Ce n'est plus possible dans cet état.",
+      "changePending": "Une demande de modification est déjà ouverte."
+    }
   }
 }

@@ -1195,7 +1195,18 @@
       "telemetryAutoSent": "Telemetry sent automatically",
       "telemetryAutoSendFailed": "Sending telemetry automatically failed",
       "dayOffNotificationFailed": "Day-off mail could not be sent ({kind})",
-      "rotationYearDeltaSet": "Rotation “{name}”: delta for {year} changed"
+      "rotationYearDeltaSet": "Rotation “{name}”: delta for {year} changed",
+      "vacationRequested": "Vacation {from}–{to} requested",
+      "vacationApproved": "Vacation {from}–{to} approved",
+      "vacationRejected": "Vacation {from}–{to} rejected",
+      "vacationWithdrawn": "Vacation {from}–{to} withdrawn",
+      "vacationEntered": "Vacation {from}–{to} entered",
+      "vacationChanged": "Vacation {from}–{to} changed",
+      "vacationCancelled": "Vacation {from}–{to} cancelled",
+      "vacationChangeRequested": "Change to vacation {from}–{to} requested",
+      "vacationChangeApproved": "Change to vacation {from}–{to} approved",
+      "vacationChangeRejected": "Change to vacation {from}–{to} rejected",
+      "vacationChangeWithdrawn": "Change to vacation {from}–{to} withdrawn"
     }
   },
   "adminUsers": {
@@ -1956,5 +1967,19 @@
   },
   "announcements": {
     "dismiss": "Dismiss announcement"
+  },
+  "vacation": {
+    "errors": {
+      "notFound": "Vacation not found.",
+      "forbidden": "You are not allowed to do that.",
+      "invalid": "Please check your input.",
+      "reasonRequired": "Please give a reason.",
+      "tooLong": "A vacation can last at most 366 days.",
+      "notParticipant": "Only rotation participants can have vacation.",
+      "begun": "Past days and today can no longer be changed.",
+      "overlap": "The period overlaps another vacation.",
+      "wrongStatus": "That is no longer possible in this state.",
+      "changePending": "There is already an open change request."
+    }
   }
 }

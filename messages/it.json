@@ -1195,7 +1195,18 @@
       "telemetryAutoSent": "Telemetria inviata automaticamente",
       "telemetryAutoSendFailed": "Invio automatico della telemetria non riuscito",
       "dayOffNotificationFailed": "Impossibile inviare l'e-mail del giorno libero ({kind})",
-      "rotationYearDeltaSet": "Rotazione «{name}»: delta {year} modificato"
+      "rotationYearDeltaSet": "Rotazione «{name}»: delta {year} modificato",
+      "vacationRequested": "Ferie {from}–{to} richieste",
+      "vacationApproved": "Ferie {from}–{to} approvate",
+      "vacationRejected": "Ferie {from}–{to} rifiutate",
+      "vacationWithdrawn": "Ferie {from}–{to} ritirate",
+      "vacationEntered": "Ferie {from}–{to} inserite",
+      "vacationChanged": "Ferie {from}–{to} modificate",
+      "vacationCancelled": "Ferie {from}–{to} annullate",
+      "vacationChangeRequested": "Modifica delle ferie {from}–{to} richiesta",
+      "vacationChangeApproved": "Modifica delle ferie {from}–{to} approvata",
+      "vacationChangeRejected": "Modifica delle ferie {from}–{to} rifiutata",
+      "vacationChangeWithdrawn": "Modifica delle ferie {from}–{to} ritirata"
     }
   },
   "adminUsers": {
@@ -1956,5 +1967,19 @@
   },
   "announcements": {
     "dismiss": "Nascondi annuncio"
+  },
+  "vacation": {
+    "errors": {
+      "notFound": "Ferie non trovate.",
+      "forbidden": "Non hai il permesso di farlo.",
+      "invalid": "Controlla i dati inseriti.",
+      "reasonRequired": "Indica un motivo.",
+      "tooLong": "Le ferie possono durare al massimo 366 giorni.",
+      "notParticipant": "Solo i partecipanti a una rotazione possono avere ferie.",
+      "begun": "I giorni passati e oggi non possono più essere modificati.",
+      "overlap": "Il periodo si sovrappone ad altre ferie.",
+      "wrongStatus": "Non è più possibile in questo stato.",
+      "changePending": "C'è già una richiesta di modifica aperta."
+    }
   }
 }

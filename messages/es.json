@@ -1195,7 +1195,18 @@
       "telemetryAutoSent": "Telemetría enviada automáticamente",
       "telemetryAutoSendFailed": "Error al enviar la telemetría automáticamente",
       "dayOffNotificationFailed": "No se pudo enviar el correo del día libre ({kind})",
-      "rotationYearDeltaSet": "Rotación «{name}»: delta de {year} modificado"
+      "rotationYearDeltaSet": "Rotación «{name}»: delta de {year} modificado",
+      "vacationRequested": "Vacaciones {from}–{to} solicitadas",
+      "vacationApproved": "Vacaciones {from}–{to} aprobadas",
+      "vacationRejected": "Vacaciones {from}–{to} rechazadas",
+      "vacationWithdrawn": "Vacaciones {from}–{to} retiradas",
+      "vacationEntered": "Vacaciones {from}–{to} registradas",
+      "vacationChanged": "Vacaciones {from}–{to} modificadas",
+      "vacationCancelled": "Vacaciones {from}–{to} canceladas",
+      "vacationChangeRequested": "Cambio de las vacaciones {from}–{to} solicitado",
+      "vacationChangeApproved": "Cambio de las vacaciones {from}–{to} aprobado",
+      "vacationChangeRejected": "Cambio de las vacaciones {from}–{to} rechazado",
+      "vacationChangeWithdrawn": "Cambio de las vacaciones {from}–{to} retirado"
     }
   },
   "adminUsers": {
@@ -1956,5 +1967,19 @@
   },
   "announcements": {
     "dismiss": "Ocultar anuncio"
+  },
+  "vacation": {
+    "errors": {
+      "notFound": "Vacaciones no encontradas.",
+      "forbidden": "No tienes permiso para hacer eso.",
+      "invalid": "Revisa los datos introducidos.",
+      "reasonRequired": "Indica un motivo.",
+      "tooLong": "Unas vacaciones pueden durar como máximo 366 días.",
+      "notParticipant": "Solo los participantes de una rotación pueden tener vacaciones.",
+      "begun": "Los días pasados y el día de hoy ya no se pueden modificar.",
+      "overlap": "El período se solapa con otras vacaciones.",
+      "wrongStatus": "Ya no es posible en este estado.",
+      "changePending": "Ya hay una solicitud de cambio abierta."
+    }
   }
 }

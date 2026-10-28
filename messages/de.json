@@ -1195,7 +1195,18 @@
       "telemetrySendFailed": "Manuelles Senden der Telemetriedaten fehlgeschlagen",
       "telemetryAutoSent": "Telemetriedaten automatisch gesendet",
       "telemetryAutoSendFailed": "Automatisches Senden der Telemetriedaten fehlgeschlagen",
-      "dayOffNotificationFailed": "Dienstfrei-Mail konnte nicht gesendet werden ({kind})"
+      "dayOffNotificationFailed": "Dienstfrei-Mail konnte nicht gesendet werden ({kind})",
+      "vacationRequested": "Urlaub {from}–{to} beantragt",
+      "vacationApproved": "Urlaub {from}–{to} genehmigt",
+      "vacationRejected": "Urlaub {from}–{to} abgelehnt",
+      "vacationWithdrawn": "Urlaub {from}–{to} zurückgezogen",
+      "vacationEntered": "Urlaub {from}–{to} eingetragen",
+      "vacationChanged": "Urlaub {from}–{to} geändert",
+      "vacationCancelled": "Urlaub {from}–{to} storniert",
+      "vacationChangeRequested": "Änderung zum Urlaub {from}–{to} beantragt",
+      "vacationChangeApproved": "Änderung zum Urlaub {from}–{to} genehmigt",
+      "vacationChangeRejected": "Änderung zum Urlaub {from}–{to} abgelehnt",
+      "vacationChangeWithdrawn": "Änderung zum Urlaub {from}–{to} zurückgezogen"
     }
   },
   "adminUsers": {
@@ -1956,5 +1967,19 @@
   },
   "announcements": {
     "dismiss": "Ankündigung ausblenden"
+  },
+  "vacation": {
+    "errors": {
+      "notFound": "Urlaub nicht gefunden.",
+      "forbidden": "Dafür fehlt dir die Berechtigung.",
+      "invalid": "Bitte prüfe die Eingaben.",
+      "reasonRequired": "Bitte gib eine Begründung an.",
+      "tooLong": "Ein Urlaub darf höchstens 366 Tage dauern.",
+      "notParticipant": "Urlaub gibt es nur für Teilnehmer einer Rotation.",
+      "begun": "Vergangene oder heutige Tage lassen sich nicht mehr ändern.",
+      "overlap": "Der Zeitraum überschneidet sich mit einem anderen Urlaub.",
+      "wrongStatus": "Das geht in diesem Status nicht mehr.",
+      "changePending": "Es gibt schon einen offenen Änderungsantrag."
+    }
   }
 }
