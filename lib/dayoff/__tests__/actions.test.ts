@@ -105,4 +105,16 @@ describe("Dienstfrei actions", () => {
     expect(log).toMatchObject({ action: "dayoff.dropped", resourceType: "day_off" });
     expect(JSON.parse(log!.metadata!)).toMatchObject({ dutyDate: "2026-11-07", holderUserId: s.m0, kind: "dropped", reason: "disabled" });
   });
+
+  it("timing before: moves only within the week before the duty", async () => {
+    const s = await seedDuties();
+    db.update(rotations).set({ dayOffEnabled: true, dayOffTiming: "before" }).where(eq(rotations.id, s.rotation.id)).run();
+    db.transaction((tx) => reconcileRotation(tx, s.rotation.id, now));
+    const row = db.select().from(dayOffs).where(and(eq(dayOffs.shiftId, s.duty("2026-11-07")), eq(dayOffs.userId, s.m0))).get()!;
+    // m0's Dienstfrei for 11-07 is on 11-02
+    expect(row.date).toBe("2026-11-02");
+    expect(moveOptions(row.id, now).map((o) => o.date)).toEqual(["2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"]);
+    expect(moveDayOff(row.id, "2026-11-04", s.m0, now)).toMatchObject({ status: "moved", date: "2026-11-04" });
+    expect(() => moveDayOff(row.id, "2026-11-09", s.m0, now)).toThrow(expect.objectContaining({ code: "outsideWeek" }));
+  });
 });

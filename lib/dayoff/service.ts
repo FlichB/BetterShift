@@ -14,14 +14,14 @@ import {
   checkProposeDates,
   isFrozen,
   makeIsOff,
+  moveRange,
   revalidate,
   transferStatus,
-  weekOf,
   type IsOff,
   type RuleResult,
 } from "@/lib/dayoff/rules";
 import { dayOffProposals, dayOffs, type DayOff, type DayOffProposal } from "@/lib/dayoff/schema";
-import { REMINDER_AFTER_DAYS, type DayOffBoard, type DayOffErrorCode, type DayOffView, type DropReason, type MoveOption } from "@/lib/dayoff/types";
+import { REMINDER_AFTER_DAYS, type DayOffBoard, type DayOffTiming, type DayOffErrorCode, type DayOffView, type DropReason, type MoveOption } from "@/lib/dayoff/types";
 import { counterWindowEnd, type SlotMove } from "@/lib/swap/rules";
 import { loadClosedSet, takenDates, type Tx } from "@/lib/dayoff/workdays";
 import { addDays } from "@/lib/rotation/dates";
@@ -124,11 +124,11 @@ function handOver(tx: Tx, row: DayOff, newUserId: string, now: Date): DayOff {
  * Re-checks one row against the Arbeitstage (SPEC 12.38) and writes back any change.
  * `extraTaken` holds dates assigned to the same user earlier in the same pass.
  */
-function revalidateOne(tx: Tx, row: DayOff, closed: ReadonlySet<string>, extraTaken: Iterable<string>, today: string, now: Date): { date: string | null; notify: "reset" | null } {
+function revalidateOne(tx: Tx, row: DayOff, closed: ReadonlySet<string>, extraTaken: Iterable<string>, today: string, now: Date, timing: DayOffTiming): { date: string | null; notify: "reset" | null } {
   const taken = takenDates(tx, row.userId, row.id);
   for (const date of extraTaken) taken.add(date);
   const isOff: IsOff = makeIsOff(closed, taken);
-  const next = revalidate(row, isOff, today);
+  const next = revalidate(row, isOff, today, timing);
   if (next.status !== row.status || next.date !== row.date || next.standardDate !== row.standardDate) {
     tx.update(dayOffs)
       .set({
@@ -155,7 +155,7 @@ export function revalidateRow(tx: Tx, rowId: string, now: Date): "reset" | null 
   if (isFrozen(row, today)) return null;
   const rotation = tx.select().from(rotations).where(eq(rotations.id, row.rotationId)).get();
   if (!rotation) return null;
-  const { notify } = revalidateOne(tx, row, closedSetFor(tx, rotation, today), [], today, now);
+  const { notify } = revalidateOne(tx, row, closedSetFor(tx, rotation, today), [], today, now, rotation.dayOffTiming);
   if (notify === "reset") enqueueDayOff(tx, "day_off_reset", row.id, "holder", null, now);
   return notify;
 }
@@ -302,7 +302,7 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
   const assigned = new Map<string, Set<string>>();
   for (const row of rows) {
     const mine = assigned.get(row.userId) ?? new Set<string>();
-    const { date, notify } = revalidateOne(tx, row, closed, mine, today, now);
+    const { date, notify } = revalidateOne(tx, row, closed, mine, today, now, rotation.dayOffTiming);
     if (date) mine.add(date);
     assigned.set(row.userId, mine);
     // New rows only get their first date here; that is not a reset.
@@ -399,11 +399,11 @@ function loadProposal(tx: Tx, id: string): DayOffProposal {
   return proposal;
 }
 
-/** The holder's non-Arbeitstage for this row: Schließtage of its rotation plus their other Dienstfreie. */
-function isOffFor(tx: Tx, row: DayOff, today: string): IsOff {
+/** The holder's non-Arbeitstage for this row and the timing of its rotation. */
+function rowContext(tx: Tx, row: DayOff, today: string): { isOff: IsOff; timing: DayOffTiming } {
   const rotation = tx.select().from(rotations).where(eq(rotations.id, row.rotationId)).get();
   if (!rotation) throw new DayOffServiceError("notFound");
-  return makeIsOff(closedSetFor(tx, rotation, today), takenDates(tx, row.userId, row.id));
+  return { isOff: makeIsOff(closedSetFor(tx, rotation, today), takenDates(tx, row.userId, row.id)), timing: rotation.dayOffTiming };
 }
 
 function openProposalDates(tx: Tx, dayOffId: string): string[] {
@@ -421,7 +421,8 @@ export function moveDayOff(id: string, date: string, actorId: string, now: Date)
     const row = loadRow(tx, id);
     if (row.userId !== actorId) throw new DayOffServiceError("notHolder");
     const today = formatDateToLocal(now);
-    const next = unwrap(checkMove(row, date, isOffFor(tx, row, today), today));
+    const { isOff, timing } = rowContext(tx, row, today);
+    const next = unwrap(checkMove(row, date, isOff, today, timing));
     return tx.update(dayOffs).set({ status: next.status, date: next.date, updatedAt: now }).where(eq(dayOffs.id, id)).returning().get();
   });
 }
@@ -450,7 +451,7 @@ export function proposeDates(id: string, dates: string[], actorId: string, now: 
     const row = loadRow(tx, id);
     if (row.userId !== actorId) throw new DayOffServiceError("notHolder");
     const today = formatDateToLocal(now);
-    const valid = unwrap(checkProposeDates(row, dates, openProposalDates(tx, id), isOffFor(tx, row, today), today));
+    const valid = unwrap(checkProposeDates(row, dates, openProposalDates(tx, id), rowContext(tx, row, today).isOff, today));
     const created = tx
       .insert(dayOffProposals)
       .values(valid.map((date) => ({ dayOffId: id, date, side: "holder" as const, proposedByUserId: actorId, status: "open" as const, createdAt: now })))
@@ -466,7 +467,7 @@ export function counterPropose(id: string, date: string, actorId: string, now: D
   return db.transaction((tx) => {
     const row = loadRow(tx, id);
     const today = formatDateToLocal(now);
-    const valid = unwrap(checkCounter(row, date, openProposalDates(tx, id), isOffFor(tx, row, today), today));
+    const valid = unwrap(checkCounter(row, date, openProposalDates(tx, id), rowContext(tx, row, today).isOff, today));
     const created = tx
       .insert(dayOffProposals)
       .values({ dayOffId: id, date: valid, side: "manager", proposedByUserId: actorId, status: "open", createdAt: now })
@@ -492,7 +493,7 @@ export function acceptProposal(proposalId: string, actorId: string, actorIsManag
     const row = loadRow(tx, proposal.dayOffId);
     assertOtherSide(proposal, row, actorId, actorIsManager);
     const today = formatDateToLocal(now);
-    const date = unwrap(checkAcceptDate(row, proposal.date, isOffFor(tx, row, today), today));
+    const date = unwrap(checkAcceptDate(row, proposal.date, rowContext(tx, row, today).isOff, today));
     const updated = tx
       .update(dayOffs)
       .set({ status: "agreed", date, agreedByUserId: actorId, updatedAt: now })
@@ -536,8 +537,8 @@ export function moveOptions(id: string, now: Date): MoveOption[] {
     // Only a standard or moved Dienstfrei can be moved; locked/agreed ones go through proposals.
     if ((row.status !== "standard" && row.status !== "moved") || !row.standardDate) return [];
     const today = formatDateToLocal(now);
-    const isOff = isOffFor(tx, row, today);
-    const dates = weekOf(row.standardDate).filter((date) => date === row.date || checkMove(row, date, isOff, today).ok);
+    const { isOff, timing } = rowContext(tx, row, today);
+    const dates = moveRange(row, timing).filter((date) => date === row.date || checkMove(row, date, isOff, today, timing).ok);
     if (dates.length === 0) return [];
     const rotation = tx.select({ calendarId: rotations.calendarId }).from(rotations).where(eq(rotations.id, row.rotationId)).get();
     const others = tx

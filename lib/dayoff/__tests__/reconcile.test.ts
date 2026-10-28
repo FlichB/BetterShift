@@ -128,3 +128,30 @@ describe("reconcileRotation", () => {
     expect(rowsOf(shiftId).find((r) => r.userId === s.m5)).toMatchObject({ status: "standard", date: "2026-11-09" });
   });
 });
+
+describe("timing before", () => {
+  const rowOf = (s: Awaited<ReturnType<typeof seedDuties>>, date: string, userId: string) =>
+    db.select().from(dayOffs).where(and(eq(dayOffs.shiftId, s.duty(date)), eq(dayOffs.userId, userId))).get();
+
+  it("dates new Dienstfreie on the Monday of the duty week", async () => {
+    const s = await seedDuties();
+    enable(s.rotation.id, { dayOffTiming: "before" });
+    run(s.rotation.id);
+    expect(rowOf(s, "2026-11-07", s.m0)).toMatchObject({ status: "standard", date: "2026-11-02", standardDate: "2026-11-02" });
+    expect(rowOf(s, "2026-11-14", s.m2)).toMatchObject({ date: "2026-11-09" });
+  });
+
+  it("switching after → before re-dates standard, resets moved, keeps agreed", async () => {
+    const s = await seedDuties();
+    enable(s.rotation.id);
+    run(s.rotation.id);
+    db.update(dayOffs).set({ status: "moved", date: "2026-11-11" }).where(eq(dayOffs.id, rowOf(s, "2026-11-07", s.m0)!.id)).run();
+    db.update(dayOffs).set({ status: "agreed", date: "2026-11-25" }).where(eq(dayOffs.id, rowOf(s, "2026-11-07", s.m1)!.id)).run();
+    db.update(rotations).set({ dayOffTiming: "before" }).where(eq(rotations.id, s.rotation.id)).run();
+    const result = run(s.rotation.id);
+    expect(rowOf(s, "2026-11-07", s.m0)).toMatchObject({ status: "standard", date: "2026-11-02" });
+    expect(rowOf(s, "2026-11-07", s.m1)).toMatchObject({ status: "agreed", date: "2026-11-25" });
+    expect(rowOf(s, "2026-11-14", s.m2)).toMatchObject({ status: "standard", date: "2026-11-09" });
+    expect(result.reset).toBe(1);
+  });
+});
