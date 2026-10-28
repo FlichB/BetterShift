@@ -79,6 +79,18 @@ describe("Dienstfrei before the duty on swaps", () => {
   });
 
   // Manager reassignment = direct signup change + reconcile, the same path the signup routes take.
+  it("a kept Dienstfrei is dropped when its holder is switched to no Dienstfrei (SPEC 12.40)", async () => {
+    const s = await setup();
+    s.exchange("2026-11-07", s.m0, "2026-11-14", s.m2);
+    expect(s.of("2026-11-07", s.m0)).toMatchObject({ keptOnSwap: true });
+    db.update(rotationMembers).set({ dayOff: false }).where(and(eq(rotationMembers.rotationId, s.rotation.id), eq(rotationMembers.userId, s.m0))).run();
+    expect(s.reconcile()).toMatchObject({ dropped: 2 }); // the kept row and m0's row of another duty
+    expect(s.of("2026-11-07", s.m0)).toBeUndefined();
+    expect(db.select().from(dayOffs).where(and(eq(dayOffs.shiftId, s.duty("2026-11-07")), eq(dayOffs.userId, s.m0))).get()).toMatchObject({ status: "dropped", dropReason: "excluded" });
+    expect(s.of("2026-11-07", s.m2)).toBeUndefined();
+    expect(s.reconcile()).toMatchObject({ created: 0 });
+  });
+
   it("reassignment hands over an unmarked Dienstfrei, never a marked one", async () => {
     const s = await setup();
     s.exchange("2026-11-07", s.m0, "2026-11-14", s.m2);

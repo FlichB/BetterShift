@@ -303,7 +303,9 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
       }
     }
     for (const row of active) {
-      if (row.shiftId === duty.shiftId && holders.has(row.userId) && excluded.has(row.userId)) dropRow(tx, row, "excluded", now, result);
+      if (row.shiftId !== duty.shiftId || !excluded.has(row.userId)) continue;
+      // [fork] A kept row (SPEC 12.40/12.42) also falls away for a holder switched to "no Dienstfrei"; begun rows are not active.
+      if (holders.has(row.userId) || (before && row.keptOnSwap)) dropRow(tx, row, "excluded", now, result);
     }
     // Every non-dropped row counts as "has a Dienstfrei", including begun ones, so a holder never gets a second row.
     const rowsOfDuty = allRows.filter((r) => r.shiftId === duty.shiftId && r.status !== "dropped");
