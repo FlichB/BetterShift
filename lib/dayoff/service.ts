@@ -480,7 +480,7 @@ function unwrap<T>(result: RuleResult<T>): T {
 /** Like unwrap, but a full day carries its staffing detail for the UI (SPEC 12.44). */
 function unwrapStaffed<T>(result: RuleResult<T>, staffing: StaffingIndex, userId: string, dates: readonly string[]): T {
   if (!result.ok && result.code === "belowMinimum") {
-    const date = dates.find((d) => staffing.isFull(userId)(d)) ?? dates[0];
+    const date = [...dates].sort().find((d) => staffing.isFull(userId)(d)) ?? dates[0];
     throw new DayOffServiceError("belowMinimum", detailOf(staffing, userId, date));
   }
   return unwrap(result);

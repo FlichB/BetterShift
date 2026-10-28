@@ -2,11 +2,14 @@
 import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
+import { shiftSignups } from "@/lib/db/schema";
 import { dayOffs } from "@/lib/dayoff/schema";
 import { acceptProposal, counterPropose, lockDayOff, moveDayOff, moveOptions, proposeDates, reconcileRotation } from "@/lib/dayoff/service";
-import { rotations } from "@/lib/rotation/schema";
+import { createRotation, runGeneration } from "@/lib/rotation/service";
+import { rotationDuties, rotations } from "@/lib/rotation/schema";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
 import { vacations } from "@/lib/vacation/schema";
+import { seedTeam } from "@/tests/helpers/seed";
 
 async function setup(minPresent: number | null) {
   const s = await seedDuties();
@@ -48,6 +51,55 @@ describe("Abgleich with Mindestbesetzung", () => {
     s.reconcile();
     expect(s.of("2026-11-14", s.m2)).toMatchObject({ status: "moved", date: "2026-11-18" });
     expect(s.of("2026-11-14", s.m3)).toMatchObject({ status: "standard", date: "2026-11-17" }); // Monday full: m4, m5 away
+  });
+
+  it("the earlier duty picks its day first, regardless of the user ids", async () => {
+    // 4 Teilnehmer, minimum 3: only one may be away per Werktag. Fri 11-06 and Sat 11-07 both have Monday 11-09
+    // as Standardtag. The later duty's holder has the smaller user id, so a user-first order would give them Monday.
+    const team = seedTeam({ members: 4 });
+    const rotation = createRotation(
+      {
+        name: "Wochenenddienst",
+        calendarId: team.calendarId,
+        presetId: team.presetId,
+        memberIds: team.memberIds,
+        perShift: 1,
+        period: "day",
+        periodDays: null,
+        startDate: "2026-11-02",
+        startOffset: 0,
+        weekdays: [5, 6],
+        skipDates: [],
+        closedTitle: "Geschlossen",
+        entryTitle: "{Vorname} Dienst",
+        dayOffEnabled: false,
+        dayOffTitle: "{Vorname} dienstfrei",
+        dayOffTiming: "after",
+        dayOffExcludedIds: [],
+        yearlyFairness: false,
+        minPresent: null,
+        reinforcedDates: [],
+        holidayCalendarId: null,
+        holidayOpenDates: [],
+      },
+      team.ownerId
+    );
+    await runGeneration(rotation.id, "2026-11-02", "2026-11-08", team.ownerId, now);
+    const duty = (date: string) =>
+      db.select().from(rotationDuties).where(and(eq(rotationDuties.rotationId, rotation.id), eq(rotationDuties.date, date))).get()!.shiftId;
+    const [lo, hi] = [...team.memberIds].sort();
+    const seat = (date: string, userId: string) => {
+      db.delete(shiftSignups).where(eq(shiftSignups.shiftId, duty(date))).run();
+      db.insert(shiftSignups).values({ shiftId: duty(date), userId, signedUpBy: team.ownerId }).run();
+    };
+    seat("2026-11-06", hi);
+    seat("2026-11-07", lo);
+    db.update(rotations).set({ dayOffEnabled: true, minPresent: 3 }).where(eq(rotations.id, rotation.id)).run();
+    db.transaction((tx) => reconcileRotation(tx, rotation.id, now));
+    const of = (date: string, userId: string) =>
+      db.select().from(dayOffs).where(and(eq(dayOffs.shiftId, duty(date)), eq(dayOffs.userId, userId))).get()!;
+    expect(of("2026-11-06", hi)).toMatchObject({ status: "standard", date: "2026-11-09", standardDate: "2026-11-09" });
+    expect(of("2026-11-07", lo)).toMatchObject({ status: "standard", date: "2026-11-10", standardDate: "2026-11-09" });
   });
 });
 
