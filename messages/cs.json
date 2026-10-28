@@ -1454,7 +1454,7 @@
       "dayOffTimingBefore": "před službou (pondělí týdne služby)",
       "dayOffTimingHint": "Před službou: při výměně si každý ponechá své Dienstfrei; kdo převezme službu, žádné za ni nedostane.",
       "minPresentEnabled": "Minimální obsazení v pracovní dny",
-      "minPresentEnabledHint": "Tolik účastníků musí být přítomno od pondělí do pátku. Dienstfrei se vyhýbají plným dnům, u dovolené se zobrazí upozornění.",
+      "minPresentEnabledHint": "Tolik účastníků musí být přítomno od pondělí do pátku. Volno se vyhýbá plným dnům, u dovolené se zobrazí upozornění.",
       "minPresent": "Alespoň přítomno",
       "minPresentHint": "z {count} účastníků",
       "dayOffTitle": "Text volna",
@@ -1863,7 +1863,7 @@
       "text": "Vyber jiný pracovní den ve stejném týdnu.",
       "loadFailed": "Možné dny se nepodařilo načíst.",
       "none": "Žádný jiný den není možný.",
-      "full": "plno"
+      "full": "obsazeno"
     },
     "override": {
       "title": "Minimální obsazení nedosaženo",
@@ -2007,7 +2007,7 @@
     "requests": "Otevřené žádosti",
     "calendar": "Kalendář dovolených",
     "request": "Požádat o dovolenou",
-    "requestStaffing": "V {count, plural, one {# pracovní den} few {# pracovní dny} other {# pracovních dnech}} by tým byl nedostatečně obsazen: {dates}. Rozhodne správa.",
+    "requestStaffing": "V {count, plural, one {# pracovním dni} few {# pracovních dnech} other {# pracovních dnech}} by tým byl nedostatečně obsazen ({dates}). Rozhodne správa.",
     "enter": "Zapsat dovolenou",
     "person": "Osoba",
     "from": "Od",

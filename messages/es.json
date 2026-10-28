@@ -2007,7 +2007,7 @@
     "requests": "Solicitudes abiertas",
     "calendar": "Calendario de vacaciones",
     "request": "Solicitar vacaciones",
-    "requestStaffing": "En {count, plural, one {# día laborable} other {# días laborables}} el equipo quedaría sin personal suficiente: {dates}. La administración decide.",
+    "requestStaffing": "En {count, plural, one {# día laborable} other {# días laborables}} el equipo quedaría sin personal suficiente ({dates}). La administración decide.",
     "enter": "Registrar vacaciones",
     "person": "Persona",
     "from": "Desde",

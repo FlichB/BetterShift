@@ -1867,7 +1867,7 @@
     },
     "override": {
       "title": "Organico minimo non raggiunto",
-      "text": "Il {date} sarebbero presenti solo {present} partecipanti su almeno {minimum}. Concederlo comunque?",
+      "text": "Il {date} sarebbero presenti {present, plural, one {solo # partecipante} other {solo # partecipanti}} su almeno {minimum}. Concederlo comunque?",
       "confirm": "Concedi comunque"
     },
     "propose": {
@@ -2007,7 +2007,7 @@
     "requests": "Richieste aperte",
     "calendar": "Calendario ferie",
     "request": "Richiedi ferie",
-    "requestStaffing": "Per {count, plural, one {# giorno lavorativo} other {# giorni lavorativi}} il team sarebbe sotto organico: {dates}. Decide la gestione.",
+    "requestStaffing": "Per {count, plural, one {# giorno lavorativo} other {# giorni lavorativi}} il team sarebbe sotto organico ({dates}). Decide la gestione.",
     "enter": "Inserisci ferie",
     "person": "Persona",
     "from": "Dal",

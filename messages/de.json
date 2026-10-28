@@ -2007,7 +2007,7 @@
     "requests": "Offene Anträge",
     "calendar": "Urlaubskalender",
     "request": "Urlaub beantragen",
-    "requestStaffing": "An {count, plural, one {# Werktag} other {# Werktagen}} wäre das Team unterbesetzt: {dates}. Die Verwaltung entscheidet.",
+    "requestStaffing": "An {count, plural, one {# Werktag} other {# Werktagen}} wäre das Team unterbesetzt ({dates}). Die Verwaltung entscheidet.",
     "enter": "Urlaub eintragen",
     "person": "Person",
     "from": "Von",

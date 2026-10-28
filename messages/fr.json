@@ -1867,7 +1867,7 @@
     },
     "override": {
       "title": "Effectif minimum non atteint",
-      "text": "Le {date}, seuls {present} participants sur au moins {minimum} seraient présents. L'accorder quand même ?",
+      "text": "Le {date}, {present, plural, one {seul # participant} other {seuls # participants}} sur au moins {minimum} seraient présents. L'accorder quand même ?",
       "confirm": "Accorder quand même"
     },
     "propose": {
@@ -2007,7 +2007,7 @@
     "requests": "Demandes ouvertes",
     "calendar": "Calendrier des congés",
     "request": "Demander un congé",
-    "requestStaffing": "Sur {count, plural, one {# jour ouvré} other {# jours ouvrés}}, l'équipe serait en sous-effectif : {dates}. La gestion décide.",
+    "requestStaffing": "Sur {count, plural, one {# jour ouvré} other {# jours ouvrés}}, l'équipe serait en sous-effectif ({dates}). La gestion décide.",
     "enter": "Saisir un congé",
     "person": "Personne",
     "from": "Du",
@@ -2053,7 +2053,7 @@
       "before": "Avant",
       "after": "Après",
       "understaffed": "Le {date}, seules {filled} places sur {capacity} sont occupées.",
-      "staffing": "Le {date}, seules {present} personnes sur au moins {minimum} seraient présentes.",
+      "staffing": "Le {date}, {present, plural, one {seule # personne} other {seules # personnes}} sur au moins {minimum} seraient présentes.",
       "hint": "Après confirmation, les services sont redistribués à partir du congé. Les personnes concernées reçoivent de nouvelles invitations Outlook."
     },
     "done": {
