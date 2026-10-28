@@ -19,6 +19,10 @@ const fail = (code: ConstructorParameters<typeof VacationServiceError>[0]): neve
   throw new VacationServiceError(code);
 };
 const today = (now: Date) => formatDateToLocal(now);
+// The write callbacks of runWithReplan run after an await: the status checked up front may be stale by then.
+const ensureChanged = (result: { changes: number }): void => {
+  if (result.changes === 0) fail("wrongStatus");
+};
 
 function loadVacation(id: string): Vacation {
   return db.select().from(vacations).where(eq(vacations.id, id)).get() ?? fail("notFound");
@@ -72,7 +76,9 @@ export async function approveVacation(id: string, actorId: string, now: Date): P
   if (error) fail(error);
   const { changedFrom } = resolveAction(db, { kind: "approve", vacationId: id }, today(now));
   await runWithReplan(v.userId, changedFrom, actorId, now, (tx) => {
-    tx.update(vacations).set({ status: "approved", decidedBy: actorId, decidedAt: now, updatedAt: now }).where(eq(vacations.id, id)).run();
+    ensureChanged(tx.update(vacations).set({ status: "approved", decidedBy: actorId, decidedAt: now, updatedAt: now }).where(and(eq(vacations.id, id), eq(vacations.status, "pending"))).run());
+    const late = checkNewRange({ from: v.startDate, to: v.endDate }, today(now), blockingRanges(tx, v.userId, { vacationId: id }));
+    if (late) fail(late);
     enqueueVacation(tx, "vacation_approved", id, actorId, now);
   });
   return reload(id);
@@ -84,6 +90,8 @@ export async function enterVacation(userId: string, body: RangeBody, actorId: st
   if (error) fail(error);
   const { changedFrom } = resolveAction(db, { kind: "enter", userId, startDate: body.startDate, endDate: body.endDate }, today(now));
   const id = await runWithReplan(userId, changedFrom, actorId, now, (tx) => {
+    const late = checkNewRange({ from: body.startDate, to: body.endDate }, today(now), blockingRanges(tx, userId));
+    if (late) fail(late);
     const row = tx
       .insert(vacations)
       .values({
@@ -113,7 +121,9 @@ export async function changeVacation(id: string, range: { startDate: string; end
   if (error) fail(error);
   const { changedFrom } = resolveAction(db, { kind: "change", vacationId: id, ...range }, today(now));
   await runWithReplan(v.userId, changedFrom, actorId, now, (tx) => {
-    tx.update(vacations).set({ startDate: range.startDate, endDate: range.endDate, updatedAt: now }).where(eq(vacations.id, id)).run();
+    ensureChanged(tx.update(vacations).set({ startDate: range.startDate, endDate: range.endDate, updatedAt: now }).where(and(eq(vacations.id, id), eq(vacations.status, "approved"))).run());
+    const late = checkChange({ from: v.startDate, to: v.endDate }, { from: range.startDate, to: range.endDate }, today(now), blockingRanges(tx, v.userId, { vacationId: id }));
+    if (late) fail(late);
     // A pending change request of the person is answered by the direct change.
     tx.update(vacationChanges).set({ status: "rejected", decidedBy: actorId, decidedAt: now, updatedAt: now }).where(and(eq(vacationChanges.vacationId, id), eq(vacationChanges.status, "pending"))).run();
     enqueueVacation(tx, "vacation_changed", id, actorId, now, { previousStart: v.startDate, previousEnd: v.endDate });
@@ -128,7 +138,7 @@ export async function cancelVacation(id: string, actorId: string, now: Date): Pr
   if (error) fail(error);
   const { changedFrom } = resolveAction(db, { kind: "cancel", vacationId: id }, today(now));
   await runWithReplan(v.userId, changedFrom, actorId, now, (tx) => {
-    tx.update(vacations).set({ status: "cancelled", decidedBy: actorId, decidedAt: now, updatedAt: now }).where(eq(vacations.id, id)).run();
+    ensureChanged(tx.update(vacations).set({ status: "cancelled", decidedBy: actorId, decidedAt: now, updatedAt: now }).where(and(eq(vacations.id, id), eq(vacations.status, "approved"))).run());
     tx.update(vacationChanges).set({ status: "rejected", decidedBy: actorId, decidedAt: now, updatedAt: now }).where(and(eq(vacationChanges.vacationId, id), eq(vacationChanges.status, "pending"))).run();
     enqueueVacation(tx, "vacation_cancelled", id, actorId, now);
   });
@@ -188,9 +198,14 @@ export async function approveChange(changeId: string, actorId: string, now: Date
   if (error) fail(error);
   const { changedFrom } = resolveAction(db, { kind: "approveChange", changeId }, today(now));
   await runWithReplan(v.userId, changedFrom, actorId, now, (tx) => {
-    tx.update(vacationChanges).set({ status: "approved", decidedBy: actorId, decidedAt: now, updatedAt: now }).where(eq(vacationChanges.id, changeId)).run();
-    if (c.kind === "cancel") tx.update(vacations).set({ status: "cancelled", updatedAt: now }).where(eq(vacations.id, v.id)).run();
-    else tx.update(vacations).set({ startDate: c.startDate!, endDate: c.endDate!, updatedAt: now }).where(eq(vacations.id, v.id)).run();
+    ensureChanged(tx.update(vacationChanges).set({ status: "approved", decidedBy: actorId, decidedAt: now, updatedAt: now }).where(and(eq(vacationChanges.id, changeId), eq(vacationChanges.status, "pending"))).run());
+    const approvedOnly = and(eq(vacations.id, v.id), eq(vacations.status, "approved"));
+    if (c.kind === "cancel") ensureChanged(tx.update(vacations).set({ status: "cancelled", updatedAt: now }).where(approvedOnly).run());
+    else {
+      ensureChanged(tx.update(vacations).set({ startDate: c.startDate!, endDate: c.endDate!, updatedAt: now }).where(approvedOnly).run());
+      const late = checkChange({ from: v.startDate, to: v.endDate }, { from: c.startDate!, to: c.endDate! }, today(now), blockingRanges(tx, v.userId, { vacationId: v.id }));
+      if (late) fail(late);
+    }
     // An approved cancel request reads like a cancellation for the person.
     if (c.kind === "cancel") enqueueVacation(tx, "vacation_cancelled", v.id, actorId, now, { changeId });
     else enqueueVacation(tx, "vacation_change_approved", v.id, actorId, now, { changeId, previousStart: v.startDate, previousEnd: v.endDate });

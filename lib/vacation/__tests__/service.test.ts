@@ -103,3 +103,22 @@ describe("listBoard", () => {
     expect(boss.people.map((p) => p.id)).toContain(s.m1);
   });
 });
+
+describe("write-time guards", () => {
+  it("lets exactly one of two concurrent approvals through", async () => {
+    const s = await seedDuties();
+    const v = await requestVacation(s.m0, { startDate: "2026-11-05", endDate: "2026-11-09", note: null }, now);
+    const results = await Promise.allSettled([approveVacation(v.id, s.team.ownerId, now), approveVacation(v.id, s.team.ownerId, now)]);
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    const failed = results.find((r) => r.status === "rejected") as PromiseRejectedResult;
+    expect(failed.reason).toMatchObject({ code: "wrongStatus" });
+    expect(kinds().filter((k) => k === "vacation_approved")).toHaveLength(1);
+  });
+
+  it("refuses to approve a withdrawn request", async () => {
+    const s = await seedDuties();
+    const v = await requestVacation(s.m1, { startDate: "2026-12-01", endDate: "2026-12-03", note: null }, now);
+    db.update(vacations).set({ status: "withdrawn" }).where(eq(vacations.id, v.id)).run();
+    await expect(approveVacation(v.id, s.team.ownerId, now)).rejects.toMatchObject({ code: "wrongStatus" });
+  });
+});
