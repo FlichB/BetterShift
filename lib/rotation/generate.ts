@@ -71,23 +71,35 @@ function roundCost(
   history: History,
   idealGap: number,
   pos: (duty: number) => number,
-  withDrift = true
+  withDrift = true,
+  anchorNew = false
 ): number {
   const lastDuty = new Map<string, number>();
   const lastGroup = new Map<string, string[]>();
   const pairs = new Map<string, PairStat>();
   const served = new Map<string, number>();
+  // [fork] Jahresausgleich (anchorNew): a Teilnehmer who never served before this round starts
+  // their beat at their first duty in it, instead of pricing their second duty as NaN. Off on
+  // the plain path, whose output must stay as it is.
+  const firstPos = new Map<string, number>();
   let cost = 0;
 
   groups.forEach((group, j) => {
     const t = duties[j];
     for (const u of group) {
       const prev = lastDuty.get(u) ?? history.lastDuty.get(u);
-      if (prev === undefined) continue;
+      if (prev === undefined) {
+        if (withDrift && anchorNew) {
+          firstPos.set(u, pos(t));
+          served.set(u, 1);
+        }
+        continue;
+      }
       if (t - prev <= 1) cost += BACK_TO_BACK;
       if (withDrift) {
         const count = served.get(u) ?? (history.served.get(u) as number);
-        const drift = Math.abs(pos(t) - (history.firstPos.get(u) as number) - count * idealGap);
+        const anchor = firstPos.get(u) ?? (history.firstPos.get(u) as number);
+        const drift = Math.abs(pos(t) - anchor - count * idealGap);
         cost += DRIFT * drift ** 2 + (drift > DRIFT_LIMIT ? OFF_BEAT : 0);
         served.set(u, count + 1);
       }
@@ -389,7 +401,7 @@ export function* dutyGroups(
       const movable = groups.map((_, j) => fixed[j] === 0 && complete[j]);
       const settle = owed;
       groups = improveRound(groups, fixed, movable, (g) =>
-        roundCost(g, duties, history, idealGap, pos, !offBeat) + (settle ? owedFirstCost(g, settle) : 0)
+        roundCost(g, duties, history, idealGap, pos, !offBeat, yearly !== undefined) + (settle ? owedFirstCost(g, settle) : 0)
       );
     }
 

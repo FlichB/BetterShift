@@ -429,6 +429,32 @@ describe("Jahresausgleich (SPEC 12.41)", () => {
     expect(yearlyRun.dates.length).toBeLessThanOrEqual(repeats({ ...rule, yearlyFairness: false }).dates.length);
   });
 
+  it.each([
+    ["10/3", [...eight, "i", "j"]],
+    ["11/3", [...eight, "i", "j", "k"]],
+  ])("%s from 7.12.: a Teilnehmer who did not serve in December still gets a polished January", (_label, memberIds) => {
+    // Starting late in December leaves some Teilnehmer without a duty before New Year; their second
+    // seat in the first plain round of 2027 used to price the round as NaN, so it stayed unpolished.
+    const rule: RotationRule = {
+      ...yearly,
+      memberIds,
+      perShift: 3,
+      startDate: "2026-12-07",
+      deltaOverrides: { 2027: Object.fromEntries(memberIds.map((u) => [u, 0])) },
+    };
+    const duties = generateDuties(rule, "2026-12-07", "2027-12-31");
+    const lastGroup = new Map<string, string[]>();
+    let repeats = 0;
+    for (const d of duties) {
+      if (d.date >= "2027-01-01") {
+        for (const u of d.userIds) if (d.userIds.some((v) => v !== u && lastGroup.get(u)?.includes(v))) repeats++;
+      }
+      for (const u of d.userIds) lastGroup.set(u, d.userIds);
+    }
+    expect(audit(duties.map((d) => d.userIds)).minGap).toBeGreaterThanOrEqual(2);
+    expect(repeats).toBeLessThanOrEqual(3);
+  });
+
   it("settles an override of +1 first: c serves its first 2027 duty no earlier than everyone else", () => {
     const rule = { ...yearly, deltaOverrides: { 2027: { c: 1 } } };
     const duties = generateDuties(rule, "2027-01-01", "2027-03-31");
