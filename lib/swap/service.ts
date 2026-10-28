@@ -277,7 +277,7 @@ function applyMove(tx: Tx, move: SlotMove, actorId: string, now: Date): void {
       })
       .run();
   }
-  transferDayOff(tx, move, actorId, now); // [fork] Dienstfrei follows the Platz (SPEC 12.38)
+  transferDayOff(tx, move, now); // [fork] Dienstfrei follows the Platz (SPEC 12.38)
 }
 
 /** Cancels the open offers of Plätze their holder no longer has (or is about to lose). */

@@ -5,15 +5,20 @@ import { outlookWorker } from "@/lib/outlook/worker";
 const HOUR_MS = 3_600_000;
 let timer: ReturnType<typeof setInterval> | null = null;
 
-function tick(): void {
+/** Runs one step of the hourly job; a failing step is logged and never skips the next ones. */
+function step(name: string, run: () => unknown): void {
   try {
-    const now = new Date();
-    reconcileAll(now);
-    sendReminders(now);
-    outlookWorker.kick();
+    run();
   } catch (error) {
-    console.error("[DayOffJob] Hourly run failed:", error);
+    console.error(`[DayOffJob] ${name} failed:`, error);
   }
+}
+
+function tick(): void {
+  const now = new Date();
+  step("Reconcile", () => reconcileAll(now));
+  step("Reminders", () => sendReminders(now));
+  step("Mail kick", () => outlookWorker.kick());
 }
 
 export const dayOffJob = {

@@ -81,9 +81,10 @@ function dropRow(tx: Tx, row: DayOff, reason: DropReason, now: Date, result: Rec
  * Gives a Dienstfrei to the new holder of its Platz (D14): standard/moved → standard,
  * locked/agreed → locked (without a date). A standard row keeps its old standard date
  * as a placeholder until the next revalidation recomputes it for the new holder.
- * Open proposals are voided; a locked result mails the new holder.
+ * Open proposals are voided; a locked result mails the new holder. The mail has no actor:
+ * the new holder may be the one who triggered the swap and must still get it.
  */
-function handOver(tx: Tx, row: DayOff, newUserId: string, actorId: string | null, now: Date): DayOff {
+function handOver(tx: Tx, row: DayOff, newUserId: string, now: Date): DayOff {
   const status = transferStatus(row.status);
   if (!status) return row;
   const locked = status === "locked";
@@ -103,7 +104,7 @@ function handOver(tx: Tx, row: DayOff, newUserId: string, actorId: string | null
     .returning()
     .get();
   voidOpenProposals(tx, row.id, now);
-  if (locked) enqueueDayOff(tx, "day_off_locked", row.id, "holder", actorId, now);
+  if (locked) enqueueDayOff(tx, "day_off_locked", row.id, "holder", null, now);
   return updated;
 }
 
@@ -148,14 +149,14 @@ export function revalidateRow(tx: Tx, rowId: string, now: Date): "reset" | null 
 }
 
 /** Hands the Dienstfrei of a moved Platz to its new holder and revalidates it for them (SPEC 12.38). */
-export function transferDayOff(tx: Tx, move: SlotMove, actorId: string | null, now: Date): void {
+export function transferDayOff(tx: Tx, move: SlotMove, now: Date): void {
   const row = tx
     .select()
     .from(dayOffs)
     .where(and(eq(dayOffs.shiftId, move.shiftId), eq(dayOffs.userId, move.fromUserId), ne(dayOffs.status, "dropped")))
     .get();
   if (!row || isFrozen(row, formatDateToLocal(now))) return;
-  handOver(tx, row, move.toUserId, actorId, now);
+  handOver(tx, row, move.toUserId, now);
   revalidateRow(tx, row.id, now);
 }
 
@@ -222,7 +223,7 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
     const newcomers = [...holders].filter((u) => !withRow.has(u)).sort();
 
     while (orphans.length > 0 && newcomers.length > 0) {
-      handOver(tx, orphans.shift()!, newcomers.shift()!, null, now);
+      handOver(tx, orphans.shift()!, newcomers.shift()!, now);
       result.transferred++;
     }
     for (const orphan of orphans) dropRow(tx, orphan, "seatRemoved", now, result);
@@ -268,11 +269,18 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
   return result;
 }
 
-/** Reconciles every rotation, one transaction each, and logs the audit events afterwards. */
+/**
+ * Reconciles every rotation, one transaction each, and logs the audit events afterwards.
+ * A failing rotation rolls back alone and is logged; the others still run.
+ */
 export function reconcileAll(now: Date): void {
   const events: ReconcileEvent[] = [];
   for (const { id } of db.select({ id: rotations.id }).from(rotations).all()) {
-    events.push(...db.transaction((tx) => reconcileRotation(tx, id, now)).events);
+    try {
+      events.push(...db.transaction((tx) => reconcileRotation(tx, id, now)).events);
+    } catch (error) {
+      console.error("[dayoff] reconcile failed", id, error);
+    }
   }
   logReconcileEventsLater(events);
 }

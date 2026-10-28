@@ -11,6 +11,7 @@ import { lockDayOff, proposeDates, reconcileRotation, sendReminders } from "@/li
 import { setPreferences } from "@/lib/notify/preferences";
 import { getMailTranslator } from "@/lib/notify/translator";
 import { getOutlookConfig } from "@/lib/outlook/config";
+import { acceptOffer, createOffer } from "@/lib/swap/service";
 import { rotations } from "@/lib/rotation/schema";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
 import { FakeGraph } from "@/tests/helpers/fake-graph";
@@ -42,6 +43,21 @@ describe("Dienstfrei mails", () => {
     expect((await resolveDayOffRecipients("holder", row, calendarId, s.team.ownerId)).map((r) => r.id)).toEqual([s.m0]);
     setPreferences(s.m0, { offersToAll: true, offersToMe: true, myOffers: true, myDayOffs: false, dayOffRequests: true });
     expect(await resolveDayOffRecipients("holder", row, calendarId, s.team.ownerId)).toEqual([]);
+  });
+
+  it("a locked Dienstfrei taken over by accepting a swap mails the acceptor (the new holder)", async () => {
+    const s = await setup();
+    const row = s.of("2026-11-07", s.m0);
+    lockDayOff(row.id, "Inventur", s.team.ownerId, now);
+    db.delete(dayOffOutbox).run();
+    const offer = createOffer({ shiftId: s.duty("2026-11-07"), type: "exchange", targetUserId: null, requestedShiftId: s.duty("2026-11-14"), note: null }, s.m0, now);
+    acceptOffer(offer.id, s.m2, null, now);
+    const queued = outbox().find((o) => o.kind === "day_off_locked" && o.dayOffId === row.id)!;
+    expect(queued).toMatchObject({ audience: "holder" });
+    const current = db.select().from(dayOffs).where(eq(dayOffs.id, row.id)).get()!;
+    expect(current.userId).toBe(s.m2);
+    const ids = (await resolveDayOffRecipients("holder", current, s.team.calendarId, queued.actorUserId)).map((r) => r.id);
+    expect(ids).toEqual([s.m2]);
   });
 
   it("proposals go to the managers, never to the actor", async () => {
