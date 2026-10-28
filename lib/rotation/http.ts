@@ -6,6 +6,7 @@ const STATUS: Record<RotationServiceError["code"], number> = {
   presetMissing: 400,
   presetArchived: 400,
   signupsDisabled: 400,
+  notMember: 400, // [fork] Jahresausgleich
 };
 
 /** Maps service errors to `{ error: code }` responses the UI translates via rotation.errors.<code>. */

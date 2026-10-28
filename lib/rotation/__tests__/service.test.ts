@@ -2,13 +2,16 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { shiftPresets, shiftSignups, shifts } from "@/lib/db/schema";
+import { generateDuties } from "@/lib/rotation/generate";
 import { rotationDuties, rotationSlotLocks } from "@/lib/rotation/schema";
 import {
   createRotation,
   deleteRotation,
+  getYearDeltaTables,
   getRotation,
   previewGeneration,
   runGeneration,
+  setYearDeltaOverride,
   suggestOffsetFor,
   updateRotation,
   RotationServiceError,
@@ -448,5 +451,76 @@ describe("joinedOn", () => {
   it("uses startDate when the rotation starts before today", () => {
     const created = createRotation({ ...input, startDate: "2026-10-05" }, team.ownerId, now);
     expect(created.memberSince[input.memberIds[0]]).toBe("2026-10-05");
+  });
+});
+
+describe("Jahresausgleich", () => {
+  const range = ["2026-11-01", "2026-12-31"] as const;
+
+  function swapSeat(rotationId: string, date: string, from: string, to: string) {
+    const duty = dutiesOf(rotationId).find((d) => d.date === date)!;
+    db.delete(shiftSignups).where(and(eq(shiftSignups.shiftId, duty.shiftId), eq(shiftSignups.userId, from))).run();
+    db.insert(shiftSignups).values({ shiftId: duty.shiftId, userId: to, signedUpBy: to }).run();
+    db.insert(rotationSlotLocks).values({ shiftId: duty.shiftId, userId: to, replacesUserId: from }).run();
+  }
+
+  it("counts the current holders of 2026 for 2027", async () => {
+    const r = createRotation({ ...input, yearlyFairness: true }, team.ownerId, now);
+    await runGeneration(r.id, ...range, team.ownerId, now);
+    const [m1, m2, m3] = team.memberIds;
+    expect(dutiesOf(r.id).find((d) => d.date === "2026-11-07")!.userIds.sort()).toEqual([m1, m2].sort());
+    swapSeat(r.id, "2026-11-07", m2, m3);
+
+    const tables = getYearDeltaTables(r.id, now);
+    expect(tables.map((t) => t.year)).toEqual([2027]);
+    const row = (u: string) => tables[0].rows.find((x) => x.userId === u)!;
+    expect(row(m2)).toMatchObject({ held: 1, autoDelta: 0, fullYear: true, joinedOn: "2026-10-21" });
+    expect(row(m3)).toMatchObject({ held: 3, autoDelta: 2 });
+    expect(row(m1)).toMatchObject({ held: 2, autoDelta: 1 });
+  });
+
+  it("gives a Teilnehmer who joined after the first duty Delta 0", async () => {
+    const extra = seedTeam({ members: 1 }).memberIds[0];
+    const r = createRotation({ ...input, yearlyFairness: true }, team.ownerId, now);
+    updateRotation(r.id, { ...input, yearlyFairness: true, memberIds: [...input.memberIds, extra] }, new Date(2026, 10, 10, 12, 0));
+    const row = getYearDeltaTables(r.id, now)[0].rows.find((x) => x.userId === extra)!;
+    expect(row).toMatchObject({ fullYear: false, autoDelta: 0, joinedOn: "2026-11-10" });
+  });
+
+  it("stores, applies and removes an override; rejects non-members", () => {
+    const r = createRotation({ ...input, yearlyFairness: true }, team.ownerId, now);
+    const m1 = team.memberIds[0];
+    setYearDeltaOverride(r.id, { year: 2027, userId: m1, delta: 3 }, team.ownerId, now);
+    expect(getYearDeltaTables(r.id, now)[0].rows.find((x) => x.userId === m1)).toMatchObject({ override: 3, delta: 3 });
+    setYearDeltaOverride(r.id, { year: 2027, userId: m1, delta: 1 }, team.ownerId, now);
+    expect(getYearDeltaTables(r.id, now)[0].rows.find((x) => x.userId === m1)).toMatchObject({ override: 1 });
+    setYearDeltaOverride(r.id, { year: 2027, userId: m1, delta: null }, team.ownerId, now);
+    expect(getYearDeltaTables(r.id, now)[0].rows.find((x) => x.userId === m1)).toMatchObject({ override: null });
+    expect(() => setYearDeltaOverride(r.id, { year: 2027, userId: team.ownerId, delta: 1 }, team.ownerId, now)).toThrow(
+      RotationServiceError
+    );
+  });
+
+  it("generation settles the Delta: an override of 1 puts its holder last in early 2027", async () => {
+    const r = createRotation({ ...input, yearlyFairness: true }, team.ownerId, now);
+    const m1 = team.memberIds[0];
+    setYearDeltaOverride(r.id, { year: 2027, userId: m1, delta: 1 }, team.ownerId, now);
+    await runGeneration(r.id, "2026-11-01", "2027-03-31", team.ownerId, now);
+    const in2027 = dutiesOf(r.id).filter((d) => d.date >= "2027-01-01" && d.kind === "duty");
+    const first = (u: string) => in2027.findIndex((d) => d.userIds.includes(u));
+    const others = team.memberIds.filter((u) => u !== m1).map(first);
+    expect(first(m1)).toBeGreaterThanOrEqual(Math.max(...others));
+  });
+
+  it("leaves the plan unchanged while the switch is off", async () => {
+    const off = createRotation(input, team.ownerId, now);
+    setYearDeltaOverride(off.id, { year: 2027, userId: team.memberIds[0], delta: 3 }, team.ownerId, now);
+    await runGeneration(off.id, "2026-11-01", "2027-03-31", team.ownerId, now);
+    const plain = generateDuties(
+      { memberIds: input.memberIds, perShift: 2, period: "week", periodDays: null, startDate: "2026-11-02", startOffset: 0, weekdays: [6], closedDates: [], openHolidays: [], reinforcedDates: [] },
+      "2026-11-01",
+      "2027-03-31"
+    );
+    expect(dutiesOf(off.id).map((d) => d.userIds.sort().join())).toEqual(plain.map((d) => [...d.userIds].sort().join()));
   });
 });

@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, lt, lte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendars, shiftPresets, shiftSignups, shifts } from "@/lib/db/schema";
+import type { YearDeltaTable } from "@/lib/rotation/yearly"; // [fork] Jahresausgleich
 import { formatDateToLocal, parseLocalDate } from "@/lib/date-utils";
 import { replaceShiftSegments, withPresetSegments } from "@/lib/shift-time-ranges";
 import {
@@ -13,7 +14,7 @@ import { reconcileRotation, type ReconcileEvent } from "@/lib/dayoff/service"; /
 import { logReconcileEventsLater } from "@/lib/dayoff/audit"; // [fork] Dienstfrei
 import { CLOSURE_FIELDS, resolveClosedDates } from "@/lib/rotation/closures";
 import { hasStarted } from "@/lib/rotation/dates";
-import { generateDays, suggestStartOffset } from "@/lib/rotation/generate";
+import { generateDays, suggestStartOffset, yearSummary } from "@/lib/rotation/generate";
 import { loadHolidays } from "@/lib/rotation/holidays";
 import {
   planClosures,
@@ -27,6 +28,7 @@ import {
   rotationDuties,
   rotationMembers,
   rotationSlotLocks,
+  rotationYearDeltas,
   rotations,
   type Rotation,
 } from "@/lib/rotation/schema";
@@ -43,7 +45,7 @@ export interface RotationDetail extends Rotation {
   memberSince: Record<string, string>;
 }
 
-export type RotationError = "notFound" | "presetMissing" | "presetArchived" | "signupsDisabled";
+export type RotationError = "notFound" | "presetMissing" | "presetArchived" | "signupsDisabled" | "notMember";
 
 export class RotationServiceError extends Error {
   constructor(public readonly code: RotationError) {
@@ -110,6 +112,43 @@ function begunClosures(reader: Tx | typeof db, r: RotationDetail, today: string)
     .map((row) => ({ date: row.date, reason: row.title, source: "holiday" }));
 }
 
+/**
+ * [fork] Jahresausgleich: real holders per Diensttag for counting Plätze. Begun days and days with a
+ * Gesperrter Platz are authoritative; other future seats are only plan, so the generator counts its own.
+ */
+function loadHeldDuties(reader: Tx | typeof db, rotationId: string, today: string): Record<string, string[]> {
+  const rows = reader
+    .select({ shiftId: rotationDuties.shiftId, date: rotationDuties.date, userId: shiftSignups.userId })
+    .from(rotationDuties)
+    .leftJoin(shiftSignups, eq(shiftSignups.shiftId, rotationDuties.shiftId))
+    .where(and(eq(rotationDuties.rotationId, rotationId), eq(rotationDuties.kind, "duty")))
+    .all();
+  const lockedShifts = new Set(
+    reader
+      .select({ shiftId: rotationSlotLocks.shiftId })
+      .from(rotationSlotLocks)
+      .innerJoin(rotationDuties, eq(rotationDuties.shiftId, rotationSlotLocks.shiftId))
+      .where(eq(rotationDuties.rotationId, rotationId))
+      .all()
+      .map((l) => l.shiftId)
+  );
+  const held: Record<string, string[]> = {};
+  for (const row of rows) {
+    if (row.date > today && !lockedShifts.has(row.shiftId)) continue;
+    const list = (held[row.date] ??= []);
+    if (row.userId) list.push(row.userId);
+  }
+  return held;
+}
+
+function loadDeltaOverrides(reader: Tx | typeof db, rotationId: string): Record<number, Record<string, number>> {
+  const overrides: Record<number, Record<string, number>> = {};
+  for (const row of reader.select().from(rotationYearDeltas).where(eq(rotationYearDeltas.rotationId, rotationId)).all()) {
+    (overrides[row.year] ??= {})[row.userId] = row.delta;
+  }
+  return overrides;
+}
+
 function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date): RotationRule {
   // Seat rounds make a duty depend on the sizes of later duties in its round, so a Feiertag
   // after `to` can still matter. Closures after the last verstärkter Tag cannot change the
@@ -137,6 +176,11 @@ function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date
     closedDates,
     openHolidays,
     reinforcedDates: r.reinforcedDates,
+    // [fork] Jahresausgleich (SPEC 12.41)
+    yearlyFairness: r.yearlyFairness,
+    memberSince: r.memberSince,
+    heldDuties: r.yearlyFairness ? loadHeldDuties(reader, r.id, formatDateToLocal(now)) : {},
+    deltaOverrides: r.yearlyFairness ? loadDeltaOverrides(reader, r.id) : {},
   };
 }
 
@@ -531,6 +575,42 @@ export function suggestOffsetFor(id: string, restartDate: string, memberIds: str
     .all()
     .map((s) => s.userId);
   return suggestStartOffset(memberIds, userIds, loadRotation(db, id).perShift);
+}
+
+/** [fork] Jahresausgleich: the Delta tables of this year and the next, as the generator settles them. */
+export function getYearDeltaTables(id: string, now: Date): YearDeltaTable[] {
+  const rotation = loadRotation(db, id);
+  const year = now.getFullYear();
+  // Counted as if switched on, so a manager sees the numbers before turning it on.
+  const rule = toRule(db, { ...rotation, yearlyFairness: true }, `${year + 1}-12-31`, now);
+  return [year, year + 1].flatMap((y) => {
+    const rows = yearSummary(rule, y);
+    return rows ? [{ year: y, rows: rows.map((r) => ({ ...r, joinedOn: rotation.memberSince[r.userId] ?? rotation.startDate })) }] : [];
+  });
+}
+
+/** [fork] Jahresausgleich: sets (or with delta null removes) a manager's Delta. */
+export function setYearDeltaOverride(
+  id: string,
+  { year, userId, delta }: { year: number; userId: string; delta: number | null },
+  actorId: string | null,
+  now: Date
+): RotationDetail {
+  const rotation = loadRotation(db, id);
+  if (!rotation.memberIds.includes(userId)) throw new RotationServiceError("notMember");
+  const key = and(eq(rotationYearDeltas.rotationId, id), eq(rotationYearDeltas.year, year), eq(rotationYearDeltas.userId, userId));
+  if (delta === null) {
+    db.delete(rotationYearDeltas).where(key).run();
+  } else {
+    db.insert(rotationYearDeltas)
+      .values({ rotationId: id, year, userId, delta, setBy: actorId, setAt: now })
+      .onConflictDoUpdate({
+        target: [rotationYearDeltas.rotationId, rotationYearDeltas.year, rotationYearDeltas.userId],
+        set: { delta, setBy: actorId, setAt: now },
+      })
+      .run();
+  }
+  return rotation;
 }
 
 export function deleteRotation(

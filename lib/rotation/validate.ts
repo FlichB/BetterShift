@@ -2,6 +2,7 @@ import { ENTRY_TITLE_DEFAULT, validateEntryTitle } from "@/lib/rotation/entry-ti
 import { DEFAULT_DAY_OFF_TITLE } from "@/lib/dayoff/types"; // [fork] Dienstfrei
 import { formatDateToLocal } from "@/lib/date-utils";
 import { isValidLocalDate, toDayNumber } from "@/lib/rotation/dates";
+import { MAX_YEAR_DELTA } from "@/lib/rotation/yearly"; // [fork] Jahresausgleich
 import { ROTATION_PERIODS, type ReinforcedDate, type RotationPeriod, type SkipDate } from "@/lib/rotation/types";
 
 export interface RotationInput {
@@ -217,4 +218,14 @@ export function validateRange(body: unknown): ValidationResult<{ from: string; t
   const span = toDayNumber(to) - toDayNumber(from);
   if (span < 0 || span > MAX_RANGE_DAYS) return fail("range");
   return { ok: true, value: { from, to } };
+}
+
+/** [fork] Jahresausgleich (SPEC 12.41): a manager's Delta for one Teilnehmer and year; null removes it. */
+export function validateYearDeltaOverride(body: unknown): ValidationResult<{ year: number; userId: string; delta: number | null }> {
+  if (typeof body !== "object" || body === null) return fail("yearDelta");
+  const { year, userId, delta } = body as Record<string, unknown>;
+  if (!isInt(year) || year < 2000 || year > 2100) return fail("yearDelta");
+  if (!isNonEmptyString(userId)) return fail("yearDelta");
+  if (delta !== null && (!isInt(delta) || delta < 0 || delta > MAX_YEAR_DELTA)) return fail("yearDelta");
+  return { ok: true, value: { year, userId, delta } };
 }

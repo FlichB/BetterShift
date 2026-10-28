@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkPastReinforcedDates, validateRange, validateRotationInput } from "@/lib/rotation/validate";
+import { checkPastReinforcedDates, validateRange, validateRotationInput, validateYearDeltaOverride } from "@/lib/rotation/validate";
 
 const valid = {
   name: "Samstagsdienst",
@@ -223,5 +223,24 @@ describe("yearlyFairness", () => {
     const on = validateRotationInput({ ...valid, yearlyFairness: true });
     expect(on.ok && on.value.yearlyFairness).toBe(true);
     expect(validateRotationInput({ ...valid, yearlyFairness: "yes" })).toEqual({ ok: false, error: "yearlyFairness" });
+  });
+});
+
+describe("validateYearDeltaOverride", () => {
+  it("accepts 0–52 or null for a year and user", () => {
+    expect(validateYearDeltaOverride({ year: 2027, userId: "u", delta: 3 })).toEqual({ ok: true, value: { year: 2027, userId: "u", delta: 3 } });
+    expect(validateYearDeltaOverride({ year: 2027, userId: "u", delta: null })).toEqual({ ok: true, value: { year: 2027, userId: "u", delta: null } });
+  });
+
+  it.each([
+    [{ year: 2027, userId: "u", delta: -1 }],
+    [{ year: 2027, userId: "u", delta: 53 }],
+    [{ year: 2027, userId: "u", delta: 1.5 }],
+    [{ year: 1999, userId: "u", delta: 1 }],
+    [{ year: 2027, userId: "", delta: 1 }],
+    [{ year: 2027, userId: "u" }],
+    [null],
+  ])("rejects %j", (body) => {
+    expect(validateYearDeltaOverride(body)).toEqual({ ok: false, error: "yearDelta" });
   });
 });
