@@ -1538,7 +1538,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} non è più un partecipante ma ha un posto scambiato.",
         "lockedWithoutDuty": "{date}: nessun turno è più previsto, ma esistono posti scambiati – il turno resta.",
-        "lockedOverCapacity": "{date}: più posti scambiati ({count}) di quelli ora previsti – il turno mantiene tutti i posti scambiati."
+        "lockedOverCapacity": "{date}: più posti scambiati ({count}) di quelli ora previsti – il turno mantiene tutti i posti scambiati.",
+        "understaffed": "{date}: solo {filled} posti su {capacity} occupati."
       },
       "unlock": "Rimuovi blocco",
       "skipReason": "Motivo della chiusura",
@@ -1618,7 +1619,11 @@
       "dayOffRequestsHint": "Quando i partecipanti propongono date per un giorno libero bloccato o attendono la tua risposta.",
       "notConfigured": "L'invio delle e-mail non è configurato su questo server. La tua scelta varrà non appena lo sarà.",
       "saveFailed": "Impossibile salvare l'impostazione.",
-      "loadFailed": "Impossibile caricare le impostazioni."
+      "loadFailed": "Impossibile caricare le impostazioni.",
+      "myVacations": "Le mie ferie",
+      "myVacationsHint": "Decisioni e modifiche sulle mie ferie",
+      "vacationRequests": "Richieste di ferie",
+      "vacationRequestsHint": "Nuove richieste e richieste di modifica dei partecipanti che gestisco"
     },
     "title": "Bacheca scambi",
     "subtitle": "Scambia i turni",
@@ -1983,6 +1988,68 @@
       "overlap": "Il periodo si sovrappone ad altre ferie.",
       "wrongStatus": "Non è più possibile in questo stato.",
       "changePending": "C'è già una richiesta di modifica aperta."
+    },
+    "tab": "Ferie",
+    "mine": "Le mie ferie",
+    "requests": "Richieste aperte",
+    "calendar": "Calendario ferie",
+    "request": "Richiedi ferie",
+    "enter": "Inserisci ferie",
+    "person": "Persona",
+    "from": "Dal",
+    "to": "Al",
+    "note": "Nota",
+    "reason": "Motivo",
+    "emptyMine": "Ancora nessuna ferie.",
+    "emptyRequests": "Nessuna richiesta aperta.",
+    "emptyCalendar": "Nessuna ferie quest'anno.",
+    "loadFailed": "Impossibile caricare le ferie.",
+    "rejectHint": "Indica a {name} il motivo del rifiuto.",
+    "requestCancelHint": "La gestione decide sull'annullamento.",
+    "status": {
+      "pending": "Richieste",
+      "approved": "Approvate",
+      "rejected": "Rifiutate",
+      "withdrawn": "Ritirate",
+      "cancelled": "Annullate"
+    },
+    "pendingChange": {
+      "change": "Modifica richiesta: {range}",
+      "cancel": "Annullamento richiesto"
+    },
+    "direct": "Inserite dalla gestione",
+    "actions": {
+      "withdraw": "Ritira",
+      "requestChange": "Richiedi modifica",
+      "requestCancel": "Richiedi annullamento",
+      "withdrawChange": "Ritira richiesta",
+      "approve": "Approva",
+      "reject": "Rifiuta",
+      "approveChange": "Approva modifica",
+      "rejectChange": "Rifiuta modifica",
+      "edit": "Modifica",
+      "cancel": "Annulla"
+    },
+    "preview": {
+      "title": "Effetto sui turni",
+      "loading": "Calcolo del nuovo piano …",
+      "none": "Nessun turno interessato.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Data",
+      "before": "Prima",
+      "after": "Dopo",
+      "understaffed": "Il {date} sono occupati solo {filled} posti su {capacity}.",
+      "hint": "Dopo la conferma, i turni vengono ridistribuiti a partire dalle ferie. Le persone interessate ricevono nuovi inviti Outlook."
+    },
+    "done": {
+      "requested": "Ferie richieste.",
+      "approved": "Ferie approvate, turni ridistribuiti.",
+      "rejected": "Richiesta rifiutata.",
+      "entered": "Ferie inserite, turni ridistribuiti.",
+      "changed": "Ferie modificate, turni ridistribuiti.",
+      "cancelled": "Ferie annullate, turni ridistribuiti.",
+      "withdrawn": "Ritirato.",
+      "changeRequested": "Modifica richiesta."
     }
   }
 }

@@ -165,7 +165,7 @@ export function RotationGenerator({
           <h3 className="text-sm font-medium">{t("rotation.generator.warnings")}</h3>
           {plan.warnings.map((w) => (
             <div
-              key={`${w.kind}-${w.shiftId}-${w.kind === "lockedNonMember" ? w.userId : ""}`}
+              key={/* [fork] understaffed may have no shiftId */ `${w.kind}-${w.date}-${w.shiftId ?? ""}-${w.kind === "lockedNonMember" ? w.userId : ""}`}
               className="flex flex-wrap items-center gap-2 text-sm"
             >
               <span className="flex-1">
@@ -173,6 +173,8 @@ export function RotationGenerator({
                   date: day(w.date),
                   user: w.kind === "lockedNonMember" ? name(w.userId) : "",
                   count: "userIds" in w ? w.userIds.length : 0,
+                  filled: w.kind === "understaffed" ? w.filled : 0, // [fork] Urlaub
+                  capacity: w.kind === "understaffed" ? w.capacity : 0, // [fork] Urlaub
                 })}
               </span>
               {w.kind === "lockedNonMember" && (

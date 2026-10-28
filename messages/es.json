@@ -1538,7 +1538,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} ya no participa, pero tiene una plaza intercambiada.",
         "lockedWithoutDuty": "{date}: Ya no hay ningún turno previsto, pero existen plazas intercambiadas: el turno se mantiene.",
-        "lockedOverCapacity": "{date}: Más plazas intercambiadas ({count}) de las previstas ahora; el turno conserva todas las plazas intercambiadas."
+        "lockedOverCapacity": "{date}: Más plazas intercambiadas ({count}) de las previstas ahora; el turno conserva todas las plazas intercambiadas.",
+        "understaffed": "{date}: Solo {filled} de {capacity} plazas ocupadas."
       },
       "unlock": "Quitar bloqueo",
       "skipReason": "Motivo del cierre",
@@ -1618,7 +1619,11 @@
       "dayOffRequestsHint": "Cuando los participantes proponen fechas para un día libre bloqueado o esperan tu respuesta.",
       "notConfigured": "El envío de correos no está configurado en este servidor. Tu elección se aplicará en cuanto lo esté.",
       "saveFailed": "No se pudo guardar el ajuste.",
-      "loadFailed": "No se pudieron cargar los ajustes."
+      "loadFailed": "No se pudieron cargar los ajustes.",
+      "myVacations": "Mis vacaciones",
+      "myVacationsHint": "Decisiones y cambios sobre mis vacaciones",
+      "vacationRequests": "Solicitudes de vacaciones",
+      "vacationRequestsHint": "Nuevas solicitudes y peticiones de cambio de los participantes que gestiono"
     },
     "title": "Bolsa de cambios",
     "subtitle": "Intercambiar turnos",
@@ -1983,6 +1988,68 @@
       "overlap": "El período se solapa con otras vacaciones.",
       "wrongStatus": "Ya no es posible en este estado.",
       "changePending": "Ya hay una solicitud de cambio abierta."
+    },
+    "tab": "Vacaciones",
+    "mine": "Mis vacaciones",
+    "requests": "Solicitudes abiertas",
+    "calendar": "Calendario de vacaciones",
+    "request": "Solicitar vacaciones",
+    "enter": "Registrar vacaciones",
+    "person": "Persona",
+    "from": "Desde",
+    "to": "Hasta",
+    "note": "Nota",
+    "reason": "Motivo",
+    "emptyMine": "Todavía no hay vacaciones.",
+    "emptyRequests": "No hay solicitudes abiertas.",
+    "emptyCalendar": "No hay vacaciones este año.",
+    "loadFailed": "No se pudieron cargar las vacaciones.",
+    "rejectHint": "Explica a {name} el motivo del rechazo.",
+    "requestCancelHint": "La gestión decide sobre la cancelación.",
+    "status": {
+      "pending": "Solicitadas",
+      "approved": "Aprobadas",
+      "rejected": "Rechazadas",
+      "withdrawn": "Retiradas",
+      "cancelled": "Canceladas"
+    },
+    "pendingChange": {
+      "change": "Cambio solicitado: {range}",
+      "cancel": "Cancelación solicitada"
+    },
+    "direct": "Registradas por la gestión",
+    "actions": {
+      "withdraw": "Retirar",
+      "requestChange": "Solicitar cambio",
+      "requestCancel": "Solicitar cancelación",
+      "withdrawChange": "Retirar solicitud",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "approveChange": "Aprobar cambio",
+      "rejectChange": "Rechazar cambio",
+      "edit": "Cambiar",
+      "cancel": "Cancelar"
+    },
+    "preview": {
+      "title": "Efecto en los turnos",
+      "loading": "Calculando el nuevo plan …",
+      "none": "Ningún turno afectado.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Fecha",
+      "before": "Antes",
+      "after": "Después",
+      "understaffed": "El {date} solo están ocupadas {filled} de {capacity} plazas.",
+      "hint": "Al confirmar, los turnos se redistribuyen a partir de las vacaciones. Las personas afectadas reciben nuevas invitaciones de Outlook."
+    },
+    "done": {
+      "requested": "Vacaciones solicitadas.",
+      "approved": "Vacaciones aprobadas, turnos redistribuidos.",
+      "rejected": "Solicitud rechazada.",
+      "entered": "Vacaciones registradas, turnos redistribuidos.",
+      "changed": "Vacaciones cambiadas, turnos redistribuidos.",
+      "cancelled": "Vacaciones canceladas, turnos redistribuidos.",
+      "withdrawn": "Retirado.",
+      "changeRequested": "Cambio solicitado."
     }
   }
 }

@@ -1538,7 +1538,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} už není účastník, ale má vyměněné místo.",
         "lockedWithoutDuty": "{date}: Žádná služba už není naplánovaná, ale existují vyměněná místa – služba zůstane.",
-        "lockedOverCapacity": "{date}: Víc vyměněných míst ({count}) než je teď plánováno – služba si ponechá všechna vyměněná místa."
+        "lockedOverCapacity": "{date}: Víc vyměněných míst ({count}) než je teď plánováno – služba si ponechá všechna vyměněná místa.",
+        "understaffed": "{date}: obsazeno jen {filled} z {capacity} míst."
       },
       "unlock": "Odstranit zámek",
       "skipReason": "Důvod zavření",
@@ -1618,7 +1619,11 @@
       "dayOffRequestsHint": "Když účastníci navrhují termíny pro zablokované volno nebo čekají na tvou odpověď.",
       "notConfigured": "Odesílání e-mailů není na tomto serveru nastaveno. Tvoje volba se uplatní, jakmile bude.",
       "saveFailed": "Nastavení se nepodařilo uložit.",
-      "loadFailed": "Nastavení se nepodařilo načíst."
+      "loadFailed": "Nastavení se nepodařilo načíst.",
+      "myVacations": "Moje dovolené",
+      "myVacationsHint": "Rozhodnutí a změny k mé dovolené",
+      "vacationRequests": "Žádosti o dovolenou",
+      "vacationRequestsHint": "Nové žádosti a žádosti o změnu od účastníků, které spravuji"
     },
     "title": "Burza výměn",
     "subtitle": "Výměna služeb",
@@ -1983,6 +1988,68 @@
       "overlap": "Období se překrývá s jinou dovolenou.",
       "wrongStatus": "V tomto stavu to už nejde.",
       "changePending": "Žádost o změnu už je otevřená."
+    },
+    "tab": "Dovolená",
+    "mine": "Moje dovolené",
+    "requests": "Otevřené žádosti",
+    "calendar": "Kalendář dovolených",
+    "request": "Požádat o dovolenou",
+    "enter": "Zapsat dovolenou",
+    "person": "Osoba",
+    "from": "Od",
+    "to": "Do",
+    "note": "Poznámka",
+    "reason": "Důvod",
+    "emptyMine": "Zatím žádná dovolená.",
+    "emptyRequests": "Žádné otevřené žádosti.",
+    "emptyCalendar": "Letos žádná dovolená.",
+    "loadFailed": "Dovolené se nepodařilo načíst.",
+    "rejectHint": "Uveď pro {name} důvod zamítnutí.",
+    "requestCancelHint": "O zrušení rozhoduje správa.",
+    "status": {
+      "pending": "Požádáno",
+      "approved": "Schváleno",
+      "rejected": "Zamítnuto",
+      "withdrawn": "Staženo",
+      "cancelled": "Zrušeno"
+    },
+    "pendingChange": {
+      "change": "Požádáno o změnu: {range}",
+      "cancel": "Požádáno o zrušení"
+    },
+    "direct": "Zapsáno správou",
+    "actions": {
+      "withdraw": "Stáhnout",
+      "requestChange": "Požádat o změnu",
+      "requestCancel": "Požádat o zrušení",
+      "withdrawChange": "Stáhnout žádost",
+      "approve": "Schválit",
+      "reject": "Zamítnout",
+      "approveChange": "Schválit změnu",
+      "rejectChange": "Zamítnout změnu",
+      "edit": "Změnit",
+      "cancel": "Zrušit"
+    },
+    "preview": {
+      "title": "Dopad na služby",
+      "loading": "Počítá se nový plán …",
+      "none": "Žádné služby nejsou dotčeny.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Datum",
+      "before": "Předtím",
+      "after": "Potom",
+      "understaffed": "Dne {date} je obsazeno jen {filled} z {capacity} míst.",
+      "hint": "Po potvrzení se služby od dovolené znovu rozdělí. Dotčení dostanou nové pozvánky v Outlooku."
+    },
+    "done": {
+      "requested": "O dovolenou bylo požádáno.",
+      "approved": "Dovolená schválena, služby znovu rozděleny.",
+      "rejected": "Žádost zamítnuta.",
+      "entered": "Dovolená zapsána, služby znovu rozděleny.",
+      "changed": "Dovolená změněna, služby znovu rozděleny.",
+      "cancelled": "Dovolená zrušena, služby znovu rozděleny.",
+      "withdrawn": "Staženo.",
+      "changeRequested": "O změnu bylo požádáno."
     }
   }
 }

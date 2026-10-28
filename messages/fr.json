@@ -1538,7 +1538,8 @@
       "warning": {
         "lockedNonMember": "{date} : {user} ne participe plus, mais a une place échangée.",
         "lockedWithoutDuty": "{date} : plus aucun service prévu, mais des places échangées existent – le service est conservé.",
-        "lockedOverCapacity": "{date} : plus de places échangées ({count}) que prévu maintenant – le service garde toutes les places échangées."
+        "lockedOverCapacity": "{date} : plus de places échangées ({count}) que prévu maintenant – le service garde toutes les places échangées.",
+        "understaffed": "{date} : seules {filled} places sur {capacity} sont occupées."
       },
       "unlock": "Lever le verrouillage",
       "skipReason": "Motif de la fermeture",
@@ -1618,7 +1619,11 @@
       "dayOffRequestsHint": "Quand des participants proposent des dates pour un jour de repos verrouillé ou attendent ta réponse.",
       "notConfigured": "L'envoi d'e-mails n'est pas configuré sur ce serveur. Ton choix s'appliquera dès qu'il le sera.",
       "saveFailed": "Le paramètre n'a pas pu être enregistré.",
-      "loadFailed": "Impossible de charger les paramètres."
+      "loadFailed": "Impossible de charger les paramètres.",
+      "myVacations": "Mes congés",
+      "myVacationsHint": "Décisions et changements concernant mes congés",
+      "vacationRequests": "Demandes de congé",
+      "vacationRequestsHint": "Nouvelles demandes et demandes de changement des participants que je gère"
     },
     "title": "Bourse d'échange",
     "subtitle": "Échanger des services",
@@ -1983,6 +1988,68 @@
       "overlap": "La période chevauche un autre congé.",
       "wrongStatus": "Ce n'est plus possible dans cet état.",
       "changePending": "Une demande de modification est déjà ouverte."
+    },
+    "tab": "Congés",
+    "mine": "Mes congés",
+    "requests": "Demandes ouvertes",
+    "calendar": "Calendrier des congés",
+    "request": "Demander un congé",
+    "enter": "Saisir un congé",
+    "person": "Personne",
+    "from": "Du",
+    "to": "Au",
+    "note": "Note",
+    "reason": "Motif",
+    "emptyMine": "Pas encore de congé.",
+    "emptyRequests": "Aucune demande ouverte.",
+    "emptyCalendar": "Aucun congé cette année.",
+    "loadFailed": "Impossible de charger les congés.",
+    "rejectHint": "Indique à {name} le motif du refus.",
+    "requestCancelHint": "La gestion décide de l'annulation.",
+    "status": {
+      "pending": "Demandé",
+      "approved": "Approuvé",
+      "rejected": "Refusé",
+      "withdrawn": "Retiré",
+      "cancelled": "Annulé"
+    },
+    "pendingChange": {
+      "change": "Changement demandé : {range}",
+      "cancel": "Annulation demandée"
+    },
+    "direct": "Saisi par la gestion",
+    "actions": {
+      "withdraw": "Retirer",
+      "requestChange": "Demander un changement",
+      "requestCancel": "Demander l'annulation",
+      "withdrawChange": "Retirer la demande",
+      "approve": "Approuver",
+      "reject": "Refuser",
+      "approveChange": "Approuver le changement",
+      "rejectChange": "Refuser le changement",
+      "edit": "Modifier",
+      "cancel": "Annuler"
+    },
+    "preview": {
+      "title": "Effet sur les services",
+      "loading": "Calcul du nouveau planning …",
+      "none": "Aucun service concerné.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Date",
+      "before": "Avant",
+      "after": "Après",
+      "understaffed": "Le {date}, seules {filled} places sur {capacity} sont occupées.",
+      "hint": "Après confirmation, les services sont redistribués à partir du congé. Les personnes concernées reçoivent de nouvelles invitations Outlook."
+    },
+    "done": {
+      "requested": "Congé demandé.",
+      "approved": "Congé approuvé, services redistribués.",
+      "rejected": "Demande refusée.",
+      "entered": "Congé saisi, services redistribués.",
+      "changed": "Congé modifié, services redistribués.",
+      "cancelled": "Congé annulé, services redistribués.",
+      "withdrawn": "Retiré.",
+      "changeRequested": "Changement demandé."
     }
   }
 }

@@ -1538,7 +1538,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} is no longer a participant but has a swapped slot.",
         "lockedWithoutDuty": "{date}: No duty planned any more, but swapped slots exist – the duty stays.",
-        "lockedOverCapacity": "{date}: More swapped Plätze ({count}) than now planned – the duty keeps all swapped Plätze."
+        "lockedOverCapacity": "{date}: More swapped Plätze ({count}) than now planned – the duty keeps all swapped Plätze.",
+        "understaffed": "{date}: Only {filled} of {capacity} places filled."
       },
       "unlock": "Remove lock",
       "skipReason": "Reason for closing",
@@ -1618,7 +1619,11 @@
       "dayOffRequestsHint": "When participants propose dates for a locked day off or are still waiting for your answer.",
       "notConfigured": "Email is not set up on this server. Your choice applies once it is.",
       "saveFailed": "Could not save the setting.",
-      "loadFailed": "The settings could not be loaded."
+      "loadFailed": "The settings could not be loaded.",
+      "myVacations": "My vacations",
+      "myVacationsHint": "Decisions and changes to my vacation",
+      "vacationRequests": "Vacation requests",
+      "vacationRequestsHint": "New requests and change requests from the participants I manage"
     },
     "title": "Swap board",
     "subtitle": "Swap duties",
@@ -1983,6 +1988,68 @@
       "overlap": "The period overlaps another vacation.",
       "wrongStatus": "That is no longer possible in this state.",
       "changePending": "There is already an open change request."
+    },
+    "tab": "Vacation",
+    "mine": "My vacations",
+    "requests": "Open requests",
+    "calendar": "Vacation calendar",
+    "request": "Request vacation",
+    "enter": "Enter vacation",
+    "person": "Person",
+    "from": "From",
+    "to": "To",
+    "note": "Note",
+    "reason": "Reason",
+    "emptyMine": "No vacation yet.",
+    "emptyRequests": "No open requests.",
+    "emptyCalendar": "No vacation this year.",
+    "loadFailed": "Could not load the vacations.",
+    "rejectHint": "Please give {name} a reason for declining.",
+    "requestCancelHint": "The management decides on the cancellation.",
+    "status": {
+      "pending": "Requested",
+      "approved": "Approved",
+      "rejected": "Declined",
+      "withdrawn": "Withdrawn",
+      "cancelled": "Cancelled"
+    },
+    "pendingChange": {
+      "change": "Change requested: {range}",
+      "cancel": "Cancellation requested"
+    },
+    "direct": "Entered by the management",
+    "actions": {
+      "withdraw": "Withdraw",
+      "requestChange": "Request change",
+      "requestCancel": "Request cancellation",
+      "withdrawChange": "Withdraw request",
+      "approve": "Approve",
+      "reject": "Decline",
+      "approveChange": "Approve change",
+      "rejectChange": "Decline change",
+      "edit": "Change",
+      "cancel": "Cancel"
+    },
+    "preview": {
+      "title": "Effect on the duties",
+      "loading": "Calculating the new plan …",
+      "none": "No duties affected.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Date",
+      "before": "Before",
+      "after": "After",
+      "understaffed": "On {date} only {filled} of {capacity} places are filled.",
+      "hint": "After confirming, duties from the vacation on are redistributed. Those affected get new Outlook invitations."
+    },
+    "done": {
+      "requested": "Vacation requested.",
+      "approved": "Vacation approved, duties redistributed.",
+      "rejected": "Request declined.",
+      "entered": "Vacation entered, duties redistributed.",
+      "changed": "Vacation changed, duties redistributed.",
+      "cancelled": "Vacation cancelled, duties redistributed.",
+      "withdrawn": "Withdrawn.",
+      "changeRequested": "Change requested."
     }
   }
 }

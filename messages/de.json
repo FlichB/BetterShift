@@ -1538,7 +1538,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} ist kein Teilnehmer mehr, hat aber einen getauschten Platz.",
         "lockedWithoutDuty": "{date}: Kein Dienst mehr geplant, aber getauschte Plätze vorhanden – der Dienst bleibt bestehen.",
-        "lockedOverCapacity": "{date}: Mehr getauschte Plätze ({count}) als jetzt geplant – der Dienst behält alle getauschten Plätze."
+        "lockedOverCapacity": "{date}: Mehr getauschte Plätze ({count}) als jetzt geplant – der Dienst behält alle getauschten Plätze.",
+        "understaffed": "{date}: Nur {filled} von {capacity} Plätzen besetzt."
       },
       "unlock": "Sperre aufheben",
       "skipReason": "Grund des Ausfalls",
@@ -1618,7 +1619,11 @@
       "dayOffRequestsHint": "Wenn Teilnehmer Termine für ein gesperrtes Dienstfrei vorschlagen oder darauf warten, dass du antwortest.",
       "notConfigured": "Der E-Mail-Versand ist auf diesem Server nicht eingerichtet. Deine Auswahl gilt, sobald er eingerichtet ist.",
       "saveFailed": "Einstellung konnte nicht gespeichert werden.",
-      "loadFailed": "Die Einstellungen konnten nicht geladen werden."
+      "loadFailed": "Die Einstellungen konnten nicht geladen werden.",
+      "myVacations": "Meine Urlaube",
+      "myVacationsHint": "Entscheidungen und Änderungen zu meinem Urlaub",
+      "vacationRequests": "Urlaubsanträge",
+      "vacationRequestsHint": "Neue Anträge und Änderungswünsche der Teilnehmer, die ich verwalte"
     },
     "title": "Tauschbörse",
     "subtitle": "Dienste tauschen",
@@ -1983,6 +1988,68 @@
       "overlap": "Der Zeitraum überschneidet sich mit einem anderen Urlaub.",
       "wrongStatus": "Das geht in diesem Status nicht mehr.",
       "changePending": "Es gibt schon einen offenen Änderungsantrag."
+    },
+    "tab": "Urlaub",
+    "mine": "Meine Urlaube",
+    "requests": "Offene Anträge",
+    "calendar": "Urlaubskalender",
+    "request": "Urlaub beantragen",
+    "enter": "Urlaub eintragen",
+    "person": "Person",
+    "from": "Von",
+    "to": "Bis",
+    "note": "Notiz",
+    "reason": "Begründung",
+    "emptyMine": "Noch kein Urlaub eingetragen.",
+    "emptyRequests": "Keine offenen Anträge.",
+    "emptyCalendar": "Kein Urlaub in diesem Jahr.",
+    "loadFailed": "Die Urlaube konnten nicht geladen werden.",
+    "rejectHint": "Bitte begründe die Ablehnung für {name}.",
+    "requestCancelHint": "Die Verwaltung entscheidet über die Stornierung.",
+    "status": {
+      "pending": "Beantragt",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt",
+      "withdrawn": "Zurückgezogen",
+      "cancelled": "Storniert"
+    },
+    "pendingChange": {
+      "change": "Änderung beantragt: {range}",
+      "cancel": "Storno beantragt"
+    },
+    "direct": "Von der Verwaltung eingetragen",
+    "actions": {
+      "withdraw": "Zurückziehen",
+      "requestChange": "Änderung beantragen",
+      "requestCancel": "Storno beantragen",
+      "withdrawChange": "Antrag zurückziehen",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "approveChange": "Änderung genehmigen",
+      "rejectChange": "Änderung ablehnen",
+      "edit": "Ändern",
+      "cancel": "Stornieren"
+    },
+    "preview": {
+      "title": "Auswirkungen auf die Dienste",
+      "loading": "Neuplanung wird berechnet …",
+      "none": "Keine Dienste betroffen.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Datum",
+      "before": "Vorher",
+      "after": "Nachher",
+      "understaffed": "Am {date} ist nur {filled} von {capacity} Plätzen besetzt.",
+      "hint": "Nach dem Bestätigen werden die Dienste ab dem Urlaub neu verteilt. Betroffene bekommen neue Outlook-Einladungen."
+    },
+    "done": {
+      "requested": "Urlaub beantragt.",
+      "approved": "Urlaub genehmigt, Dienste neu verteilt.",
+      "rejected": "Antrag abgelehnt.",
+      "entered": "Urlaub eingetragen, Dienste neu verteilt.",
+      "changed": "Urlaub geändert, Dienste neu verteilt.",
+      "cancelled": "Urlaub storniert, Dienste neu verteilt.",
+      "withdrawn": "Zurückgezogen.",
+      "changeRequested": "Änderung beantragt."
     }
   }
 }
