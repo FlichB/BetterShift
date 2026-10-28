@@ -10,6 +10,7 @@ Diese Anleitung beschreibt die Fork-Erweiterungen von BetterShift: Dienste reihu
 4. [Tauschbörse](#4-tauschbörse)
    - [Dienstfrei](#4a-dienstfrei)
    - [Urlaub](#4b-urlaub)
+   - [Mindestbesetzung an Werktagen](#4c-mindestbesetzung-an-werktagen)
 5. [Rechte](#5-rechte)
 6. [Benachrichtigungen und Outlook](#6-benachrichtigungen-und-outlook)
 7. [Persönlicher Kalender-Feed](#7-persönlicher-kalender-feed)
@@ -302,6 +303,29 @@ Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die bei
 | neue Anträge und Änderungsanträge | die Verwaltung | „Urlaubsanträge“ |
 
 Mails nur mit konfiguriertem Outlook. Mitglieder, die aus der Rotation ausscheiden, behalten ihre Urlaube.
+
+## 4c. Mindestbesetzung an Werktagen
+
+Die **Mindestbesetzung** legt fest, wie viele Teilnehmer einer Rotation an jedem Werktag (Mo bis Fr, kein Ausfalltag der Rotation) anwesend sein müssen. Sie wirkt auf Dienstfrei und warnt bei Urlaub. Hintergrund: SPEC, Abschnitt 12.44.
+
+**Einstellen.** Im Rotationsformular den Schalter „Mindestbesetzung an Werktagen“ einschalten und bei „Mindestens anwesend“ eine Zahl von 1 bis Teilnehmerzahl − 1 eingeben (das Formular zeigt „von {n} Teilnehmern“). Ausgeschaltet ist alles wie bisher. Das Speichern gleicht die Dienstfreie sofort ab.
+
+**Wer gilt als abwesend.** Genehmigter Urlaub und jedes Dienstfrei mit Datum (Standard, Verschoben, Vereinbart), und zwar aus jeder Rotation der Person, nicht nur aus dieser. Nicht gezählt werden Urlaubsanträge, gesperrte und entfallene Dienstfreie.
+
+**Wirkung auf Dienstfrei.**
+
+- Ein **Standard-Dienstfrei** weicht still auf den nächsten Arbeitstag mit freier Kapazität aus. Wer den früheren Dienst hat, wählt zuerst; bei gleichem Dienst entscheidet eine feste Reihenfolge.
+- **Verschobene und vereinbarte** Dienstfreie bleiben, wo sie sind, auch wenn der Tag dadurch unterbesetzt ist. Sie zählen als belegt.
+- **Mitarbeiter** können einen vollen Tag nicht wählen: Beim „Verschieben“ erscheint er als ausgegrauter Chip mit „voll“. Das gilt, sobald die Person in einer Rotation mit Mindestbesetzung Teilnehmer ist und ohne sie an dem Tag weniger als das Minimum anwesend wären.
+- Die **Verwaltung** darf trotzdem: Beim Gegenvorschlag und beim Annehmen eines Terminvorschlags des Inhabers fragt die App mit „Mindestbesetzung unterschritten“ nach („Am {date} wären nur {n} von mindestens {m} Teilnehmern anwesend. Trotzdem vergeben?“). „Trotzdem vergeben“ führt die Aktion aus. Nimmt der Inhaber einen Gegenvorschlag der Verwaltung an, wird nicht geprüft.
+
+**Wirkung auf Urlaub.** Urlaub wird nie gesperrt. Die Vorschau vor dem Genehmigen, Eintragen oder Ändern listet Werktage, an denen eine Rotation der Person unter das Minimum fiele („Am {date} wären nur {present} von mindestens {minimum} anwesend“). Im Antrag erscheint ein Hinweis: „An {n} Werktagen wäre das Team unterbesetzt: {Daten}. Die Verwaltung entscheidet.“ Die Antrags-Abfrage (`/api/vacations/staffing`) nennt nur Daten, keine Namen. Beide Prüfungen zählen nur feste Dienstfreie (verschoben oder vereinbart), weil ein Standard-Dienstfrei dem Urlaub ohnehin ausweicht, und betrachten Tage ab morgen.
+
+**Grenzen.**
+
+- Unterbesetzte Tage werden im Kalender und in Outlook nicht markiert; es gibt keine Mails dazu.
+- Der Generator bleibt unverändert: Die Mindestbesetzung beeinflusst die Dienstplanung nicht, nur Dienstfrei und die Urlaubswarnung.
+- Nur Rotationen mit eingeschalteter Mindestbesetzung werden geprüft; Arbeitstage pro Person und Krankheit kennt die App nicht.
 
 ## 5. Rechte
 
