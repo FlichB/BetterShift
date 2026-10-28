@@ -44,6 +44,8 @@ const DRIFT = 60;
 const DRIFT_LIMIT = 2;
 const OFF_BEAT = 50_000;
 const MAX_IMPROVEMENTS = 200;
+// [fork] Jahresausgleich: per Teilnehmer still owed a seat when someone owed fewer starts serving.
+const OWED_FIRST = 1_000;
 
 interface PairStat {
   count: number;
@@ -51,8 +53,8 @@ interface PairStat {
 }
 
 interface History {
-  /** Duty number of each Teilnehmer's first duty and how many they had since. */
-  firstDuty: Map<string, number>;
+  /** Position (pos) of each Teilnehmer's first duty and how many they had since: the anchor of their beat. */
+  firstPos: Map<string, number>;
   served: Map<string, number>;
   lastDuty: Map<string, number>;
   lastGroup: Map<string, string[]>;
@@ -85,7 +87,7 @@ function roundCost(
       if (t - prev <= 1) cost += BACK_TO_BACK;
       if (withDrift) {
         const count = served.get(u) ?? (history.served.get(u) as number);
-        const drift = Math.abs(pos(t) - pos(history.firstDuty.get(u) as number) - count * idealGap);
+        const drift = Math.abs(pos(t) - (history.firstPos.get(u) as number) - count * idealGap);
         cost += DRIFT * drift ** 2 + (drift > DRIFT_LIMIT ? OFF_BEAT : 0);
         served.set(u, count + 1);
       }
@@ -107,6 +109,24 @@ function roundCost(
       lastGroup.set(u, group);
     }
   });
+  return cost;
+}
+
+/**
+ * [fork] Jahresausgleich: keeps the Ausgleichsphase first. Prices each Teilnehmer's first seat in
+ * the round by how many people owed more compensation seats have not served yet.
+ */
+function owedFirstCost(groups: string[][], owed: ReadonlyMap<string, number>): number {
+  const served = new Set<string>();
+  let cost = 0;
+  for (const group of groups) {
+    for (const u of group) {
+      if (served.has(u)) continue;
+      const mine = owed.get(u) ?? 0;
+      for (const [v, theirs] of owed) if (theirs > mine && !served.has(v) && !group.includes(v)) cost += OWED_FIRST;
+    }
+    for (const u of group) served.add(u);
+  }
   return cost;
 }
 
@@ -226,41 +246,135 @@ export function* dutyGroups(
     return seatsBefore[duty] / k;
   };
   const history: History = {
-    firstDuty: new Map(),
+    firstPos: new Map(),
     served: new Map(),
     lastDuty: new Map(),
     lastGroup: new Map(),
     pairs: new Map(),
   };
 
-  const planned: string[][] = []; // every yielded group, by duty
   let duty = 0;
   let carry: string[] = []; // seats of `duty` already drawn in the previous round
+
+  // [fork] Jahresausgleich state (yearly mode only).
+  const planned: string[][] = []; // every yielded group, by duty
+  const yearCount = new Map<string, number>(); // Plätze in the current year
+  let yearDelta: ReadonlyMap<string, number> = new Map(); // Delta the current year settles
+
+  /**
+   * [fork] Seats of a yearly round in drawing order, `total` of them. A round gives everyone
+   * (total - extra) / n seats plus their compensation seats (`extra`). The last round of a year
+   * (`tail`) takes every seat left in the year instead: they go one by one to whoever has the fewest
+   * Plätze + Delta this year, then the fewest Plätze, so the year stays even without a short round
+   * of whoever happens to come first. A plain round is passes in order of longest wait; an
+   * Ausgleichsphase or tail is laid out duty by duty (see below) for improveRound to polish.
+   */
+  const yearlySeats = (extra: readonly string[], total: number, tail: boolean): string[] => {
+    // A seat already drawn for the first duty (carry) counts as serving now.
+    const last = (u: string) => (carry.includes(u) ? duty : (history.lastDuty.get(u) ?? -1));
+    const rank = [...ordered].sort((a, b) => last(a) - last(b));
+    const need = new Map(rank.map((u) => [u, extra.filter((v) => v === u).length]));
+    if (!tail) {
+      for (const u of rank) need.set(u, (need.get(u) as number) + (total - extra.length) / n);
+    } else {
+      const seatsOf = (u: string) => (yearCount.get(u) ?? 0) + (carry.includes(u) ? 1 : 0) + (need.get(u) as number);
+      for (let rest = total - extra.length; rest > 0; rest--) {
+        let pick = rank[0];
+        for (const u of rank) {
+          const better =
+            seatsOf(u) + (yearDelta.get(u) ?? 0) - (seatsOf(pick) + (yearDelta.get(pick) ?? 0)) || seatsOf(u) - seatsOf(pick);
+          if (better < 0) pick = u;
+        }
+        need.set(pick, (need.get(pick) as number) + 1);
+      }
+    }
+    if (extra.length === 0 && !tail) {
+      // Plain passes, longest wait first.
+      return Array.from({ length: total / n }, () => rank).flat();
+    }
+    // Off-beat round: lay it out duty by duty. Each seat goes to whoever did not serve the duty
+    // before, then does not meet their previous partner, then has the most seats left (so those
+    // owed seats come first and nobody is left over at the end), then has waited longest.
+    const left = new Map(need);
+    const lastAt = new Map(rank.map((u) => [u, last(u)]));
+    const lastGroup = new Map(rank.map((u) => [u, history.lastGroup.get(u) ?? []]));
+    const seats: string[] = [];
+    let remaining = total;
+    for (let d = duty; remaining > 0; d++) {
+      const group = d === duty ? [...carry] : [];
+      const slots = Math.min(capacity(d) - group.length, remaining);
+      for (let s = 0; s < slots; s++) {
+        const score = (u: string) => [
+          (lastAt.get(u) as number) >= d - 1 ? 1 : 0,
+          group.some((v) => (lastGroup.get(u) as string[]).includes(v)) ? 1 : 0,
+          -(left.get(u) as number),
+          lastAt.get(u) as number,
+        ];
+        let best: string | null = null;
+        let bestScore: number[] = [];
+        for (const u of rank) {
+          if ((left.get(u) as number) === 0 || group.includes(u)) continue;
+          const sc = score(u);
+          const i = sc.findIndex((x, j) => x !== bestScore[j]);
+          if (best === null || (i >= 0 && sc[i] < bestScore[i])) [best, bestScore] = [u, sc];
+        }
+        // Only people already in this duty are owed seats: repairDuplicates swaps one out.
+        best ??= rank.find((u) => (left.get(u) as number) > 0) as string;
+        group.push(best);
+        seats.push(best);
+        left.set(best, (left.get(best) as number) - 1);
+        remaining--;
+      }
+      for (const u of group) {
+        lastAt.set(u, d);
+        lastGroup.set(u, group);
+      }
+    }
+    return seats;
+  };
+
   for (let round = 0; ; round++) {
     let groups: string[][] = [];
     const duties: number[] = [];
     const fixed: number[] = [];
     const complete: boolean[] = [];
-    const sameYear = (d: number) => !yearly || d === duty || yearly.yearOf(d) === yearly.yearOf(duty);
+    const roundStart = duty;
 
     // [fork] Jahresausgleich: the first round of a year settles the Deltas of the year before.
-    let seats: string[] = [];
-    if (yearly && carry.length === 0 && (duty === 0 || yearly.yearOf(duty) !== yearly.yearOf(duty - 1))) {
-      seats = compensationSeats(ordered, yearly.deltasAt(yearly.yearOf(duty), duty, planned));
-    }
-    const compensating = seats.length > 0;
-    if (compensating) {
-      for (let d = duty, seat = 0; seat < seats.length && sameYear(d); d++) {
-        const group = seats.slice(seat, seat + capacity(d));
-        seat += group.length;
-        groups.push(group);
+    // Ausgleichsphase and the last round of a year are priced without the beat and restart it.
+    let offBeat = false;
+    let owed: ReadonlyMap<string, number> | null = null; // compensation seats per person in an Ausgleichsphase
+    if (yearly) {
+      const sameYear = (d: number) => d === roundStart || yearly.yearOf(d) === yearly.yearOf(roundStart);
+      let extra: string[] = [];
+      if (duty === 0 || yearly.yearOf(duty) !== yearly.yearOf(duty - 1)) {
+        yearCount.clear();
+        yearDelta = carry.length === 0 ? yearly.deltasAt(yearly.yearOf(duty), duty, planned) : new Map();
+        extra = compensationSeats(ordered, yearDelta);
+      }
+      // The Ausgleichsphase is merged into the two rounds after it, so a compensation seat always
+      // finds room away from the same person's other seats. When what is left of the year after
+      // this round would not make a full round, this round takes the rest of the year.
+      const rounds = extra.length > 0 ? 2 : 1;
+      const limit = (rounds + 1) * seatsPerRound + extra.length;
+      let left = 0;
+      for (let d = duty; left < limit && sameYear(d); d++) left += capacity(d) - (d === duty ? carry.length : 0);
+      const tail = left < limit;
+      offBeat = extra.length > 0 || tail;
+      if (extra.length > 0) owed = new Map(ordered.map((u) => [u, extra.filter((v) => v === u).length]));
+      const pool = yearlySeats(extra, tail ? left : rounds * seatsPerRound + extra.length, tail);
+      for (let d = duty, seat = 0; seat < pool.length && sameYear(d); d++) {
+        const held = d === duty ? carry : [];
+        const take = Math.min(capacity(d) - held.length, pool.length - seat);
+        groups.push([...held, ...pool.slice(seat, seat + take)]);
         duties.push(d);
-        fixed.push(0);
+        fixed.push(held.length);
         // A short last duty is finished by the next round, like a duty straddling two rounds.
-        complete.push(group.length === capacity(d));
+        complete.push(held.length + take === capacity(d));
+        seat += take;
       }
     } else {
-      for (let d = duty, seat = 0; seat < seatsPerRound && sameYear(d); d++) {
+      for (let d = duty, seat = 0; seat < seatsPerRound; d++) {
         const held = d === duty ? carry : [];
         const take = Math.min(capacity(d) - held.length, seatsPerRound - seat);
         groups.push([...held, ...Array.from({ length: take }, (_, s) => ordered[(seat + s) % n])]);
@@ -271,9 +385,12 @@ export function* dutyGroups(
       }
     }
     repairDuplicates(groups, fixed, rule.memberIds);
-    if (round > 0 || compensating) {
+    if (round > 0 || offBeat) {
       const movable = groups.map((_, j) => fixed[j] === 0 && complete[j]);
-      groups = improveRound(groups, fixed, movable, (g) => roundCost(g, duties, history, idealGap, pos, !compensating));
+      const settle = owed;
+      groups = improveRound(groups, fixed, movable, (g) =>
+        roundCost(g, duties, history, idealGap, pos, !offBeat) + (settle ? owedFirstCost(g, settle) : 0)
+      );
     }
 
     carry = [];
@@ -291,22 +408,28 @@ export function* dutyGroups(
         }
       }
       for (const u of group) {
-        if (!history.firstDuty.has(u)) history.firstDuty.set(u, duty);
+        if (!history.firstPos.has(u)) history.firstPos.set(u, pos(duty));
         history.served.set(u, (history.served.get(u) ?? 0) + 1);
         history.lastDuty.set(u, duty);
         history.lastGroup.set(u, group);
       }
       duty++;
       const sorted = [...group].sort(byPosition);
-      planned.push(sorted);
+      if (yearly) {
+        for (const u of group) yearCount.set(u, (yearCount.get(u) ?? 0) + 1);
+        planned.push([...sorted]);
+      }
       yield sorted;
     }
-    if (compensating) {
-      // Everyone restarts their beat after the Ausgleichsphase, so sitting out is not drift.
-      for (const [u, last] of history.lastDuty) {
-        history.firstDuty.set(u, last);
+    if (offBeat) {
+      // Everyone restarts their beat after an off-beat round, so sitting out is not drift. The new
+      // beats are spread evenly like a first round robin (longest wait first, perShift per duty);
+      // anchoring each at their own last duty would keep those who served together in step.
+      const next = [...history.lastDuty].sort((x, y) => x[1] - y[1]).map(([u]) => u);
+      next.forEach((u, i) => {
+        history.firstPos.set(u, pos(duty) + i / k - idealGap);
         history.served.set(u, 1);
-      }
+      });
     }
   }
 }
@@ -389,10 +512,15 @@ function tallyYear(rule: RotationRule, periodAt: (i: number) => Period, planned:
   return { counts, firstDate };
 }
 
-/** [fork] Jahresausgleich: the Delta rows that `year` settles (null = nothing counted in year − 1). */
+/**
+ * [fork] Jahresausgleich: the Delta rows that `year` settles. Null when nothing was counted in
+ * year − 1, or when the rotation restarts inside `year` after held dates of it (nothing settles).
+ */
 export function yearSummary(rule: RotationRule, year: number): YearDeltaRow[] | null {
   assertRule(rule);
   const { periodAt, groups } = planner(rule);
+  // Same guard as deltasAt: a restart inside `year` does not settle the year before again.
+  if (yearOfDate(periodAt(0).dates[0]) === year && tallyYear(rule, periodAt, [], year).firstDate !== null) return null;
   const planned: string[][] = [];
   for (let i = 0; periodAt(i).dates[0] < `${year}-01-01`; i++) planned.push(groups.next().value as string[]);
   return yearDeltaRows(rule.memberIds, rule.memberSince, tallyYear(rule, periodAt, planned, year - 1), rule.deltaOverrides?.[year]);
