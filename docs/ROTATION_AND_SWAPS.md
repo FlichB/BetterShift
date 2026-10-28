@@ -105,6 +105,20 @@ Der Feiertagskalender enthält nur, was die Synchronisierung gerade vorhält: et
 
 Vergangene Schließtage zählen weiter, auch wenn ihr Feiertag später aus dem Feiertagskalender verschwindet (weil die Synchronisierung alte Termine entfernt, du ihn von Hand löschst oder den Feiertagskalender abwählst). Die künftige Besetzung verschiebt sich dadurch nicht. Für künftige Tage entscheidet weiter der Kalender. Löschst du dagegen einen vergangenen Schließeintrag von Hand im Teamkalender, zählt dieser Tag nur noch als Schließtag, solange er als Ausfalltag eingetragen ist oder im Feiertagskalender steht; sonst kann sich die künftige Besetzung beim nächsten „Übernehmen“ verschieben.
 
+### Gerecht pro Kalenderjahr (Jahresausgleich)
+
+Mit dem Schalter „Gerecht pro Kalenderjahr“ beginnt mit dem ersten Diensttag jedes Kalenderjahres eine neue Runde. Wer im Vorjahr mehr Plätze gehalten hat, setzt am Jahresanfang entsprechend früh aus: Der Ausgleich verteilt sich auf die ersten Runden des Jahres, es gibt keinen geschlossenen Block. „Nie zwei Diensttage in Folge“ und „nie derselbe Partner hintereinander“ gelten auch über den Jahreswechsel. Ziel ist, dass die Dienste der Ganzjahres-Teilnehmer pro Kalenderjahr, mit dem Delta verrechnet, höchstens um 1 abweichen.
+
+**Bestehende Rotationen** haben den Schalter aus und verhalten sich wie bisher; bei neuen Rotationen ist er vorgeschlagen. Schaltest du ihn bei einer laufenden Rotation ein, verteilt das nächste Generieren alle nicht gesperrten künftigen Plätze neu. Getauschte Plätze bleiben bestehen.
+
+**So wird das Delta gezählt:** Das Delta eines Teilnehmers sind die Plätze, die er im Vorjahr gehalten hat, minus die wenigsten Plätze eines Ganzjahres-Teilnehmers.
+
+- Es zählt der aktuelle Inhaber eines Platzes, also nach Tausch, erzwungenem Tausch und Ausgleich.
+- Zusatzplätze an verstärkten Tagen zählen mit, ebenso Feiertage, an denen trotzdem Dienst geöffnet wurde („Trotzdem Dienst“). Schließtage zählen nicht.
+- **Ganzjahres-Teilnehmer** ist, wer am ersten Diensttag des Vorjahres (bei einer jüngeren Rotation: am ersten Diensttag der Rotation) schon Teilnehmer war. Alle anderen haben Delta 0 und zählen nicht zum Minimum; in der Tabelle steht bei ihnen „neu seit <Datum>“.
+
+**Bedienung im Formular:** Unter dem Schalter zeigt die Delta-Tabelle den Übertrag vom Vorjahr ins laufende und vom laufenden ins nächste Jahr. Die Werte sind so gerechnet, als wäre der Schalter eingeschaltet. Du kannst sie also ansehen, bevor du ihn einschaltest. Bei jedem Teilnehmer kannst du das Delta mit „Eigener Wert“ (ganze Zahl 0–52) überschreiben; „Automatischen Wert verwenden“ nimmt den Override zurück. Ein Override bleibt fix und gilt ab dem nächsten Generieren. Während des Jahres wird nichts nachgezogen: Tauschen oder Ausfälle im laufenden Jahr verschieben die Plätze nicht neu, sie wirken erst über das Delta im Folgejahr. Mitarbeiter sehen das Delta nicht.
+
 ## 3. Generieren
 
 Im Abschnitt „Dienste erzeugen" einer Rotation wählst du „Von" und „Bis" (höchstens 366 Tage; „{n} Wochen" sind Schnellwahlen).
@@ -463,5 +477,10 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
   - Ein offener Ausgleich hat keine Frist und keine Erinnerungsmail. Die Verwaltung sieht ihn im Reiter „Verwaltung".
   - Die 3 Monate des Ausgleichsfensters sind fest im Code, keine Einstellung pro Rotation.
   - Der Ausfallende kann einen erzwungenen Tausch weder verhindern noch rückgängig machen. Ein Fehler der Verwaltung lässt sich nur durch einen weiteren Tausch oder durch Umbesetzen mit „Andere eintragen" (`signUpOthers`) korrigieren.
+- **Jahresausgleich:**
+  - Ein begonnener Dienst, der an einem Tag liegt, der später zum Schließtag wurde, wird nicht gezählt.
+  - Bei Perioden über mehrere Tage zählt jedes Datum als Bruchteil eines Platzes.
+  - Ein Neustart innerhalb eines Jahres gleicht das Vorjahr nicht erneut aus.
+  - Bei 3 Personen pro Dienst kann der Jahresmodus in Konfigurationen, in denen schon der normale Plan Partner wiederholt, ein paar Wiederholungen mehr erzeugen als der normale Plan.
 - **Dienstfrei:** Grenzen siehe [Dienstfrei](#4a-dienstfrei).
 - Ohne Anmeldung (`AUTH_ENABLED=false`) gibt es weder Tausch-Mails noch Outlook-Sync noch einen persönlichen Feed.

@@ -12,6 +12,15 @@ _Avoid_: Schichtplan, Turnus, Vorlage
 Ein Benutzer, der mit einer festen Position in einer Rotation steht.
 _Avoid_: Mitglied, Mitarbeiter, Member
 
+**Jahresausgleich**:
+Schalter pro Rotation (SPEC 12.41). Jedes Kalenderjahr beginnt eine neue Runde; am Jahresanfang setzt aus, wer im Vorjahr mehr Plätze gehalten hat (Ausgleichsphase).
+
+**Delta**:
+Gehaltene Plätze eines Teilnehmers im Vorjahr minus die wenigsten gehaltenen Plätze eines Ganzjahres-Teilnehmers. Wird live gerechnet; die Rotations-Verwaltung kann es pro Jahr überschreiben.
+
+**Ganzjahres-Teilnehmer**:
+Wer am ersten Diensttag des Vorjahres schon Teilnehmer war. Alle anderen haben Delta 0 und zählen nicht zum Minimum.
+
 **Periode**:
 Der Zeitabschnitt, in dem dieselbe Besetzung Dienst hat (ein Tag, eine Arbeitswoche ab Montag oder eine feste Anzahl Tage).
 _Avoid_: Turnus, Zyklus
