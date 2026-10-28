@@ -230,6 +230,7 @@ function configValues(input: RotationInput) {
     reinforcedDates: input.reinforcedDates,
     dayOffEnabled: input.dayOffEnabled, // [fork] Dienstfrei
     dayOffTitle: input.dayOffTitle, // [fork] Dienstfrei
+    dayOffTiming: input.dayOffTiming, // [fork] Dienstfrei
     yearlyFairness: input.yearlyFairness, // [fork] Jahresausgleich
   };
 }

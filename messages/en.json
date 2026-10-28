@@ -1575,6 +1575,7 @@
       "holidayOpenDates": "Invalid holidays with duty.",
       "entryTitle": "Invalid entry template: it needs '{Vorname}' or '{Name}' and may only contain '{Vorname}', '{Name}' and '{Dienst}' (max. 100 characters).",
       "dayOffTitle": "The day-off entry template is invalid.",
+      "dayOffTiming": "Invalid Dienstfrei timing.",
       "dayOffExcluded": "Day off per member is invalid: only members of the rotation can be excluded.",
       "reinforcedDates": "Invalid reinforced days: one entry per date; future days need more people than \"People per duty\" and at most as many as there are participants.",
       "yearlyFairness": "Invalid setting for yearly fairness.",

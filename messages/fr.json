@@ -1575,6 +1575,7 @@
       "holidayOpenDates": "Jours fériés travaillés invalides.",
       "entryTitle": "Modèle d'entrée invalide : il te faut '{Vorname}' ou '{Name}', et seuls '{Vorname}', '{Name}' et '{Dienst}' sont autorisés (100 caractères max.).",
       "dayOffTitle": "Le modèle d'entrée du jour de repos est invalide.",
+      "dayOffTiming": "Le moment du jour de repos est invalide.",
       "dayOffExcluded": "Jour de repos par participant invalide : seuls les participants de la rotation peuvent être exclus.",
       "reinforcedDates": "Jours renforcés invalides : une entrée par date ; les jours à venir ont besoin de plus de personnes que « Personnes par service », au maximum autant que de participants.",
       "yearlyFairness": "Réglage invalide pour l’équité annuelle.",

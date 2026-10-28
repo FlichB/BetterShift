@@ -19,6 +19,7 @@ const valid = {
   entryTitle: "{Vorname} Dienst",
   dayOffEnabled: false,
   dayOffTitle: "{Vorname} dienstfrei",
+  dayOffTiming: "after",
   dayOffExcludedIds: [] as string[],
   yearlyFairness: false,
   reinforcedDates: [] as { date: string; perShift: number }[],
@@ -195,6 +196,17 @@ describe("checkPastReinforcedDates", () => {
 
 // [fork] Dienstfrei
 describe("dayOff fields", () => {
+  it("defaults dayOffTiming to after and accepts before", () => {
+    const b: Record<string, unknown> = { ...valid };
+    delete b.dayOffTiming;
+    const r = validateRotationInput(b);
+    expect(r.ok && r.value.dayOffTiming).toBe("after");
+    const r2 = validateRotationInput({ ...valid, dayOffTiming: "before" });
+    expect(r2.ok && r2.value.dayOffTiming).toBe("before");
+  });
+  it("rejects an unknown dayOffTiming", () => {
+    expect(validateRotationInput({ ...valid, dayOffTiming: "monday" })).toEqual({ ok: false, error: "dayOffTiming" });
+  });
   it("default to off with the standard template", () => {
     const body: Record<string, unknown> = { ...valid };
     delete body.dayOffEnabled;

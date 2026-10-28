@@ -4,6 +4,7 @@
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { calendars, shiftPresets, shifts, user } from "@/lib/db/schema";
+import type { DayOffTiming } from "@/lib/dayoff/types"; // [fork]
 import type { ReinforcedDate, RotationDutyKind, RotationPeriod, SkipDate } from "@/lib/rotation/types";
 
 export const rotations = sqliteTable(
@@ -36,6 +37,7 @@ export const rotations = sqliteTable(
     // [fork] Dienstfrei (SPEC 12.34): one free weekday per Platz after the duty.
     dayOffEnabled: integer("day_off_enabled", { mode: "boolean" }).notNull().default(false),
     dayOffTitle: text("day_off_title").notNull().default("{Vorname} dienstfrei"),
+    dayOffTiming: text("day_off_timing").$type<DayOffTiming>().notNull().default("after"), // [fork] SPEC 12.42
     // [fork] Jahresausgleich (SPEC 12.41): cut rounds at year ends and settle the previous year's Delta.
     yearlyFairness: integer("yearly_fairness", { mode: "boolean" }).notNull().default(false),
     // [fork phase 3] Mirror this rotation's duties into the office@ calendar (spec 12.24).

@@ -1,5 +1,5 @@
 import { ENTRY_TITLE_DEFAULT, validateEntryTitle } from "@/lib/rotation/entry-title";
-import { DEFAULT_DAY_OFF_TITLE } from "@/lib/dayoff/types"; // [fork] Dienstfrei
+import { DEFAULT_DAY_OFF_TITLE, type DayOffTiming } from "@/lib/dayoff/types"; // [fork] Dienstfrei
 import { formatDateToLocal } from "@/lib/date-utils";
 import { isValidLocalDate, toDayNumber } from "@/lib/rotation/dates";
 import { MAX_YEAR_DELTA } from "@/lib/rotation/yearly"; // [fork] Jahresausgleich
@@ -25,6 +25,7 @@ export interface RotationInput {
   // [fork] Dienstfrei (SPEC 12.34)
   dayOffEnabled: boolean;
   dayOffTitle: string;
+  dayOffTiming: DayOffTiming; // [fork] SPEC 12.42
   /** Teilnehmer who get no Dienstfrei, e.g. on an all-in contract (SPEC 12.40). */
   dayOffExcludedIds: string[];
   /** [fork] Jahresausgleich (SPEC 12.41). */
@@ -50,6 +51,7 @@ export type RotationValidationError =
   | "reinforcedDates"
   | "dayOffEnabled"
   | "dayOffTitle"
+  | "dayOffTiming"
   | "dayOffExcluded"
   | "yearlyFairness"
   | "yearDelta"
@@ -143,6 +145,8 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
   if (typeof dayOffEnabled !== "boolean") return fail("dayOffEnabled");
   const dayOffTitle = b.dayOffTitle ?? DEFAULT_DAY_OFF_TITLE;
   if (typeof dayOffTitle !== "string" || validateEntryTitle(dayOffTitle) !== "ok") return fail("dayOffTitle");
+  const dayOffTiming = b.dayOffTiming ?? "after"; // [fork] SPEC 12.42
+  if (dayOffTiming !== "after" && dayOffTiming !== "before") return fail("dayOffTiming");
   const dayOffExcludedIds = b.dayOffExcludedIds ?? [];
   if (!Array.isArray(dayOffExcludedIds) || !dayOffExcludedIds.every((id) => typeof id === "string" && memberIds.includes(id))) {
     return fail("dayOffExcluded");
@@ -186,6 +190,7 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
       reinforcedDates: [...reinforcedByDate].map(([date, perShift]) => ({ date, perShift })).sort((x, y) => x.date.localeCompare(y.date)),
       dayOffEnabled, // [fork] Dienstfrei
       dayOffTitle: dayOffTitle.trim(), // [fork] Dienstfrei
+      dayOffTiming, // [fork] Dienstfrei
       dayOffExcludedIds: [...new Set(dayOffExcludedIds as string[])], // [fork] Dienstfrei
       yearlyFairness, // [fork] Jahresausgleich
     },

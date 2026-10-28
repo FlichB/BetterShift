@@ -1575,6 +1575,7 @@
       "holidayOpenDates": "Neplatné svátky se službou.",
       "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků).",
       "dayOffTitle": "Šablona záznamu volného dne je neplatná.",
+      "dayOffTiming": "Umístění volna je neplatné.",
       "dayOffExcluded": "Volno pro každého účastníka je neplatné: vyloučit lze jen účastníky rotace.",
       "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků.",
       "yearlyFairness": "Neplatné nastavení ročního vyrovnání.",

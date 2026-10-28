@@ -28,6 +28,7 @@ describe("Schließeinträge in Outlook and the personal feed", () => {
         entryTitle: "{Vorname} Dienst",
         dayOffEnabled: false,
         dayOffTitle: "{Vorname} dienstfrei",
+        dayOffTiming: "after",
         dayOffExcludedIds: [],
         yearlyFairness: false,
         reinforcedDates: [],

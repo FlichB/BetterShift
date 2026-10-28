@@ -29,6 +29,7 @@ describe("phase 3 schema", () => {
         entryTitle: "{Vorname} Dienst",
         dayOffEnabled: false,
         dayOffTitle: "{Vorname} dienstfrei",
+        dayOffTiming: "after",
         dayOffExcludedIds: [],
         yearlyFairness: false,
         reinforcedDates: [],

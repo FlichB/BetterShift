@@ -3,6 +3,9 @@ export type DayOffStatus = "standard" | "moved" | "locked" | "agreed" | "dropped
 export type ProposalSide = "holder" | "manager";
 export type ProposalStatus = "open" | "accepted" | "declined" | "void";
 export type DropReason = "noDuty" | "disabled" | "seatRemoved" | "excluded";
+
+/** Where the Dienstfrei of a rotation lies relative to its duty (SPEC 12.42). */
+export type DayOffTiming = "after" | "before";
 export type DayOffAudience = "holder" | "managers";
 export type DayOffNotificationKind =
   | "day_off_locked"

@@ -1575,6 +1575,7 @@
       "holidayOpenDates": "Festività con turno non valide.",
       "entryTitle": "Modello di voce non valido: serve '{Vorname}' o '{Name}' e può contenere solo '{Vorname}', '{Name}' e '{Dienst}' (max. 100 caratteri).",
       "dayOffTitle": "Il modello di voce del giorno libero non è valido.",
+      "dayOffTiming": "La posizione del giorno libero non è valida.",
       "dayOffExcluded": "Giorno libero per partecipante non valido: si possono escludere solo partecipanti della rotazione.",
       "reinforcedDates": "Giorni rinforzati non validi: una voce per data; i giorni futuri richiedono più persone di «Persone per turno» e al massimo quanti sono i partecipanti.",
       "yearlyFairness": "Impostazione non valida per l’equità annuale.",

@@ -32,6 +32,18 @@ describe("dayoff schema", () => {
     expect(r).toMatchObject({ dayOffEnabled: false, dayOffTitle: "{Vorname} dienstfrei" });
   });
 
+  it("defaults dayOffTiming to after and keptOnSwap to false", async () => {
+    const s = await seedDuties();
+    const r = db.select().from(rotations).where(eq(rotations.id, s.rotation.id)).get()!;
+    expect(r.dayOffTiming).toBe("after");
+    const row = db
+      .insert(dayOffs)
+      .values({ rotationId: s.rotation.id, shiftId: s.duty("2026-11-07"), dutyDate: "2026-11-07", userId: s.m0, status: "standard", standardDate: "2026-11-09", date: "2026-11-09" })
+      .returning()
+      .get();
+    expect(row.keptOnSwap).toBe(false);
+  });
+
   it("puts moveOwnDayOff into every default bundle", () => {
     for (const bundle of defaultBundleDefinitionsForNewCalendar()) expect(bundle.capabilities).toContain("moveOwnDayOff");
   });

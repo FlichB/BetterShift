@@ -1575,6 +1575,7 @@
       "holidayOpenDates": "Festivos con servicio no válidos.",
       "entryTitle": "Plantilla de entrada no válida: necesita '{Vorname}' o '{Name}' y solo puede contener '{Vorname}', '{Name}' y '{Dienst}' (máx. 100 caracteres).",
       "dayOffTitle": "La plantilla de entrada del día libre no es válida.",
+      "dayOffTiming": "La posición del día libre no es válida.",
       "dayOffExcluded": "Día libre por participante no válido: solo se pueden excluir participantes de la rotación.",
       "reinforcedDates": "Días reforzados no válidos: una entrada por fecha; los días futuros necesitan más personas que «Personas por turno» y como máximo tantas como participantes.",
       "yearlyFairness": "Ajuste no válido para el reparto anual.",
