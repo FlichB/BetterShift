@@ -39,6 +39,8 @@ export interface RotationDetail extends Rotation {
   memberIds: string[];
   /** [fork] Teilnehmer without Dienstfrei (SPEC 12.40). */
   dayOffExcludedIds: string[];
+  /** [fork] Jahresausgleich: userId → since when a Teilnehmer (SPEC 12.41). */
+  memberSince: Record<string, string>;
 }
 
 export type RotationError = "notFound" | "presetMissing" | "presetArchived" | "signupsDisabled";
@@ -66,7 +68,7 @@ interface LoadedTemplate {
 
 function withMembers(tx: Tx | typeof db, rotation: Rotation): RotationDetail {
   const members = tx
-    .select({ userId: rotationMembers.userId, dayOff: rotationMembers.dayOff })
+    .select({ userId: rotationMembers.userId, dayOff: rotationMembers.dayOff, joinedOn: rotationMembers.joinedOn })
     .from(rotationMembers)
     .where(eq(rotationMembers.rotationId, rotation.id))
     .orderBy(asc(rotationMembers.position))
@@ -75,6 +77,7 @@ function withMembers(tx: Tx | typeof db, rotation: Rotation): RotationDetail {
     ...rotation,
     memberIds: members.map((m) => m.userId),
     dayOffExcludedIds: members.filter((m) => !m.dayOff).map((m) => m.userId), // [fork] Dienstfrei
+    memberSince: Object.fromEntries(members.map((m) => [m.userId, m.joinedOn])), // [fork] Jahresausgleich
   };
 }
 
@@ -137,11 +140,28 @@ function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date
   };
 }
 
-function writeMembers(tx: Tx, rotationId: string, input: RotationInput): void {
+function writeMembers(tx: Tx, rotationId: string, input: RotationInput, joinedToday: string): void {
   const excluded = new Set(input.dayOffExcludedIds); // [fork] Dienstfrei
+  // [fork] Jahresausgleich: staying Teilnehmer keep their joinedOn; new ones join joinedToday.
+  const since = new Map(
+    tx
+      .select({ userId: rotationMembers.userId, joinedOn: rotationMembers.joinedOn })
+      .from(rotationMembers)
+      .where(eq(rotationMembers.rotationId, rotationId))
+      .all()
+      .map((m) => [m.userId, m.joinedOn])
+  );
   tx.delete(rotationMembers).where(eq(rotationMembers.rotationId, rotationId)).run();
   tx.insert(rotationMembers)
-    .values(input.memberIds.map((userId, position) => ({ rotationId, userId, position, dayOff: !excluded.has(userId) })))
+    .values(
+      input.memberIds.map((userId, position) => ({
+        rotationId,
+        userId,
+        position,
+        dayOff: !excluded.has(userId),
+        joinedOn: since.get(userId) ?? joinedToday,
+      }))
+    )
     .run();
 }
 
@@ -163,6 +183,7 @@ function configValues(input: RotationInput) {
     reinforcedDates: input.reinforcedDates,
     dayOffEnabled: input.dayOffEnabled, // [fork] Dienstfrei
     dayOffTitle: input.dayOffTitle, // [fork] Dienstfrei
+    yearlyFairness: input.yearlyFairness, // [fork] Jahresausgleich
   };
 }
 
@@ -181,14 +202,15 @@ export function getRotation(id: string): RotationDetail | null {
   return rotation ? withMembers(db, rotation) : null;
 }
 
-export function createRotation(input: RotationInput, actorId: string | null): RotationDetail {
+export function createRotation(input: RotationInput, actorId: string | null, now: Date = new Date()): RotationDetail {
   return db.transaction((tx) => {
     const row = tx
       .insert(rotations)
       .values({ calendarId: input.calendarId, ...configValues(input), createdBy: actorId })
       .returning()
       .get();
-    writeMembers(tx, row.id, input);
+    const today = formatDateToLocal(now);
+    writeMembers(tx, row.id, input, input.startDate < today ? input.startDate : today);
     return withMembers(tx, row);
   });
 }
@@ -204,7 +226,7 @@ export function updateRotation(id: string, input: RotationInput, now: Date = new
       .returning()
       .get();
     if (!row) throw new RotationServiceError("notFound");
-    writeMembers(tx, id, input);
+    writeMembers(tx, id, input, formatDateToLocal(now));
     dayOffEvents = reconcileRotation(tx, id, now).events; // [fork] Dienstfrei
     return withMembers(tx, row);
   });

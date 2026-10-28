@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendars } from "@/lib/db/schema";
-import { rotationMembers, rotations } from "@/lib/rotation/schema";
+import { rotationMembers, rotationYearDeltas, rotations } from "@/lib/rotation/schema";
 import { seedTeam } from "@/tests/helpers/seed";
 
 describe("rotation schema", () => {
@@ -101,5 +101,21 @@ describe("entry template migration", () => {
       .returning()
       .get();
     expect(row.entryTitle).toBe("{Vorname} Dienst");
+  });
+
+  it("defaults yearly fairness off and stores Delta overrides per rotation, year and user", () => {
+    const team = seedTeam({ members: 2 });
+    const [row] = db
+      .insert(rotations)
+      .values({ calendarId: team.calendarId, name: "R", presetId: team.presetId, perShift: 1, period: "week", startDate: "2026-11-02" })
+      .returning()
+      .all();
+    expect(row.yearlyFairness).toBe(false);
+    db.insert(rotationYearDeltas).values({ rotationId: row.id, year: 2027, userId: team.memberIds[0], delta: 2 }).run();
+    expect(() =>
+      db.insert(rotationYearDeltas).values({ rotationId: row.id, year: 2027, userId: team.memberIds[0], delta: 1 }).run()
+    ).toThrow();
+    db.delete(rotations).where(eq(rotations.id, row.id)).run();
+    expect(db.select().from(rotationYearDeltas).all()).toHaveLength(0);
   });
 });

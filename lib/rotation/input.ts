@@ -23,5 +23,6 @@ export function inputFromRotation(rotation: RotationDetail): RotationInput {
     dayOffEnabled: rotation.dayOffEnabled,
     dayOffTitle: rotation.dayOffTitle,
     dayOffExcludedIds: rotation.dayOffExcludedIds,
+    yearlyFairness: rotation.yearlyFairness,
   };
 }

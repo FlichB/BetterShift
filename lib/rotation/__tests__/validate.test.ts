@@ -20,6 +20,7 @@ const valid = {
   dayOffEnabled: false,
   dayOffTitle: "{Vorname} dienstfrei",
   dayOffExcludedIds: [] as string[],
+  yearlyFairness: false,
   reinforcedDates: [] as { date: string; perShift: number }[],
 };
 
@@ -212,5 +213,15 @@ describe("dayOff fields", () => {
     expect(excluded.ok && excluded.value.dayOffExcludedIds).toEqual([valid.memberIds[1]]);
     expect(validateRotationInput({ ...valid, dayOffExcludedIds: ["stranger"] })).toEqual({ ok: false, error: "dayOffExcluded" });
     expect(validateRotationInput({ ...valid, dayOffExcludedIds: "u1" })).toEqual({ ok: false, error: "dayOffExcluded" });
+  });
+});
+
+describe("yearlyFairness", () => {
+  it("defaults to false and must be a boolean", () => {
+    const ok = validateRotationInput({ ...valid });
+    expect(ok.ok && ok.value.yearlyFairness).toBe(false);
+    const on = validateRotationInput({ ...valid, yearlyFairness: true });
+    expect(on.ok && on.value.yearlyFairness).toBe(true);
+    expect(validateRotationInput({ ...valid, yearlyFairness: "yes" })).toEqual({ ok: false, error: "yearlyFairness" });
   });
 });

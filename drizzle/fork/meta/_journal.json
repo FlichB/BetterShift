@@ -78,6 +78,13 @@
       "when": 1793188213989,
       "tag": "0010_rotation_member_day_off",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1793196588137,
+      "tag": "0011_rotation_yearly_fairness",
+      "breakpoints": true
     }
   ]
 }

@@ -113,6 +113,7 @@ describe("acceptOffer", () => {
         dayOffEnabled: false,
         dayOffTitle: "{Vorname} dienstfrei",
         dayOffExcludedIds: [],
+        yearlyFairness: false,
         reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],

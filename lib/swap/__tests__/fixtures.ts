@@ -30,6 +30,7 @@ export async function seedDuties() {
       dayOffEnabled: false,
       dayOffTitle: "{Vorname} dienstfrei",
       dayOffExcludedIds: [],
+      yearlyFairness: false,
       reinforcedDates: [],
       holidayCalendarId: null,
       holidayOpenDates: [],

@@ -29,6 +29,7 @@ export interface RotationFormState {
   dayOffEnabled: boolean;
   dayOffTitle: string;
   dayOffExcludedIds: string[];
+  yearlyFairness: boolean; // [fork] Jahresausgleich
 }
 
 function nextMonday(): string {
@@ -59,6 +60,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           dayOffEnabled: rotation.dayOffEnabled, // [fork] Dienstfrei
           dayOffTitle: rotation.dayOffTitle, // [fork] Dienstfrei
           dayOffExcludedIds: rotation.dayOffExcludedIds, // [fork] Dienstfrei
+          yearlyFairness: rotation.yearlyFairness, // [fork] Jahresausgleich
         }
       : {
           name: "",
@@ -79,6 +81,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           dayOffEnabled: false, // [fork] Dienstfrei
           dayOffTitle: DEFAULT_DAY_OFF_TITLE, // [fork] Dienstfrei
           dayOffExcludedIds: [], // [fork] Dienstfrei
+          yearlyFairness: true, // [fork] Jahresausgleich: new rotations on (SPEC 12.41)
         }
   );
 
@@ -157,6 +160,7 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
     dayOffTitle: state.dayOffTitle, // [fork] Dienstfrei
     // a removed Teilnehmer leaves no stale entry behind
     dayOffExcludedIds: state.dayOffExcludedIds.filter((id) => state.memberIds.includes(id)), // [fork] Dienstfrei
+    yearlyFairness: state.yearlyFairness, // [fork] Jahresausgleich
   });
 
   return {

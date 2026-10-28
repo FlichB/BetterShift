@@ -26,6 +26,8 @@ export interface RotationInput {
   dayOffTitle: string;
   /** Teilnehmer who get no Dienstfrei, e.g. on an all-in contract (SPEC 12.40). */
   dayOffExcludedIds: string[];
+  /** [fork] Jahresausgleich (SPEC 12.41). */
+  yearlyFairness: boolean;
 }
 
 export type RotationValidationError =
@@ -48,6 +50,8 @@ export type RotationValidationError =
   | "dayOffEnabled"
   | "dayOffTitle"
   | "dayOffExcluded"
+  | "yearlyFairness"
+  | "yearDelta"
   | "range";
 
 export type ValidationResult<T> =
@@ -142,6 +146,9 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
   if (!Array.isArray(dayOffExcludedIds) || !dayOffExcludedIds.every((id) => typeof id === "string" && memberIds.includes(id))) {
     return fail("dayOffExcluded");
   }
+  // [fork] Jahresausgleich: off unless switched on, so API callers keep today's plan.
+  const yearlyFairness = b.yearlyFairness ?? false;
+  if (typeof yearlyFairness !== "boolean") return fail("yearlyFairness");
 
   // Past entries are kept untouched: the plan is counted from startDate, so dropping one would
   // shift the future Besetzung. Only future entries must fit the current rotation.
@@ -179,6 +186,7 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
       dayOffEnabled, // [fork] Dienstfrei
       dayOffTitle: dayOffTitle.trim(), // [fork] Dienstfrei
       dayOffExcludedIds: [...new Set(dayOffExcludedIds as string[])], // [fork] Dienstfrei
+      yearlyFairness, // [fork] Jahresausgleich
     },
   };
 }

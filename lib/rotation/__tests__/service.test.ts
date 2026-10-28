@@ -6,6 +6,7 @@ import { rotationDuties, rotationSlotLocks } from "@/lib/rotation/schema";
 import {
   createRotation,
   deleteRotation,
+  getRotation,
   previewGeneration,
   runGeneration,
   suggestOffsetFor,
@@ -41,6 +42,7 @@ beforeEach(() => {
     dayOffEnabled: false,
     dayOffTitle: "{Vorname} dienstfrei",
     dayOffExcludedIds: [],
+    yearlyFairness: false,
     reinforcedDates: [],
   };
 });
@@ -427,4 +429,24 @@ it("raises the capacity of an existing duty as a capacity change, not a field ch
     .where(and(eq(rotationDuties.rotationId, rotation.id), eq(rotationDuties.date, "2026-11-14")))
     .get();
   expect(duty).toEqual({ capacity: 3 });
+});
+
+describe("joinedOn", () => {
+  it("starts at the earlier of today and startDate and survives updates; new members join today", () => {
+    const created = createRotation({ ...input, yearlyFairness: true }, team.ownerId, now); // now = 2026-10-21
+    expect(created.yearlyFairness).toBe(true);
+    expect(new Set(Object.values(created.memberSince))).toEqual(new Set(["2026-10-21"]));
+
+    const later = new Date(2026, 10, 10, 12, 0); // 2026-11-10
+    const extra = seedTeam({ members: 1 }).memberIds[0];
+    updateRotation(created.id, { ...input, memberIds: [...input.memberIds, extra] }, later);
+    const updated = getRotation(created.id)!;
+    expect(updated.memberSince[input.memberIds[0]]).toBe("2026-10-21");
+    expect(updated.memberSince[extra]).toBe("2026-11-10");
+  });
+
+  it("uses startDate when the rotation starts before today", () => {
+    const created = createRotation({ ...input, startDate: "2026-10-05" }, team.ownerId, now);
+    expect(created.memberSince[input.memberIds[0]]).toBe("2026-10-05");
+  });
 });
