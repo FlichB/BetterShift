@@ -1712,6 +1712,7 @@
       "closedDuty": "Il n'y a pas de places un jour de fermeture.",
       "counterNotDue": "Aucune compensation n'est en attente pour cet échange.",
       "outsideWindow": "Ce service se situe en dehors de la période de compensation.",
+      "onVacation": "Cette personne est en congé ce jour-là.",
       "internal": "Erreur inattendue."
     },
     "retry": "Réessayer",

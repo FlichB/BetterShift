@@ -1712,6 +1712,7 @@
       "closedDuty": "An einem Schließtag gibt es keine Plätze.",
       "counterNotDue": "Für diesen Tausch ist kein Ausgleich offen.",
       "outsideWindow": "Dieser Dienst liegt außerhalb des Ausgleichsfensters.",
+      "onVacation": "An diesem Tag ist die Person auf Urlaub.",
       "internal": "Unerwarteter Fehler."
     },
     "retry": "Erneut versuchen",

@@ -1712,6 +1712,7 @@
       "closedDuty": "There are no places on a closure day.",
       "counterNotDue": "There is no open counter duty for this swap.",
       "outsideWindow": "This duty is outside the counter-duty window.",
+      "onVacation": "This person is on vacation that day.",
       "internal": "Unexpected error."
     },
     "retry": "Try again",

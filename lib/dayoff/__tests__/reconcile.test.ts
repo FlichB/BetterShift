@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { shiftSignups, shifts } from "@/lib/db/schema";
 import { dayOffs } from "@/lib/dayoff/schema";
 import { reconcileRotation } from "@/lib/dayoff/service";
+import { vacations } from "@/lib/vacation/schema"; // [fork]
 import { rotationMembers, rotations } from "@/lib/rotation/schema";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
 import { seedHolidays } from "@/tests/helpers/seed";
@@ -153,5 +154,16 @@ describe("timing before", () => {
     expect(rowOf(s, "2026-11-07", s.m1)).toMatchObject({ status: "agreed", date: "2026-11-25" });
     expect(rowOf(s, "2026-11-14", s.m2)).toMatchObject({ status: "standard", date: "2026-11-09" });
     expect(result.reset).toBe(1);
+  });
+});
+
+describe("reconcileRotation with vacations", () => {
+  it("[fork] skips the holder's vacation days when dating a Dienstfrei (SPEC 12.43)", async () => {
+    const s = await seedDuties();
+    enable(s.rotation.id);
+    db.insert(vacations).values({ userId: s.m0, startDate: "2026-11-09", endDate: "2026-11-10", status: "approved", requestedBy: s.m0 }).run();
+    run(s.rotation.id);
+    const row = rowsOf(s.duty("2026-11-07")).find((r) => r.userId === s.m0);
+    expect(row?.date).toBe("2026-11-11");
   });
 });

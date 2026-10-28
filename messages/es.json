@@ -1712,6 +1712,7 @@
       "closedDuty": "En un día de cierre no hay plazas.",
       "counterNotDue": "Para este intercambio no hay ninguna compensación pendiente.",
       "outsideWindow": "Este turno está fuera del plazo de compensación.",
+      "onVacation": "La persona está de vacaciones ese día.",
       "internal": "Error inesperado."
     },
     "retry": "Reintentar",

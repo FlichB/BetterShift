@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { db } from "@/lib/db"; // [fork]
+import { vacations } from "@/lib/vacation/schema"; // [fork]
 import { createRotation, runGeneration } from "@/lib/rotation/service";
 import { acceptOffer, createOffer, getSwap, SwapServiceError, withdrawOffer } from "@/lib/swap/service";
 import { now, seedDuties, sorted } from "./fixtures";
@@ -160,4 +162,11 @@ describe("acceptOffer", () => {
     await runGeneration(s.rotation.id, "2026-11-02", "2026-12-27", s.team.ownerId, now);
     expect(s.holders(sat)).toEqual(sorted(s.m1, s.m2));
   });
+});
+
+it("[fork] refuses to take over a Platz on the acceptor's vacation day (SPEC 12.43)", () => {
+  db.insert(vacations).values({ userId: s.m2, startDate: "2026-11-07", endDate: "2026-11-07", status: "approved", requestedBy: s.m2 }).run();
+  const swap = offer(s.duty("2026-11-07"), s.m0);
+  expect(code(() => acceptOffer(swap.id, s.m2, s.duty("2026-11-14"), now))).toBe("onVacation");
+  expect(getSwap(swap.id)?.status).toBe("open");
 });

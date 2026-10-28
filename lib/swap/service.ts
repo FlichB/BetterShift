@@ -11,6 +11,7 @@ import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
 import { enqueueSwapEvent, offerKind } from "@/lib/notify/enqueue";
 import { addDays, hasStarted } from "@/lib/rotation/dates"; // [fork] addDays
 import { rotationDuties, rotationSlotLocks, rotations } from "@/lib/rotation/schema";
+import { isOnVacation } from "@/lib/vacation/dates"; // [fork]
 import { logResolved } from "@/lib/swap/audit";
 import {
   checkAccept,
@@ -263,6 +264,9 @@ export interface AcceptResult {
 
 /** Hands one Platz over and carries its lock along (see nextLock). */
 function applyMove(tx: Tx, move: SlotMove, actorId: string, now: Date): void {
+  // [fork] Urlaub (SPEC 12.43): nobody takes over a Platz on their own vacation day.
+  const dutyDate = tx.select({ date: rotationDuties.date }).from(rotationDuties).where(eq(rotationDuties.shiftId, move.shiftId)).get()?.date;
+  if (dutyDate && isOnVacation(tx, move.toUserId, dutyDate)) throw new SwapServiceError("onVacation");
   const fromLock = and(eq(rotationSlotLocks.shiftId, move.shiftId), eq(rotationSlotLocks.userId, move.fromUserId));
   const existing = tx.select().from(rotationSlotLocks).where(fromLock).get() ?? null;
   tx.update(shiftSignups)

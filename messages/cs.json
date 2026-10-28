@@ -1712,6 +1712,7 @@
       "closedDuty": "V den zavření nejsou žádná místa.",
       "counterNotDue": "Pro tuto výměnu není otevřená žádná kompenzace.",
       "outsideWindow": "Tato služba leží mimo okno pro kompenzaci.",
+      "onVacation": "Tato osoba má v ten den dovolenou.",
       "internal": "Neočekávaná chyba."
     },
     "retry": "Zkusit znovu",

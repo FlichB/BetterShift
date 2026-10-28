@@ -23,7 +23,8 @@ export type SwapErrorCode =
   | "dutySlotSwapOnly"
   | "closedDuty"
   | "counterNotDue"
-  | "outsideWindow";
+  | "outsideWindow"
+  | "onVacation"; // [fork] Urlaub (SPEC 12.43)
 
 export interface DutyInfo {
   shiftId: string;
