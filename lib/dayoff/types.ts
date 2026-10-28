@@ -51,6 +51,8 @@ export interface DayOffView {
   standardDate: string | null;
   lockNote: string | null;
   dropReason: DropReason | null;
+  /** Kept by its holder after giving the Platz away (SPEC 12.42). */
+  keptOnSwap: boolean;
   windowEnd: string;
   proposals: DayOffProposalView[];
   /** Filled by the route; the service always returns false. */

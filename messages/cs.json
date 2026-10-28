@@ -1588,6 +1588,8 @@
     }
   },
   "swap": {
+    "dayOffStays": "Tvoje volno ke službě ti zůstává; kdo ji převezme, žádné nedostane.",
+    "dayOffStaysForced": "Volno zůstává dosavadnímu držiteli; zastupující za něj žádné nedostane.",
     "notifications": {
       "open": "Oznámení",
       "title": "Oznámení",
@@ -1794,6 +1796,7 @@
     "mineTitle": "Moje volna",
     "manageTitle": "Správa",
     "cardTitle": "Volno ke službě {date}",
+    "keptOnSwap": "Z vyměněné služby – volno ti zůstává.",
     "status": {
       "standard": "Standard",
       "moved": "Přesunuto",

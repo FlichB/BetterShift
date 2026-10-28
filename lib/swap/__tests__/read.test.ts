@@ -42,6 +42,15 @@ describe("listBoard", () => {
     });
   });
 
+  it("flags a duty whose Dienstfrei stays with its holder", () => {
+    const dayOffStays = () => listBoard(s.m4, [s.team.calendarId], now, false).forMe[0].offered.dayOffStays;
+    offer(s.duty("2026-11-07"), s.m0);
+    db.update(rotations).set({ dayOffEnabled: true, dayOffTiming: "before" }).where(eq(rotations.id, s.rotation.id)).run();
+    expect(dayOffStays()).toBe(true);
+    db.update(rotations).set({ dayOffTiming: "after" }).where(eq(rotations.id, s.rotation.id)).run();
+    expect(dayOffStays()).toBe(false);
+  });
+
   it("moves hidden offers out of forMe for that user only", () => {
     const broadcast = offer(s.duty("2026-11-07"), s.m0);
     hideOffer(broadcast.id, s.m4);

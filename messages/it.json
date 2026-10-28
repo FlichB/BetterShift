@@ -1588,6 +1588,8 @@
     }
   },
   "swap": {
+    "dayOffStays": "Il tuo giorno libero per questo servizio resta a te; chi lo rileva non ne riceve nessuno.",
+    "dayOffStaysForced": "Il giorno libero resta al titolare precedente; il sostituto non ne riceve nessuno.",
     "notifications": {
       "open": "Notifiche",
       "title": "Notifiche",
@@ -1794,6 +1796,7 @@
     "mineTitle": "I miei giorni liberi",
     "manageTitle": "Gestione",
     "cardTitle": "Giorno libero per il servizio del {date}",
+    "keptOnSwap": "Da un servizio scambiato: il giorno libero resta a te.",
     "status": {
       "standard": "Standard",
       "moved": "Spostato",

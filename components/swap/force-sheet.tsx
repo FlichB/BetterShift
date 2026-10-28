@@ -88,6 +88,7 @@ export function ForceSheet({
               </Select>
             </Field>
           )}
+          {form.dayOffStays && <p className="text-xs text-fg-tertiary">{t("swap.dayOffStaysForced")}</p>} {/* [fork] */}
           <Field label={t("swap.form.note")} htmlFor="force-note" optional>
             <Textarea
               id="force-note"

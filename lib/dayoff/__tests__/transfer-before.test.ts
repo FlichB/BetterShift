@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { shiftSignups } from "@/lib/db/schema";
 import { dayOffProposals, dayOffs } from "@/lib/dayoff/schema";
-import { reconcileRotation } from "@/lib/dayoff/service";
+import { listDayOffBoard, reconcileRotation } from "@/lib/dayoff/service";
 import { rotationMembers, rotations } from "@/lib/rotation/schema";
 import { acceptOffer, createOffer, forceSwap, waiveCounter } from "@/lib/swap/service";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
@@ -111,5 +111,14 @@ describe("Dienstfrei before the duty on swaps", () => {
     expect(s.of("2026-11-07", s.m2)).toMatchObject({ status: "standard", date: "2026-11-09", keptOnSwap: false });
     expect(s.of("2026-11-14", s.m0)).toMatchObject({ status: "standard", date: "2026-11-16", keptOnSwap: false });
     expect(s.of("2026-11-07", s.m0)).toBeUndefined();
+  });
+});
+
+describe("Dienstfrei board hint", () => {
+  it("the board marks a kept Dienstfrei", async () => {
+    const s = await setup();
+    s.exchange("2026-11-07", s.m0, "2026-11-14", s.m2);
+    const board = listDayOffBoard(s.m0, [], now);
+    expect(board.mine.find((v) => v.dutyDate === "2026-11-07")).toMatchObject({ keptOnSwap: true });
   });
 });

@@ -33,6 +33,8 @@ export interface DutyInfo {
   endTime: string;
   isAllDay: boolean;
   title: string;
+  /** The Dienstfrei of this duty stays with its holder on a swap (SPEC 12.42). */
+  dayOffStays: boolean;
 }
 
 export interface Person {

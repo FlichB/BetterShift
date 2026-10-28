@@ -1588,6 +1588,8 @@
     }
   },
   "swap": {
+    "dayOffStays": "Ton jour de repos pour ce service reste chez toi ; celui ou celle qui le reprend n'en reçoit pas.",
+    "dayOffStaysForced": "Le jour de repos reste chez le titulaire précédent ; le remplaçant n'en reçoit pas.",
     "notifications": {
       "open": "Notifications",
       "title": "Notifications",
@@ -1794,6 +1796,7 @@
     "mineTitle": "Mes jours de repos",
     "manageTitle": "Gestion",
     "cardTitle": "Jour de repos pour le service du {date}",
+    "keptOnSwap": "D'un service échangé : le jour de repos reste chez toi.",
     "status": {
       "standard": "Standard",
       "moved": "Déplacé",

@@ -1588,6 +1588,8 @@
     }
   },
   "swap": {
+    "dayOffStays": "Your day off for this duty stays with you; whoever takes it over gets none for it.",
+    "dayOffStaysForced": "The day off stays with the previous holder; the substitute gets none for it.",
     "notifications": {
       "open": "Notifications",
       "title": "Notifications",
@@ -1794,6 +1796,7 @@
     "mineTitle": "My days off",
     "manageTitle": "Management",
     "cardTitle": "Day off for the duty on {date}",
+    "keptOnSwap": "From a swapped duty – the day off stays with you.",
     "status": {
       "standard": "Standard",
       "moved": "Moved",

@@ -1,7 +1,7 @@
 // [fork] Swap board service. Every write runs in one synchronous better-sqlite3
 // transaction: read state, ask lib/swap/rules.ts, write. Due offers are settled
 // in a separate transaction first, so their status sticks even if the request fails.
-import { and, eq, gte, inArray, isNotNull, ne } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, ne, sql } from "drizzle-orm"; // [fork] sql
 import { db } from "@/lib/db";
 import { dayOffs } from "@/lib/dayoff/schema"; // [fork]
 import { formatDateToLocal } from "@/lib/date-utils"; // [fork]
@@ -77,6 +77,7 @@ const dutyColumns = {
   endTime: shifts.endTime,
   isAllDay: shifts.isAllDay,
   title: shifts.title,
+  dayOffStays: sql<boolean>`(${rotations.dayOffEnabled} = 1 and ${rotations.dayOffTiming} = 'before')`.mapWith(Boolean), // [fork] SPEC 12.42
 };
 
 /** The duty behind a shift with its current holders, or null for a plain shift. */
@@ -85,6 +86,7 @@ export function loadSlot(tx: Reader, shiftId: string): SlotView | null {
     .select(dutyColumns)
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId)) // [fork]
     .where(and(eq(rotationDuties.shiftId, shiftId), eq(rotationDuties.kind, "duty")))
     .get();
   if (!duty) return null;
@@ -104,6 +106,7 @@ export function dutiesOf(tx: Reader, userId: string): DutyTiming[] {
     .from(shiftSignups)
     .innerJoin(rotationDuties, eq(rotationDuties.shiftId, shiftSignups.shiftId))
     .innerJoin(shifts, eq(shifts.id, shiftSignups.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId)) // [fork]
     .where(and(eq(shiftSignups.userId, userId), eq(rotationDuties.kind, "duty")))
     .all();
 }
@@ -517,6 +520,7 @@ function dutyInfos(shiftIds: string[]): Map<string, DutyInfo> {
     .select(dutyColumns)
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId)) // [fork]
     .where(inArray(rotationDuties.shiftId, shiftIds))
     .all();
   return new Map(rows.map((r) => [r.shiftId, r]));
@@ -624,6 +628,7 @@ export function listDuties(calendarId: string, userId: string, now: Date): DutyL
     .select(dutyColumns)
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId)) // [fork]
     .where(and(eq(shifts.calendarId, calendarId), eq(rotationDuties.kind, "duty")))
     .all()
     .filter((d) => !hasStarted(d.date, d.startTime, now))

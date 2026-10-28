@@ -675,6 +675,7 @@ function toViews(rows: DayOff[]): DayOffView[] {
         standardDate: row.standardDate,
         lockNote: row.lockNote,
         dropReason: row.dropReason,
+        keptOnSwap: row.keptOnSwap,
         windowEnd: counterWindowEnd(row.dutyDate),
         proposals: proposals
           .filter((p) => p.dayOffId === row.id)

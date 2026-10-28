@@ -91,6 +91,9 @@ export function OfferSheet({
                 </SelectContent>
               </Select>
             </Field>
+            {form.mySlots.find((d) => d.shiftId === form.shiftId)?.dayOffStays && (
+              <p className="text-xs text-fg-tertiary">{t("swap.dayOffStays")}</p>
+            )}
 
             <Field label={t("swap.form.requested")} htmlFor="swap-requested">
               <Select value={form.requestedShiftId} onValueChange={form.changeRequested}>
