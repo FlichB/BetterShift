@@ -306,7 +306,7 @@ Mails nur mit konfiguriertem Outlook. Mitglieder, die aus der Rotation ausscheid
 
 ## 4c. Mindestbesetzung an Werktagen
 
-Die **Mindestbesetzung** legt fest, wie viele Teilnehmer einer Rotation an jedem Werktag (Mo bis Fr, kein Ausfalltag der Rotation) anwesend sein müssen. Sie wirkt auf Dienstfrei und warnt bei Urlaub. Hintergrund: SPEC, Abschnitt 12.44.
+Die **Mindestbesetzung** legt fest, wie viele Teilnehmer einer Rotation an jedem Werktag (Mo bis Fr, kein Schließtag der Rotation, also Ausfalltag oder nicht geöffneter Feiertag) anwesend sein müssen. Sie wirkt auf Dienstfrei und warnt bei Urlaub. Hintergrund: SPEC, Abschnitt 12.44.
 
 **Einstellen.** Im Rotationsformular den Schalter „Mindestbesetzung an Werktagen“ einschalten und bei „Mindestens anwesend“ eine Zahl von 1 bis Teilnehmerzahl − 1 eingeben (das Formular zeigt „von {n} Teilnehmern“). Ausgeschaltet ist alles wie bisher. Das Speichern gleicht die Dienstfreie sofort ab.
 
@@ -314,7 +314,7 @@ Die **Mindestbesetzung** legt fest, wie viele Teilnehmer einer Rotation an jedem
 
 **Wirkung auf Dienstfrei.**
 
-- Ein **Standard-Dienstfrei** weicht still auf den nächsten Arbeitstag mit freier Kapazität aus. Wer den früheren Dienst hat, wählt zuerst; bei gleichem Dienst entscheidet eine feste Reihenfolge.
+- Ein **Standard-Dienstfrei** weicht still auf den nächsten Arbeitstag mit freier Kapazität aus; bei Dienstfrei „vor dem Dienst“ sucht er zuerst die Tage davor in der Dienstwoche, danach erst die Tage danach. Wer den früheren Dienst hat, wählt zuerst; bei gleichem Dienst entscheidet eine feste Reihenfolge.
 - **Verschobene und vereinbarte** Dienstfreie bleiben, wo sie sind, auch wenn der Tag dadurch unterbesetzt ist. Sie zählen als belegt.
 - **Mitarbeiter** können einen vollen Tag nicht wählen: Beim „Verschieben“ erscheint er als ausgegrauter Chip mit „voll“. Das gilt, sobald die Person in einer Rotation mit Mindestbesetzung Teilnehmer ist und ohne sie an dem Tag weniger als das Minimum anwesend wären.
 - Die **Verwaltung** darf trotzdem: Beim Gegenvorschlag und beim Annehmen eines Terminvorschlags des Inhabers fragt die App mit „Mindestbesetzung unterschritten“ nach („Am {date} wären nur {n} von mindestens {m} Teilnehmern anwesend. Trotzdem vergeben?“). „Trotzdem vergeben“ führt die Aktion aus. Nimmt der Inhaber einen Gegenvorschlag der Verwaltung an, wird nicht geprüft.
