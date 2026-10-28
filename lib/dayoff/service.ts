@@ -25,7 +25,7 @@ import { REMINDER_AFTER_DAYS, type DayOffBoard, type DayOffTiming, type DayOffEr
 import { counterWindowEnd, type SlotMove } from "@/lib/swap/rules";
 import { loadClosedSet, takenDates, type Tx } from "@/lib/dayoff/workdays";
 import { addDays } from "@/lib/rotation/dates";
-import { rotationDuties, rotationMembers, rotations, type Rotation } from "@/lib/rotation/schema";
+import { rotationDuties, rotationMembers, rotationSlotLocks, rotations, type Rotation } from "@/lib/rotation/schema";
 
 export type { Reader, Tx } from "@/lib/dayoff/workdays";
 
@@ -160,11 +160,31 @@ export function revalidateRow(tx: Tx, rowId: string, now: Date): "reset" | null 
   return notify;
 }
 
+/** Marks the giver's Dienstfrei as kept; a receiver who gets their own Platz back loses the mark. */
+function keepOnSwap(tx: Tx, move: SlotMove, now: Date): void {
+  const seat = (userId: string) => and(eq(dayOffs.shiftId, move.shiftId), eq(dayOffs.userId, userId), ne(dayOffs.status, "dropped"));
+  tx.update(dayOffs).set({ keptOnSwap: true, updatedAt: now }).where(seat(move.fromUserId)).run();
+  tx.update(dayOffs).set({ keptOnSwap: false, updatedAt: now }).where(and(seat(move.toUserId), eq(dayOffs.keptOnSwap, true))).run();
+}
+
 /**
  * Hands the Dienstfrei of a moved Platz to its new holder and revalidates it for them (SPEC 12.38).
  * A new holder without Dienstfrei drops it; a Platz coming from such a holder gets a fresh one (SPEC 12.40).
+ * With the Dienstfrei before the duty it stays with the previous holder instead and the new holder
+ * gets none for this Platz (SPEC 12.42).
  */
 export function transferDayOff(tx: Tx, move: SlotMove, now: Date): void {
+  // SPEC 12.42: with the Dienstfrei before the duty it stays with the previous holder on every swap.
+  const rotation = tx
+    .select({ timing: rotations.dayOffTiming })
+    .from(rotationDuties)
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId))
+    .where(eq(rotationDuties.shiftId, move.shiftId))
+    .get();
+  if (rotation?.timing === "before") {
+    keepOnSwap(tx, move, now);
+    return;
+  }
   const today = formatDateToLocal(now);
   const row = tx
     .select()
@@ -214,6 +234,10 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
   const rotation = tx.select().from(rotations).where(eq(rotations.id, rotationId)).get();
   if (!rotation) return result;
   const today = formatDateToLocal(now);
+  // SPEC 12.42: marks only exist under "before"; after switching back, rows follow their Platz again.
+  if (rotation.dayOffTiming === "after") {
+    tx.update(dayOffs).set({ keptOnSwap: false, updatedAt: now }).where(and(eq(dayOffs.rotationId, rotationId), eq(dayOffs.keptOnSwap, true))).run();
+  }
 
   // 2. Active rows: everything not frozen (not dropped, not begun; locked rows are always active).
   const allRows = tx.select().from(dayOffs).where(eq(dayOffs.rotationId, rotationId)).all();
@@ -256,8 +280,28 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
   //    Holders switched to "no Dienstfrei" lose theirs and never receive one (SPEC 12.40).
   const excluded = excludedHolders(tx, rotationId);
   const created = new Set<string>();
+  // SPEC 12.42: under "before" kept rows stay with their holder, and a holder who got the Platz by swap
+  // (slot lock) gets no new row for it.
+  const before = rotation.dayOffTiming === "before";
+  const swapped = new Set(
+    before && duties.length > 0
+      ? tx
+          .select({ shiftId: rotationSlotLocks.shiftId, userId: rotationSlotLocks.userId })
+          .from(rotationSlotLocks)
+          .where(inArray(rotationSlotLocks.shiftId, duties.map((d) => d.shiftId)))
+          .all()
+          .map((l) => `${l.shiftId}:${l.userId}`)
+      : []
+  );
   for (const duty of duties) {
     const holders = new Set(holdersByShift.get(duty.shiftId) ?? []);
+    // A kept row whose holder holds the Platz again is a normal row.
+    for (const row of active) {
+      if (before && row.keptOnSwap && row.shiftId === duty.shiftId && holders.has(row.userId)) {
+        tx.update(dayOffs).set({ keptOnSwap: false, updatedAt: now }).where(eq(dayOffs.id, row.id)).run();
+        row.keptOnSwap = false;
+      }
+    }
     for (const row of active) {
       if (row.shiftId === duty.shiftId && holders.has(row.userId) && excluded.has(row.userId)) dropRow(tx, row, "excluded", now, result);
     }
@@ -266,15 +310,40 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
     const withRow = new Set(rowsOfDuty.map((r) => r.userId));
     // Only active rows can change hands; ordered by creation for a stable pairing.
     const orphans = active
-      .filter((r) => r.shiftId === duty.shiftId && !holders.has(r.userId))
+      .filter((r) => r.shiftId === duty.shiftId && !holders.has(r.userId) && !(before && r.keptOnSwap))
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id));
-    const newcomers = [...holders].filter((u) => !withRow.has(u) && !excluded.has(u)).sort();
+    let newcomers = [...holders].filter((u) => !withRow.has(u) && !excluded.has(u)).sort();
+    if (before) {
+      newcomers = newcomers.filter((u) => !swapped.has(`${duty.shiftId}:${u}`));
+    }
 
     while (orphans.length > 0 && newcomers.length > 0) {
       handOver(tx, orphans.shift()!, newcomers.shift()!, now);
       result.transferred++;
     }
     for (const orphan of orphans) dropRow(tx, orphan, "seatRemoved", now, result);
+    // SPEC 12.42: at most as many non-dropped rows as seats.
+    if (before) {
+      const live = tx
+        .select()
+        .from(dayOffs)
+        .where(and(eq(dayOffs.shiftId, duty.shiftId), ne(dayOffs.status, "dropped")))
+        .all();
+      let surplus = live.length - holders.size;
+      // Kept rows go last, the newest first; begun rows are history and never dropped.
+      const droppable = live
+        .filter((r) => r.keptOnSwap && !isFrozen(r, today))
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id));
+      let alive = live.length;
+      for (const row of droppable) {
+        if (surplus <= 0) break;
+        dropRow(tx, row, "seatRemoved", now, result);
+        surplus--;
+        alive--;
+      }
+      // New rows only for the seats still without one.
+      newcomers = newcomers.slice(0, Math.max(0, holders.size - alive));
+    }
     // A duty in the past gets no new Dienstfrei.
     if (duty.date < today) continue;
     for (const userId of newcomers) {
