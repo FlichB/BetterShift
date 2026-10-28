@@ -28,6 +28,12 @@ describe("checkMove", () => {
   it("moving back to the standard day is standard", () =>
     expect(checkMove(row({ status: "moved", date: "2026-11-11" }), "2026-11-09", none, today)).toEqual({ ok: true, value: { status: "standard", date: "2026-11-09" } }));
   it("rejects the next week", () => expect(checkMove(row(), "2026-11-16", none, today)).toEqual({ ok: false, code: "outsideWeek" }));
+  it("rejects the duty day and days before it (weekday duty)", () => {
+    const wednesday = row({ dutyDate: "2026-11-11", date: "2026-11-12", standardDate: "2026-11-12" });
+    expect(checkMove(wednesday, "2026-11-10", none, today)).toEqual({ ok: false, code: "outsideWeek" });
+    expect(checkMove(wednesday, "2026-11-11", none, today)).toEqual({ ok: false, code: "outsideWeek" });
+    expect(checkMove(wednesday, "2026-11-13", none, today).ok).toBe(true);
+  });
   it("rejects a holiday", () => expect(checkMove(row(), "2026-11-11", makeIsOff(new Set(["2026-11-11"]), new Set()), today)).toEqual({ ok: false, code: "notWorkday" }));
   it("rejects a taken day", () => expect(checkMove(row(), "2026-11-11", makeIsOff(new Set(), new Set(["2026-11-11"])), today)).toEqual({ ok: false, code: "taken" }));
   it("rejects locked and agreed", () => {

@@ -55,7 +55,8 @@ export function checkMove(row: DayOffState, target: string, isOff: IsOff, today:
   if (row.status !== "standard" && row.status !== "moved") return fail("wrongStatus");
   if (!row.date || !row.standardDate) return fail("wrongStatus");
   if (row.date <= today) return fail("alreadyStarted");
-  if (!weekOf(row.standardDate).includes(target)) return fail("outsideWeek");
+  // A weekday duty's week starts before it: only days after the duty count.
+  if (!weekOf(row.standardDate).includes(target) || target <= row.dutyDate) return fail("outsideWeek");
   if (target !== row.date) {
     const error = dateError(target, closedPart(isOff), isOff, today);
     if (error) return fail(error);
