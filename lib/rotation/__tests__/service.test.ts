@@ -512,6 +512,18 @@ describe("Jahresausgleich", () => {
     expect(first(m1)).toBeGreaterThanOrEqual(Math.max(...others));
   });
 
+  it("plans November the same whether or not the window reaches December's Feiertage", async () => {
+    const holidays = seedHolidays(team.ownerId, [{ date: "2026-12-26", title: "Stefanitag" }]);
+    const r = createRotation({ ...input, holidayCalendarId: holidays, yearlyFairness: true }, team.ownerId, now);
+    const november = async (to: string) =>
+      (await previewGeneration(r.id, "2026-11-02", to, now)).entries
+        .filter((e) => e.date <= "2026-11-30")
+        .map((e) => [e.date, "userIds" in e ? [...e.userIds].sort() : []]);
+    const short = await november("2026-11-30");
+    expect(short).toHaveLength(4);
+    expect(short).toEqual(await november("2026-12-31"));
+  });
+
   it("leaves the plan unchanged while the switch is off", async () => {
     const off = createRotation(input, team.ownerId, now);
     setYearDeltaOverride(off.id, { year: 2027, userId: team.memberIds[0], delta: 3 }, team.ownerId, now);

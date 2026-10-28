@@ -153,7 +153,10 @@ function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date
   // Seat rounds make a duty depend on the sizes of later duties in its round, so a Feiertag
   // after `to` can still matter. Closures after the last verstärkter Tag cannot change the
   // size sequence before it, so loading up to there keeps the plan independent of the window.
-  const holidaysTo = r.reinforcedDates.reduce((max, d) => (d.date > max ? d.date : max), to);
+  // [fork] Jahresausgleich: a yearly round looks ahead to the end of its year, so a Feiertag up to
+  // 31.12. of `to`'s year can change earlier rounds.
+  const lookahead = r.yearlyFairness && `${to.slice(0, 4)}-12-31` > to ? `${to.slice(0, 4)}-12-31` : to;
+  const holidaysTo = r.reinforcedDates.reduce((max, d) => (d.date > max ? d.date : max), lookahead);
   const holidays =
     r.holidayCalendarId && to >= r.startDate ? loadHolidays(reader, r.holidayCalendarId, r.startDate, holidaysTo) : [];
   const resolved = resolveClosedDates(r.skipDates, holidays, r.holidayOpenDates);
