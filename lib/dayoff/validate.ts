@@ -43,3 +43,22 @@ export function validateDecline(body: unknown): ValidationResult<{ reason: strin
   const reason = parseText(body.reason);
   return reason === undefined ? invalid : { ok: true, value: { reason } };
 }
+
+/** `override` lets a manager give a full day anyway (SPEC 12.44). */
+function parseOverride(body: Record<string, unknown>): boolean | undefined {
+  const value = body.override ?? false;
+  return typeof value === "boolean" ? value : undefined;
+}
+
+export function validateCounter(body: unknown): ValidationResult<{ date: string; override: boolean }> {
+  if (!isRecord(body) || !isDate(body.date)) return invalid;
+  const override = parseOverride(body);
+  return override === undefined ? invalid : { ok: true, value: { date: body.date, override } };
+}
+
+export function validateOverride(body: unknown): ValidationResult<{ override: boolean }> {
+  if (body == null) return { ok: true, value: { override: false } };
+  if (!isRecord(body)) return invalid;
+  const override = parseOverride(body);
+  return override === undefined ? invalid : { ok: true, value: { override } };
+}

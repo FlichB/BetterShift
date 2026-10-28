@@ -1813,7 +1813,8 @@
       "duplicate": "Cette date a déjà été proposée.",
       "tooMany": "Trop de propositions ouvertes.",
       "reasonRequired": "Merci d'indiquer un motif.",
-      "proposalNotOpen": "Cette proposition n'est plus ouverte."
+      "proposalNotOpen": "Cette proposition n'est plus ouverte.",
+      "belowMinimum": "L'effectif minimum ne serait pas atteint ce jour-là."
     },
     "tab": "Jour de repos",
     "mineTitle": "Mes jours de repos",
@@ -1861,7 +1862,13 @@
       "title": "Déplacer le jour de repos",
       "text": "Choisis un autre jour ouvré de la même semaine.",
       "loadFailed": "Impossible de charger les jours possibles.",
-      "none": "Aucun autre jour n'est possible."
+      "none": "Aucun autre jour n'est possible.",
+      "full": "complet"
+    },
+    "override": {
+      "title": "Effectif minimum non atteint",
+      "text": "Le {date}, seuls {present} participants sur au moins {minimum} seraient présents. L'accorder quand même ?",
+      "confirm": "Accorder quand même"
     },
     "propose": {
       "text": "Propose jusqu'à {max} dates jusqu'au {date}. La gestion en accepte une.",

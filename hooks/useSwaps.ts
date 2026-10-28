@@ -16,7 +16,8 @@ export class SwapApiError extends Error {
   constructor(
     public readonly code: string,
     public readonly status: number,
-    public readonly retryAfter: number | null = null
+    public readonly retryAfter: number | null = null,
+    public readonly detail: unknown = null // [fork] e.g. the StaffingDetail of a belowMinimum error
   ) {
     super(code);
   }
@@ -31,7 +32,7 @@ export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const code = typeof data.error === "string" ? data.error : "internal";
-    throw new SwapApiError(code, response.status, typeof data.retryAfter === "number" ? data.retryAfter : null);
+    throw new SwapApiError(code, response.status, typeof data.retryAfter === "number" ? data.retryAfter : null, data.detail ?? null); // [fork]
   }
   return data as T;
 }

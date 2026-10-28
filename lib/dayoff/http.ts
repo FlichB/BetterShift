@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/sessions";
 import { dayOffProposals, dayOffs, type DayOff, type DayOffProposal } from "@/lib/dayoff/schema";
 import { DayOffServiceError } from "@/lib/dayoff/service";
-import type { DayOffErrorCode } from "@/lib/dayoff/types";
+import type { DayOffErrorCode, StaffingDetail } from "@/lib/dayoff/types";
 import { rateLimit } from "@/lib/rate-limiter";
 import { canManageRotations } from "@/lib/rotation/permissions";
 import { rotations } from "@/lib/rotation/schema";
@@ -29,11 +29,12 @@ export const STATUS: Record<DayOffErrorCode, number> = {
   belowMinimum: 409,
 };
 
-export const dayOffError = (code: DayOffErrorCode) => NextResponse.json({ error: code }, { status: STATUS[code] });
+export const dayOffError = (code: DayOffErrorCode, detail?: StaffingDetail | null) =>
+  NextResponse.json(detail ? { error: code, detail } : { error: code }, { status: STATUS[code] });
 
 /** Maps service errors to `{ error: code }` responses the UI translates via dayOff.errors.<code>. */
 export function dayOffErrorResponse(error: unknown, fallback: string): NextResponse {
-  if (error instanceof DayOffServiceError) return dayOffError(error.code);
+  if (error instanceof DayOffServiceError) return dayOffError(error.code, error.detail);
   console.error(fallback, error);
   return NextResponse.json({ error: "internal" }, { status: 500 });
 }

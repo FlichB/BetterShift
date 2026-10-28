@@ -28,10 +28,12 @@ export interface DayOffProposedMetadata extends DayOffAuditBase {
 }
 export interface DayOffCounteredMetadata extends DayOffAuditBase {
   date: string;
+  override?: true;
 }
 export interface DayOffAcceptedMetadata extends DayOffAuditBase {
   date: string;
   side: ProposalSide;
+  override?: true;
 }
 export interface DayOffDeclinedMetadata extends DayOffAuditBase {
   date: string;

@@ -1813,7 +1813,8 @@
       "duplicate": "Questa data è già stata proposta.",
       "tooMany": "Troppe proposte aperte.",
       "reasonRequired": "Indica un motivo, per favore.",
-      "proposalNotOpen": "Questa proposta non è più aperta."
+      "proposalNotOpen": "Questa proposta non è più aperta.",
+      "belowMinimum": "In quel giorno non sarebbe raggiunto l'organico minimo."
     },
     "tab": "Giorno libero",
     "mineTitle": "I miei giorni liberi",
@@ -1861,7 +1862,13 @@
       "title": "Sposta giorno libero",
       "text": "Scegli un altro giorno lavorativo della stessa settimana.",
       "loadFailed": "Impossibile caricare i giorni possibili.",
-      "none": "Non c'è nessun altro giorno possibile."
+      "none": "Non c'è nessun altro giorno possibile.",
+      "full": "pieno"
+    },
+    "override": {
+      "title": "Organico minimo non raggiunto",
+      "text": "Il {date} sarebbero presenti solo {present} partecipanti su almeno {minimum}. Concederlo comunque?",
+      "confirm": "Concedi comunque"
     },
     "propose": {
       "text": "Proponi fino a {max} date entro il {date}. La gestione ne accetta una.",

@@ -1813,7 +1813,8 @@
       "duplicate": "Esta fecha ya se ha propuesto.",
       "tooMany": "Demasiadas propuestas abiertas.",
       "reasonRequired": "Por favor, indica un motivo.",
-      "proposalNotOpen": "Esta propuesta ya no está abierta."
+      "proposalNotOpen": "Esta propuesta ya no está abierta.",
+      "belowMinimum": "Ese día no se alcanzaría la dotación mínima."
     },
     "tab": "Día libre",
     "mineTitle": "Mis días libres",
@@ -1861,7 +1862,13 @@
       "title": "Mover día libre",
       "text": "Elige otro día laborable de la misma semana.",
       "loadFailed": "No se pudieron cargar los días posibles.",
-      "none": "No hay otro día posible."
+      "none": "No hay otro día posible.",
+      "full": "completo"
+    },
+    "override": {
+      "title": "Dotación mínima no alcanzada",
+      "text": "El {date} solo estarían presentes {present} de al menos {minimum} participantes. ¿Concederlo igualmente?",
+      "confirm": "Conceder igualmente"
     },
     "propose": {
       "text": "Propón hasta {max} fechas hasta el {date}. La gestión acepta una de ellas.",

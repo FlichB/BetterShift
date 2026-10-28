@@ -1813,7 +1813,8 @@
       "duplicate": "This date has already been proposed.",
       "tooMany": "Too many open proposals.",
       "reasonRequired": "Please give a reason.",
-      "proposalNotOpen": "This proposal is no longer open."
+      "proposalNotOpen": "This proposal is no longer open.",
+      "belowMinimum": "The minimum staffing would not be met on that day."
     },
     "tab": "Day off",
     "mineTitle": "My days off",
@@ -1861,7 +1862,13 @@
       "title": "Move day off",
       "text": "Pick another workday in the same week.",
       "loadFailed": "The possible days could not be loaded.",
-      "none": "There is no other possible day."
+      "none": "There is no other possible day.",
+      "full": "full"
+    },
+    "override": {
+      "title": "Below minimum staffing",
+      "text": "On {date} only {present} of at least {minimum} participants would be present. Give it anyway?",
+      "confirm": "Give anyway"
     },
     "propose": {
       "text": "Propose up to {max} dates until {date}. Management accepts one of them.",

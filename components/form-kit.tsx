@@ -206,7 +206,7 @@ export function ChoiceChips<T extends string>({
 }: {
   value: T | undefined;
   onChange: (value: T) => void;
-  options: { value: T; label: ReactNode; color?: string }[];
+  options: { value: T; label: ReactNode; color?: string; disabled?: boolean }[]; // [fork] per-option disabled
   label?: string;
   disabled?: boolean;
 }) {
@@ -220,7 +220,7 @@ export function ChoiceChips<T extends string>({
             type="button"
             role="radio"
             aria-checked={selected}
-            disabled={disabled}
+            disabled={disabled || option.disabled} // [fork]
             onClick={() => onChange(option.value)}
             className={cn(
               "flex h-8 items-center gap-2 rounded-lg border px-3 text-[13px] font-medium transition-colors disabled:opacity-50",

@@ -1813,7 +1813,8 @@
       "duplicate": "Dieser Termin ist schon vorgeschlagen.",
       "tooMany": "Zu viele offene Vorschläge.",
       "reasonRequired": "Bitte gib eine Begründung an.",
-      "proposalNotOpen": "Dieser Vorschlag ist nicht mehr offen."
+      "proposalNotOpen": "Dieser Vorschlag ist nicht mehr offen.",
+      "belowMinimum": "An diesem Tag wäre die Mindestbesetzung unterschritten."
     },
     "tab": "Dienstfrei",
     "mineTitle": "Meine Dienstfreie",
@@ -1861,7 +1862,13 @@
       "title": "Dienstfrei verschieben",
       "text": "Wähle einen anderen Arbeitstag in derselben Woche.",
       "loadFailed": "Die möglichen Tage konnten nicht geladen werden.",
-      "none": "Es gibt keinen anderen möglichen Tag."
+      "none": "Es gibt keinen anderen möglichen Tag.",
+      "full": "voll"
+    },
+    "override": {
+      "title": "Mindestbesetzung unterschritten",
+      "text": "Am {date} wären nur {present} von mindestens {minimum} Teilnehmern anwesend. Trotzdem vergeben?",
+      "confirm": "Trotzdem vergeben"
     },
     "propose": {
       "text": "Schlage bis zu {max} Termine bis {date} vor. Die Verwaltung nimmt einen davon an.",

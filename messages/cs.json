@@ -1813,7 +1813,8 @@
       "duplicate": "Tento termín už byl navržen.",
       "tooMany": "Příliš mnoho otevřených návrhů.",
       "reasonRequired": "Uveď prosím důvod.",
-      "proposalNotOpen": "Tento návrh už není otevřený."
+      "proposalNotOpen": "Tento návrh už není otevřený.",
+      "belowMinimum": "V tento den by nebylo dosaženo minimálního obsazení."
     },
     "tab": "Volno",
     "mineTitle": "Moje volna",
@@ -1861,7 +1862,13 @@
       "title": "Přesunout volno",
       "text": "Vyber jiný pracovní den ve stejném týdnu.",
       "loadFailed": "Možné dny se nepodařilo načíst.",
-      "none": "Žádný jiný den není možný."
+      "none": "Žádný jiný den není možný.",
+      "full": "plno"
+    },
+    "override": {
+      "title": "Minimální obsazení nedosaženo",
+      "text": "Dne {date} by bylo přítomno jen {present} z nejméně {minimum} účastníků. Přesto schválit?",
+      "confirm": "Přesto schválit"
     },
     "propose": {
       "text": "Navrhni až {max} termínů do {date}. Správa jeden z nich přijme.",

@@ -48,10 +48,13 @@ export function MoveDialog({
           label={t("dayOff.move.title")}
           options={options.map((o) => ({
             value: o.date,
+            disabled: o.full,
             label: (
               <>
                 <span>{fmt.short(o.date)}</span>
-                <span className="font-normal text-fg-secondary">{t("dayOff.othersOff", { count: o.othersOff })}</span>
+                <span className="font-normal text-fg-secondary">
+                  {o.full ? t("dayOff.move.full") : t("dayOff.othersOff", { count: o.othersOff })}
+                </span>
               </>
             ),
           }))}

@@ -15,7 +15,9 @@ import {
   useMoveDayOff,
   useProposeDayOff,
 } from "@/hooks/useDayOffs";
-import type { DayOffBoard, DayOffProposalView, DayOffView } from "@/lib/dayoff/types";
+import type { DayOffBoard, DayOffProposalView, DayOffView, StaffingDetail } from "@/lib/dayoff/types";
+import { SwapApiError } from "@/hooks/useSwaps";
+import { OverrideDialog } from "@/components/dayoff/override-dialog";
 import { DayOffCard, toastDayOffError, type DayOffCardAction, type DayOffCardMode } from "@/components/dayoff/day-off-card";
 import { MoveDialog } from "@/components/dayoff/move-dialog";
 import { ProposeDialog } from "@/components/dayoff/propose-dialog";
@@ -25,7 +27,8 @@ import { AnswerDialog } from "@/components/dayoff/answer-dialog";
 
 type OpenDialog =
   | { kind: "move" | "propose" | "lock" | "counter"; dayOff: DayOffView }
-  | { kind: "decline"; dayOff: DayOffView; proposal: DayOffProposalView; mode: DayOffCardMode };
+  | { kind: "decline"; dayOff: DayOffView; proposal: DayOffProposalView; mode: DayOffCardMode }
+  | { kind: "override"; detail: StaffingDetail; retry: () => void };
 
 const ALL = "__all__";
 const emptyClass = "rounded-[11px] border border-dashed border-control px-3.5 py-6 text-center text-[13px] text-fg-tertiary";
@@ -50,6 +53,14 @@ export function DayOffsPanel({
   const decline = useDeclineDayOffProposal();
   const busy = move.isPending || lock.isPending || propose.isPending || counter.isPending || accept.isPending || decline.isPending;
   const onError = (error: unknown) => toastDayOffError(error, t);
+  // A manager action on a full day: ask, then repeat it with override (SPEC 12.44).
+  const askOverride = (retry: () => void) => (error: unknown) => {
+    if (error instanceof SwapApiError && error.code === "belowMinimum" && error.detail) {
+      setDialog({ kind: "override", detail: error.detail as StaffingDetail, retry });
+    } else {
+      onError(error);
+    }
+  };
 
   if (isError && !board) {
     return (
@@ -71,7 +82,9 @@ export function DayOffsPanel({
 
   const act = (dayOff: DayOffView, mode: DayOffCardMode) => (action: DayOffCardAction) => {
     if (action.kind === "accept") {
-      accept.mutate({ id: action.proposal.id }, { onSuccess: () => toast.success(t("dayOff.done.accepted")), onError });
+      const success = () => toast.success(t("dayOff.done.accepted"));
+      const retry = () => accept.mutate({ id: action.proposal.id, override: true }, { onSuccess: success, onError });
+      accept.mutate({ id: action.proposal.id }, { onSuccess: success, onError: mode === "manage" ? askOverride(retry) : onError });
     } else if (action.kind === "decline") {
       setDialog({ kind: "decline", dayOff, proposal: action.proposal, mode });
     } else {
@@ -152,7 +165,9 @@ export function DayOffsPanel({
           onCancel={close}
           onConfirm={(date) => {
             close();
-            counter.mutate({ id: dialog.dayOff.id, date }, done(t("dayOff.done.countered")));
+            const options = done(t("dayOff.done.countered"));
+            const retry = () => counter.mutate({ id: dialog.dayOff.id, date, override: true }, options);
+            counter.mutate({ id: dialog.dayOff.id, date }, { ...options, onError: askOverride(retry) });
           }}
         />
       )}
@@ -164,6 +179,17 @@ export function DayOffsPanel({
           onConfirm={(reason) => {
             close();
             decline.mutate({ id: dialog.proposal.id, reason }, done(t("dayOff.done.declined")));
+          }}
+        />
+      )}
+      {dialog?.kind === "override" && (
+        <OverrideDialog
+          detail={dialog.detail}
+          onCancel={close}
+          onConfirm={() => {
+            const retry = dialog.retry;
+            close();
+            retry();
           }}
         />
       )}
