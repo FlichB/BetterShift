@@ -133,6 +133,11 @@ describe("revalidate", () => {
     expect(revalidate(row({ status: "standard", date: "2026-11-12", standardDate: "2026-11-12" }), none, "2026-11-10")).toMatchObject({ status: "standard", date: "2026-11-11", standardDate: "2026-11-11" }));
 });
 
+describe("revalidate under after keeps a moved day when the closure lifts", () => {
+  it("keeps the moved day after the duty", () =>
+    expect(revalidate(row({ status: "moved", date: "2026-11-18", standardDate: "2026-11-16", dutyDate: "2026-11-07" }), none, "2026-11-01")).toEqual({ status: "moved", date: "2026-11-18", standardDate: "2026-11-09", notify: null }));
+});
+
 describe("isFrozen", () => {
   it("freezes dated rows from their day on, never locked ones", () => {
     expect(isFrozen(row(), "2026-11-09")).toBe(true);

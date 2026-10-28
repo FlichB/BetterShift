@@ -138,8 +138,9 @@ export function revalidate(row: DayOffState, isOff: IsOff, today: string, timing
     case "standard":
       return { status: "standard", date: std, standardDate: std, notify: null };
     case "moved":
-      // Outside the range of the current timing (e.g. after switching it): back to standard (SPEC 12.42).
-      if (invalid(row.date) || !moveRange({ dutyDate: row.dutyDate, standardDate: std }, timing).includes(row.date!))
+      // Begun, or outside the range of the current timing (e.g. after switching it): back to standard (SPEC 12.42).
+      // Under "after" only a day on or before the duty is outside; the recomputed week is not re-checked.
+      if (!row.date || invalid(row.date) || (timing === "before" ? !moveRange({ dutyDate: row.dutyDate, standardDate: std }, timing).includes(row.date) : row.date <= row.dutyDate))
         return { status: "standard", date: std, standardDate: std, notify: "reset" };
       // Still valid but now the standard day itself: same day for the holder, so it is standard again.
       if (row.date === std) return { status: "standard", date: std, standardDate: std, notify: null };
