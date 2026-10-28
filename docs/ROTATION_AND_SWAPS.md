@@ -73,7 +73,7 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 | Verstärkte Tage | Einzelne Daten, an denen mehr Personen Dienst haben als „Personen pro Dienst“ (höchstens so viele wie Teilnehmer). Mit „Verstärkten Tag hinzufügen“ ergänzen. |
 | Text bei Schließung | Erscheint an Schließtagen als „Text (Grund)“, z. B. „HeimkinoWelt geschlossen (Inventur)“. |
 | Feiertagskalender | Optional. Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. |
-| Dienstfrei nach Dienst / Text für Dienstfrei / Dienstfrei je Teilnehmer | Schaltet das Dienstfrei ein, legt die Vorlage des Kalendereintrags fest und nimmt einzelne Teilnehmer aus (siehe [Dienstfrei](#4a-dienstfrei)). |
+| Dienstfrei zum Dienst / Text für Dienstfrei / Dienstfrei je Teilnehmer | Schaltet das Dienstfrei ein, legt die Vorlage des Kalendereintrags fest und nimmt einzelne Teilnehmer aus (siehe [Dienstfrei](#4a-dienstfrei)). |
 | Teilnehmer (Reihenfolge) | Die Reihenfolge bestimmt die erste Runde; danach mischt der Generator die Paare selbst. Mit „Nach oben" / „Nach unten" sortieren, mit „Teilnehmer hinzufügen" ergänzen, mit „Entfernen" streichen. |
 
 Beispiel „Samstagsdienst": Periode „Woche (ab Montag)", Diensttag Sa, 2 Personen pro Dienst, 8 Teilnehmer. Jede Person hat dann einmal pro 4 Wochen Dienst. Die erste Runde folgt der Reihenfolge, danach werden die Paare neu gemischt: Niemand hat zwei Samstage hintereinander Dienst, niemand hat zweimal hintereinander denselben Partner, und pro Quartal weicht die Anzahl der Dienste höchstens um 1 ab. Bei wenigen Teilnehmern (z. B. 6) liegt dafür manchmal nur ein freier Samstag zwischen zwei Diensten. Mit „Speichern" wird die Rotation gesichert; erzeugt sind die Dienste damit noch nicht.
@@ -198,9 +198,9 @@ Regeln, die die App durchsetzt:
 
 ## 4a. Dienstfrei
 
-Wer einen Platz in einem Dienst hat, bekommt danach einen Arbeitstag frei: das **Dienstfrei**. Es hängt am Platz (nicht an der Person) und wechselt bei einem Tausch mit dem Platz den Inhaber.
+Wer einen Platz in einem Dienst hat, bekommt danach einen Arbeitstag frei: das **Dienstfrei**. Es hängt am Platz (nicht an der Person) und wechselt bei einem Tausch mit dem Platz den Inhaber (bei „nach dem Dienst“; „vor dem Dienst“ siehe unten).
 
-**Einschalten.** Im Rotationsformular den Schalter „Dienstfrei nach Dienst" aktivieren und bei „Text für Dienstfrei" die Vorlage anpassen (Standard `{Vorname} dienstfrei`, Platzhalter wie bei der Eintragsvorlage). Beim nächsten Generieren bekommen alle künftigen Dienste ihr Dienstfrei, auch bereits erzeugte. Rückwirkend entsteht nichts. Beim Ausschalten entfernt die App alle künftigen Dienstfreie und benachrichtigt die Inhaber; vergangene bleiben als Historie.
+**Einschalten.** Im Rotationsformular den Schalter „Dienstfrei zum Dienst" aktivieren und bei „Text für Dienstfrei" die Vorlage anpassen (Standard `{Vorname} dienstfrei`, Platzhalter wie bei der Eintragsvorlage). Beim nächsten Generieren bekommen alle künftigen Dienste ihr Dienstfrei, auch bereits erzeugte. Rückwirkend entsteht nichts. Beim Ausschalten entfernt die App alle künftigen Dienstfreie und benachrichtigt die Inhaber; vergangene bleiben als Historie.
 
 **Dienstfrei liegt.** Unter dem Schalter wählt ein Auswahlfeld, wo das Dienstfrei liegt: „nach dem Dienst (nächster Arbeitstag)“ (Standard, auch für alle bestehenden Rotationen) oder „vor dem Dienst (Montag der Dienstwoche)“. Die Einstellung gilt pro Rotation. Die folgenden Absätze beschreiben „nach dem Dienst“; die Abweichungen für „vor dem Dienst“ stehen im Absatz „Dienstfrei vor dem Dienst“ weiter unten.
 

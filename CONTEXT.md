@@ -139,7 +139,7 @@ Ein Werktag Mo–Fr, der kein Feiertag, kein Ausfalltag und kein anderes eigenes
 _Avoid_: Diensttag (der ist der Tag des Dienstes)
 
 **Standardtag**:
-Der erste Arbeitstag nach dem Dienst, auf dem das Dienstfrei ohne weiteres Zutun liegt.
+Der erste Arbeitstag nach dem Dienst, auf dem das Dienstfrei ohne weiteres Zutun liegt (bei „vor dem Dienst“: erster Arbeitstag der Dienstwoche vor dem Diensttag).
 
 **Dienstfrei vor dem Dienst**:
 Einstellung der Rotation („Dienstfrei liegt: vor dem Dienst“): Der Standardtag liegt in der Dienstwoche vor dem Diensttag, meist am Montag, statt nach dem Dienst.
