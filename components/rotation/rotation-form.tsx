@@ -20,6 +20,7 @@ import { handleRateLimitError } from "@/lib/rate-limit-client";
 import { formatDateToLocal } from "@/lib/date-utils";
 import type { RotationDetail } from "@/lib/rotation/service";
 import type { RotationPeriod } from "@/lib/rotation/types";
+import type { DayOffTiming } from "@/lib/dayoff/types"; // [fork] SPEC 12.42
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
@@ -289,6 +290,19 @@ export function RotationForm({
           checked={state.dayOffEnabled}
           onCheckedChange={(checked) => set("dayOffEnabled", checked)}
         />
+        {state.dayOffEnabled && (
+          <Field label={t("rotation.fields.dayOffTiming")} hint={t("rotation.fields.dayOffTimingHint")}>
+            <Select value={state.dayOffTiming} onValueChange={(v) => set("dayOffTiming", v as DayOffTiming)}>
+              <SelectTrigger id="rotation-day-off-timing" className={cn(inputClass, "w-full")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="after">{t("rotation.fields.dayOffTimingAfter")}</SelectItem>
+                <SelectItem value="before">{t("rotation.fields.dayOffTimingBefore")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
         {state.dayOffEnabled && (
           <Field label={t("rotation.fields.dayOffTitle")} htmlFor="rotation-day-off-title">
             <Input
