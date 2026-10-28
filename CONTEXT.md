@@ -149,3 +149,17 @@ Ein Dienstfrei, dessen Termin die Verwaltung angenommen hat; der Inhaber kann es
 
 **Entfallenes Dienstfrei**:
 Ein Dienstfrei, dessen Dienst weggefallen ist, z. B. weil der Diensttag zum Schließtag wurde.
+
+## Mindestbesetzung
+
+**Mindestbesetzung**:
+Wie viele Teilnehmer einer Rotation an einem Werktag (Mo–Fr, kein Schließtag) mindestens anwesend sein müssen.
+_Avoid_: Mindestanzahl, Kapazität (die gehört zum Dienst)
+
+**Abwesend**:
+Ein Teilnehmer an einem Tag mit genehmigtem Urlaub oder einem Dienstfrei mit Datum, aus welcher Rotation auch immer.
+_Avoid_: Frei (zu ungenau)
+
+**Voller Tag**:
+Ein Werktag, an dem in einer Rotation der Person die Mindestbesetzung fehlen würde, wenn sie selbst auch noch fehlte; Mitarbeiter können dort kein Dienstfrei hinlegen.
+_Avoid_: Ausgebucht
