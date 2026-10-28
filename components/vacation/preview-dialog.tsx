@@ -34,7 +34,7 @@ export function PreviewDialog({
 
   // lockedNonMember names a person the preview carries no name for; the generator preview shows it.
   const shown = (w: PlanWarning): w is Exclude<PlanWarning, { kind: "lockedNonMember" }> => w.kind !== "lockedNonMember";
-  const rotations = (preview.data?.rotations ?? []).filter((r) => r.changes.length > 0 || r.warnings.some(shown));
+  const rotations = (preview.data?.rotations ?? []).filter((r) => r.changes.length > 0 || r.warnings.some(shown) || r.staffing.length > 0);
   const names = (list: string[]) => (list.length > 0 ? list.join(", ") : "–");
   const warningText = (w: Exclude<PlanWarning, { kind: "lockedNonMember" }>) => {
     switch (w.kind) {
@@ -77,6 +77,12 @@ export function PreviewDialog({
               <p key={`${w.kind}-${w.date}`} className="flex items-start gap-1.5 text-[12.5px] text-warning">
                 <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
                 {warningText(w)}
+              </p>
+            ))}
+            {r.staffing.map((g) => (
+              <p key={`staffing-${g.date}`} className="flex items-start gap-1.5 text-[12.5px] text-warning">
+                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                {t("vacation.preview.staffing", { date: fmt.day(g.date), present: g.present, minimum: g.minimum })}
               </p>
             ))}
             {r.changes.length > 0 && (

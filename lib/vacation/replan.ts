@@ -18,6 +18,7 @@ import {
 } from "@/lib/rotation/service";
 import { approvedRanges, type Reader } from "@/lib/vacation/dates";
 import { vacationChanges, vacations } from "@/lib/vacation/schema";
+import { staffingGaps, targetRange } from "@/lib/vacation/staffing";
 import type { DateRange, VacationAction, VacationPreview } from "@/lib/vacation/types";
 import { VacationServiceError } from "@/lib/vacation/errors";
 
@@ -93,6 +94,7 @@ async function prepareReaching(rotationIds: string[], changedFrom: string): Prom
 export async function previewAction(action: VacationAction, now: Date): Promise<VacationPreview> {
   const today = formatDateToLocal(now);
   const { userId, override, changedFrom } = resolveAction(db, action, today);
+  const gaps = staffingGaps(db, userId, override.ranges, targetRange(db, action), today);
   const list = rotationsOfMember(db, userId);
   const prepared = await prepareReaching(list.map((r) => r.id), changedFrom);
   const calendarNames = new Map(db.select({ id: calendars.id, name: calendars.name }).from(calendars).all().map((c) => [c.id, c.name]));
@@ -113,6 +115,7 @@ export async function previewAction(action: VacationAction, now: Date): Promise<
           return { date: e.date, before: before.map((u) => people.get(u) ?? "?"), after: e.userIds.map((u) => people.get(u) ?? "?") };
         }),
         warnings: plan?.warnings ?? [],
+        staffing: gaps.filter((g) => g.rotationId === r.id),
       };
     })
   );

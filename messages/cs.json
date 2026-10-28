@@ -2007,6 +2007,7 @@
     "requests": "Otevřené žádosti",
     "calendar": "Kalendář dovolených",
     "request": "Požádat o dovolenou",
+    "requestStaffing": "V {count, plural, one {# pracovní den} few {# pracovní dny} other {# pracovních dnech}} by tým byl nedostatečně obsazen: {dates}. Rozhodne správa.",
     "enter": "Zapsat dovolenou",
     "person": "Osoba",
     "from": "Od",
@@ -2052,6 +2053,7 @@
       "before": "Předtím",
       "after": "Potom",
       "understaffed": "Dne {date} je obsazeno jen {filled} z {capacity} míst.",
+      "staffing": "Dne {date} by bylo přítomno jen {present} z minimálně {minimum}.",
       "hint": "Po potvrzení se služby od dovolené znovu rozdělí. Dotčení dostanou nové pozvánky v Outlooku."
     },
     "done": {

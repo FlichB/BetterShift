@@ -2007,6 +2007,7 @@
     "requests": "Open requests",
     "calendar": "Vacation calendar",
     "request": "Request vacation",
+    "requestStaffing": "On {count, plural, one {# weekday} other {# weekdays}} the team would be understaffed: {dates}. The managers decide.",
     "enter": "Enter vacation",
     "person": "Person",
     "from": "From",
@@ -2052,6 +2053,7 @@
       "before": "Before",
       "after": "After",
       "understaffed": "On {date} only {filled} of {capacity} places are filled.",
+      "staffing": "On {date} only {present} of at least {minimum} would be present.",
       "hint": "After confirming, duties from the vacation on are redistributed. Those affected get new Outlook invitations."
     },
     "done": {

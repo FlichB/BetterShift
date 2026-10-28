@@ -2007,6 +2007,7 @@
     "requests": "Offene Anträge",
     "calendar": "Urlaubskalender",
     "request": "Urlaub beantragen",
+    "requestStaffing": "An {count, plural, one {# Werktag} other {# Werktagen}} wäre das Team unterbesetzt: {dates}. Die Verwaltung entscheidet.",
     "enter": "Urlaub eintragen",
     "person": "Person",
     "from": "Von",
@@ -2052,6 +2053,7 @@
       "before": "Vorher",
       "after": "Nachher",
       "understaffed": "Am {date} ist nur {filled} von {capacity} Plätzen besetzt.",
+      "staffing": "Am {date} wären nur {present} von mindestens {minimum} anwesend.",
       "hint": "Nach dem Bestätigen werden die Dienste ab dem Urlaub neu verteilt. Betroffene bekommen neue Outlook-Einladungen."
     },
     "done": {

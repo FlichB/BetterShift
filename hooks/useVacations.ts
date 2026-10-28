@@ -6,6 +6,7 @@ import { request, type SwapApiError } from "@/hooks/useSwaps";
 import { dayOffQueryKeys } from "@/lib/dayoff/query-keys";
 import { queryKeys } from "@/lib/query-keys";
 import { rotationQueryKeys } from "@/lib/rotation/query-keys";
+import type { StaffingGap } from "@/lib/staffing/index";
 import { swapQueryKeys } from "@/lib/swap/query-keys";
 import { vacationQueryKeys } from "@/lib/vacation/query-keys";
 import type { VacationAction, VacationBoard, VacationPreview } from "@/lib/vacation/types";
@@ -21,6 +22,19 @@ export function useVacationBoard(year: number, enabled = true) {
     queryKey: vacationQueryKeys.board(year),
     queryFn: () => request<VacationBoard>(`/api/vacations?year=${year}`),
     enabled,
+  });
+}
+
+/**
+ * Werktage the given range would leave understaffed (SPEC 12.44); only queried for a valid range
+ * and while `enabled` (enter mode waits until a person is chosen). Informs, never blocks.
+ */
+export function useVacationStaffing(startDate: string, endDate: string, userId?: string, enabled = true) {
+  return useQuery({
+    queryKey: vacationQueryKeys.staffing(userId ?? null, startDate, endDate),
+    queryFn: () => request<{ gaps: StaffingGap[] }>("/api/vacations/staffing", send("POST", { startDate, endDate, userId })),
+    enabled: enabled && Boolean(startDate && endDate && startDate <= endDate),
+    staleTime: 30_000,
   });
 }
 

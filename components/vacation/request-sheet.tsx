@@ -4,14 +4,16 @@
 // (a direct request, or the replan preview first for actions that change approved vacations).
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { AlertTriangle } from "lucide-react";
 import { BaseSheet } from "@/components/ui/base-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Field, inputClass, textareaClass } from "@/components/form-kit";
+import { Field, InfoNote, inputClass, textareaClass } from "@/components/form-kit";
+import { useVacationStaffing } from "@/hooks/useVacations";
 import { MAX_NOTE_LENGTH, type VacationView } from "@/lib/vacation/types";
 import { cn } from "@/lib/utils";
-import { todayLocal, tomorrowLocal } from "@/components/vacation/use-vacation-format";
+import { todayLocal, tomorrowLocal, useVacationFormat } from "@/components/vacation/use-vacation-format";
 
 /** request: own new vacation · enter: Verwaltung for a person · change: Verwaltung edits · requestChange: person asks to change. */
 export type RequestSheetMode = "request" | "enter" | "change" | "requestChange";
@@ -79,6 +81,15 @@ export function RequestSheet({
 }) {
   const t = useTranslations();
   const form = useVacationForm(mode, vacation);
+  const fmt = useVacationFormat();
+  // Mindestbesetzung (SPEC 12.44): new vacations only; in enter mode once a person is chosen.
+  const staffing = useVacationStaffing(
+    form.startDate,
+    form.endDate,
+    mode === "enter" ? form.userId : undefined,
+    mode === "request" || (mode === "enter" && form.userId !== "")
+  );
+  const gapDates = [...new Set((staffing.data?.gaps ?? []).map((g) => g.date))].sort();
   const title =
     mode === "request"
       ? t("vacation.request")
@@ -142,6 +153,16 @@ export function RequestSheet({
             />
           </Field>
         </div>
+
+        {/* Mindestbesetzung (SPEC 12.44): informs, never blocks; no names */}
+        {(mode === "request" || mode === "enter") && staffing.isSuccess && gapDates.length > 0 && (
+          <InfoNote icon={AlertTriangle}>
+            {t("vacation.requestStaffing", {
+              count: gapDates.length,
+              dates: gapDates.map((d) => fmt.short(d)).join(", "),
+            })}
+          </InfoNote>
+        )}
 
         {mode !== "change" && (
           <Field label={t("vacation.note")} htmlFor="vacation-note" optional>

@@ -1,5 +1,6 @@
 // [fork] Urlaub (SPEC 12.43, design docs/superpowers/specs/2026-10-28-urlaub-design.md).
 import type { PlanWarning } from "@/lib/rotation/plan";
+import type { StaffingGap } from "@/lib/staffing/index";
 
 export type VacationStatus = "pending" | "approved" | "rejected" | "withdrawn" | "cancelled";
 export type ChangeKind = "change" | "cancel";
@@ -84,6 +85,8 @@ export interface RotationPreview {
   calendarName: string;
   changes: { date: string; before: string[]; after: string[] }[];
   warnings: PlanWarning[];
+  /** Werktage below the Mindestbesetzung after the action (SPEC 12.44). */
+  staffing: StaffingGap[];
 }
 
 export interface VacationPreview {

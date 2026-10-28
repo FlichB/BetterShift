@@ -2007,6 +2007,7 @@
     "requests": "Solicitudes abiertas",
     "calendar": "Calendario de vacaciones",
     "request": "Solicitar vacaciones",
+    "requestStaffing": "En {count, plural, one {# día laborable} other {# días laborables}} el equipo quedaría sin personal suficiente: {dates}. La administración decide.",
     "enter": "Registrar vacaciones",
     "person": "Persona",
     "from": "Desde",
@@ -2052,6 +2053,7 @@
       "before": "Antes",
       "after": "Después",
       "understaffed": "El {date} solo están ocupadas {filled} de {capacity} plazas.",
+      "staffing": "El {date} solo estarían presentes {present} de al menos {minimum}.",
       "hint": "Al confirmar, los turnos se redistribuyen a partir de las vacaciones. Las personas afectadas reciben nuevas invitaciones de Outlook."
     },
     "done": {

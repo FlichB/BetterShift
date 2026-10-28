@@ -2007,6 +2007,7 @@
     "requests": "Demandes ouvertes",
     "calendar": "Calendrier des congés",
     "request": "Demander un congé",
+    "requestStaffing": "Sur {count, plural, one {# jour ouvré} other {# jours ouvrés}}, l'équipe serait en sous-effectif : {dates}. La gestion décide.",
     "enter": "Saisir un congé",
     "person": "Personne",
     "from": "Du",
@@ -2052,6 +2053,7 @@
       "before": "Avant",
       "after": "Après",
       "understaffed": "Le {date}, seules {filled} places sur {capacity} sont occupées.",
+      "staffing": "Le {date}, seules {present} personnes sur au moins {minimum} seraient présentes.",
       "hint": "Après confirmation, les services sont redistribués à partir du congé. Les personnes concernées reçoivent de nouvelles invitations Outlook."
     },
     "done": {
