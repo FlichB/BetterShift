@@ -13,6 +13,7 @@ export async function register() {
     const { autoSyncService } = await import("@/lib/auto-sync-service");
     const { telemetryService } = await import("@/lib/telemetry/sender");
     const { swapExpiryService } = await import("@/lib/swap/expiry"); // [fork]
+    const { dayOffJob } = await import("@/lib/dayoff/timer"); // [fork]
     const { outlookWorker } = await import("@/lib/outlook/worker"); // [fork]
     try {
       // Preload version during startup to avoid blocking on first request
@@ -37,6 +38,13 @@ export async function register() {
       swapExpiryService.start();
     } catch (error) {
       console.error("[Instrumentation] Swap expiry scheduler failed:", error);
+    }
+
+    // [fork] Dienstfrei: hourly reconcile and reminders
+    try {
+      dayOffJob.start();
+    } catch (error) {
+      console.error("[Instrumentation] Dienstfrei job failed:", error);
     }
 
     // [fork] Outlook: mirror duties into the office@ calendar and send swap mails (spec 12.24–12.27)
@@ -65,6 +73,7 @@ export async function register() {
       autoSyncService.stop();
       telemetryService.stop();
       swapExpiryService.stop(); // [fork]
+      dayOffJob.stop(); // [fork]
       outlookWorker.stop(); // [fork]
     };
     process.once("SIGTERM", shutdown);

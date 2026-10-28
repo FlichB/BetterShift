@@ -1145,6 +1145,14 @@
       "personalFeedCreated": "Osobní odběr kalendáře vytvořen",
       "personalFeedRotated": "Osobní odběr kalendáře znovu vygenerován",
       "personalFeedRevoked": "Osobní odběr kalendáře zrušen",
+      "dayOffMoved": "Volno po službě dne {date} přesunuto z {from} na {to} ({calendar})",
+      "dayOffLocked": "Volno po službě dne {date} zablokováno ({calendar})",
+      "dayOffProposed": "Navržené termíny volna po službě dne {date}: {dates} ({calendar})",
+      "dayOffCountered": "Protinávrh {to} pro volno po službě dne {date} ({calendar})",
+      "dayOffAccepted": "Volno po službě dne {date} dohodnuto na {to} ({calendar})",
+      "dayOffDeclined": "Návrh {to} pro volno po službě dne {date} zamítnut ({calendar})",
+      "dayOffReset": "Volno po službě dne {date} obnoveno na výchozí ({calendar})",
+      "dayOffDropped": "Volno po službě dne {date} odpadlo ({calendar})",
       "userBanned": "{user} zablokován",
       "userBannedPermanently": "{user} trvale zablokován",
       "userUnbanned": "Blokace {user} zrušena",
@@ -1185,7 +1193,8 @@
       "telemetrySent": "Telemetrie odeslána ručně",
       "telemetrySendFailed": "Ruční odeslání telemetrie se nezdařilo",
       "telemetryAutoSent": "Telemetrie odeslána automaticky",
-      "telemetryAutoSendFailed": "Automatické odeslání telemetrie se nezdařilo"
+      "telemetryAutoSendFailed": "Automatické odeslání telemetrie se nezdařilo",
+      "dayOffNotificationFailed": "E-mail o volnu se nepodařilo odeslat ({kind})"
     }
   },
   "adminUsers": {
@@ -1310,6 +1319,7 @@
       "manageAnyNotesEvents": "Spravovat všechny poznámky a události",
       "signUpSelf": "Přihlásit se sám",
       "signUpOthers": "Přihlašovat ostatní",
+      "moveOwnDayOff": "Přesouvat vlastní volno po službě",
       "createPreset": "Vytvářet předvolby",
       "manageOwnPresets": "Spravovat vlastní předvolby",
       "manageAnyPresets": "Spravovat všechny předvolby",
@@ -1334,6 +1344,7 @@
       "manageAnyNotesEvents": "Upravovat nebo mazat i ty vytvořené jinými",
       "signUpSelf": "Přihlašovat se a odhlašovat ze směn s volnými místy",
       "signUpOthers": "Přihlašovat a odhlašovat jiné osoby ze směn",
+      "moveOwnDayOff": "Přesunout vlastní volno po službě v rámci pracovního týdne",
       "createPreset": "Vytvářet nové předvolby",
       "manageOwnPresets": "Upravovat nebo mazat předvolby, které sám vytvořil",
       "manageAnyPresets": "Upravovat i předvolby vytvořené jinými; řídí také společné pořadí",
@@ -1424,6 +1435,9 @@
       "closedTitleHint": "Ve dnech zavření se zobrazí jako „Text (důvod)“, např. „Zavřeno (Boží hod)“.",
       "entryTitle": "Šablona záznamu",
       "entryTitleHint": "Takto se jmenuje každé místo v kalendáři a v Outlooku.",
+      "dayOffEnabled": "Volno po službě",
+      "dayOffEnabledHint": "Každé místo dostane následující pracovní den (po–pá) po službě volno.",
+      "dayOffTitle": "Text volna",
       "entryTitleInfo": "O šabloně záznamu",
       "entryTitleHelp": "Zástupné symboly: '{Vorname}' = první slovo jména, '{Name}' = celé jméno, '{Dienst}' = název služby. Musí se objevit '{Vorname}' nebo '{Name}'. Příklad: „'{Vorname}' Dienst“ → „Günther Dienst“.",
       "entryTitlePreview": "Náhled: {title}",
@@ -1543,6 +1557,7 @@
       "holidayCalendarSame": "Kalendář svátků musí být jiný kalendář.",
       "holidayOpenDates": "Neplatné svátky se službou.",
       "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků).",
+      "dayOffTitle": "Šablona záznamu volného dne je neplatná.",
       "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků."
     }
   },
@@ -1557,6 +1572,10 @@
       "offersToMeHint": "Když tě někdo přímo požádá o službu.",
       "myOffers": "Moje nabídky",
       "myOffersHint": "Když je tvoje nabídka přijata, tvoje žádost odmítnuta nebo tvoje služba převedena.",
+      "myDayOffs": "Moje volno (zablokování, odpovědi, změny)",
+      "myDayOffsHint": "Když je tvé volno zablokováno, vyřízeno, obnoveno nebo zrušeno.",
+      "dayOffRequests": "Návrhy volna od účastníků (správa)",
+      "dayOffRequestsHint": "Když účastníci navrhují termíny pro zablokované volno nebo čekají na tvou odpověď.",
       "notConfigured": "Odesílání e-mailů není na tomto serveru nastaveno. Tvoje volba se uplatní, jakmile bude.",
       "saveFailed": "Nastavení se nepodařilo uložit.",
       "loadFailed": "Nastavení se nepodařilo načíst."
@@ -1727,6 +1746,98 @@
       "confirmEveryone": "Služba uživatele {absent} se zobrazí jako „Hledá se zástup“. Kdo ji převezme, získá místo okamžitě a poté si jako náhradu vybere jednu vlastní službu z následujících 3 měsíců."
     }
   },
+  "dayOff": {
+    "calendarHint": "Volno – podrobnosti na burze výměn",
+    "errors": {
+      "notFound": "Toto volno už neexistuje.",
+      "forbidden": "Nemáš k tomu oprávnění.",
+      "invalid": "Zadané údaje jsou neplatné.",
+      "notHolder": "Toto není tvoje volno.",
+      "wrongStatus": "V tomto stavu to nejde.",
+      "alreadyStarted": "Tento den už začal.",
+      "notWorkday": "To není pracovní den.",
+      "outsideWeek": "Přesunout to jde jen v rámci pracovního týdne.",
+      "outsideWindow": "Termín je více než 3 měsíce po službě.",
+      "taken": "V tento den už máš volno.",
+      "duplicate": "Tento termín už byl navržen.",
+      "tooMany": "Příliš mnoho otevřených návrhů.",
+      "reasonRequired": "Uveď prosím důvod.",
+      "proposalNotOpen": "Tento návrh už není otevřený."
+    },
+    "tab": "Volno",
+    "mineTitle": "Moje volna",
+    "manageTitle": "Správa",
+    "cardTitle": "Volno po službě {date}",
+    "status": {
+      "standard": "Standard",
+      "moved": "Přesunuto",
+      "locked": "Zablokováno",
+      "agreed": "Dohodnuto",
+      "dropped": "Zrušeno"
+    },
+    "proposalStatus": {
+      "open": "otevřený",
+      "accepted": "přijatý",
+      "declined": "odmítnutý",
+      "void": "neplatný"
+    },
+    "open": "zatím neurčeno",
+    "windowEnd": "Návrhy do {date}",
+    "actions": {
+      "move": "Přesunout",
+      "propose": "Navrhnout termíny",
+      "changeRequest": "Požádat o změnu",
+      "lock": "Zablokovat",
+      "counter": "Protinávrh",
+      "accept": "Přijmout",
+      "decline": "Odmítnout"
+    },
+    "othersOff": "{count, plural, =0 {nikdo nemá volno} one {# má volno} few {# mají volno} other {# má volno}}",
+    "lockConfirm": "Volno přijde o své datum. {name} pak navrhne termíny.",
+    "reason": "Důvod",
+    "note": "Poznámka",
+    "proposalFrom": {
+      "holder": "Návrh od {name}",
+      "manager": "Protinávrh správy"
+    },
+    "empty": "Nemáš žádné volno.",
+    "emptyManage": "Žádná volna ke správě.",
+    "allCalendars": "Všechny kalendáře",
+    "loadFailed": "Volna se nepodařilo načíst.",
+    "move": {
+      "title": "Přesunout volno",
+      "text": "Vyber jiný pracovní den ve stejném týdnu.",
+      "loadFailed": "Možné dny se nepodařilo načíst.",
+      "none": "Žádný jiný den není možný."
+    },
+    "propose": {
+      "text": "Navrhni až {max} termínů do {date}. Správa jeden z nich přijme.",
+      "date": "Termín {n}",
+      "add": "Přidat termín",
+      "remove": "Odebrat termín",
+      "submit": "Navrhnout"
+    },
+    "counter": {
+      "text": "Navrhni {name} termín do {date}.",
+      "date": "Termín",
+      "submit": "Navrhnout"
+    },
+    "decline": {
+      "title": "Odmítnout návrh",
+      "text": "Odmítnout termín {date}?"
+    },
+    "lock": {
+      "title": "Zablokovat volno"
+    },
+    "done": {
+      "moved": "Volno přesunuto.",
+      "proposed": "Termíny navrženy.",
+      "locked": "Volno zablokováno.",
+      "countered": "Protinávrh odeslán.",
+      "accepted": "Termín dohodnut.",
+      "declined": "Návrh odmítnut."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {
@@ -1737,7 +1848,15 @@
         "forcedToAll": "Hledá se zástup: {duty}",
         "forcedToMe": "Zaskakuješ: {duty}",
         "dutyTransferred": "Tvoje služba byla převedena: {duty}",
-        "counterChosen": "Vyrovnání za tvoji službu: {duty}"
+        "counterChosen": "Vyrovnání za tvoji službu: {duty}",
+        "dayOffLocked": "Tvé volno bylo zablokováno",
+        "dayOffProposed": "Navržené termíny volna",
+        "dayOffCountered": "Protinávrh k tvému volnu",
+        "dayOffAccepted": "Volno dohodnuto",
+        "dayOffDeclined": "Návrh zamítnut",
+        "dayOffReset": "Tvé volno se změnilo",
+        "dayOffDropped": "Tvé volno odpadá",
+        "dayOffReminder": "Nevyřízené návrhy termínů"
       },
       "lead": {
         "offerToAll": "{name} nabízí službu dne {duty}.",
@@ -1747,7 +1866,15 @@
         "forcedToAll": "Hledá se někdo, kdo převezme službu {name} dne {duty}. Kdo ji převezme, vybere si na oplátku jednu vlastní službu z následujících 3 měsíců.",
         "forcedToMe": "{actor} tě určil(a) jako zástup za {name} dne {duty}.",
         "dutyTransferred": "Tvoje služba dne {duty} byla převedena na {name}.",
-        "counterChosen": "Jako vyrovnání za tvoji službu dne {duty} přebíráš službu dne {counter}."
+        "counterChosen": "Jako vyrovnání za tvoji službu dne {duty} přebíráš službu dne {counter}.",
+        "dayOffLocked": "Tvé volno po službě dne {duty} bylo zablokováno. Navrhni prosím termíny.",
+        "dayOffProposed": "{holder} navrhuje pro volno po službě dne {duty}: {dates}.",
+        "dayOffCountered": "Pro tvé volno po službě dne {duty} se navrhuje {date}.",
+        "dayOffAccepted": "Volno po službě dne {duty} je {date}.",
+        "dayOffDeclined": "Návrh {date} pro volno po službě dne {duty} byl zamítnut.",
+        "dayOffReset": "Tvé volno po službě dne {duty} už neplatí a bylo obnoveno.",
+        "dayOffDropped": "Tvé volno po službě dne {duty} odpadá.",
+        "dayOffReminder": "Návrhy od {holder} pro volno po službě dne {duty} čekají na odpověď už 3 dny."
       },
       "kind": {
         "give": "Předání – kdo přijme, převezme službu.",
@@ -1757,6 +1884,7 @@
       "chooseCounter": "Vyber si na burze výměn do {end} jednu ze svých služeb jako vyrovnání.",
       "youGet": "Na oplátku přebíráš službu dne {duty}.",
       "note": "Poznámka: {note}",
+      "reason": "Důvod: {reason}",
       "allDay": "celý den",
       "button": "Otevřít burzu výměn",
       "footer": "Změnit upozornění",
@@ -1772,7 +1900,8 @@
   "personalFeed": {
     "calendarName": "Moje služby",
     "with": "S: {names}",
-    "swapLink": "Výměna: {url}"
+    "swapLink": "Výměna: {url}",
+    "dayOffLink": "Volno: {url}"
   },
   "announcements": {
     "dismiss": "Skrýt oznámení"

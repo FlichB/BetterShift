@@ -3,6 +3,8 @@ export interface NotificationPreferences {
   offersToAll: boolean;
   offersToMe: boolean;
   myOffers: boolean;
+  myDayOffs: boolean;
+  dayOffRequests: boolean;
 }
 
 export interface NotificationSettings {

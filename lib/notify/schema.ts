@@ -49,4 +49,7 @@ export const notificationPreferences = sqliteTable("notification_preferences", {
   offersToAll: integer("offers_to_all", { mode: "boolean" }).notNull().default(true),
   offersToMe: integer("offers_to_me", { mode: "boolean" }).notNull().default(true),
   myOffers: integer("my_offers", { mode: "boolean" }).notNull().default(true),
+  // [fork] Dienstfrei
+  myDayOffs: integer("my_day_offs", { mode: "boolean" }).notNull().default(true),
+  dayOffRequests: integer("day_off_requests", { mode: "boolean" }).notNull().default(true),
 });

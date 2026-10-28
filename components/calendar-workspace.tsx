@@ -210,6 +210,7 @@ export function CalendarWorkspace({
 
   const model: DayViewModel = {
     selectedDay,
+    calendarId, // [fork]
     currentDate,
     ...dayData,
     summary: monthSummary,
@@ -285,6 +286,7 @@ export function CalendarWorkspace({
         onDayClick={onDayClick}
         onDayContextMenu={canAddNote ? onDayContextMenu : undefined}
         swipeHandlers={swipeHandlers}
+        calendarId={calendarId} // [fork]
       />
     ) : (
       <MonthGrid
@@ -304,6 +306,7 @@ export function CalendarWorkspace({
         onDayClick={onDayClick}
         onDayContextMenu={canAddNote ? onDayContextMenu : undefined}
         swipeHandlers={swipeHandlers}
+        calendarId={calendarId} // [fork]
       />
     );
 

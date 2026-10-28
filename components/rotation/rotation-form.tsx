@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChoiceChips, Field, inputClass } from "@/components/form-kit";
+import { ChoiceChips, Field, ToggleRow, inputClass } from "@/components/form-kit";
+import { ENTRY_TITLE_MAX, entryTitle, validateEntryTitle } from "@/lib/rotation/entry-title"; // [fork] Dienstfrei
 import { EntryTitleField } from "@/components/rotation/entry-title-field";
 import { MemberOrderList } from "@/components/rotation/member-order-list";
 import { useRotationForm } from "@/components/rotation/use-rotation-form";
@@ -275,6 +276,34 @@ export function RotationForm({
         previewHolder={previewHolder}
         dutyTitle={calendar.presets.find((p) => p.id === state.presetId)?.title ?? ""}
       />
+
+      {/* [fork] Dienstfrei */}
+      <div className="space-y-3 rounded-[11px] border border-control px-3.5 py-2.5">
+        <ToggleRow
+          id="rotation-day-off"
+          title={t("rotation.fields.dayOffEnabled")}
+          description={t("rotation.fields.dayOffEnabledHint")}
+          checked={state.dayOffEnabled}
+          onCheckedChange={(checked) => set("dayOffEnabled", checked)}
+        />
+        {state.dayOffEnabled && (
+          <Field label={t("rotation.fields.dayOffTitle")} htmlFor="rotation-day-off-title">
+            <Input
+              id="rotation-day-off-title"
+              className={inputClass}
+              maxLength={ENTRY_TITLE_MAX}
+              value={state.dayOffTitle}
+              aria-invalid={validateEntryTitle(state.dayOffTitle) !== "ok"}
+              onChange={(e) => set("dayOffTitle", e.target.value)}
+            />
+            {previewHolder && validateEntryTitle(state.dayOffTitle) === "ok" && (
+              <p className="text-xs text-fg-tertiary">
+                {t("rotation.fields.entryTitlePreview", { title: entryTitle(state.dayOffTitle, previewHolder, "") })}
+              </p>
+            )}
+          </Field>
+        )}
+      </div>
 
       <Field label={t("rotation.fields.closedTitle")} hint={t("rotation.fields.closedTitleHint")}>
         <Input className={inputClass} maxLength={100} value={state.closedTitle} onChange={(e) => set("closedTitle", e.target.value)} />

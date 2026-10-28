@@ -3,7 +3,9 @@ import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { calendarShares, user } from "@/lib/db/schema";
-import { buildPersonalFeed, isUserBanned, loadPersonalDuties } from "@/lib/feed/personal";
+import { buildPersonalFeed, isUserBanned, loadPersonalDayOffs, loadPersonalDuties } from "@/lib/feed/personal";
+import { dayOffs } from "@/lib/dayoff/schema";
+import { reconcileRotation } from "@/lib/dayoff/service";
 import { rotations } from "@/lib/rotation/schema";
 import { acceptOffer, createOffer } from "@/lib/swap/service";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
@@ -77,5 +79,24 @@ describe("buildPersonalFeed", () => {
     expect(ics).toContain(`SUMMARY:${first} hat Samstagsdienst`);
     // ics.ts writes UTC; 09:30 Europe/Vienna in November (CET, UTC+1) is 08:30Z
     expect(ics).toMatch(/DTSTART:\d{8}T083000Z/);
+  });
+
+  it("adds the Dienstfreie of the user as all-day events", async () => {
+    db.update(rotations).set({ dayOffEnabled: true }).where(eq(rotations.id, s.rotation.id)).run();
+    db.transaction((tx) => reconcileRotation(tx, s.rotation.id, now));
+    const ics = await buildPersonalFeed(s.m0, now);
+    const first = db.select({ name: user.name }).from(user).where(eq(user.id, s.m0)).get()!.name!.split(" ")[0];
+    expect(ics).toContain(`SUMMARY:${first} dienstfrei`);
+    expect(ics).toContain("DTSTART;VALUE=DATE:20261109");
+    expect(ics).toContain("DTEND;VALUE=DATE:20261110");
+    expect(ics).toMatch(/UID:dayoff-.+-me/);
+    expect(ics).toMatch(/Dienstfrei: https?:\/\/.+\/swaps\?tab=dayOffs/);
+  });
+
+  it("leaves out a Dienstfrei whose duty was deleted before reconcile ran", async () => {
+    db.update(rotations).set({ dayOffEnabled: true }).where(eq(rotations.id, s.rotation.id)).run();
+    db.transaction((tx) => reconcileRotation(tx, s.rotation.id, now));
+    db.update(dayOffs).set({ shiftId: null }).where(and(eq(dayOffs.userId, s.m0), eq(dayOffs.dutyDate, "2026-11-07"))).run();
+    expect((await loadPersonalDayOffs(s.m0, now)).map((d) => d.date)).toEqual(["2026-12-14"]);
   });
 });

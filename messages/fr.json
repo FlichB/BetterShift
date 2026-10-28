@@ -1145,6 +1145,14 @@
       "personalFeedCreated": "Abonnement d'agenda personnel créé",
       "personalFeedRotated": "Abonnement d'agenda personnel régénéré",
       "personalFeedRevoked": "Abonnement d'agenda personnel révoqué",
+      "dayOffMoved": "Jour de repos après le service du {date} déplacé du {from} au {to} ({calendar})",
+      "dayOffLocked": "Jour de repos après le service du {date} bloqué ({calendar})",
+      "dayOffProposed": "Dates proposées pour le jour de repos après le service du {date} : {dates} ({calendar})",
+      "dayOffCountered": "Contre-proposition {to} pour le jour de repos après le service du {date} ({calendar})",
+      "dayOffAccepted": "Jour de repos après le service du {date} convenu pour le {to} ({calendar})",
+      "dayOffDeclined": "Proposition {to} pour le jour de repos après le service du {date} refusée ({calendar})",
+      "dayOffReset": "Jour de repos après le service du {date} réinitialisé ({calendar})",
+      "dayOffDropped": "Jour de repos après le service du {date} supprimé ({calendar})",
       "userBanned": "{user} bloqué",
       "userBannedPermanently": "{user} bloqué définitivement",
       "userUnbanned": "Blocage de {user} levé",
@@ -1185,7 +1193,8 @@
       "telemetrySent": "Télémétrie envoyée manuellement",
       "telemetrySendFailed": "Échec de l'envoi manuel de la télémétrie",
       "telemetryAutoSent": "Télémétrie envoyée automatiquement",
-      "telemetryAutoSendFailed": "Échec de l'envoi automatique de la télémétrie"
+      "telemetryAutoSendFailed": "Échec de l'envoi automatique de la télémétrie",
+      "dayOffNotificationFailed": "Impossible d'envoyer l'e-mail du jour de repos ({kind})"
     }
   },
   "adminUsers": {
@@ -1310,6 +1319,7 @@
       "manageAnyNotesEvents": "Gérer toutes les notes et événements",
       "signUpSelf": "S'inscrire",
       "signUpOthers": "Inscrire d'autres personnes",
+      "moveOwnDayOff": "Déplacer son propre jour de repos",
       "createPreset": "Créer des modèles",
       "manageOwnPresets": "Gérer ses propres modèles",
       "manageAnyPresets": "Gérer tous les modèles",
@@ -1334,6 +1344,7 @@
       "manageAnyNotesEvents": "Modifier ou supprimer aussi ceux créés par d'autres",
       "signUpSelf": "S'inscrire et se désinscrire des créneaux avec des places libres",
       "signUpOthers": "Inscrire et désinscrire d'autres personnes des créneaux",
+      "moveOwnDayOff": "Déplacer son propre jour de repos au sein de la semaine de travail",
       "createPreset": "Créer de nouveaux modèles",
       "manageOwnPresets": "Modifier ou supprimer les modèles qu'il a créés",
       "manageAnyPresets": "Modifier aussi les modèles créés par d'autres ; contrôle également l'ordre commun",
@@ -1424,6 +1435,9 @@
       "closedTitleHint": "S'affiche les jours de fermeture sous la forme « Texte (motif) », p. ex. « Fermé (Noël) ».",
       "entryTitle": "Modèle d'entrée",
       "entryTitleHint": "C'est le nom de chaque place dans le calendrier et dans Outlook.",
+      "dayOffEnabled": "Jour de congé après le service",
+      "dayOffEnabledHint": "Chaque place obtient le jour ouvré suivant (lun–ven) après le service.",
+      "dayOffTitle": "Texte du jour de congé",
       "entryTitleInfo": "À propos du modèle d'entrée",
       "entryTitleHelp": "Espaces réservés : '{Vorname}' = premier mot du nom, '{Name}' = nom complet, '{Dienst}' = titre du service. '{Vorname}' ou '{Name}' doit apparaître. Exemple : « '{Vorname}' Dienst » → « Günther Dienst ».",
       "entryTitlePreview": "Aperçu : {title}",
@@ -1543,6 +1557,7 @@
       "holidayCalendarSame": "Le calendrier des jours fériés doit être un autre calendrier.",
       "holidayOpenDates": "Jours fériés travaillés invalides.",
       "entryTitle": "Modèle d'entrée invalide : il te faut '{Vorname}' ou '{Name}', et seuls '{Vorname}', '{Name}' et '{Dienst}' sont autorisés (100 caractères max.).",
+      "dayOffTitle": "Le modèle d'entrée du jour de repos est invalide.",
       "reinforcedDates": "Jours renforcés invalides : une entrée par date ; les jours à venir ont besoin de plus de personnes que « Personnes par service », au maximum autant que de participants."
     }
   },
@@ -1557,6 +1572,10 @@
       "offersToMeHint": "Lorsque quelqu'un te demande directement un service.",
       "myOffers": "Mes offres",
       "myOffersHint": "Lorsque ton offre est acceptée, ta demande refusée ou ton service transféré.",
+      "myDayOffs": "Mon jour de repos (verrouillage, réponses, modifications)",
+      "myDayOffsHint": "Quand ton jour de repos est verrouillé, traité, réinitialisé ou annulé.",
+      "dayOffRequests": "Propositions de jour de repos des participants (gestion)",
+      "dayOffRequestsHint": "Quand des participants proposent des dates pour un jour de repos verrouillé ou attendent ta réponse.",
       "notConfigured": "L'envoi d'e-mails n'est pas configuré sur ce serveur. Ton choix s'appliquera dès qu'il le sera.",
       "saveFailed": "Le paramètre n'a pas pu être enregistré.",
       "loadFailed": "Impossible de charger les paramètres."
@@ -1727,6 +1746,98 @@
       "confirmEveryone": "Le service de {absent} apparaît comme « Remplaçant recherché ». Celui ou celle qui le prend reçoit la place immédiatement, puis choisit en échange l'un de ses propres services des 3 prochains mois."
     }
   },
+  "dayOff": {
+    "calendarHint": "Jour de repos – détails sur la bourse d'échange",
+    "errors": {
+      "notFound": "Ce jour de repos n'existe plus.",
+      "forbidden": "Tu n'as pas la permission de faire cela.",
+      "invalid": "Les informations sont invalides.",
+      "notHolder": "Ce n'est pas ton jour de repos.",
+      "wrongStatus": "Ce n'est pas possible dans cet état.",
+      "alreadyStarted": "Ce jour a déjà commencé.",
+      "notWorkday": "Ce n'est pas un jour ouvré.",
+      "outsideWeek": "Tu ne peux le déplacer que dans la semaine de travail.",
+      "outsideWindow": "La date est plus de 3 mois après le service.",
+      "taken": "Tu as déjà un jour de repos ce jour-là.",
+      "duplicate": "Cette date a déjà été proposée.",
+      "tooMany": "Trop de propositions ouvertes.",
+      "reasonRequired": "Merci d'indiquer un motif.",
+      "proposalNotOpen": "Cette proposition n'est plus ouverte."
+    },
+    "tab": "Jour de repos",
+    "mineTitle": "Mes jours de repos",
+    "manageTitle": "Gestion",
+    "cardTitle": "Jour de repos après le service du {date}",
+    "status": {
+      "standard": "Standard",
+      "moved": "Déplacé",
+      "locked": "Bloqué",
+      "agreed": "Convenu",
+      "dropped": "Annulé"
+    },
+    "proposalStatus": {
+      "open": "ouverte",
+      "accepted": "acceptée",
+      "declined": "refusée",
+      "void": "caduque"
+    },
+    "open": "pas encore fixé",
+    "windowEnd": "Propositions jusqu'au {date}",
+    "actions": {
+      "move": "Déplacer",
+      "propose": "Proposer des dates",
+      "changeRequest": "Demander un changement",
+      "lock": "Bloquer",
+      "counter": "Contre-proposition",
+      "accept": "Accepter",
+      "decline": "Refuser"
+    },
+    "othersOff": "{count, plural, =0 {personne en repos} one {# est en repos} other {# sont en repos}}",
+    "lockConfirm": "Le jour de repos perd sa date. {name} proposera ensuite des dates.",
+    "reason": "Motif",
+    "note": "Note",
+    "proposalFrom": {
+      "holder": "Proposé par {name}",
+      "manager": "Contre-proposition de la gestion"
+    },
+    "empty": "Tu n'as aucun jour de repos.",
+    "emptyManage": "Aucun jour de repos à gérer.",
+    "allCalendars": "Tous les calendriers",
+    "loadFailed": "Impossible de charger les jours de repos.",
+    "move": {
+      "title": "Déplacer le jour de repos",
+      "text": "Choisis un autre jour ouvré de la même semaine.",
+      "loadFailed": "Impossible de charger les jours possibles.",
+      "none": "Aucun autre jour n'est possible."
+    },
+    "propose": {
+      "text": "Propose jusqu'à {max} dates jusqu'au {date}. La gestion en accepte une.",
+      "date": "Date {n}",
+      "add": "Ajouter une date",
+      "remove": "Retirer la date",
+      "submit": "Proposer"
+    },
+    "counter": {
+      "text": "Propose à {name} une date jusqu'au {date}.",
+      "date": "Date",
+      "submit": "Proposer"
+    },
+    "decline": {
+      "title": "Refuser la proposition",
+      "text": "Refuser la date du {date} ?"
+    },
+    "lock": {
+      "title": "Bloquer le jour de repos"
+    },
+    "done": {
+      "moved": "Jour de repos déplacé.",
+      "proposed": "Dates proposées.",
+      "locked": "Jour de repos bloqué.",
+      "countered": "Contre-proposition envoyée.",
+      "accepted": "Date convenue.",
+      "declined": "Proposition refusée."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {
@@ -1737,7 +1848,15 @@
         "forcedToAll": "Remplaçant recherché : {duty}",
         "forcedToMe": "Tu remplaces : {duty}",
         "dutyTransferred": "Ton service a été transféré : {duty}",
-        "counterChosen": "Service de compensation pour ton service : {duty}"
+        "counterChosen": "Service de compensation pour ton service : {duty}",
+        "dayOffLocked": "Ton jour de repos a été verrouillé",
+        "dayOffProposed": "Dates proposées pour un jour de repos",
+        "dayOffCountered": "Contre-proposition pour ton jour de repos",
+        "dayOffAccepted": "Jour de repos convenu",
+        "dayOffDeclined": "Proposition refusée",
+        "dayOffReset": "Ton jour de repos a changé",
+        "dayOffDropped": "Ton jour de repos est annulé",
+        "dayOffReminder": "Propositions de date en attente"
       },
       "lead": {
         "offerToAll": "{name} propose le service du {duty}.",
@@ -1747,7 +1866,15 @@
         "forcedToAll": "On cherche quelqu'un pour assurer le service de {name} le {duty}. Celui ou celle qui le prend choisit en échange l'un de ses propres services des 3 prochains mois.",
         "forcedToMe": "{actor} t'a désigné comme remplaçant de {name} le {duty}.",
         "dutyTransferred": "Ton service du {duty} a été transféré à {name}.",
-        "counterChosen": "En compensation de ton service du {duty}, tu reprends le service du {counter}."
+        "counterChosen": "En compensation de ton service du {duty}, tu reprends le service du {counter}.",
+        "dayOffLocked": "Ton jour de repos après le service du {duty} a été verrouillé. Propose des dates, s'il te plaît.",
+        "dayOffProposed": "{holder} propose pour le jour de repos après le service du {duty} : {dates}.",
+        "dayOffCountered": "Pour ton jour de repos après le service du {duty}, le {date} est proposé.",
+        "dayOffAccepted": "Le jour de repos après le service du {duty} est le {date}.",
+        "dayOffDeclined": "La proposition du {date} pour le jour de repos après le service du {duty} a été refusée.",
+        "dayOffReset": "Ton jour de repos après le service du {duty} n'est plus valable et a été réinitialisé.",
+        "dayOffDropped": "Ton jour de repos après le service du {duty} est annulé.",
+        "dayOffReminder": "Les propositions de {holder} pour le jour de repos après le service du {duty} attendent une réponse depuis 3 jours."
       },
       "kind": {
         "give": "Cession – celui qui accepte reprend le service.",
@@ -1757,6 +1884,7 @@
       "chooseCounter": "Choisis sur le tableau d'échanges, d'ici le {end}, l'un de tes services en compensation.",
       "youGet": "En échange, tu reprends le service du {duty}.",
       "note": "Note : {note}",
+      "reason": "Motif : {reason}",
       "allDay": "toute la journée",
       "button": "Ouvrir le tableau d'échanges",
       "footer": "Modifier les notifications",
@@ -1772,7 +1900,8 @@
   "personalFeed": {
     "calendarName": "Mes services",
     "with": "Avec : {names}",
-    "swapLink": "Échanger : {url}"
+    "swapLink": "Échanger : {url}",
+    "dayOffLink": "Jour de repos : {url}"
   },
   "announcements": {
     "dismiss": "Masquer l'annonce"

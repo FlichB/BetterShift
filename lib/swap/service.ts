@@ -1,11 +1,15 @@
 // [fork] Swap board service. Every write runs in one synchronous better-sqlite3
 // transaction: read state, ask lib/swap/rules.ts, write. Due offers are settled
 // in a separate transaction first, so their status sticks even if the request fails.
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { dayOffs } from "@/lib/dayoff/schema"; // [fork]
+import { formatDateToLocal } from "@/lib/date-utils"; // [fork]
+import { entryTitle } from "@/lib/rotation/entry-title"; // [fork]
+import { transferDayOff } from "@/lib/dayoff/service"; // [fork]
 import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
 import { enqueueSwapEvent, offerKind } from "@/lib/notify/enqueue";
-import { hasStarted } from "@/lib/rotation/dates";
+import { addDays, hasStarted } from "@/lib/rotation/dates"; // [fork] addDays
 import { rotationDuties, rotationSlotLocks, rotations } from "@/lib/rotation/schema";
 import { logResolved } from "@/lib/swap/audit";
 import {
@@ -273,6 +277,7 @@ function applyMove(tx: Tx, move: SlotMove, actorId: string, now: Date): void {
       })
       .run();
   }
+  transferDayOff(tx, move, now); // [fork] Dienstfrei follows the Platz (SPEC 12.38)
 }
 
 /** Cancels the open offers of Plätze their holder no longer has (or is about to lose). */
@@ -663,10 +668,30 @@ export function calendarState(calendarId: string, now: Date): Omit<CalendarSwapS
     .innerJoin(shifts, eq(shifts.id, shiftSwaps.offeredShiftId))
     .where(and(eq(shiftSwaps.status, "open"), eq(shifts.calendarId, calendarId)))
     .all();
+  // [fork] Dienstfreie as calendar entries (spec 12.32 approach): dated, not locked or dropped, still on a duty (a deleted one waits for reconcile), last 60 days on.
+  const dayOffRows = db
+    .select({
+      id: dayOffs.id,
+      userId: dayOffs.userId,
+      date: dayOffs.date,
+      status: dayOffs.status,
+      template: rotations.dayOffTitle,
+      dutyTitle: shifts.title,
+      name: user.name,
+      email: user.email,
+    })
+    .from(dayOffs)
+    .innerJoin(rotations, eq(rotations.id, dayOffs.rotationId))
+    .innerJoin(user, eq(user.id, dayOffs.userId))
+    .leftJoin(shifts, eq(shifts.id, dayOffs.shiftId))
+    .where(and(eq(rotations.calendarId, calendarId), eq(rotations.dayOffEnabled, true), isNotNull(dayOffs.shiftId), gte(dayOffs.date, addDays(formatDateToLocal(now), -60))))
+    .all()
+    .filter((r) => r.date && ["standard", "moved", "agreed"].includes(r.status));
   return {
     dutyShiftIds: duties.map((d) => d.shiftId),
     openOfferShiftIds: [...new Set(openOffers.map((o) => o.shiftId))],
     entryTemplates: Object.fromEntries(duties.map((d) => [d.shiftId, d.entryTitle])),
     openOffers,
+    dayOffs: dayOffRows.map((r) => ({ id: r.id, userId: r.userId, date: r.date!, title: entryTitle(r.template, r, r.dutyTitle ?? "") })), // [fork]
   };
 }

@@ -1145,6 +1145,14 @@
       "personalFeedCreated": "Persönlichen Kalender-Feed erstellt",
       "personalFeedRotated": "Persönlichen Kalender-Feed neu erzeugt",
       "personalFeedRevoked": "Persönlichen Kalender-Feed widerrufen",
+      "dayOffMoved": "Dienstfrei nach dem Dienst am {date} von {from} auf {to} verschoben ({calendar})",
+      "dayOffLocked": "Dienstfrei nach dem Dienst am {date} gesperrt ({calendar})",
+      "dayOffProposed": "Termine für Dienstfrei nach dem Dienst am {date} vorgeschlagen: {dates} ({calendar})",
+      "dayOffCountered": "Gegenvorschlag {to} für Dienstfrei nach dem Dienst am {date} ({calendar})",
+      "dayOffAccepted": "Dienstfrei nach dem Dienst am {date} auf {to} vereinbart ({calendar})",
+      "dayOffDeclined": "Vorschlag {to} für Dienstfrei nach dem Dienst am {date} abgelehnt ({calendar})",
+      "dayOffReset": "Dienstfrei nach dem Dienst am {date} zurückgesetzt ({calendar})",
+      "dayOffDropped": "Dienstfrei nach dem Dienst am {date} entfallen ({calendar})",
       "userBanned": "{user} gesperrt",
       "userBannedPermanently": "{user} dauerhaft gesperrt",
       "userUnbanned": "Sperre für {user} aufgehoben",
@@ -1185,7 +1193,8 @@
       "telemetrySent": "Telemetriedaten manuell gesendet",
       "telemetrySendFailed": "Manuelles Senden der Telemetriedaten fehlgeschlagen",
       "telemetryAutoSent": "Telemetriedaten automatisch gesendet",
-      "telemetryAutoSendFailed": "Automatisches Senden der Telemetriedaten fehlgeschlagen"
+      "telemetryAutoSendFailed": "Automatisches Senden der Telemetriedaten fehlgeschlagen",
+      "dayOffNotificationFailed": "Dienstfrei-Mail konnte nicht gesendet werden ({kind})"
     }
   },
   "adminUsers": {
@@ -1310,6 +1319,7 @@
       "manageAnyNotesEvents": "Alle Notizen & Events verwalten",
       "signUpSelf": "Sich selbst eintragen",
       "signUpOthers": "Andere eintragen",
+      "moveOwnDayOff": "Dienstfrei selbst verschieben",
       "createPreset": "Presets anlegen",
       "manageOwnPresets": "Eigene Presets verwalten",
       "manageAnyPresets": "Alle Presets verwalten",
@@ -1334,6 +1344,7 @@
       "manageAnyNotesEvents": "Auch von anderen erstellte Notizen und Events bearbeiten oder löschen",
       "signUpSelf": "Für Schichten mit offenen Plätzen ein- und austragen",
       "signUpOthers": "Andere Personen für Schichten ein- und austragen",
+      "moveOwnDayOff": "Das eigene Dienstfrei innerhalb der Arbeitswoche verlegen",
       "createPreset": "Neue Presets erstellen",
       "manageOwnPresets": "Selbst erstellte Presets bearbeiten oder löschen",
       "manageAnyPresets": "Auch von anderen erstellte Presets bearbeiten; steuert zusätzlich die gemeinsame Reihenfolge",
@@ -1424,6 +1435,9 @@
       "closedTitleHint": "Erscheint an Schließtagen als „Text (Grund)“, z. B. „Geschlossen (Mariä Empfängnis)“.",
       "entryTitle": "Eintragsvorlage",
       "entryTitleHint": "So heißt jeder Platz im Kalender und in Outlook.",
+      "dayOffEnabled": "Dienstfrei nach Dienst",
+      "dayOffEnabledHint": "Jeder Platz bekommt den nächsten Arbeitstag (Mo–Fr) nach dem Dienst frei.",
+      "dayOffTitle": "Text für Dienstfrei",
       "entryTitleInfo": "Erklärung zur Eintragsvorlage",
       "entryTitleHelp": "Platzhalter: '{Vorname}' = erstes Wort des Namens, '{Name}' = ganzer Name, '{Dienst}' = Titel des Dienstes. '{Vorname}' oder '{Name}' muss vorkommen. Beispiel: „'{Vorname}' Dienst“ → „Günther Dienst“.",
       "entryTitlePreview": "Vorschau: {title}",
@@ -1543,6 +1557,7 @@
       "holidayCalendarSame": "Der Feiertagskalender muss ein anderer Kalender sein.",
       "holidayOpenDates": "Geöffnete Feiertage ungültig.",
       "entryTitle": "Eintragsvorlage ungültig: Sie braucht '{Vorname}' oder '{Name}' und darf nur '{Vorname}', '{Name}' und '{Dienst}' enthalten (max. 100 Zeichen).",
+      "dayOffTitle": "Die Vorlage für Dienstfrei ist ungültig.",
       "reinforcedDates": "Verstärkte Tage ungültig: Je Datum ein Eintrag, und künftige Tage brauchen mehr Personen als „Personen pro Dienst“, höchstens so viele wie Teilnehmer."
     }
   },
@@ -1557,6 +1572,10 @@
       "offersToMeHint": "Wenn dich jemand gezielt für einen Dienst anfragt.",
       "myOffers": "Meine Angebote",
       "myOffersHint": "Wenn dein Angebot angenommen, deine Anfrage abgelehnt oder dein Dienst übertragen wird.",
+      "myDayOffs": "Mein Dienstfrei (Sperre, Antworten, Änderungen)",
+      "myDayOffsHint": "Wenn dein Dienstfrei gesperrt, beantwortet, zurückgesetzt oder gestrichen wird.",
+      "dayOffRequests": "Dienstfrei-Vorschläge der Teilnehmer (Verwaltung)",
+      "dayOffRequestsHint": "Wenn Teilnehmer Termine für ein gesperrtes Dienstfrei vorschlagen oder darauf warten, dass du antwortest.",
       "notConfigured": "Der E-Mail-Versand ist auf diesem Server nicht eingerichtet. Deine Auswahl gilt, sobald er eingerichtet ist.",
       "saveFailed": "Einstellung konnte nicht gespeichert werden.",
       "loadFailed": "Die Einstellungen konnten nicht geladen werden."
@@ -1727,6 +1746,98 @@
       "confirmEveryone": "Der Dienst von {absent} erscheint als „Einspringen gesucht“. Wer übernimmt, bekommt den Platz sofort und wählt danach einen eigenen Dienst der nächsten 3 Monate als Ausgleich."
     }
   },
+  "dayOff": {
+    "calendarHint": "Dienstfrei – Details auf der Tauschbörse",
+    "errors": {
+      "notFound": "Dieses Dienstfrei gibt es nicht mehr.",
+      "forbidden": "Dafür fehlt dir die Berechtigung.",
+      "invalid": "Die Angaben sind ungültig.",
+      "notHolder": "Das ist nicht dein Dienstfrei.",
+      "wrongStatus": "Das geht in diesem Zustand nicht.",
+      "alreadyStarted": "Dieser Tag hat schon begonnen.",
+      "notWorkday": "Das ist kein Arbeitstag.",
+      "outsideWeek": "Verschieben geht nur innerhalb der Arbeitswoche.",
+      "outsideWindow": "Der Termin liegt mehr als 3 Monate nach dem Dienst.",
+      "taken": "An diesem Tag hast du schon ein Dienstfrei.",
+      "duplicate": "Dieser Termin ist schon vorgeschlagen.",
+      "tooMany": "Zu viele offene Vorschläge.",
+      "reasonRequired": "Bitte gib eine Begründung an.",
+      "proposalNotOpen": "Dieser Vorschlag ist nicht mehr offen."
+    },
+    "tab": "Dienstfrei",
+    "mineTitle": "Meine Dienstfreie",
+    "manageTitle": "Verwaltung",
+    "cardTitle": "Dienstfrei nach dem Dienst am {date}",
+    "status": {
+      "standard": "Standard",
+      "moved": "Verschoben",
+      "locked": "Gesperrt",
+      "agreed": "Vereinbart",
+      "dropped": "Entfallen"
+    },
+    "proposalStatus": {
+      "open": "offen",
+      "accepted": "angenommen",
+      "declined": "abgelehnt",
+      "void": "hinfällig"
+    },
+    "open": "noch offen",
+    "windowEnd": "Vorschläge bis {date}",
+    "actions": {
+      "move": "Verschieben",
+      "propose": "Termine vorschlagen",
+      "changeRequest": "Änderung beantragen",
+      "lock": "Sperren",
+      "counter": "Gegenvorschlag",
+      "accept": "Annehmen",
+      "decline": "Ablehnen"
+    },
+    "othersOff": "{count, plural, =0 {niemand frei} one {# hat frei} other {# haben frei}}",
+    "lockConfirm": "Das Dienstfrei verliert sein Datum. {name} schlägt danach Termine vor.",
+    "reason": "Begründung",
+    "note": "Notiz",
+    "proposalFrom": {
+      "holder": "Vorschlag von {name}",
+      "manager": "Gegenvorschlag der Verwaltung"
+    },
+    "empty": "Du hast kein Dienstfrei.",
+    "emptyManage": "Keine Dienstfreie zu verwalten.",
+    "allCalendars": "Alle Kalender",
+    "loadFailed": "Die Dienstfreie konnten nicht geladen werden.",
+    "move": {
+      "title": "Dienstfrei verschieben",
+      "text": "Wähle einen anderen Arbeitstag in derselben Woche.",
+      "loadFailed": "Die möglichen Tage konnten nicht geladen werden.",
+      "none": "Es gibt keinen anderen möglichen Tag."
+    },
+    "propose": {
+      "text": "Schlage bis zu {max} Termine bis {date} vor. Die Verwaltung nimmt einen davon an.",
+      "date": "Termin {n}",
+      "add": "Termin hinzufügen",
+      "remove": "Termin entfernen",
+      "submit": "Vorschlagen"
+    },
+    "counter": {
+      "text": "Schlage {name} einen Termin bis {date} vor.",
+      "date": "Termin",
+      "submit": "Vorschlagen"
+    },
+    "decline": {
+      "title": "Vorschlag ablehnen",
+      "text": "Den Termin {date} ablehnen?"
+    },
+    "lock": {
+      "title": "Dienstfrei sperren"
+    },
+    "done": {
+      "moved": "Dienstfrei verschoben.",
+      "proposed": "Termine vorgeschlagen.",
+      "locked": "Dienstfrei gesperrt.",
+      "countered": "Gegenvorschlag gesendet.",
+      "accepted": "Termin vereinbart.",
+      "declined": "Vorschlag abgelehnt."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {
@@ -1737,7 +1848,15 @@
         "forcedToAll": "Einspringer gesucht: {duty}",
         "forcedToMe": "Du springst ein: {duty}",
         "dutyTransferred": "Dein Dienst wurde übertragen: {duty}",
-        "counterChosen": "Ausgleich für deinen Dienst: {duty}"
+        "counterChosen": "Ausgleich für deinen Dienst: {duty}",
+        "dayOffLocked": "Dein Dienstfrei wurde gesperrt",
+        "dayOffProposed": "Terminvorschläge für Dienstfrei",
+        "dayOffCountered": "Gegenvorschlag für dein Dienstfrei",
+        "dayOffAccepted": "Dienstfrei vereinbart",
+        "dayOffDeclined": "Vorschlag abgelehnt",
+        "dayOffReset": "Dein Dienstfrei hat sich geändert",
+        "dayOffDropped": "Dein Dienstfrei entfällt",
+        "dayOffReminder": "Offene Terminvorschläge"
       },
       "lead": {
         "offerToAll": "{name} bietet den Dienst am {duty} an.",
@@ -1747,7 +1866,15 @@
         "forcedToAll": "Für den Dienst am {duty} wird ein Einspringer für {name} gesucht. Wer übernimmt, wählt danach einen eigenen Dienst der nächsten 3 Monate als Ausgleich.",
         "forcedToMe": "{actor} hat dich als Einspringer für {name} am {duty} eingeteilt.",
         "dutyTransferred": "Dein Dienst am {duty} wurde an {name} übertragen.",
-        "counterChosen": "Als Ausgleich für deinen Dienst am {duty} übernimmst du den Dienst am {counter}."
+        "counterChosen": "Als Ausgleich für deinen Dienst am {duty} übernimmst du den Dienst am {counter}.",
+        "dayOffLocked": "Dein Dienstfrei nach dem Dienst am {duty} wurde gesperrt. Schlage bitte Termine vor.",
+        "dayOffProposed": "{holder} schlägt für das Dienstfrei nach dem Dienst am {duty} vor: {dates}.",
+        "dayOffCountered": "Für dein Dienstfrei nach dem Dienst am {duty} wird der {date} vorgeschlagen.",
+        "dayOffAccepted": "Das Dienstfrei nach dem Dienst am {duty} ist am {date}.",
+        "dayOffDeclined": "Der Vorschlag {date} für das Dienstfrei nach dem Dienst am {duty} wurde abgelehnt.",
+        "dayOffReset": "Dein Dienstfrei nach dem Dienst am {duty} ist nicht mehr gültig und wurde zurückgesetzt.",
+        "dayOffDropped": "Dein Dienstfrei nach dem Dienst am {duty} entfällt.",
+        "dayOffReminder": "Die Vorschläge von {holder} für das Dienstfrei nach dem Dienst am {duty} warten seit 3 Tagen auf Antwort."
       },
       "kind": {
         "give": "Abgabe – wer annimmt, übernimmt den Dienst.",
@@ -1757,6 +1884,7 @@
       "chooseCounter": "Wähle auf der Tauschbörse bis {end} einen deiner Dienste als Ausgleich.",
       "youGet": "Du übernimmst im Gegenzug den Dienst am {duty}.",
       "note": "Notiz: {note}",
+      "reason": "Begründung: {reason}",
       "allDay": "ganztägig",
       "button": "Zur Tauschbörse",
       "footer": "Benachrichtigungen ändern",
@@ -1772,7 +1900,8 @@
   "personalFeed": {
     "calendarName": "Meine Dienste",
     "with": "Mit: {names}",
-    "swapLink": "Tauschen: {url}"
+    "swapLink": "Tauschen: {url}",
+    "dayOffLink": "Dienstfrei: {url}"
   },
   "announcements": {
     "dismiss": "Ankündigung ausblenden"

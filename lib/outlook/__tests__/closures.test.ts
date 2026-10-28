@@ -26,6 +26,8 @@ describe("Schließeinträge in Outlook and the personal feed", () => {
         skipDates: [{ date: "2026-11-14", reason: "Inventur" }],
         closedTitle: "HeimkinoWelt geschlossen",
         entryTitle: "{Vorname} Dienst",
+        dayOffEnabled: false,
+        dayOffTitle: "{Vorname} dienstfrei",
         reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],

@@ -2,6 +2,7 @@
 // Same single-instance assumption as autoSyncService: no coordination across replicas.
 import { logSystemEvent } from "@/lib/audit-log";
 import { formatDateToLocal } from "@/lib/date-utils";
+import { dispatchDayOffNotifications } from "@/lib/dayoff/dispatch"; // [fork]
 import { dispatchNotifications } from "@/lib/notify/dispatch";
 import { renderEventBody } from "@/lib/notify/render";
 import { getMailTranslator } from "@/lib/notify/translator";
@@ -87,6 +88,12 @@ async function runOnce(): Promise<void> {
 
   const mails = await dispatchNotifications(client, config, now);
   if (mails.authError) return pause(mails.authError);
+  // [fork] Separate queue: a failure here must not skip the rest of the run.
+  const dayOffMails = await dispatchDayOffNotifications(client, config, now).catch((error) => {
+    console.error("[Outlook] Dienstfrei mail dispatch failed:", error);
+    return null;
+  });
+  if (dayOffMails?.authError) return pause(dayOffMails.authError);
   if (sync.remaining > 0) state.rerun = true;
 }
 

@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth/sessions";
 import { getShiftSignupPermission } from "@/lib/auth/permissions";
 import { canActOnSignup, getShiftOrNull } from "@/lib/shift-signups";
 import { blocksSelfSignup } from "@/lib/swap/guard"; // [fork]
+import { reconcileForShift } from "@/lib/dayoff/service"; // [fork]
 
 // DELETE withdraw a user from a shift's signup list
 export async function DELETE(
@@ -49,6 +50,12 @@ export async function DELETE(
           eq(shiftSignups.userId, targetUserId)
         )
       );
+    // [fork] Dienstfrei follows the Platz; a failure must not fail the committed removal (the hourly job heals it)
+    try {
+      reconcileForShift(shiftId, new Date());
+    } catch (error) {
+      console.error("[dayoff] reconcile after signup failed", error);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

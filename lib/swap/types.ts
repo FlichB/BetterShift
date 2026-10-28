@@ -94,6 +94,8 @@ export interface CalendarSwapState {
   entryTemplates: Record<string, string>;
   /** Who offers which Platz, so the calendar marks only that holder's entry. */
   openOffers: { shiftId: string; userId: string }[];
+  /** [fork] Dated Dienstfreie of the calendar's rotations (from today − 60 days), titled by the Dienstfrei-Vorlage. */
+  dayOffs: { id: string; userId: string; date: string; title: string }[];
   /** the caller may force swaps in this calendar */
   canForce: boolean;
 }

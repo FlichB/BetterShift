@@ -6,6 +6,7 @@ import { getServerTimezone, formatDateToLocal } from "@/lib/date-utils";
 import { toTimeRanges } from "@/lib/time-ranges";
 import { getCalendarCustomFields, withShiftCustomFields } from "@/lib/shift-custom-fields";
 import { formatValueForDisplay } from "@/lib/custom-fields";
+import { addDays } from "@/lib/rotation/dates"; // [fork]
 
 export type IcsCalendar = Pick<Calendar, "id" | "name" | "splitShiftsEnabled">;
 
@@ -18,6 +19,8 @@ export interface IcsOnly {
   calendarName: string;
   /** [fork] per shift id: the title of the user's own Platz (Eintragsvorlage) */
   titles: Map<string, string>;
+  /** [fork] all-day events that are not shifts (Dienstfreie), rendered after the shift events */
+  extraEvents?: { uid: string; date: string; summary: string; description?: string }[];
 }
 
 export async function buildIcsCalendar({
@@ -175,6 +178,18 @@ export async function buildIcsCalendar({
 
       cal.addSubcomponent(vevent);
     });
+  }
+
+  // [fork] extra all-day events (Dienstfreie)
+  for (const extra of only?.extraEvents ?? []) {
+    const vevent = new ICAL.Component("vevent");
+    const event = new ICAL.Event(vevent);
+    event.uid = extra.uid;
+    event.summary = extra.summary;
+    if (extra.description) event.description = extra.description;
+    event.startDate = ICAL.Time.fromDateString(extra.date);
+    event.endDate = ICAL.Time.fromDateString(addDays(extra.date, 1));
+    cal.addSubcomponent(vevent);
   }
 
   return cal.toString();

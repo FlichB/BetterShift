@@ -27,6 +27,8 @@ describe("phase 3 schema", () => {
         skipDates: [],
         closedTitle: "Geschlossen",
         entryTitle: "{Vorname} Dienst",
+        dayOffEnabled: false,
+        dayOffTitle: "{Vorname} dienstfrei",
         reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],
@@ -70,6 +72,8 @@ describe("phase 3 schema", () => {
       offersToAll: true,
       offersToMe: true,
       myOffers: true,
+      myDayOffs: true,
+      dayOffRequests: true,
     });
   });
 });

@@ -6,10 +6,10 @@ describe("notification preferences", () => {
   it("defaults to everything on and stores changes", () => {
     const userId = createUser("Pref");
     expect(getPreferences(userId)).toEqual(DEFAULT_PREFERENCES);
-    setPreferences(userId, { offersToAll: false, offersToMe: true, myOffers: true });
-    expect(getPreferences(userId)).toEqual({ offersToAll: false, offersToMe: true, myOffers: true });
-    setPreferences(userId, { offersToAll: true, offersToMe: false, myOffers: false });
-    expect(getPreferences(userId)).toEqual({ offersToAll: true, offersToMe: false, myOffers: false });
+    setPreferences(userId, { offersToAll: false, offersToMe: true, myOffers: true, myDayOffs: true, dayOffRequests: false });
+    expect(getPreferences(userId)).toEqual({ offersToAll: false, offersToMe: true, myOffers: true, myDayOffs: true, dayOffRequests: false });
+    setPreferences(userId, { offersToAll: true, offersToMe: false, myOffers: false, myDayOffs: false, dayOffRequests: true });
+    expect(getPreferences(userId)).toEqual({ offersToAll: true, offersToMe: false, myOffers: false, myDayOffs: false, dayOffRequests: true });
   });
 
   it("maps kinds to switches", () => {
@@ -19,13 +19,11 @@ describe("notification preferences", () => {
     expect(preferenceFor("offer_declined")).toBe("myOffers");
   });
 
-  it("accepts exactly three booleans", () => {
-    expect(validatePreferences({ offersToAll: true, offersToMe: false, myOffers: true })).toEqual({
-      offersToAll: true,
-      offersToMe: false,
-      myOffers: true,
-    });
-    expect(validatePreferences({ offersToAll: "yes", offersToMe: false, myOffers: true })).toBeNull();
+  it("accepts exactly five booleans", () => {
+    const all = { offersToAll: true, offersToMe: false, myOffers: true, myDayOffs: false, dayOffRequests: true };
+    expect(validatePreferences(all)).toEqual(all);
+    expect(validatePreferences({ offersToAll: true, offersToMe: false, myOffers: true })).toBeNull();
+    expect(validatePreferences({ ...all, offersToAll: "yes" })).toBeNull();
     expect(validatePreferences({ offersToAll: true })).toBeNull();
     expect(validatePreferences(null)).toBeNull();
   });

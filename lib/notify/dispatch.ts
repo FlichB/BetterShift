@@ -36,6 +36,42 @@ const dutyOf = (shiftId: string | null): MailDuty | null => {
 const nameOf = (id: string | null): string | null =>
   id ? (db.select({ name: user.name }).from(user).where(eq(user.id, id)).get()?.name ?? null) : null;
 
+/** What a failed send does to one outbox row; the two outboxes differ only in table and audit event. */
+export interface SendFailureHandlers {
+  markFailed(attempts: number, message: string): void;
+  scheduleRetry(attempts: number, nextAttemptAt: Date, message: string): void;
+  logFailed(message: string): Promise<void>;
+}
+
+/**
+ * Shared per-row error handling of the mail loops: auth errors stop the run, other errors
+ * retry with backoff and give up after MAX_MAIL_ATTEMPTS. Returns true when the run must stop.
+ */
+export async function handleSendFailure(
+  error: unknown,
+  row: { attempts: number },
+  now: Date,
+  result: DispatchResult,
+  handlers: SendFailureHandlers
+): Promise<boolean> {
+  if (error instanceof GraphError && error.isAuth) {
+    result.authError = error.message;
+    return true;
+  }
+  // Any other error (Graph or local) takes the normal retry path so one bad row cannot block the queue.
+  const attempts = row.attempts + 1;
+  const message = (error instanceof Error ? error.message : String(error)).slice(0, 500);
+  if (attempts >= MAX_MAIL_ATTEMPTS) {
+    handlers.markFailed(attempts, message);
+    result.failed++;
+    await handlers.logFailed(message);
+  } else {
+    const wait = error instanceof GraphError && error.retryAfterMs !== null ? error.retryAfterMs : backoffMs(attempts);
+    handlers.scheduleRetry(attempts, new Date(now.getTime() + wait), message);
+  }
+  return false;
+}
+
 export async function dispatchNotifications(client: GraphClient, config: OutlookConfig, now: Date): Promise<DispatchResult> {
   const result: DispatchResult = { sent: 0, skipped: 0, failed: 0, authError: null };
   const rows = db
@@ -101,29 +137,20 @@ export async function dispatchNotifications(client: GraphClient, config: Outlook
       await client.sendMail({ ...mail, to: single ? emails : [config.organizer], bcc: single ? [] : emails });
       finish("sent");
     } catch (error) {
-      if (error instanceof GraphError && error.isAuth) {
-        result.authError = error.message;
-        return result;
-      }
-      // Any other error (Graph or local) takes the normal retry path so one bad row cannot block the queue.
-      const attempts = row.attempts + 1;
-      const message = (error instanceof Error ? error.message : String(error)).slice(0, 500);
-      if (attempts >= MAX_MAIL_ATTEMPTS) {
-        db.update(notificationOutbox).set({ status: "failed", attempts, lastError: message }).where(eq(notificationOutbox.id, row.id)).run();
-        result.failed++;
-        await logSystemEvent<NotificationFailedMetadata>({
-          action: "notification.failed",
-          resourceType: "shift_swap",
-          resourceId: row.swapId,
-          metadata: { kind: row.kind, swapId: row.swapId, message },
-        });
-      } else {
-        const wait = error instanceof GraphError && error.retryAfterMs !== null ? error.retryAfterMs : backoffMs(attempts);
-        db.update(notificationOutbox)
-          .set({ attempts, nextAttemptAt: new Date(now.getTime() + wait), lastError: message })
-          .where(eq(notificationOutbox.id, row.id))
-          .run();
-      }
+      const stop = await handleSendFailure(error, row, now, result, {
+        markFailed: (attempts, message) =>
+          db.update(notificationOutbox).set({ status: "failed", attempts, lastError: message }).where(eq(notificationOutbox.id, row.id)).run(),
+        scheduleRetry: (attempts, nextAttemptAt, message) =>
+          db.update(notificationOutbox).set({ attempts, nextAttemptAt, lastError: message }).where(eq(notificationOutbox.id, row.id)).run(),
+        logFailed: (message) =>
+          logSystemEvent<NotificationFailedMetadata>({
+            action: "notification.failed",
+            resourceType: "shift_swap",
+            resourceId: row.swapId,
+            metadata: { kind: row.kind, swapId: row.swapId, message },
+          }),
+      });
+      if (stop) return result;
     }
   }
   return result;

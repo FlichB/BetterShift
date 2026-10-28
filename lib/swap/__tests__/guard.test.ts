@@ -53,6 +53,8 @@ describe("Schließeinträge", () => {
         skipDates: [{ date: "2027-01-09", reason: "Inventur" }],
         closedTitle: "Geschlossen",
         entryTitle: "{Vorname} Dienst",
+        dayOffEnabled: false,
+        dayOffTitle: "{Vorname} dienstfrei",
         reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],

@@ -20,5 +20,7 @@ export function inputFromRotation(rotation: RotationDetail): RotationInput {
     holidayOpenDates: rotation.holidayOpenDates,
     entryTitle: rotation.entryTitle,
     reinforcedDates: rotation.reinforcedDates,
+    dayOffEnabled: rotation.dayOffEnabled,
+    dayOffTitle: rotation.dayOffTitle,
   };
 }

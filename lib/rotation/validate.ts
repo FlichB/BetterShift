@@ -1,4 +1,5 @@
 import { ENTRY_TITLE_DEFAULT, validateEntryTitle } from "@/lib/rotation/entry-title";
+import { DEFAULT_DAY_OFF_TITLE } from "@/lib/dayoff/types"; // [fork] Dienstfrei
 import { formatDateToLocal } from "@/lib/date-utils";
 import { isValidLocalDate, toDayNumber } from "@/lib/rotation/dates";
 import { ROTATION_PERIODS, type ReinforcedDate, type RotationPeriod, type SkipDate } from "@/lib/rotation/types";
@@ -20,6 +21,9 @@ export interface RotationInput {
   holidayOpenDates: string[];
   entryTitle: string;
   reinforcedDates: ReinforcedDate[];
+  // [fork] Dienstfrei (SPEC 12.34)
+  dayOffEnabled: boolean;
+  dayOffTitle: string;
 }
 
 export type RotationValidationError =
@@ -39,6 +43,8 @@ export type RotationValidationError =
   | "holidayOpenDates"
   | "entryTitle"
   | "reinforcedDates"
+  | "dayOffEnabled"
+  | "dayOffTitle"
   | "range";
 
 export type ValidationResult<T> =
@@ -124,6 +130,12 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
   const entryTitle = b.entryTitle ?? ENTRY_TITLE_DEFAULT;
   if (typeof entryTitle !== "string" || validateEntryTitle(entryTitle) !== "ok") return fail("entryTitle");
 
+  // [fork] Dienstfrei: off unless switched on; its title template follows the entryTitle rules.
+  const dayOffEnabled = b.dayOffEnabled ?? false;
+  if (typeof dayOffEnabled !== "boolean") return fail("dayOffEnabled");
+  const dayOffTitle = b.dayOffTitle ?? DEFAULT_DAY_OFF_TITLE;
+  if (typeof dayOffTitle !== "string" || validateEntryTitle(dayOffTitle) !== "ok") return fail("dayOffTitle");
+
   // Past entries are kept untouched: the plan is counted from startDate, so dropping one would
   // shift the future Besetzung. Only future entries must fit the current rotation.
   const rawReinforced = b.reinforcedDates ?? [];
@@ -157,6 +169,8 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
       holidayOpenDates: [...new Set(holidayOpenDates as string[])].sort(),
       entryTitle: entryTitle.trim(),
       reinforcedDates: [...reinforcedByDate].map(([date, perShift]) => ({ date, perShift })).sort((x, y) => x.date.localeCompare(y.date)),
+      dayOffEnabled, // [fork] Dienstfrei
+      dayOffTitle: dayOffTitle.trim(), // [fork] Dienstfrei
     },
   };
 }

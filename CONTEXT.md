@@ -21,7 +21,7 @@ Die Wochentage innerhalb einer Periode, an denen tatsächlich ein Dienst stattfi
 _Avoid_: Arbeitstage
 
 **Schließtag**:
-Ein Diensttag, an dem der Betrieb geschlossen ist: ein Ausfalltag oder ein nicht geöffneter Feiertag. Statt des Dienstes entsteht ein Schließeintrag; die Reihenfolge rückt zum nächsten Dienst weiter.
+Ein Tag, an dem der Betrieb geschlossen ist: ein Ausfalltag oder ein nicht geöffneter Feiertag. Statt eines Dienstes bzw. an einem Werktag entsteht ein Schließeintrag; an einem Diensttag rückt die Reihenfolge zum nächsten Dienst weiter.
 _Avoid_: Ruhetag, Lücke
 
 **Ausfalltag**:
@@ -118,3 +118,34 @@ _Avoid_: Bestätigen, Genehmigen
 **Verfallen**:
 Ein offenes Angebot endet von selbst, sobald der angebotene Dienst begonnen hat.
 _Avoid_: Ablaufen, Timeout
+
+## Dienstfrei
+
+**Dienstfrei**:
+Der freie Arbeitstag, den ein Platz seinem Inhaber mitbringt; er hängt am Platz und wechselt mit ihm den Inhaber.
+_Avoid_: Freizeitausgleich, Ruhetag, Zeitausgleich
+
+**Arbeitstag**:
+Ein Werktag Mo–Fr, der kein Feiertag, kein Ausfalltag und kein anderes eigenes Dienstfrei ist.
+_Avoid_: Diensttag (der ist der Tag des Dienstes)
+
+**Standardtag**:
+Der erste Arbeitstag nach dem Dienst, auf dem das Dienstfrei ohne weiteres Zutun liegt.
+
+**Verschieben**:
+Das selbständige Verlegen des eigenen Dienstfreis auf einen anderen Arbeitstag derselben Arbeitswoche.
+_Avoid_: Umbuchen
+
+**Gesperrtes Dienstfrei**:
+Ein Dienstfrei ohne Datum, weil die Rotations-Verwaltung den Tag nicht freigibt; der Inhaber schlägt Termine vor.
+_Avoid_: Gesperrter Platz (das ist etwas anderes)
+
+**Vorschlag**:
+Ein Termin, den der Inhaber eines gesperrten oder vereinbarten Dienstfreis der Verwaltung anbietet; die Verwaltung nimmt an, lehnt ab oder macht einen Gegenvorschlag.
+_Avoid_: Angebot (reserviert für den Tausch), Antrag
+
+**Vereinbartes Dienstfrei**:
+Ein Dienstfrei, dessen Termin die Verwaltung angenommen hat; der Inhaber kann es nicht mehr selbst verschieben, nur eine Änderung beantragen.
+
+**Entfallenes Dienstfrei**:
+Ein Dienstfrei, dessen Dienst weggefallen ist, z. B. weil der Diensttag zum Schließtag wurde.

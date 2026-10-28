@@ -232,6 +232,31 @@ export function useAuditDescription() {
           return t("adminAudit.describe.personalFeedRotated");
         case "personal_feed.revoked":
           return t("adminAudit.describe.personalFeedRevoked");
+        // [fork] Dienstfrei
+        case "dayoff.notification_failed":
+          return t("adminAudit.describe.dayOffNotificationFailed", { kind: text(m, "kind") });
+        case "dayoff.moved":
+          return t("adminAudit.describe.dayOffMoved", { date: text(m, "dutyDate"), from: text(m, "from"), to: text(m, "to"), calendar });
+        case "dayoff.locked":
+          return t("adminAudit.describe.dayOffLocked", { date: text(m, "dutyDate"), calendar });
+        case "dayoff.proposed": {
+          const dates = field(m, "dates");
+          return t("adminAudit.describe.dayOffProposed", {
+            date: text(m, "dutyDate"),
+            dates: Array.isArray(dates) ? dates.join(", ") : "",
+            calendar,
+          });
+        }
+        case "dayoff.countered":
+          return t("adminAudit.describe.dayOffCountered", { date: text(m, "dutyDate"), to: text(m, "date"), calendar });
+        case "dayoff.accepted":
+          return t("adminAudit.describe.dayOffAccepted", { date: text(m, "dutyDate"), to: text(m, "date"), calendar });
+        case "dayoff.declined":
+          return t("adminAudit.describe.dayOffDeclined", { date: text(m, "dutyDate"), to: text(m, "date"), calendar });
+        case "dayoff.reset":
+          return t("adminAudit.describe.dayOffReset", { date: text(m, "dutyDate"), calendar });
+        case "dayoff.dropped":
+          return t("adminAudit.describe.dayOffDropped", { date: text(m, "dutyDate"), calendar });
       }
       return log.action;
     },

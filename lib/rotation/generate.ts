@@ -293,6 +293,7 @@ function* periods(rule: RotationRule): Generator<Period> {
  * Duties are counted from startDate so the result for a date never depends on the requested
  * window; a Schließtag does not consume a duty, a period whose Diensttage are all closed does not
  * consume a number, and a Verstärkter Tag draws more seats (its capacity).
+ * Ausfalltage on other weekdays only add a Schließeintrag.
  */
 export function generateDays(rule: RotationRule, from: string, to: string): PlannedDays {
   assertRule(rule);
@@ -326,7 +327,7 @@ export function generateDays(rule: RotationRule, from: string, to: string): Plan
   const closures = rule.closedDates
     .filter((c) => {
       const day = toDayNumber(c.date);
-      return day >= first && day <= last && (weekdays.size === 0 || weekdays.has(isoWeekday(day)));
+      return day >= first && day <= last && (c.source === "skip" || weekdays.size === 0 || weekdays.has(isoWeekday(day))); // [fork] SPEC 12.35
     })
     .map((c) => ({ ...c }))
     .sort((a, b) => a.date.localeCompare(b.date));

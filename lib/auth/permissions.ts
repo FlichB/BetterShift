@@ -151,6 +151,8 @@ async function resolveCalendarAccess(
 
 export interface CalendarAccess {
   isOwner: boolean;
+  /** [fork] Which branch granted the access (Dienstfrei needs to tell a share row from a token or guest bundle). */
+  source: "owner" | "share" | "token" | "guestBundle";
   /** Whether the caller may perform a specific capability on the calendar. */
   can(capability: Capability): boolean;
   /**
@@ -209,7 +211,7 @@ export async function getCalendarAccess(
     return createdBy === null || createdBy === (userId ?? null);
   };
 
-  return { isOwner: access.isOwner, can, canOwned };
+  return { isOwner: access.isOwner, source: access.source, can, canOwned }; // [fork] source
 }
 
 export interface EffectiveAccessSummary {

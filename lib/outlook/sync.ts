@@ -7,7 +7,9 @@ import { db } from "@/lib/db";
 import { shiftSignups, shifts, user } from "@/lib/db/schema";
 import { formatDateToLocal } from "@/lib/date-utils";
 import type { OutlookSyncFailedMetadata } from "@/lib/outlook/audit";
-import { desiredEvents, dutyStartsAt, fingerprint, type DesiredEvent, type DutyForSync, type PlaceEvent } from "@/lib/outlook/desired";
+import { dayOffs } from "@/lib/dayoff/schema"; // [fork]
+import { entryTitle } from "@/lib/rotation/entry-title"; // [fork]
+import { desiredDayOffEvent, desiredEvents, dutyStartsAt, fingerprint, type DesiredEvent, type DutyForSync, type PlaceEvent } from "@/lib/outlook/desired";
 import { GraphError, type GraphClient, type GraphEvent } from "@/lib/outlook/graph-client";
 import { outlookEvents, type OutlookEvent } from "@/lib/outlook/schema";
 import { hasStarted } from "@/lib/rotation/dates";
@@ -82,9 +84,49 @@ export function loadDesiredDuties(now: Date, rotationId?: string): DutyForSync[]
   }));
 }
 
+/** [fork] Dated, not yet begun Dienstfreie of Outlook-enabled rotations (undated rows are not desired, so their events get cancelled). */
+export function loadDesiredDayOffs(now: Date, rotationId?: string): PlaceEvent[] {
+  const today = formatDateToLocal(now);
+  const enabled = and(eq(rotations.outlookEnabled, true), eq(rotations.dayOffEnabled, true));
+  const rows = db
+    .select({
+      id: dayOffs.id,
+      shiftId: dayOffs.shiftId,
+      rotationId: dayOffs.rotationId,
+      userId: dayOffs.userId,
+      date: dayOffs.date,
+      status: dayOffs.status,
+      template: rotations.dayOffTitle,
+      dutyTitle: shifts.title,
+      email: user.email,
+      name: user.name,
+    })
+    .from(dayOffs)
+    .innerJoin(rotations, eq(rotations.id, dayOffs.rotationId))
+    .innerJoin(user, eq(user.id, dayOffs.userId))
+    .leftJoin(shifts, eq(shifts.id, dayOffs.shiftId))
+    .where(rotationId ? and(enabled, eq(rotations.id, rotationId)) : enabled)
+    .all();
+  return rows
+    .filter((r) => r.shiftId && r.date && r.date > today && ["standard", "moved", "agreed"].includes(r.status) && r.email?.trim())
+    .sort((a, b) => a.date!.localeCompare(b.date!))
+    .map((r) => {
+      const holder = { userId: r.userId, email: r.email, name: r.name };
+      return desiredDayOffEvent({
+        id: r.id,
+        shiftId: r.shiftId!,
+        rotationId: r.rotationId,
+        userId: r.userId,
+        date: r.date!,
+        title: entryTitle(r.template, holder, r.dutyTitle ?? ""),
+        holder,
+      });
+    });
+}
+
 /** Every office@ event the enabled rotations want, nearest first. */
 export function loadDesiredPlaces(now: Date, rotationId?: string): PlaceEvent[] {
-  return loadDesiredDuties(now, rotationId).flatMap(desiredEvents);
+  return [...loadDesiredDuties(now, rotationId).flatMap(desiredEvents), ...loadDesiredDayOffs(now, rotationId)]; // [fork] Dienstfreie
 }
 
 function markSynced(key: string, values: Partial<OutlookEvent>, now: Date): void {

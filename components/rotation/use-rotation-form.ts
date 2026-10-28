@@ -6,6 +6,7 @@ import type { ReinforcedDate, RotationPeriod, SkipDate } from "@/lib/rotation/ty
 import type { RotationInput } from "@/lib/rotation/validate";
 import type { RotationCalendar } from "@/hooks/useRotations";
 import { ENTRY_TITLE_DEFAULT } from "@/lib/rotation/entry-title";
+import { DEFAULT_DAY_OFF_TITLE } from "@/lib/dayoff/types"; // [fork] Dienstfrei
 import { formatDateToLocal } from "@/lib/date-utils";
 
 export interface RotationFormState {
@@ -24,6 +25,9 @@ export interface RotationFormState {
   entryTitle: string;
   reinforcedDates: ReinforcedDate[];
   memberIds: string[];
+  // [fork] Dienstfrei: carried through unchanged until the form gets its own fields
+  dayOffEnabled: boolean;
+  dayOffTitle: string;
 }
 
 function nextMonday(): string {
@@ -51,6 +55,8 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           entryTitle: rotation.entryTitle,
           reinforcedDates: rotation.reinforcedDates,
           memberIds: rotation.memberIds,
+          dayOffEnabled: rotation.dayOffEnabled, // [fork] Dienstfrei
+          dayOffTitle: rotation.dayOffTitle, // [fork] Dienstfrei
         }
       : {
           name: "",
@@ -68,6 +74,8 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           entryTitle: ENTRY_TITLE_DEFAULT,
           reinforcedDates: [],
           memberIds: [],
+          dayOffEnabled: false, // [fork] Dienstfrei
+          dayOffTitle: DEFAULT_DAY_OFF_TITLE, // [fork] Dienstfrei
         }
   );
 
@@ -138,6 +146,8 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
     holidayOpenDates: state.holidayOpenDates,
     entryTitle: state.entryTitle,
     reinforcedDates: state.reinforcedDates,
+    dayOffEnabled: state.dayOffEnabled, // [fork] Dienstfrei
+    dayOffTitle: state.dayOffTitle, // [fork] Dienstfrei
   });
 
   return {

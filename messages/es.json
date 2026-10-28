@@ -1145,6 +1145,14 @@
       "personalFeedCreated": "Suscripción de calendario personal creada",
       "personalFeedRotated": "Suscripción de calendario personal regenerada",
       "personalFeedRevoked": "Suscripción de calendario personal revocada",
+      "dayOffMoved": "Día libre tras el turno del {date} movido del {from} al {to} ({calendar})",
+      "dayOffLocked": "Día libre tras el turno del {date} bloqueado ({calendar})",
+      "dayOffProposed": "Fechas propuestas para el día libre tras el turno del {date}: {dates} ({calendar})",
+      "dayOffCountered": "Contrapropuesta {to} para el día libre tras el turno del {date} ({calendar})",
+      "dayOffAccepted": "Día libre tras el turno del {date} acordado para el {to} ({calendar})",
+      "dayOffDeclined": "Propuesta {to} para el día libre tras el turno del {date} rechazada ({calendar})",
+      "dayOffReset": "Día libre tras el turno del {date} restablecido ({calendar})",
+      "dayOffDropped": "Día libre tras el turno del {date} anulado ({calendar})",
       "userBanned": "{user} bloqueado",
       "userBannedPermanently": "{user} bloqueado permanentemente",
       "userUnbanned": "Bloqueo de {user} levantado",
@@ -1185,7 +1193,8 @@
       "telemetrySent": "Telemetría enviada manualmente",
       "telemetrySendFailed": "Error al enviar la telemetría manualmente",
       "telemetryAutoSent": "Telemetría enviada automáticamente",
-      "telemetryAutoSendFailed": "Error al enviar la telemetría automáticamente"
+      "telemetryAutoSendFailed": "Error al enviar la telemetría automáticamente",
+      "dayOffNotificationFailed": "No se pudo enviar el correo del día libre ({kind})"
     }
   },
   "adminUsers": {
@@ -1310,6 +1319,7 @@
       "manageAnyNotesEvents": "Gestionar cualquier nota o evento",
       "signUpSelf": "Inscribirse",
       "signUpOthers": "Inscribir a otros",
+      "moveOwnDayOff": "Mover el propio día libre",
       "createPreset": "Crear plantillas",
       "manageOwnPresets": "Gestionar plantillas propias",
       "manageAnyPresets": "Gestionar cualquier plantilla",
@@ -1334,6 +1344,7 @@
       "manageAnyNotesEvents": "También editar o eliminar notas y eventos creados por otros",
       "signUpSelf": "Inscribirse y darse de baja en turnos con plazas libres",
       "signUpOthers": "Inscribir y dar de baja a otras personas en turnos",
+      "moveOwnDayOff": "Mover el propio día libre dentro de la semana laboral",
       "createPreset": "Crear plantillas nuevas",
       "manageOwnPresets": "Editar o eliminar plantillas que ha creado",
       "manageAnyPresets": "También editar plantillas creadas por otros; controla además el orden compartido",
@@ -1424,6 +1435,9 @@
       "closedTitleHint": "Aparece en los días de cierre como «Texto (motivo)», p. ej. «Cerrado (Navidad)».",
       "entryTitle": "Plantilla de entrada",
       "entryTitleHint": "Así se llama cada plaza en el calendario y en Outlook.",
+      "dayOffEnabled": "Día libre tras el servicio",
+      "dayOffEnabledHint": "Cada plaza recibe libre el siguiente día laborable (lun–vie) tras el servicio.",
+      "dayOffTitle": "Texto del día libre",
       "entryTitleInfo": "Sobre la plantilla de entrada",
       "entryTitleHelp": "Marcadores: '{Vorname}' = primera palabra del nombre, '{Name}' = nombre completo, '{Dienst}' = título del turno. Debe aparecer '{Vorname}' o '{Name}'. Ejemplo: «'{Vorname}' Dienst» → «Günther Dienst».",
       "entryTitlePreview": "Vista previa: {title}",
@@ -1543,6 +1557,7 @@
       "holidayCalendarSame": "El calendario de festivos debe ser otro calendario.",
       "holidayOpenDates": "Festivos con servicio no válidos.",
       "entryTitle": "Plantilla de entrada no válida: necesita '{Vorname}' o '{Name}' y solo puede contener '{Vorname}', '{Name}' y '{Dienst}' (máx. 100 caracteres).",
+      "dayOffTitle": "La plantilla de entrada del día libre no es válida.",
       "reinforcedDates": "Días reforzados no válidos: una entrada por fecha; los días futuros necesitan más personas que «Personas por turno» y como máximo tantas como participantes."
     }
   },
@@ -1557,6 +1572,10 @@
       "offersToMeHint": "Cuando alguien te pide directamente un turno.",
       "myOffers": "Mis ofertas",
       "myOffersHint": "Cuando se acepta tu oferta, se rechaza tu solicitud o se traspasa tu turno.",
+      "myDayOffs": "Mi día libre (bloqueo, respuestas, cambios)",
+      "myDayOffsHint": "Cuando tu día libre se bloquea, se responde, se restablece o se cancela.",
+      "dayOffRequests": "Propuestas de día libre de los participantes (gestión)",
+      "dayOffRequestsHint": "Cuando los participantes proponen fechas para un día libre bloqueado o esperan tu respuesta.",
       "notConfigured": "El envío de correos no está configurado en este servidor. Tu elección se aplicará en cuanto lo esté.",
       "saveFailed": "No se pudo guardar el ajuste.",
       "loadFailed": "No se pudieron cargar los ajustes."
@@ -1727,6 +1746,98 @@
       "confirmEveryone": "El turno de {absent} aparece como «Se busca suplente». Quien lo asuma recibe el puesto de inmediato y después elige a cambio uno de sus propios turnos de los próximos 3 meses."
     }
   },
+  "dayOff": {
+    "calendarHint": "Día libre – detalles en el tablón de intercambios",
+    "errors": {
+      "notFound": "Este día libre ya no existe.",
+      "forbidden": "No tienes permiso para hacer eso.",
+      "invalid": "Los datos no son válidos.",
+      "notHolder": "Este no es tu día libre.",
+      "wrongStatus": "No es posible en este estado.",
+      "alreadyStarted": "Este día ya ha comenzado.",
+      "notWorkday": "Ese no es un día laborable.",
+      "outsideWeek": "Solo puedes moverlo dentro de la semana laboral.",
+      "outsideWindow": "La fecha es más de 3 meses posterior al servicio.",
+      "taken": "Ya tienes un día libre ese día.",
+      "duplicate": "Esta fecha ya se ha propuesto.",
+      "tooMany": "Demasiadas propuestas abiertas.",
+      "reasonRequired": "Por favor, indica un motivo.",
+      "proposalNotOpen": "Esta propuesta ya no está abierta."
+    },
+    "tab": "Día libre",
+    "mineTitle": "Mis días libres",
+    "manageTitle": "Gestión",
+    "cardTitle": "Día libre tras el servicio del {date}",
+    "status": {
+      "standard": "Estándar",
+      "moved": "Movido",
+      "locked": "Bloqueado",
+      "agreed": "Acordado",
+      "dropped": "Anulado"
+    },
+    "proposalStatus": {
+      "open": "abierta",
+      "accepted": "aceptada",
+      "declined": "rechazada",
+      "void": "anulada"
+    },
+    "open": "sin fijar",
+    "windowEnd": "Propuestas hasta el {date}",
+    "actions": {
+      "move": "Mover",
+      "propose": "Proponer fechas",
+      "changeRequest": "Solicitar un cambio",
+      "lock": "Bloquear",
+      "counter": "Contrapropuesta",
+      "accept": "Aceptar",
+      "decline": "Rechazar"
+    },
+    "othersOff": "{count, plural, =0 {nadie libre} one {# tiene libre} other {# tienen libre}}",
+    "lockConfirm": "El día libre pierde su fecha. Después {name} propondrá fechas.",
+    "reason": "Motivo",
+    "note": "Nota",
+    "proposalFrom": {
+      "holder": "Propuesta de {name}",
+      "manager": "Contrapropuesta de la gestión"
+    },
+    "empty": "No tienes ningún día libre.",
+    "emptyManage": "No hay días libres que gestionar.",
+    "allCalendars": "Todos los calendarios",
+    "loadFailed": "No se pudieron cargar los días libres.",
+    "move": {
+      "title": "Mover día libre",
+      "text": "Elige otro día laborable de la misma semana.",
+      "loadFailed": "No se pudieron cargar los días posibles.",
+      "none": "No hay otro día posible."
+    },
+    "propose": {
+      "text": "Propón hasta {max} fechas hasta el {date}. La gestión acepta una de ellas.",
+      "date": "Fecha {n}",
+      "add": "Añadir fecha",
+      "remove": "Quitar fecha",
+      "submit": "Proponer"
+    },
+    "counter": {
+      "text": "Propón a {name} una fecha hasta el {date}.",
+      "date": "Fecha",
+      "submit": "Proponer"
+    },
+    "decline": {
+      "title": "Rechazar propuesta",
+      "text": "¿Rechazar la fecha {date}?"
+    },
+    "lock": {
+      "title": "Bloquear día libre"
+    },
+    "done": {
+      "moved": "Día libre movido.",
+      "proposed": "Fechas propuestas.",
+      "locked": "Día libre bloqueado.",
+      "countered": "Contrapropuesta enviada.",
+      "accepted": "Fecha acordada.",
+      "declined": "Propuesta rechazada."
+    }
+  },
   "notifications": {
     "mail": {
       "subject": {
@@ -1737,7 +1848,15 @@
         "forcedToAll": "Se busca sustituto: {duty}",
         "forcedToMe": "Vas a sustituir: {duty}",
         "dutyTransferred": "Tu turno ha sido traspasado: {duty}",
-        "counterChosen": "Turno de compensación para tu turno: {duty}"
+        "counterChosen": "Turno de compensación para tu turno: {duty}",
+        "dayOffLocked": "Tu día libre ha sido bloqueado",
+        "dayOffProposed": "Fechas propuestas para un día libre",
+        "dayOffCountered": "Contrapropuesta para tu día libre",
+        "dayOffAccepted": "Día libre acordado",
+        "dayOffDeclined": "Propuesta rechazada",
+        "dayOffReset": "Tu día libre ha cambiado",
+        "dayOffDropped": "Tu día libre se cancela",
+        "dayOffReminder": "Propuestas de fecha pendientes"
       },
       "lead": {
         "offerToAll": "{name} ofrece el turno del {duty}.",
@@ -1747,7 +1866,15 @@
         "forcedToAll": "Se busca a alguien para cubrir el turno de {name} del {duty}. Quien lo asuma elige a cambio uno de sus propios turnos de los próximos 3 meses.",
         "forcedToMe": "{actor} te ha asignado para sustituir a {name} el {duty}.",
         "dutyTransferred": "Tu turno del {duty} ha sido traspasado a {name}.",
-        "counterChosen": "A cambio de tu turno del {duty}, asumes el turno del {counter}."
+        "counterChosen": "A cambio de tu turno del {duty}, asumes el turno del {counter}.",
+        "dayOffLocked": "Tu día libre tras el servicio del {duty} ha sido bloqueado. Propón fechas, por favor.",
+        "dayOffProposed": "{holder} propone para el día libre tras el servicio del {duty}: {dates}.",
+        "dayOffCountered": "Para tu día libre tras el servicio del {duty} se propone el {date}.",
+        "dayOffAccepted": "El día libre tras el servicio del {duty} es el {date}.",
+        "dayOffDeclined": "La propuesta del {date} para el día libre tras el servicio del {duty} fue rechazada.",
+        "dayOffReset": "Tu día libre tras el servicio del {duty} ya no es válido y se ha restablecido.",
+        "dayOffDropped": "Tu día libre tras el servicio del {duty} se cancela.",
+        "dayOffReminder": "Las propuestas de {holder} para el día libre tras el servicio del {duty} llevan 3 días esperando respuesta."
       },
       "kind": {
         "give": "Cesión – quien acepta se queda con el turno.",
@@ -1757,6 +1884,7 @@
       "chooseCounter": "Elige en el tablón de intercambios hasta el {end} uno de tus turnos como compensación.",
       "youGet": "A cambio te quedas con el turno del {duty}.",
       "note": "Nota: {note}",
+      "reason": "Motivo: {reason}",
       "allDay": "todo el día",
       "button": "Abrir el tablón de intercambios",
       "footer": "Cambiar notificaciones",
@@ -1772,7 +1900,8 @@
   "personalFeed": {
     "calendarName": "Mis turnos",
     "with": "Con: {names}",
-    "swapLink": "Intercambiar: {url}"
+    "swapLink": "Intercambiar: {url}",
+    "dayOffLink": "Día libre: {url}"
   },
   "announcements": {
     "dismiss": "Ocultar anuncio"

@@ -33,6 +33,9 @@ export const rotations = sqliteTable(
     reinforcedDates: text("reinforced_dates", { mode: "json" }).$type<ReinforcedDate[]>().notNull().default(sql`'[]'`),
     // [fork] Eintragsvorlage (spec 2026-10-27 "Ein Eintrag pro Person").
     entryTitle: text("entry_title").notNull().default("{Vorname} Dienst"),
+    // [fork] Dienstfrei (SPEC 12.34): one free weekday per Platz after the duty.
+    dayOffEnabled: integer("day_off_enabled", { mode: "boolean" }).notNull().default(false),
+    dayOffTitle: text("day_off_title").notNull().default("{Vorname} dienstfrei"),
     // [fork phase 3] Mirror this rotation's duties into the office@ calendar (spec 12.24).
     outlookEnabled: integer("outlook_enabled", { mode: "boolean" }).notNull().default(false),
     createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
