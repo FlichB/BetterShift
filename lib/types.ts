@@ -55,6 +55,8 @@ export interface ShiftWithCalendar {
   dutyPlace?: { shiftId: string; userId: string | null };
   /** [fork] Set only on a rendering entry of a Dienstfrei; never a stored shift. */
   dayOff?: { id: string };
+  /** [fork] Urlaub: set only on a rendering entry of a vacation day; never a stored shift. */
+  vacation?: { id: string };
   /** Additional time ranges beyond startTime/endTime (split shifts). Empty/undefined for a normal shift. */
   segments?: { startTime: string; endTime: string }[];
   /** Values for this calendar's custom fields, keyed by the definition's `key`. Absent when the calendar defines none. */

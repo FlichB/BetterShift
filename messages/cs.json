@@ -1145,14 +1145,14 @@
       "personalFeedCreated": "Osobní odběr kalendáře vytvořen",
       "personalFeedRotated": "Osobní odběr kalendáře znovu vygenerován",
       "personalFeedRevoked": "Osobní odběr kalendáře zrušen",
-      "dayOffMoved": "Volno po službě dne {date} přesunuto z {from} na {to} ({calendar})",
-      "dayOffLocked": "Volno po službě dne {date} zablokováno ({calendar})",
-      "dayOffProposed": "Navržené termíny volna po službě dne {date}: {dates} ({calendar})",
-      "dayOffCountered": "Protinávrh {to} pro volno po službě dne {date} ({calendar})",
-      "dayOffAccepted": "Volno po službě dne {date} dohodnuto na {to} ({calendar})",
-      "dayOffDeclined": "Návrh {to} pro volno po službě dne {date} zamítnut ({calendar})",
-      "dayOffReset": "Volno po službě dne {date} obnoveno na výchozí ({calendar})",
-      "dayOffDropped": "Volno po službě dne {date} odpadlo ({calendar})",
+      "dayOffMoved": "Volno ke službě dne {date} přesunuto z {from} na {to} ({calendar})",
+      "dayOffLocked": "Volno ke službě dne {date} zablokováno ({calendar})",
+      "dayOffProposed": "Navržené termíny volna ke službě dne {date}: {dates} ({calendar})",
+      "dayOffCountered": "Protinávrh {to} pro volno ke službě dne {date} ({calendar})",
+      "dayOffAccepted": "Volno ke službě dne {date} dohodnuto na {to} ({calendar})",
+      "dayOffDeclined": "Návrh {to} pro volno ke službě dne {date} zamítnut ({calendar})",
+      "dayOffReset": "Volno ke službě dne {date} obnoveno na výchozí ({calendar})",
+      "dayOffDropped": "Volno ke službě dne {date} odpadlo ({calendar})",
       "userBanned": "{user} zablokován",
       "userBannedPermanently": "{user} trvale zablokován",
       "userUnbanned": "Blokace {user} zrušena",
@@ -1194,7 +1194,19 @@
       "telemetrySendFailed": "Ruční odeslání telemetrie se nezdařilo",
       "telemetryAutoSent": "Telemetrie odeslána automaticky",
       "telemetryAutoSendFailed": "Automatické odeslání telemetrie se nezdařilo",
-      "dayOffNotificationFailed": "E-mail o volnu se nepodařilo odeslat ({kind})"
+      "dayOffNotificationFailed": "E-mail o volnu se nepodařilo odeslat ({kind})",
+      "rotationYearDeltaSet": "Rotace „{name}“: delta pro {year} změněna",
+      "vacationRequested": "Dovolená {from}–{to} požádána",
+      "vacationApproved": "Dovolená {from}–{to} schválena",
+      "vacationRejected": "Dovolená {from}–{to} zamítnuta",
+      "vacationWithdrawn": "Dovolená {from}–{to} stažena",
+      "vacationEntered": "Dovolená {from}–{to} zadána",
+      "vacationChanged": "Dovolená {from}–{to} změněna",
+      "vacationCancelled": "Dovolená {from}–{to} zrušena",
+      "vacationChangeRequested": "Změna dovolené {from}–{to} požádána",
+      "vacationChangeApproved": "Změna dovolené {from}–{to} schválena",
+      "vacationChangeRejected": "Změna dovolené {from}–{to} zamítnuta",
+      "vacationChangeWithdrawn": "Změna dovolené {from}–{to} stažena"
     }
   },
   "adminUsers": {
@@ -1319,7 +1331,7 @@
       "manageAnyNotesEvents": "Spravovat všechny poznámky a události",
       "signUpSelf": "Přihlásit se sám",
       "signUpOthers": "Přihlašovat ostatní",
-      "moveOwnDayOff": "Přesouvat vlastní volno po službě",
+      "moveOwnDayOff": "Přesouvat vlastní volno",
       "createPreset": "Vytvářet předvolby",
       "manageOwnPresets": "Spravovat vlastní předvolby",
       "manageAnyPresets": "Spravovat všechny předvolby",
@@ -1344,7 +1356,7 @@
       "manageAnyNotesEvents": "Upravovat nebo mazat i ty vytvořené jinými",
       "signUpSelf": "Přihlašovat se a odhlašovat ze směn s volnými místy",
       "signUpOthers": "Přihlašovat a odhlašovat jiné osoby ze směn",
-      "moveOwnDayOff": "Přesunout vlastní volno po službě v rámci pracovního týdne",
+      "moveOwnDayOff": "Přesunout vlastní volno v rámci pracovního týdne",
       "createPreset": "Vytvářet nové předvolby",
       "manageOwnPresets": "Upravovat nebo mazat předvolby, které sám vytvořil",
       "manageAnyPresets": "Upravovat i předvolby vytvořené jinými; řídí také společné pořadí",
@@ -1435,11 +1447,21 @@
       "closedTitleHint": "Ve dnech zavření se zobrazí jako „Text (důvod)“, např. „Zavřeno (Boží hod)“.",
       "entryTitle": "Šablona záznamu",
       "entryTitleHint": "Takto se jmenuje každé místo v kalendáři a v Outlooku.",
-      "dayOffEnabled": "Volno po službě",
-      "dayOffEnabledHint": "Každé místo dostane následující pracovní den (po–pá) po službě volno.",
+      "dayOffEnabled": "Dienstfrei ke každé službě",
+      "dayOffEnabledHint": "Každé místo dostane jeden volný pracovní den (po–pá).",
+      "dayOffTiming": "Dienstfrei připadá",
+      "dayOffTimingAfter": "po službě (následující pracovní den)",
+      "dayOffTimingBefore": "před službou (pondělí týdne služby)",
+      "dayOffTimingHint": "Před službou: při výměně si každý ponechá své Dienstfrei; kdo převezme službu, žádné za ni nedostane.",
+      "minPresentEnabled": "Minimální obsazení v pracovní dny",
+      "minPresentEnabledHint": "Tolik účastníků musí být přítomno od pondělí do pátku. Volno se vyhýbá plným dnům, u dovolené se zobrazí upozornění.",
+      "minPresent": "Alespoň přítomno",
+      "minPresentHint": "z {count} účastníků",
       "dayOffTitle": "Text volna",
       "dayOffMembers": "Volno pro každého účastníka",
       "dayOffMembersHint": "Vypněte u účastníků bez volna, např. se smlouvou all-in. Převezme-li takový účastník službu, volno tohoto místa odpadá.",
+      "yearlyFairness": "Spravedlivě za kalendářní rok",
+      "yearlyFairnessHint": "Každý rok začíná nové kolo. Kdo měl loni více služeb, na začátku roku odpovídajícím způsobem vynechá.",
       "entryTitleInfo": "O šabloně záznamu",
       "entryTitleHelp": "Zástupné symboly: '{Vorname}' = první slovo jména, '{Name}' = celé jméno, '{Dienst}' = název služby. Musí se objevit '{Vorname}' nebo '{Name}'. Příklad: „'{Vorname}' Dienst“ → „Günther Dienst“.",
       "entryTitlePreview": "Náhled: {title}",
@@ -1448,6 +1470,18 @@
       "holidayCalendarUnavailable": "Kalendář bez přístupu",
       "holidayCalendarHint": "Každá položka tohoto kalendáře v den služby tento den uzavře. Nejlépe kalendář synchronizovaný s kanálem svátků.",
       "holidayOpenDates": "Svátky se službou"
+    },
+    "yearly": {
+      "hint": "Delta = služby v minulém roce minus nejmenší počet služeb účastníka za celý rok. Vlastní hodnota nahrazuje automatickou; použije se při příštím generování.",
+      "tableTitle": "Převod {from} → {to}",
+      "member": "Účastník",
+      "held": "Služby {year}",
+      "autoDelta": "Delta",
+      "override": "Vlastní hodnota",
+      "overrideFor": "Vlastní hodnota pro {name} ({year})",
+      "newSince": "nový od {date}",
+      "reset": "Použít automatickou hodnotu",
+      "noData": "V minulém roce ještě nebyly žádné služby – nic k převodu."
     },
     "period": {
       "day": "Den",
@@ -1508,7 +1542,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} už není účastník, ale má vyměněné místo.",
         "lockedWithoutDuty": "{date}: Žádná služba už není naplánovaná, ale existují vyměněná místa – služba zůstane.",
-        "lockedOverCapacity": "{date}: Víc vyměněných míst ({count}) než je teď plánováno – služba si ponechá všechna vyměněná místa."
+        "lockedOverCapacity": "{date}: Víc vyměněných míst ({count}) než je teď plánováno – služba si ponechá všechna vyměněná místa.",
+        "understaffed": "{date}: obsazeno jen {filled} z {capacity} míst."
       },
       "unlock": "Odstranit zámek",
       "skipReason": "Důvod zavření",
@@ -1560,11 +1595,19 @@
       "holidayOpenDates": "Neplatné svátky se službou.",
       "entryTitle": "Neplatná šablona záznamu: potřebuješ '{Vorname}' nebo '{Name}' a smí obsahovat jen '{Vorname}', '{Name}' a '{Dienst}' (max. 100 znaků).",
       "dayOffTitle": "Šablona záznamu volného dne je neplatná.",
+      "dayOffTiming": "Umístění volna je neplatné.",
+      "minPresent": "Minimální obsazení musí být mezi 1 a počtem účastníků minus 1.",
       "dayOffExcluded": "Volno pro každého účastníka je neplatné: vyloučit lze jen účastníky rotace.",
-      "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků."
+      "reinforcedDates": "Neplatné posílené dny: jeden záznam na datum; budoucí dny potřebují víc lidí než „Osob na službu“ a nejvýš tolik, kolik je účastníků.",
+      "yearlyFairness": "Neplatné nastavení ročního vyrovnání.",
+      "yearDelta": "Neplatná delta (0–52).",
+      "notMember": "Tato osoba není účastníkem rotace."
     }
   },
   "swap": {
+    "dayOffStays": "Tvoje volno ke službě ti zůstává; kdo ji převezme, žádné nedostane.",
+    "dayOffStaysForced": "Volno zůstává dosavadnímu držiteli; zastupující za něj žádné nedostane.",
+    "dayOffStaysAccept": "Za tuto službu nedostaneš žádné volno; zůstává dosavadnímu držiteli.",
     "notifications": {
       "open": "Oznámení",
       "title": "Oznámení",
@@ -1581,7 +1624,11 @@
       "dayOffRequestsHint": "Když účastníci navrhují termíny pro zablokované volno nebo čekají na tvou odpověď.",
       "notConfigured": "Odesílání e-mailů není na tomto serveru nastaveno. Tvoje volba se uplatní, jakmile bude.",
       "saveFailed": "Nastavení se nepodařilo uložit.",
-      "loadFailed": "Nastavení se nepodařilo načíst."
+      "loadFailed": "Nastavení se nepodařilo načíst.",
+      "myVacations": "Moje dovolené",
+      "myVacationsHint": "Rozhodnutí a změny k mé dovolené",
+      "vacationRequests": "Žádosti o dovolenou",
+      "vacationRequestsHint": "Nové žádosti a žádosti o změnu od účastníků, které spravuji"
     },
     "title": "Burza výměn",
     "subtitle": "Výměna služeb",
@@ -1686,6 +1733,7 @@
       "closedDuty": "V den zavření nejsou žádná místa.",
       "counterNotDue": "Pro tuto výměnu není otevřená žádná kompenzace.",
       "outsideWindow": "Tato služba leží mimo okno pro kompenzaci.",
+      "onVacation": "Tato osoba má v ten den dovolenou.",
       "internal": "Neočekávaná chyba."
     },
     "retry": "Zkusit znovu",
@@ -1765,12 +1813,15 @@
       "duplicate": "Tento termín už byl navržen.",
       "tooMany": "Příliš mnoho otevřených návrhů.",
       "reasonRequired": "Uveď prosím důvod.",
-      "proposalNotOpen": "Tento návrh už není otevřený."
+      "proposalNotOpen": "Tento návrh už není otevřený.",
+      "belowMinimum": "V tento den by nebylo dosaženo minimálního obsazení."
     },
     "tab": "Volno",
     "mineTitle": "Moje volna",
     "manageTitle": "Správa",
-    "cardTitle": "Volno po službě {date}",
+    "cardTitle": "Volno ke službě {date}",
+    "keptOnSwap": "Z vyměněné služby – volno ti zůstává.",
+    "keptOnSwapManage": "Z vyměněné služby – volno zůstává {name}.",
     "status": {
       "standard": "Standard",
       "moved": "Přesunuto",
@@ -1811,7 +1862,13 @@
       "title": "Přesunout volno",
       "text": "Vyber jiný pracovní den ve stejném týdnu.",
       "loadFailed": "Možné dny se nepodařilo načíst.",
-      "none": "Žádný jiný den není možný."
+      "none": "Žádný jiný den není možný.",
+      "full": "obsazeno"
+    },
+    "override": {
+      "title": "Minimální obsazení nedosaženo",
+      "text": "Dne {date} by bylo přítomno jen {present} z nejméně {minimum} účastníků. Přesto schválit?",
+      "confirm": "Přesto schválit"
     },
     "propose": {
       "text": "Navrhni až {max} termínů do {date}. Správa jeden z nich přijme.",
@@ -1859,7 +1916,16 @@
         "dayOffDeclined": "Návrh zamítnut",
         "dayOffReset": "Tvé volno se změnilo",
         "dayOffDropped": "Tvé volno odpadá",
-        "dayOffReminder": "Nevyřízené návrhy termínů"
+        "dayOffReminder": "Nevyřízené návrhy termínů",
+        "vacationRequested": "Nová žádost o dovolenou",
+        "vacationChangeRequested": "Požadována změna dovolené",
+        "vacationApproved": "Dovolená schválena",
+        "vacationRejected": "Dovolená zamítnuta",
+        "vacationChangeApproved": "Změna dovolené schválena",
+        "vacationChangeRejected": "Změna dovolené zamítnuta",
+        "vacationEntered": "Dovolená zapsána",
+        "vacationChanged": "Dovolená změněna",
+        "vacationCancelled": "Dovolená zrušena"
       },
       "lead": {
         "offerToAll": "{name} nabízí službu dne {duty}.",
@@ -1870,14 +1936,23 @@
         "forcedToMe": "{actor} tě určil(a) jako zástup za {name} dne {duty}.",
         "dutyTransferred": "Tvoje služba dne {duty} byla převedena na {name}.",
         "counterChosen": "Jako vyrovnání za tvoji službu dne {duty} přebíráš službu dne {counter}.",
-        "dayOffLocked": "Tvé volno po službě dne {duty} bylo zablokováno. Navrhni prosím termíny.",
-        "dayOffProposed": "{holder} navrhuje pro volno po službě dne {duty}: {dates}.",
-        "dayOffCountered": "Pro tvé volno po službě dne {duty} se navrhuje {date}.",
-        "dayOffAccepted": "Volno po službě dne {duty} je {date}.",
-        "dayOffDeclined": "Návrh {date} pro volno po službě dne {duty} byl zamítnut.",
-        "dayOffReset": "Tvé volno po službě dne {duty} už neplatí a bylo obnoveno.",
-        "dayOffDropped": "Tvé volno po službě dne {duty} odpadá.",
-        "dayOffReminder": "Návrhy od {holder} pro volno po službě dne {duty} čekají na odpověď už 3 dny."
+        "dayOffLocked": "Tvé volno ke službě dne {duty} bylo zablokováno. Navrhni prosím termíny.",
+        "dayOffProposed": "{holder} navrhuje pro volno ke službě dne {duty}: {dates}.",
+        "dayOffCountered": "Pro tvé volno ke službě dne {duty} se navrhuje {date}.",
+        "dayOffAccepted": "Volno ke službě dne {duty} je {date}.",
+        "dayOffDeclined": "Návrh {date} pro volno ke službě dne {duty} byl zamítnut.",
+        "dayOffReset": "Tvé volno ke službě dne {duty} už neplatí a bylo obnoveno.",
+        "dayOffDropped": "Tvé volno ke službě dne {duty} odpadá.",
+        "dayOffReminder": "Návrhy od {holder} pro volno ke službě dne {duty} čekají na odpověď už 3 dny.",
+        "vacationRequested": "{holder} žádá o dovolenou od {from} do {to}.",
+        "vacationChangeRequested": "{holder} chce změnit nebo zrušit dovolenou od {from} do {to}.",
+        "vacationApproved": "Tvoje dovolená od {from} do {to} je schválena. Tvé služby v tomto období byly přerozděleny.",
+        "vacationRejected": "Tvoje žádost o dovolenou od {from} do {to} byla zamítnuta.",
+        "vacationChangeApproved": "Tvoje změna je schválena: dovolená nyní od {from} do {to} (dříve {previous}).",
+        "vacationChangeRejected": "Tvoje změna dovolené od {from} do {to} byla zamítnuta.",
+        "vacationEntered": "Byla pro tebe zapsána dovolená od {from} do {to}. Tvé služby v tomto období byly přerozděleny.",
+        "vacationChanged": "Tvoje dovolená byla změněna: nyní od {from} do {to} (dříve {previous}).",
+        "vacationCancelled": "Tvoje dovolená od {from} do {to} byla zrušena."
       },
       "kind": {
         "give": "Předání – kdo přijme, převezme službu.",
@@ -1891,7 +1966,8 @@
       "allDay": "celý den",
       "button": "Otevřít burzu výměn",
       "footer": "Změnit upozornění",
-      "someone": "Někdo"
+      "someone": "Někdo",
+      "vacationRange": "od {from} do {to}"
     }
   },
   "outlook": {
@@ -1904,9 +1980,91 @@
     "calendarName": "Moje služby",
     "with": "S: {names}",
     "swapLink": "Výměna: {url}",
-    "dayOffLink": "Volno: {url}"
+    "dayOffLink": "Volno: {url}",
+    "vacationLink": "Spravovat dovolenou: {url}"
   },
   "announcements": {
     "dismiss": "Skrýt oznámení"
+  },
+  "vacation": {
+    "entryTitle": "{name} dovolená",
+    "calendarHint": "Dovolená – podrobnosti v sekci Dovolená",
+    "errors": {
+      "notFound": "Dovolená nebyla nalezena.",
+      "forbidden": "K tomu nemáš oprávnění.",
+      "invalid": "Zkontroluj zadané údaje.",
+      "reasonRequired": "Uveď prosím důvod.",
+      "tooLong": "Dovolená může trvat nejvýše 366 dní.",
+      "notParticipant": "Dovolenou mohou mít jen účastníci rotace.",
+      "begun": "Minulé dny a dnešek už nelze měnit.",
+      "overlap": "Období se překrývá s jinou dovolenou.",
+      "wrongStatus": "V tomto stavu to už nejde.",
+      "changePending": "Žádost o změnu už je otevřená.",
+      "rotationUnavailable": "Rotaci této osoby teď nelze znovu naplánovat (chybí šablona nebo jsou přihlášky vypnuté). Zkontroluj rotaci."
+    },
+    "tab": "Dovolená",
+    "mine": "Moje dovolené",
+    "requests": "Otevřené žádosti",
+    "calendar": "Kalendář dovolených",
+    "request": "Požádat o dovolenou",
+    "requestStaffing": "V {count, plural, one {# pracovním dni} few {# pracovních dnech} other {# pracovních dnech}} by tým byl nedostatečně obsazen ({dates}). Rozhodne správa.",
+    "enter": "Zapsat dovolenou",
+    "person": "Osoba",
+    "from": "Od",
+    "to": "Do",
+    "note": "Poznámka",
+    "reason": "Důvod",
+    "emptyMine": "Zatím žádná dovolená.",
+    "emptyRequests": "Žádné otevřené žádosti.",
+    "emptyCalendar": "Letos žádná dovolená.",
+    "loadFailed": "Dovolené se nepodařilo načíst.",
+    "rejectHint": "Uveď pro {name} důvod zamítnutí.",
+    "requestCancelHint": "O zrušení rozhoduje správa.",
+    "status": {
+      "pending": "Požádáno",
+      "approved": "Schváleno",
+      "rejected": "Zamítnuto",
+      "withdrawn": "Staženo",
+      "cancelled": "Zrušeno"
+    },
+    "pendingChange": {
+      "change": "Požádáno o změnu: {range}",
+      "cancel": "Požádáno o zrušení"
+    },
+    "direct": "Zapsáno správou",
+    "actions": {
+      "withdraw": "Stáhnout",
+      "requestChange": "Požádat o změnu",
+      "requestCancel": "Požádat o zrušení",
+      "withdrawChange": "Stáhnout žádost",
+      "approve": "Schválit",
+      "reject": "Zamítnout",
+      "approveChange": "Schválit změnu",
+      "rejectChange": "Zamítnout změnu",
+      "edit": "Změnit",
+      "cancel": "Zrušit"
+    },
+    "preview": {
+      "title": "Dopad na služby",
+      "loading": "Počítá se nový plán …",
+      "none": "Žádné služby nejsou dotčeny.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Datum",
+      "before": "Předtím",
+      "after": "Potom",
+      "understaffed": "Dne {date} je obsazeno jen {filled} z {capacity} míst.",
+      "staffing": "Dne {date} by bylo přítomno jen {present} z minimálně {minimum}.",
+      "hint": "Po potvrzení se služby od dovolené znovu rozdělí. Dotčení dostanou nové pozvánky v Outlooku."
+    },
+    "done": {
+      "requested": "O dovolenou bylo požádáno.",
+      "approved": "Dovolená schválena, služby znovu rozděleny.",
+      "rejected": "Žádost zamítnuta.",
+      "entered": "Dovolená zapsána, služby znovu rozděleny.",
+      "changed": "Dovolená změněna, služby znovu rozděleny.",
+      "cancelled": "Dovolená zrušena, služby znovu rozděleny.",
+      "withdrawn": "Staženo.",
+      "changeRequested": "O změnu bylo požádáno."
+    }
   }
 }

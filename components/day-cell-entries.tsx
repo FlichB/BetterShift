@@ -190,7 +190,7 @@ export function QuickSignupButton({
   const capacity = shift.signupCapacity ?? null;
   const alreadySignedUp = !!currentUser && signups.some((s) => s.id === currentUser.id);
   const isFull = capacity != null && signups.length >= capacity;
-  if (shift.dutyPlace || shift.dayOff) return null; // [fork] rendering copy of a Platz or a Dienstfrei
+  if (shift.dutyPlace || shift.dayOff || shift.vacation) return null; // [fork] rendering copy of a Platz, a Dienstfrei or an Urlaub
   if (!canManageOwn || alreadySignedUp || isFull || (dutyShiftIds.has(shift.id) && !canManageOthers)) return null; // [fork]
 
   return (
@@ -298,7 +298,7 @@ export function ShiftChip({
             <span className={cn(lineClass(wrap), "min-w-0 flex-1 text-[11.5px] font-medium leading-4")}>
               {shift.title}
             </span>
-            {!shift.dayOff && <SwapMarker shiftId={shift.dutyPlace?.shiftId ?? shift.id} userId={shift.dutyPlace ? (shift.dutyPlace.userId ?? "") : null} calendarId={shift.calendarId} />} {/* [fork] no marker on a Dienstfrei */}
+            {!shift.dayOff && !shift.vacation && <SwapMarker shiftId={shift.dutyPlace?.shiftId ?? shift.id} userId={shift.dutyPlace ? (shift.dutyPlace.userId ?? "") : null} calendarId={shift.calendarId} />} {/* [fork] no marker on a Dienstfrei or an Urlaub */}
             <SignupBadge shift={shift} enabled={signupsEnabled} />
             {interactive && <QuickSignupButton shift={shift} />}
           </span>
@@ -336,7 +336,7 @@ export function ShiftChip({
           variant="compact"
         />
       </span>
-      {!shift.dayOff && <SwapMarker shiftId={shift.dutyPlace?.shiftId ?? shift.id} userId={shift.dutyPlace ? (shift.dutyPlace.userId ?? "") : null} calendarId={shift.calendarId} />} {/* [fork] no marker on a Dienstfrei */}
+      {!shift.dayOff && !shift.vacation && <SwapMarker shiftId={shift.dutyPlace?.shiftId ?? shift.id} userId={shift.dutyPlace ? (shift.dutyPlace.userId ?? "") : null} calendarId={shift.calendarId} />} {/* [fork] no marker on a Dienstfrei or an Urlaub */}
       <SignupBadge shift={shift} enabled={signupsEnabled} />
       {interactive && <QuickSignupButton shift={shift} />}
       <ChipTime shift={shift} full={wrap} />

@@ -17,6 +17,7 @@ import {
   useWithdrawSwap,
 } from "@/hooks/useSwaps";
 import { useDayOffBoard } from "@/hooks/useDayOffs"; // [fork]
+import { useVacationBoard } from "@/hooks/useVacations"; // [fork]
 import { Button } from "@/components/ui/button";
 import { FullscreenLoader } from "@/components/fullscreen-loader";
 import { ChoiceChips, InfoNote } from "@/components/form-kit";
@@ -28,11 +29,12 @@ import { OfferSheet } from "@/components/swap/offer-sheet";
 import { PersonalFeedSheet } from "@/components/swap/personal-feed-sheet";
 import { WaiveDialog } from "@/components/swap/waive-dialog";
 import { DayOffsPanel } from "@/components/dayoff/day-offs-panel"; // [fork]
+import { VacationsPanel } from "@/components/vacation/vacations-panel"; // [fork]
 import { SwapCard, toastSwapError, type SwapCardAction } from "@/components/swap/swap-card";
 import type { BoardEntry } from "@/lib/swap/types";
 import { cn } from "@/lib/utils";
 
-type Tab = "forMe" | "mine" | "manage" | "dayOffs"; // [fork] dayOffs
+type Tab = "forMe" | "mine" | "manage" | "dayOffs" | "vacation"; // [fork] dayOffs, vacation
 
 export default function SwapsPage() {
   return (
@@ -48,7 +50,8 @@ function SwapsContent() {
   const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
   const { isAuthEnabled } = useAuthFeatures();
-  const [tab, setTab] = useState<Tab>(searchParams.get("tab") === "dayOffs" ? "dayOffs" : "forMe"); // [fork] ?tab=dayOffs
+  const initialTab = searchParams.get("tab"); // [fork] ?tab=dayOffs and ?tab=vacation
+  const [tab, setTab] = useState<Tab>(initialTab === "dayOffs" || initialTab === "vacation" ? initialTab : "forMe"); // [fork]
   const [showHidden, setShowHidden] = useState(false);
   const [accepting, setAccepting] = useState<BoardEntry | null>(null);
   const [choosing, setChoosing] = useState<BoardEntry | null>(null);
@@ -67,6 +70,7 @@ function SwapsContent() {
 
   const board = useSwapBoard(showHidden);
   const dayOffBoard = useDayOffBoard(); // [fork]
+  const vacationBoard = useVacationBoard(new Date().getFullYear(), isAuthEnabled); // [fork] decides whether the Urlaub tab shows
   const accept = useAcceptSwap();
   const decline = useDeclineSwap();
   const withdraw = useWithdrawSwap();
@@ -81,7 +85,7 @@ function SwapsContent() {
     else if (!authLoading && !user) router.replace("/login?returnUrl=/swaps");
   }, [isAuthEnabled, authLoading, user, router]);
 
-  if (authLoading || !user || board.isLoading || dayOffBoard.isLoading) return <FullscreenLoader />; // [fork] dayOffBoard
+  if (authLoading || !user || board.isLoading || dayOffBoard.isLoading || vacationBoard.isLoading) return <FullscreenLoader />; // [fork] dayOffBoard, vacationBoard
 
   const data = board.data ?? { calendars: [], forMe: [], mine: [], hidden: [], pendingCounters: [], manage: [], manageCalendarIds: [] };
   const onError = (error: unknown) => toastSwapError(error, t);
@@ -139,7 +143,8 @@ function SwapsContent() {
   const canManage = data.manageCalendarIds.length > 0;
   // [fork] The Dienstfrei tab shows for holders and rotation managers.
   const hasDayOffs = (dayOffBoard.data?.mine.length ?? 0) > 0 || (dayOffBoard.data?.manageCalendarIds.length ?? 0) > 0;
-  const hasBoard = data.calendars.length > 0 || canManage || hasDayOffs; // [fork] hasDayOffs
+  const hasVacation = Boolean(vacationBoard.data?.canRequest || vacationBoard.data?.isManager); // [fork] Teilnehmer and Verwaltung
+  const hasBoard = data.calendars.length > 0 || canManage || hasDayOffs || hasVacation; // [fork] hasDayOffs, hasVacation
   const list = tab === "forMe" ? data.forMe : tab === "mine" ? data.mine : tab === "manage" ? data.manage : []; // [fork] dayOffs
 
   return (
@@ -188,6 +193,7 @@ function SwapsContent() {
                 { value: "mine", label: t("swap.tabs.mine") },
                 ...(canManage ? [{ value: "manage" as const, label: `${t("swap.tabs.manage")} (${data.manage.length})` }] : []),
                 ...(hasDayOffs || tab === "dayOffs" ? [{ value: "dayOffs" as const, label: t("dayOff.tab") }] : []), // [fork]
+                ...(hasVacation || tab === "vacation" ? [{ value: "vacation" as const, label: t("vacation.tab") }] : []), // [fork]
               ]}
             />
 
@@ -195,7 +201,8 @@ function SwapsContent() {
             {tab === "dayOffs" && (
               <DayOffsPanel board={dayOffBoard.data} isError={dayOffBoard.isError} onRetry={() => dayOffBoard.refetch()} />
             )}
-            {tab !== "dayOffs" && list.length === 0 && !(tab === "forMe" && data.pendingCounters.length > 0) && ( // [fork] tab !== "dayOffs"
+            {tab === "vacation" && <VacationsPanel />} {/* [fork] Urlaub tab */}
+            {tab !== "dayOffs" && tab !== "vacation" && list.length === 0 && !(tab === "forMe" && data.pendingCounters.length > 0) && ( // [fork] tab !== "dayOffs"/"vacation"
               <p className="rounded-[11px] border border-dashed border-control px-3.5 py-6 text-center text-[13px] text-fg-tertiary">
                 {tab === "forMe" ? t("swap.emptyForMe") : tab === "mine" ? t("swap.emptyMine") : t("swap.emptyManage")}
               </p>
@@ -205,7 +212,7 @@ function SwapsContent() {
                 data.pendingCounters.map((entry) => (
                   <SwapCard key={entry.id} entry={entry} mode="counter" currentUserId={user.id} busy={busy} onAction={(action) => act(entry, action)} />
                 ))}
-              {tab !== "dayOffs" && list.map((entry) => ( // [fork] tab !== "dayOffs"
+              {tab !== "dayOffs" && tab !== "vacation" && list.map((entry) => ( // [fork] tab !== "dayOffs"/"vacation"
                 <SwapCard
                   key={entry.id}
                   entry={entry}

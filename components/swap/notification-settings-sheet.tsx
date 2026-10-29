@@ -1,6 +1,6 @@
 "use client";
 
-// [fork] Five switches for swap notification mails (spec 12.27), saved on every change.
+// [fork] Switches for swap, Dienstfrei and Urlaub notification mails (spec 12.27), saved on every change.
 import { useTranslations } from "next-intl";
 import { MailX } from "lucide-react";
 import { toast } from "sonner";
@@ -75,6 +75,21 @@ export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolea
             description={t("swap.notifications.dayOffRequestsHint")}
             checked={data.preferences.dayOffRequests}
             onCheckedChange={change("dayOffRequests")}
+          />
+          {/* [fork] Urlaub */}
+          <ToggleRow
+            id="notify-my-vacations"
+            title={t("swap.notifications.myVacations")}
+            description={t("swap.notifications.myVacationsHint")}
+            checked={data.preferences.myVacations}
+            onCheckedChange={change("myVacations")}
+          />
+          <ToggleRow
+            id="notify-vacation-requests"
+            title={t("swap.notifications.vacationRequests")}
+            description={t("swap.notifications.vacationRequestsHint")}
+            checked={data.preferences.vacationRequests}
+            onCheckedChange={change("vacationRequests")}
           />
         </div>
       )}

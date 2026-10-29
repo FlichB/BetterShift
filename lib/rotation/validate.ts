@@ -1,7 +1,8 @@
 import { ENTRY_TITLE_DEFAULT, validateEntryTitle } from "@/lib/rotation/entry-title";
-import { DEFAULT_DAY_OFF_TITLE } from "@/lib/dayoff/types"; // [fork] Dienstfrei
+import { DEFAULT_DAY_OFF_TITLE, type DayOffTiming } from "@/lib/dayoff/types"; // [fork] Dienstfrei
 import { formatDateToLocal } from "@/lib/date-utils";
 import { isValidLocalDate, toDayNumber } from "@/lib/rotation/dates";
+import { MAX_YEAR_DELTA } from "@/lib/rotation/yearly"; // [fork] Jahresausgleich
 import { ROTATION_PERIODS, type ReinforcedDate, type RotationPeriod, type SkipDate } from "@/lib/rotation/types";
 
 export interface RotationInput {
@@ -24,8 +25,12 @@ export interface RotationInput {
   // [fork] Dienstfrei (SPEC 12.34)
   dayOffEnabled: boolean;
   dayOffTitle: string;
+  dayOffTiming: DayOffTiming; // [fork] SPEC 12.42
   /** Teilnehmer who get no Dienstfrei, e.g. on an all-in contract (SPEC 12.40). */
   dayOffExcludedIds: string[];
+  /** [fork] Jahresausgleich (SPEC 12.41). */
+  yearlyFairness: boolean;
+  minPresent: number | null; // [fork] Mindestbesetzung
 }
 
 export type RotationValidationError =
@@ -47,7 +52,11 @@ export type RotationValidationError =
   | "reinforcedDates"
   | "dayOffEnabled"
   | "dayOffTitle"
+  | "dayOffTiming"
   | "dayOffExcluded"
+  | "yearlyFairness"
+  | "minPresent"
+  | "yearDelta"
   | "range";
 
 export type ValidationResult<T> =
@@ -138,10 +147,18 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
   if (typeof dayOffEnabled !== "boolean") return fail("dayOffEnabled");
   const dayOffTitle = b.dayOffTitle ?? DEFAULT_DAY_OFF_TITLE;
   if (typeof dayOffTitle !== "string" || validateEntryTitle(dayOffTitle) !== "ok") return fail("dayOffTitle");
+  const dayOffTiming = b.dayOffTiming ?? "after"; // [fork] SPEC 12.42
+  if (dayOffTiming !== "after" && dayOffTiming !== "before") return fail("dayOffTiming");
   const dayOffExcludedIds = b.dayOffExcludedIds ?? [];
   if (!Array.isArray(dayOffExcludedIds) || !dayOffExcludedIds.every((id) => typeof id === "string" && memberIds.includes(id))) {
     return fail("dayOffExcluded");
   }
+  // [fork] Jahresausgleich: off unless switched on, so API callers keep today's plan.
+  const yearlyFairness = b.yearlyFairness ?? false;
+  if (typeof yearlyFairness !== "boolean") return fail("yearlyFairness");
+  // [fork] Mindestbesetzung: off unless set; at least one Teilnehmer must be able to be away.
+  const minPresent = b.minPresent ?? null;
+  if (minPresent !== null && (!isInt(minPresent) || minPresent < 1 || minPresent > memberIds.length - 1)) return fail("minPresent");
 
   // Past entries are kept untouched: the plan is counted from startDate, so dropping one would
   // shift the future Besetzung. Only future entries must fit the current rotation.
@@ -178,7 +195,10 @@ export function validateRotationInput(body: unknown, today: string = formatDateT
       reinforcedDates: [...reinforcedByDate].map(([date, perShift]) => ({ date, perShift })).sort((x, y) => x.date.localeCompare(y.date)),
       dayOffEnabled, // [fork] Dienstfrei
       dayOffTitle: dayOffTitle.trim(), // [fork] Dienstfrei
+      dayOffTiming, // [fork] Dienstfrei
       dayOffExcludedIds: [...new Set(dayOffExcludedIds as string[])], // [fork] Dienstfrei
+      yearlyFairness, // [fork] Jahresausgleich
+      minPresent, // [fork] Mindestbesetzung
     },
   };
 }
@@ -209,4 +229,14 @@ export function validateRange(body: unknown): ValidationResult<{ from: string; t
   const span = toDayNumber(to) - toDayNumber(from);
   if (span < 0 || span > MAX_RANGE_DAYS) return fail("range");
   return { ok: true, value: { from, to } };
+}
+
+/** [fork] Jahresausgleich (SPEC 12.41): a manager's Delta for one Teilnehmer and year; null removes it. */
+export function validateYearDeltaOverride(body: unknown): ValidationResult<{ year: number; userId: string; delta: number | null }> {
+  if (typeof body !== "object" || body === null) return fail("yearDelta");
+  const { year, userId, delta } = body as Record<string, unknown>;
+  if (!isInt(year) || year < 2000 || year > 2100) return fail("yearDelta");
+  if (!isNonEmptyString(userId)) return fail("yearDelta");
+  if (delta !== null && (!isInt(delta) || delta < 0 || delta > MAX_YEAR_DELTA)) return fail("yearDelta");
+  return { ok: true, value: { year, userId, delta } };
 }

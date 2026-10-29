@@ -22,6 +22,9 @@ export function inputFromRotation(rotation: RotationDetail): RotationInput {
     reinforcedDates: rotation.reinforcedDates,
     dayOffEnabled: rotation.dayOffEnabled,
     dayOffTitle: rotation.dayOffTitle,
+    dayOffTiming: rotation.dayOffTiming,
     dayOffExcludedIds: rotation.dayOffExcludedIds,
+    yearlyFairness: rotation.yearlyFairness,
+    minPresent: rotation.minPresent, // [fork]
   };
 }

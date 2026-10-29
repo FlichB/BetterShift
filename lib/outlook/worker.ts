@@ -3,6 +3,7 @@
 import { logSystemEvent } from "@/lib/audit-log";
 import { formatDateToLocal } from "@/lib/date-utils";
 import { dispatchDayOffNotifications } from "@/lib/dayoff/dispatch"; // [fork]
+import { dispatchVacationNotifications } from "@/lib/vacation/dispatch"; // [fork] Urlaub
 import { dispatchNotifications } from "@/lib/notify/dispatch";
 import { renderEventBody } from "@/lib/notify/render";
 import { getMailTranslator } from "@/lib/notify/translator";
@@ -94,6 +95,11 @@ async function runOnce(): Promise<void> {
     return null;
   });
   if (dayOffMails?.authError) return pause(dayOffMails.authError);
+  const vacationMails = await dispatchVacationNotifications(client, config, now).catch((error) => {
+    console.error("[Outlook] Urlaub mail dispatch failed:", error);
+    return null;
+  }); // [fork] Urlaub
+  if (vacationMails?.authError) return pause(vacationMails.authError);
   if (sync.remaining > 0) state.rerun = true;
 }
 

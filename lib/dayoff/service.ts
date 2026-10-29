@@ -14,18 +14,20 @@ import {
   checkProposeDates,
   isFrozen,
   makeIsOff,
+  moveRange,
   revalidate,
   transferStatus,
-  weekOf,
   type IsOff,
   type RuleResult,
 } from "@/lib/dayoff/rules";
 import { dayOffProposals, dayOffs, type DayOff, type DayOffProposal } from "@/lib/dayoff/schema";
-import { REMINDER_AFTER_DAYS, type DayOffBoard, type DayOffErrorCode, type DayOffView, type DropReason, type MoveOption } from "@/lib/dayoff/types";
+import { REMINDER_AFTER_DAYS, type DayOffBoard, type DayOffTiming, type DayOffErrorCode, type DayOffView, type DropReason, type MoveOption, type StaffingDetail } from "@/lib/dayoff/types";
 import { counterWindowEnd, type SlotMove } from "@/lib/swap/rules";
 import { loadClosedSet, takenDates, type Tx } from "@/lib/dayoff/workdays";
 import { addDays } from "@/lib/rotation/dates";
-import { rotationDuties, rotationMembers, rotations, type Rotation } from "@/lib/rotation/schema";
+import type { StaffingIndex } from "@/lib/staffing/index";
+import { loadStaffing } from "@/lib/staffing/load";
+import { rotationDuties, rotationMembers, rotationSlotLocks, rotations, type Rotation } from "@/lib/rotation/schema";
 
 export type { Reader, Tx } from "@/lib/dayoff/workdays";
 
@@ -65,6 +67,16 @@ function excludedHolders(tx: Tx, rotationId: string): Set<string> {
 function closedSetFor(tx: Tx, rotation: Rotation, today: string): Set<string> {
   return loadClosedSet(tx, rotation, addDays(today, CLOSED_FROM_DAYS), addDays(today, CLOSED_TO_DAYS));
 }
+
+/** Mindestbesetzung of the given holders (SPEC 12.44), from tomorrow over the Schließtage window. */
+function staffingFor(tx: Tx, userIds: readonly string[], today: string, excludeDayOffIds: Iterable<string>): StaffingIndex {
+  return loadStaffing(tx, userIds, addDays(today, 1), addDays(today, CLOSED_TO_DAYS), { excludeDayOffIds });
+}
+
+const detailOf = (staffing: StaffingIndex, userId: string, date: string): StaffingDetail | undefined => {
+  const gap = staffing.gapIfAbsent(userId, date);
+  return gap ? { date, present: gap.present, minimum: gap.minimum } : undefined;
+};
 
 /** Sets open proposals of a Dienstfrei to void (optionally only those matching `which`); no mail. */
 function voidOpenProposals(tx: Tx, dayOffId: string, now: Date, which?: (date: string) => boolean): void {
@@ -124,11 +136,11 @@ function handOver(tx: Tx, row: DayOff, newUserId: string, now: Date): DayOff {
  * Re-checks one row against the Arbeitstage (SPEC 12.38) and writes back any change.
  * `extraTaken` holds dates assigned to the same user earlier in the same pass.
  */
-function revalidateOne(tx: Tx, row: DayOff, closed: ReadonlySet<string>, extraTaken: Iterable<string>, today: string, now: Date): { date: string | null; notify: "reset" | null } {
+function revalidateOne(tx: Tx, row: DayOff, closed: ReadonlySet<string>, extraTaken: Iterable<string>, today: string, now: Date, timing: DayOffTiming, isFull: IsOff = () => false): { date: string | null; notify: "reset" | null } {
   const taken = takenDates(tx, row.userId, row.id);
   for (const date of extraTaken) taken.add(date);
   const isOff: IsOff = makeIsOff(closed, taken);
-  const next = revalidate(row, isOff, today);
+  const next = revalidate(row, isOff, today, timing, isFull);
   if (next.status !== row.status || next.date !== row.date || next.standardDate !== row.standardDate) {
     tx.update(dayOffs)
       .set({
@@ -155,16 +167,37 @@ export function revalidateRow(tx: Tx, rowId: string, now: Date): "reset" | null 
   if (isFrozen(row, today)) return null;
   const rotation = tx.select().from(rotations).where(eq(rotations.id, row.rotationId)).get();
   if (!rotation) return null;
-  const { notify } = revalidateOne(tx, row, closedSetFor(tx, rotation, today), [], today, now);
+  const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+  const { notify } = revalidateOne(tx, row, closedSetFor(tx, rotation, today), [], today, now, rotation.dayOffTiming, staffing.isFull(row.userId));
   if (notify === "reset") enqueueDayOff(tx, "day_off_reset", row.id, "holder", null, now);
   return notify;
+}
+
+/** Marks the giver's Dienstfrei as kept; a receiver who gets their own Platz back loses the mark. */
+function keepOnSwap(tx: Tx, move: SlotMove, now: Date): void {
+  const seat = (userId: string) => and(eq(dayOffs.shiftId, move.shiftId), eq(dayOffs.userId, userId), ne(dayOffs.status, "dropped"));
+  tx.update(dayOffs).set({ keptOnSwap: true, updatedAt: now }).where(seat(move.fromUserId)).run();
+  tx.update(dayOffs).set({ keptOnSwap: false, updatedAt: now }).where(and(seat(move.toUserId), eq(dayOffs.keptOnSwap, true))).run();
 }
 
 /**
  * Hands the Dienstfrei of a moved Platz to its new holder and revalidates it for them (SPEC 12.38).
  * A new holder without Dienstfrei drops it; a Platz coming from such a holder gets a fresh one (SPEC 12.40).
+ * With the Dienstfrei before the duty it stays with the previous holder instead and the new holder
+ * gets none for this Platz (SPEC 12.42).
  */
 export function transferDayOff(tx: Tx, move: SlotMove, now: Date): void {
+  // SPEC 12.42: with the Dienstfrei before the duty it stays with the previous holder on every swap.
+  const rotation = tx
+    .select({ timing: rotations.dayOffTiming })
+    .from(rotationDuties)
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId))
+    .where(eq(rotationDuties.shiftId, move.shiftId))
+    .get();
+  if (rotation?.timing === "before") {
+    keepOnSwap(tx, move, now);
+    return;
+  }
   const today = formatDateToLocal(now);
   const row = tx
     .select()
@@ -214,6 +247,10 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
   const rotation = tx.select().from(rotations).where(eq(rotations.id, rotationId)).get();
   if (!rotation) return result;
   const today = formatDateToLocal(now);
+  // SPEC 12.42: marks only exist under "before"; after switching back, rows follow their Platz again.
+  if (rotation.dayOffTiming === "after") {
+    tx.update(dayOffs).set({ keptOnSwap: false, updatedAt: now }).where(and(eq(dayOffs.rotationId, rotationId), eq(dayOffs.keptOnSwap, true))).run();
+  }
 
   // 2. Active rows: everything not frozen (not dropped, not begun; locked rows are always active).
   const allRows = tx.select().from(dayOffs).where(eq(dayOffs.rotationId, rotationId)).all();
@@ -256,25 +293,72 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
   //    Holders switched to "no Dienstfrei" lose theirs and never receive one (SPEC 12.40).
   const excluded = excludedHolders(tx, rotationId);
   const created = new Set<string>();
+  // SPEC 12.42: under "before" kept rows stay with their holder, and a holder who got the Platz by swap
+  // (slot lock) gets no new row for it.
+  const before = rotation.dayOffTiming === "before";
+  const swapped = new Set(
+    before && duties.length > 0
+      ? tx
+          .select({ shiftId: rotationSlotLocks.shiftId, userId: rotationSlotLocks.userId })
+          .from(rotationSlotLocks)
+          .where(inArray(rotationSlotLocks.shiftId, duties.map((d) => d.shiftId)))
+          .all()
+          .map((l) => `${l.shiftId}:${l.userId}`)
+      : []
+  );
   for (const duty of duties) {
     const holders = new Set(holdersByShift.get(duty.shiftId) ?? []);
+    // A kept row whose holder holds the Platz again is a normal row.
     for (const row of active) {
-      if (row.shiftId === duty.shiftId && holders.has(row.userId) && excluded.has(row.userId)) dropRow(tx, row, "excluded", now, result);
+      if (before && row.keptOnSwap && row.shiftId === duty.shiftId && holders.has(row.userId)) {
+        tx.update(dayOffs).set({ keptOnSwap: false, updatedAt: now }).where(eq(dayOffs.id, row.id)).run();
+        row.keptOnSwap = false;
+      }
+    }
+    for (const row of active) {
+      if (row.shiftId !== duty.shiftId || !excluded.has(row.userId)) continue;
+      // [fork] A kept row (SPEC 12.40/12.42) also falls away for a holder switched to "no Dienstfrei"; begun rows are not active.
+      if (holders.has(row.userId) || (before && row.keptOnSwap)) dropRow(tx, row, "excluded", now, result);
     }
     // Every non-dropped row counts as "has a Dienstfrei", including begun ones, so a holder never gets a second row.
     const rowsOfDuty = allRows.filter((r) => r.shiftId === duty.shiftId && r.status !== "dropped");
     const withRow = new Set(rowsOfDuty.map((r) => r.userId));
     // Only active rows can change hands; ordered by creation for a stable pairing.
     const orphans = active
-      .filter((r) => r.shiftId === duty.shiftId && !holders.has(r.userId))
+      .filter((r) => r.shiftId === duty.shiftId && !holders.has(r.userId) && !(before && r.keptOnSwap))
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id));
-    const newcomers = [...holders].filter((u) => !withRow.has(u) && !excluded.has(u)).sort();
+    let newcomers = [...holders].filter((u) => !withRow.has(u) && !excluded.has(u)).sort();
+    if (before) {
+      newcomers = newcomers.filter((u) => !swapped.has(`${duty.shiftId}:${u}`));
+    }
 
     while (orphans.length > 0 && newcomers.length > 0) {
       handOver(tx, orphans.shift()!, newcomers.shift()!, now);
       result.transferred++;
     }
     for (const orphan of orphans) dropRow(tx, orphan, "seatRemoved", now, result);
+    // SPEC 12.42: at most as many non-dropped rows as seats.
+    if (before) {
+      const live = tx
+        .select()
+        .from(dayOffs)
+        .where(and(eq(dayOffs.shiftId, duty.shiftId), ne(dayOffs.status, "dropped")))
+        .all();
+      let surplus = live.length - holders.size;
+      // Kept rows go last, the newest first; begun rows are history and never dropped.
+      const droppable = live
+        .filter((r) => r.keptOnSwap && !isFrozen(r, today))
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id));
+      let alive = live.length;
+      for (const row of droppable) {
+        if (surplus <= 0) break;
+        dropRow(tx, row, "seatRemoved", now, result);
+        surplus--;
+        alive--;
+      }
+      // New rows only for the seats still without one.
+      newcomers = newcomers.slice(0, Math.max(0, holders.size - alive));
+    }
     // A duty in the past gets no new Dienstfrei.
     if (duty.date < today) continue;
     for (const userId of newcomers) {
@@ -289,20 +373,24 @@ export function reconcileRotation(tx: Tx, rotationId: string, now: Date): Reconc
     }
   }
 
-  // 7. Revalidate every non-frozen row against the current Arbeitstage, per user in duty order,
-  //    so earlier duties pick their day first. Dates assigned in this pass count as taken.
+  // 7. Revalidate every non-frozen row against the current Arbeitstage, per duty date, so earlier
+  //    duties pick their day first (SPEC 12.44); per user the order is the same as before.
+  //    Dates assigned in this pass count as taken.
   const closed = closedSetFor(tx, rotation, today);
   const rows = tx
     .select()
     .from(dayOffs)
     .where(eq(dayOffs.rotationId, rotationId))
-    .orderBy(asc(dayOffs.userId), asc(dayOffs.dutyDate), asc(dayOffs.id))
+    .orderBy(asc(dayOffs.dutyDate), asc(dayOffs.userId), asc(dayOffs.id))
     .all()
     .filter((r) => !isFrozen(r, today));
+  // Standard rows are placed anew in this order, so they leave the index first; fixed rows stay in it.
+  const staffing = staffingFor(tx, [...new Set(rows.map((r) => r.userId))], today, rows.filter((r) => r.status === "standard").map((r) => r.id));
   const assigned = new Map<string, Set<string>>();
   for (const row of rows) {
     const mine = assigned.get(row.userId) ?? new Set<string>();
-    const { date, notify } = revalidateOne(tx, row, closed, mine, today, now);
+    const { date, notify } = revalidateOne(tx, row, closed, mine, today, now, rotation.dayOffTiming, staffing.isFull(row.userId));
+    staffing.place(row.id, row.userId, date);
     if (date) mine.add(date);
     assigned.set(row.userId, mine);
     // New rows only get their first date here; that is not a reset.
@@ -376,15 +464,26 @@ export function reconcileForShift(shiftId: string, now: Date): void {
 // ---------------------------------------------------------------------------
 
 export class DayOffServiceError extends Error {
-  constructor(public readonly code: DayOffErrorCode) {
+  readonly detail: StaffingDetail | null;
+  constructor(public readonly code: DayOffErrorCode, detail?: StaffingDetail) {
     super(code);
     this.name = "DayOffServiceError";
+    this.detail = detail ?? null;
   }
 }
 
 function unwrap<T>(result: RuleResult<T>): T {
   if (!result.ok) throw new DayOffServiceError(result.code);
   return result.value;
+}
+
+/** Like unwrap, but a full day carries its staffing detail for the UI (SPEC 12.44). */
+function unwrapStaffed<T>(result: RuleResult<T>, staffing: StaffingIndex, userId: string, dates: readonly string[]): T {
+  if (!result.ok && result.code === "belowMinimum") {
+    const date = [...dates].sort().find((d) => staffing.isFull(userId)(d)) ?? dates[0];
+    throw new DayOffServiceError("belowMinimum", detailOf(staffing, userId, date));
+  }
+  return unwrap(result);
 }
 
 function loadRow(tx: Tx, id: string): DayOff {
@@ -399,11 +498,11 @@ function loadProposal(tx: Tx, id: string): DayOffProposal {
   return proposal;
 }
 
-/** The holder's non-Arbeitstage for this row: Schließtage of its rotation plus their other Dienstfreie. */
-function isOffFor(tx: Tx, row: DayOff, today: string): IsOff {
+/** The holder's non-Arbeitstage for this row and the timing of its rotation. */
+function rowContext(tx: Tx, row: DayOff, today: string): { isOff: IsOff; timing: DayOffTiming } {
   const rotation = tx.select().from(rotations).where(eq(rotations.id, row.rotationId)).get();
   if (!rotation) throw new DayOffServiceError("notFound");
-  return makeIsOff(closedSetFor(tx, rotation, today), takenDates(tx, row.userId, row.id));
+  return { isOff: makeIsOff(closedSetFor(tx, rotation, today), takenDates(tx, row.userId, row.id)), timing: rotation.dayOffTiming };
 }
 
 function openProposalDates(tx: Tx, dayOffId: string): string[] {
@@ -421,7 +520,9 @@ export function moveDayOff(id: string, date: string, actorId: string, now: Date)
     const row = loadRow(tx, id);
     if (row.userId !== actorId) throw new DayOffServiceError("notHolder");
     const today = formatDateToLocal(now);
-    const next = unwrap(checkMove(row, date, isOffFor(tx, row, today), today));
+    const { isOff, timing } = rowContext(tx, row, today);
+    const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+    const next = unwrapStaffed(checkMove(row, date, isOff, today, timing, staffing.isFull(row.userId)), staffing, row.userId, [date]);
     return tx.update(dayOffs).set({ status: next.status, date: next.date, updatedAt: now }).where(eq(dayOffs.id, id)).returning().get();
   });
 }
@@ -450,7 +551,13 @@ export function proposeDates(id: string, dates: string[], actorId: string, now: 
     const row = loadRow(tx, id);
     if (row.userId !== actorId) throw new DayOffServiceError("notHolder");
     const today = formatDateToLocal(now);
-    const valid = unwrap(checkProposeDates(row, dates, openProposalDates(tx, id), isOffFor(tx, row, today), today));
+    const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+    const valid = unwrapStaffed(
+      checkProposeDates(row, dates, openProposalDates(tx, id), rowContext(tx, row, today).isOff, today, staffing.isFull(row.userId)),
+      staffing,
+      row.userId,
+      dates
+    );
     const created = tx
       .insert(dayOffProposals)
       .values(valid.map((date) => ({ dayOffId: id, date, side: "holder" as const, proposedByUserId: actorId, status: "open" as const, createdAt: now })))
@@ -461,12 +568,18 @@ export function proposeDates(id: string, dates: string[], actorId: string, now: 
   });
 }
 
-/** Manager proposes a date to the holder. */
-export function counterPropose(id: string, date: string, actorId: string, now: Date): DayOffProposal {
+/** Manager proposes a date to the holder; a full day needs `override` (SPEC 12.44). */
+export function counterPropose(id: string, date: string, actorId: string, now: Date, override = false): DayOffProposal {
   return db.transaction((tx) => {
     const row = loadRow(tx, id);
     const today = formatDateToLocal(now);
-    const valid = unwrap(checkCounter(row, date, openProposalDates(tx, id), isOffFor(tx, row, today), today));
+    const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+    const valid = unwrapStaffed(
+      checkCounter(row, date, openProposalDates(tx, id), rowContext(tx, row, today).isOff, today, override ? () => false : staffing.isFull(row.userId)),
+      staffing,
+      row.userId,
+      [date]
+    );
     const created = tx
       .insert(dayOffProposals)
       .values({ dayOffId: id, date: valid, side: "manager", proposedByUserId: actorId, status: "open", createdAt: now })
@@ -485,14 +598,17 @@ function assertOtherSide(proposal: DayOffProposal, row: DayOff, actorId: string,
 
 const otherSide = (proposal: DayOffProposal) => (proposal.side === "holder" ? "managers" : "holder");
 
-export function acceptProposal(proposalId: string, actorId: string, actorIsManager: boolean, now: Date): DayOff {
+export function acceptProposal(proposalId: string, actorId: string, actorIsManager: boolean, now: Date, override = false): DayOff {
   return db.transaction((tx) => {
     const proposal = loadProposal(tx, proposalId);
     if (proposal.status !== "open") throw new DayOffServiceError("proposalNotOpen");
     const row = loadRow(tx, proposal.dayOffId);
     assertOtherSide(proposal, row, actorId, actorIsManager);
     const today = formatDateToLocal(now);
-    const date = unwrap(checkAcceptDate(row, proposal.date, isOffFor(tx, row, today), today));
+    const staffing = staffingFor(tx, [row.userId], today, [row.id]);
+    // A manager proposal was already decided by the Verwaltung; only holder proposals are checked (SPEC 12.44).
+    const isFull = proposal.side === "holder" && !override ? staffing.isFull(row.userId) : () => false;
+    const date = unwrapStaffed(checkAcceptDate(row, proposal.date, rowContext(tx, row, today).isOff, today, isFull), staffing, row.userId, [proposal.date]);
     const updated = tx
       .update(dayOffs)
       .set({ status: "agreed", date, agreedByUserId: actorId, updatedAt: now })
@@ -529,15 +645,20 @@ export function declineProposal(proposalId: string, reason: string | null, actor
   });
 }
 
-/** Days of the standard week the holder may move to, with how many colleagues of the calendar are off then. */
+/**
+ * Days of the standard week the holder may move to, with how many colleagues of the calendar are off then
+ * and whether the day is full (SPEC 12.44).
+ */
 export function moveOptions(id: string, now: Date): MoveOption[] {
   return db.transaction((tx) => {
     const row = loadRow(tx, id);
     // Only a standard or moved Dienstfrei can be moved; locked/agreed ones go through proposals.
     if ((row.status !== "standard" && row.status !== "moved") || !row.standardDate) return [];
     const today = formatDateToLocal(now);
-    const isOff = isOffFor(tx, row, today);
-    const dates = weekOf(row.standardDate).filter((date) => date === row.date || checkMove(row, date, isOff, today).ok);
+    const { isOff, timing } = rowContext(tx, row, today);
+    // Full days stay listed (checkMove without isFull) and are only marked.
+    const isFull = staffingFor(tx, [row.userId], today, [row.id]).isFull(row.userId);
+    const dates = moveRange(row, timing).filter((date) => date === row.date || checkMove(row, date, isOff, today, timing).ok);
     if (dates.length === 0) return [];
     const rotation = tx.select({ calendarId: rotations.calendarId }).from(rotations).where(eq(rotations.id, row.rotationId)).get();
     const others = tx
@@ -552,6 +673,7 @@ export function moveOptions(id: string, now: Date): MoveOption[] {
       othersOff: others.filter((o) => o.date === date).length,
       isCurrent: date === row.date,
       isStandard: date === row.standardDate,
+      full: date !== row.date && isFull(date),
     }));
   });
 }
@@ -605,6 +727,7 @@ function toViews(rows: DayOff[]): DayOffView[] {
         standardDate: row.standardDate,
         lockNote: row.lockNote,
         dropReason: row.dropReason,
+        keptOnSwap: row.keptOnSwap,
         windowEnd: counterWindowEnd(row.dutyDate),
         proposals: proposals
           .filter((p) => p.dayOffId === row.id)

@@ -57,10 +57,14 @@ export const useProposeDayOff = () =>
   useDayOffMutation(({ id, dates }: { id: string; dates: string[] }) => post(`/api/day-offs/${id}/proposals`, { dates }));
 
 export const useCounterDayOff = () =>
-  useDayOffMutation(({ id, date }: { id: string; date: string }) => post(`/api/day-offs/${id}/counter`, { date }));
+  useDayOffMutation(({ id, date, override }: { id: string; date: string; override?: boolean }) =>
+    post(`/api/day-offs/${id}/counter`, { date, override })
+  );
 
 export const useAcceptDayOffProposal = () =>
-  useDayOffMutation(({ id }: { id: string }) => post(`/api/day-offs/proposals/${id}/accept`));
+  useDayOffMutation(({ id, override }: { id: string; override?: boolean }) =>
+    post(`/api/day-offs/proposals/${id}/accept`, override ? { override } : undefined)
+  );
 
 export const useDeclineDayOffProposal = () =>
   useDayOffMutation(({ id, reason }: { id: string; reason: string | null }) =>

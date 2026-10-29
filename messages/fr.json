@@ -1145,14 +1145,14 @@
       "personalFeedCreated": "Abonnement d'agenda personnel créé",
       "personalFeedRotated": "Abonnement d'agenda personnel régénéré",
       "personalFeedRevoked": "Abonnement d'agenda personnel révoqué",
-      "dayOffMoved": "Jour de repos après le service du {date} déplacé du {from} au {to} ({calendar})",
-      "dayOffLocked": "Jour de repos après le service du {date} bloqué ({calendar})",
-      "dayOffProposed": "Dates proposées pour le jour de repos après le service du {date} : {dates} ({calendar})",
-      "dayOffCountered": "Contre-proposition {to} pour le jour de repos après le service du {date} ({calendar})",
-      "dayOffAccepted": "Jour de repos après le service du {date} convenu pour le {to} ({calendar})",
-      "dayOffDeclined": "Proposition {to} pour le jour de repos après le service du {date} refusée ({calendar})",
-      "dayOffReset": "Jour de repos après le service du {date} réinitialisé ({calendar})",
-      "dayOffDropped": "Jour de repos après le service du {date} supprimé ({calendar})",
+      "dayOffMoved": "Jour de repos pour le service du {date} déplacé du {from} au {to} ({calendar})",
+      "dayOffLocked": "Jour de repos pour le service du {date} bloqué ({calendar})",
+      "dayOffProposed": "Dates proposées pour le jour de repos pour le service du {date} : {dates} ({calendar})",
+      "dayOffCountered": "Contre-proposition {to} pour le jour de repos pour le service du {date} ({calendar})",
+      "dayOffAccepted": "Jour de repos pour le service du {date} convenu pour le {to} ({calendar})",
+      "dayOffDeclined": "Proposition {to} pour le jour de repos pour le service du {date} refusée ({calendar})",
+      "dayOffReset": "Jour de repos pour le service du {date} réinitialisé ({calendar})",
+      "dayOffDropped": "Jour de repos pour le service du {date} supprimé ({calendar})",
       "userBanned": "{user} bloqué",
       "userBannedPermanently": "{user} bloqué définitivement",
       "userUnbanned": "Blocage de {user} levé",
@@ -1194,7 +1194,19 @@
       "telemetrySendFailed": "Échec de l'envoi manuel de la télémétrie",
       "telemetryAutoSent": "Télémétrie envoyée automatiquement",
       "telemetryAutoSendFailed": "Échec de l'envoi automatique de la télémétrie",
-      "dayOffNotificationFailed": "Impossible d'envoyer l'e-mail du jour de repos ({kind})"
+      "dayOffNotificationFailed": "Impossible d'envoyer l'e-mail du jour de repos ({kind})",
+      "rotationYearDeltaSet": "Rotation « {name} » : delta {year} modifié",
+      "vacationRequested": "Congé {from}–{to} demandé",
+      "vacationApproved": "Congé {from}–{to} approuvé",
+      "vacationRejected": "Congé {from}–{to} refusé",
+      "vacationWithdrawn": "Congé {from}–{to} retiré",
+      "vacationEntered": "Congé {from}–{to} saisi",
+      "vacationChanged": "Congé {from}–{to} modifié",
+      "vacationCancelled": "Congé {from}–{to} annulé",
+      "vacationChangeRequested": "Modification du congé {from}–{to} demandée",
+      "vacationChangeApproved": "Modification du congé {from}–{to} approuvée",
+      "vacationChangeRejected": "Modification du congé {from}–{to} refusée",
+      "vacationChangeWithdrawn": "Modification du congé {from}–{to} retirée"
     }
   },
   "adminUsers": {
@@ -1435,11 +1447,21 @@
       "closedTitleHint": "S'affiche les jours de fermeture sous la forme « Texte (motif) », p. ex. « Fermé (Noël) ».",
       "entryTitle": "Modèle d'entrée",
       "entryTitleHint": "C'est le nom de chaque place dans le calendrier et dans Outlook.",
-      "dayOffEnabled": "Jour de congé après le service",
-      "dayOffEnabledHint": "Chaque place obtient le jour ouvré suivant (lun–ven) après le service.",
+      "dayOffEnabled": "Dienstfrei pour chaque service",
+      "dayOffEnabledHint": "Chaque place obtient un jour ouvré libre (lun–ven).",
+      "dayOffTiming": "Le Dienstfrei tombe",
+      "dayOffTimingAfter": "après le service (jour ouvré suivant)",
+      "dayOffTimingBefore": "avant le service (lundi de la semaine de service)",
+      "dayOffTimingHint": "Avant le service : lors d'un échange, chacun garde son Dienstfrei ; qui reprend un service n'en reçoit pas pour celui-ci.",
+      "minPresentEnabled": "Effectif minimal les jours ouvrés",
+      "minPresentEnabledHint": "Autant de participants doivent être présents du lun. au ven. Les Dienstfrei évitent les jours complets ; les vacances affichent un avertissement.",
+      "minPresent": "Présents au minimum",
+      "minPresentHint": "sur {count} participants",
       "dayOffTitle": "Texte du jour de congé",
       "dayOffMembers": "Jour de repos par participant",
       "dayOffMembersHint": "Désactivez-le pour les participants sans jour de repos, p. ex. avec un contrat all-in. Si l’un d’eux reprend un service, le jour de repos de cette place est supprimé.",
+      "yearlyFairness": "Équitable par année civile",
+      "yearlyFairnessHint": "Chaque année commence un nouveau tour. Qui a eu plus de services l’année précédente est dispensé d’autant en début d’année.",
       "entryTitleInfo": "À propos du modèle d'entrée",
       "entryTitleHelp": "Espaces réservés : '{Vorname}' = premier mot du nom, '{Name}' = nom complet, '{Dienst}' = titre du service. '{Vorname}' ou '{Name}' doit apparaître. Exemple : « '{Vorname}' Dienst » → « Günther Dienst ».",
       "entryTitlePreview": "Aperçu : {title}",
@@ -1448,6 +1470,18 @@
       "holidayCalendarUnavailable": "Calendrier sans accès",
       "holidayCalendarHint": "Chaque entrée de ce calendrier un jour de service ferme ce jour-là. Idéalement un calendrier synchronisé avec un flux de jours fériés.",
       "holidayOpenDates": "Jours fériés travaillés"
+    },
+    "yearly": {
+      "hint": "Delta = services de l’année précédente moins le plus petit nombre de services d’un participant présent toute l’année. Une valeur personnalisée remplace la valeur automatique ; appliquée à la prochaine génération.",
+      "tableTitle": "Report {from} → {to}",
+      "member": "Participant",
+      "held": "Services {year}",
+      "autoDelta": "Delta",
+      "override": "Valeur personnalisée",
+      "overrideFor": "Valeur personnalisée pour {name} ({year})",
+      "newSince": "nouveau depuis le {date}",
+      "reset": "Utiliser la valeur automatique",
+      "noData": "Aucun service l’année précédente – rien à reporter."
     },
     "period": {
       "day": "Jour",
@@ -1508,7 +1542,8 @@
       "warning": {
         "lockedNonMember": "{date} : {user} ne participe plus, mais a une place échangée.",
         "lockedWithoutDuty": "{date} : plus aucun service prévu, mais des places échangées existent – le service est conservé.",
-        "lockedOverCapacity": "{date} : plus de places échangées ({count}) que prévu maintenant – le service garde toutes les places échangées."
+        "lockedOverCapacity": "{date} : plus de places échangées ({count}) que prévu maintenant – le service garde toutes les places échangées.",
+        "understaffed": "{date} : seules {filled} places sur {capacity} sont occupées."
       },
       "unlock": "Lever le verrouillage",
       "skipReason": "Motif de la fermeture",
@@ -1560,11 +1595,19 @@
       "holidayOpenDates": "Jours fériés travaillés invalides.",
       "entryTitle": "Modèle d'entrée invalide : il te faut '{Vorname}' ou '{Name}', et seuls '{Vorname}', '{Name}' et '{Dienst}' sont autorisés (100 caractères max.).",
       "dayOffTitle": "Le modèle d'entrée du jour de repos est invalide.",
+      "dayOffTiming": "Le moment du jour de repos est invalide.",
+      "minPresent": "L'effectif minimal doit être compris entre 1 et le nombre de participants moins 1.",
       "dayOffExcluded": "Jour de repos par participant invalide : seuls les participants de la rotation peuvent être exclus.",
-      "reinforcedDates": "Jours renforcés invalides : une entrée par date ; les jours à venir ont besoin de plus de personnes que « Personnes par service », au maximum autant que de participants."
+      "reinforcedDates": "Jours renforcés invalides : une entrée par date ; les jours à venir ont besoin de plus de personnes que « Personnes par service », au maximum autant que de participants.",
+      "yearlyFairness": "Réglage invalide pour l’équité annuelle.",
+      "yearDelta": "Delta invalide (0–52).",
+      "notMember": "Cette personne ne participe pas à la rotation."
     }
   },
   "swap": {
+    "dayOffStays": "Ton jour de repos pour ce service reste chez toi ; celui ou celle qui le reprend n'en reçoit pas.",
+    "dayOffStaysForced": "Le jour de repos reste chez le titulaire précédent ; le remplaçant n'en reçoit pas.",
+    "dayOffStaysAccept": "Tu ne reçois pas de jour de repos pour ce service ; il reste chez le titulaire précédent.",
     "notifications": {
       "open": "Notifications",
       "title": "Notifications",
@@ -1581,7 +1624,11 @@
       "dayOffRequestsHint": "Quand des participants proposent des dates pour un jour de repos verrouillé ou attendent ta réponse.",
       "notConfigured": "L'envoi d'e-mails n'est pas configuré sur ce serveur. Ton choix s'appliquera dès qu'il le sera.",
       "saveFailed": "Le paramètre n'a pas pu être enregistré.",
-      "loadFailed": "Impossible de charger les paramètres."
+      "loadFailed": "Impossible de charger les paramètres.",
+      "myVacations": "Mes congés",
+      "myVacationsHint": "Décisions et changements concernant mes congés",
+      "vacationRequests": "Demandes de congé",
+      "vacationRequestsHint": "Nouvelles demandes et demandes de changement des participants que je gère"
     },
     "title": "Bourse d'échange",
     "subtitle": "Échanger des services",
@@ -1686,6 +1733,7 @@
       "closedDuty": "Il n'y a pas de places un jour de fermeture.",
       "counterNotDue": "Aucune compensation n'est en attente pour cet échange.",
       "outsideWindow": "Ce service se situe en dehors de la période de compensation.",
+      "onVacation": "Cette personne est en congé ce jour-là.",
       "internal": "Erreur inattendue."
     },
     "retry": "Réessayer",
@@ -1765,12 +1813,15 @@
       "duplicate": "Cette date a déjà été proposée.",
       "tooMany": "Trop de propositions ouvertes.",
       "reasonRequired": "Merci d'indiquer un motif.",
-      "proposalNotOpen": "Cette proposition n'est plus ouverte."
+      "proposalNotOpen": "Cette proposition n'est plus ouverte.",
+      "belowMinimum": "L'effectif minimum ne serait pas atteint ce jour-là."
     },
     "tab": "Jour de repos",
     "mineTitle": "Mes jours de repos",
     "manageTitle": "Gestion",
-    "cardTitle": "Jour de repos après le service du {date}",
+    "cardTitle": "Jour de repos pour le service du {date}",
+    "keptOnSwap": "D'un service échangé : le jour de repos reste chez toi.",
+    "keptOnSwapManage": "D'un service échangé : le jour de repos reste chez {name}.",
     "status": {
       "standard": "Standard",
       "moved": "Déplacé",
@@ -1811,7 +1862,13 @@
       "title": "Déplacer le jour de repos",
       "text": "Choisis un autre jour ouvré de la même semaine.",
       "loadFailed": "Impossible de charger les jours possibles.",
-      "none": "Aucun autre jour n'est possible."
+      "none": "Aucun autre jour n'est possible.",
+      "full": "complet"
+    },
+    "override": {
+      "title": "Effectif minimum non atteint",
+      "text": "Le {date}, {present, plural, one {seul # participant} other {seuls # participants}} sur au moins {minimum} seraient présents. L'accorder quand même ?",
+      "confirm": "Accorder quand même"
     },
     "propose": {
       "text": "Propose jusqu'à {max} dates jusqu'au {date}. La gestion en accepte une.",
@@ -1859,7 +1916,16 @@
         "dayOffDeclined": "Proposition refusée",
         "dayOffReset": "Ton jour de repos a changé",
         "dayOffDropped": "Ton jour de repos est annulé",
-        "dayOffReminder": "Propositions de date en attente"
+        "dayOffReminder": "Propositions de date en attente",
+        "vacationRequested": "Nouvelle demande de congés",
+        "vacationChangeRequested": "Modification de congés demandée",
+        "vacationApproved": "Congés approuvés",
+        "vacationRejected": "Congés refusés",
+        "vacationChangeApproved": "Modification de congés approuvée",
+        "vacationChangeRejected": "Modification de congés refusée",
+        "vacationEntered": "Congés enregistrés",
+        "vacationChanged": "Congés modifiés",
+        "vacationCancelled": "Congés annulés"
       },
       "lead": {
         "offerToAll": "{name} propose le service du {duty}.",
@@ -1870,14 +1936,23 @@
         "forcedToMe": "{actor} t'a désigné comme remplaçant de {name} le {duty}.",
         "dutyTransferred": "Ton service du {duty} a été transféré à {name}.",
         "counterChosen": "En compensation de ton service du {duty}, tu reprends le service du {counter}.",
-        "dayOffLocked": "Ton jour de repos après le service du {duty} a été verrouillé. Propose des dates, s'il te plaît.",
-        "dayOffProposed": "{holder} propose pour le jour de repos après le service du {duty} : {dates}.",
-        "dayOffCountered": "Pour ton jour de repos après le service du {duty}, le {date} est proposé.",
-        "dayOffAccepted": "Le jour de repos après le service du {duty} est le {date}.",
-        "dayOffDeclined": "La proposition du {date} pour le jour de repos après le service du {duty} a été refusée.",
-        "dayOffReset": "Ton jour de repos après le service du {duty} n'est plus valable et a été réinitialisé.",
-        "dayOffDropped": "Ton jour de repos après le service du {duty} est annulé.",
-        "dayOffReminder": "Les propositions de {holder} pour le jour de repos après le service du {duty} attendent une réponse depuis 3 jours."
+        "dayOffLocked": "Ton jour de repos pour le service du {duty} a été verrouillé. Propose des dates, s'il te plaît.",
+        "dayOffProposed": "{holder} propose pour le jour de repos pour le service du {duty} : {dates}.",
+        "dayOffCountered": "Pour ton jour de repos pour le service du {duty}, le {date} est proposé.",
+        "dayOffAccepted": "Le jour de repos pour le service du {duty} est le {date}.",
+        "dayOffDeclined": "La proposition du {date} pour le jour de repos pour le service du {duty} a été refusée.",
+        "dayOffReset": "Ton jour de repos pour le service du {duty} n'est plus valable et a été réinitialisé.",
+        "dayOffDropped": "Ton jour de repos pour le service du {duty} est annulé.",
+        "dayOffReminder": "Les propositions de {holder} pour le jour de repos pour le service du {duty} attendent une réponse depuis 3 jours.",
+        "vacationRequested": "{holder} demande des congés du {from} au {to}.",
+        "vacationChangeRequested": "{holder} souhaite modifier ou annuler les congés du {from} au {to}.",
+        "vacationApproved": "Tes congés du {from} au {to} sont approuvés. Tes services de cette période ont été réattribués.",
+        "vacationRejected": "Ta demande de congés du {from} au {to} a été refusée.",
+        "vacationChangeApproved": "Ta modification est approuvée : congés désormais du {from} au {to} (avant : {previous}).",
+        "vacationChangeRejected": "Ta modification des congés du {from} au {to} a été refusée.",
+        "vacationEntered": "Des congés du {from} au {to} ont été enregistrés pour toi. Tes services de cette période ont été réattribués.",
+        "vacationChanged": "Tes congés ont été modifiés : désormais du {from} au {to} (avant : {previous}).",
+        "vacationCancelled": "Tes congés du {from} au {to} ont été annulés."
       },
       "kind": {
         "give": "Cession – celui qui accepte reprend le service.",
@@ -1891,7 +1966,8 @@
       "allDay": "toute la journée",
       "button": "Ouvrir le tableau d'échanges",
       "footer": "Modifier les notifications",
-      "someone": "Quelqu'un"
+      "someone": "Quelqu'un",
+      "vacationRange": "du {from} au {to}"
     }
   },
   "outlook": {
@@ -1904,9 +1980,91 @@
     "calendarName": "Mes services",
     "with": "Avec : {names}",
     "swapLink": "Échanger : {url}",
-    "dayOffLink": "Jour de repos : {url}"
+    "dayOffLink": "Jour de repos : {url}",
+    "vacationLink": "Gérer les congés : {url}"
   },
   "announcements": {
     "dismiss": "Masquer l'annonce"
+  },
+  "vacation": {
+    "entryTitle": "{name} congés",
+    "calendarHint": "Congés – détails sous Congés",
+    "errors": {
+      "notFound": "Congé introuvable.",
+      "forbidden": "Tu n'as pas l'autorisation de faire cela.",
+      "invalid": "Vérifie tes saisies.",
+      "reasonRequired": "Indique un motif.",
+      "tooLong": "Un congé peut durer 366 jours au maximum.",
+      "notParticipant": "Seuls les participants d'une rotation peuvent avoir des congés.",
+      "begun": "Les jours passés et aujourd'hui ne peuvent plus être modifiés.",
+      "overlap": "La période chevauche un autre congé.",
+      "wrongStatus": "Ce n'est plus possible dans cet état.",
+      "changePending": "Une demande de modification est déjà ouverte.",
+      "rotationUnavailable": "Une rotation de cette personne ne peut pas être replanifiée pour le moment (modèle manquant ou inscriptions désactivées). Vérifie la rotation."
+    },
+    "tab": "Congés",
+    "mine": "Mes congés",
+    "requests": "Demandes ouvertes",
+    "calendar": "Calendrier des congés",
+    "request": "Demander un congé",
+    "requestStaffing": "Sur {count, plural, one {# jour ouvré} other {# jours ouvrés}}, l'équipe serait en sous-effectif ({dates}). La gestion décide.",
+    "enter": "Saisir un congé",
+    "person": "Personne",
+    "from": "Du",
+    "to": "Au",
+    "note": "Note",
+    "reason": "Motif",
+    "emptyMine": "Pas encore de congé.",
+    "emptyRequests": "Aucune demande ouverte.",
+    "emptyCalendar": "Aucun congé cette année.",
+    "loadFailed": "Impossible de charger les congés.",
+    "rejectHint": "Indique à {name} le motif du refus.",
+    "requestCancelHint": "La gestion décide de l'annulation.",
+    "status": {
+      "pending": "Demandé",
+      "approved": "Approuvé",
+      "rejected": "Refusé",
+      "withdrawn": "Retiré",
+      "cancelled": "Annulé"
+    },
+    "pendingChange": {
+      "change": "Changement demandé : {range}",
+      "cancel": "Annulation demandée"
+    },
+    "direct": "Saisi par la gestion",
+    "actions": {
+      "withdraw": "Retirer",
+      "requestChange": "Demander un changement",
+      "requestCancel": "Demander l'annulation",
+      "withdrawChange": "Retirer la demande",
+      "approve": "Approuver",
+      "reject": "Refuser",
+      "approveChange": "Approuver le changement",
+      "rejectChange": "Refuser le changement",
+      "edit": "Modifier",
+      "cancel": "Annuler"
+    },
+    "preview": {
+      "title": "Effet sur les services",
+      "loading": "Calcul du nouveau planning …",
+      "none": "Aucun service concerné.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Date",
+      "before": "Avant",
+      "after": "Après",
+      "understaffed": "Le {date}, seules {filled} places sur {capacity} sont occupées.",
+      "staffing": "Le {date}, {present, plural, one {seule # personne} other {seules # personnes}} sur au moins {minimum} seraient présentes.",
+      "hint": "Après confirmation, les services sont redistribués à partir du congé. Les personnes concernées reçoivent de nouvelles invitations Outlook."
+    },
+    "done": {
+      "requested": "Congé demandé.",
+      "approved": "Congé approuvé, services redistribués.",
+      "rejected": "Demande refusée.",
+      "entered": "Congé saisi, services redistribués.",
+      "changed": "Congé modifié, services redistribués.",
+      "cancelled": "Congé annulé, services redistribués.",
+      "withdrawn": "Retiré.",
+      "changeRequested": "Changement demandé."
+    }
   }
 }

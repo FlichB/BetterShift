@@ -1145,14 +1145,14 @@
       "personalFeedCreated": "Abbonamento calendario personale creato",
       "personalFeedRotated": "Abbonamento calendario personale rigenerato",
       "personalFeedRevoked": "Abbonamento calendario personale revocato",
-      "dayOffMoved": "Giorno libero dopo il turno del {date} spostato dal {from} al {to} ({calendar})",
-      "dayOffLocked": "Giorno libero dopo il turno del {date} bloccato ({calendar})",
-      "dayOffProposed": "Date proposte per il giorno libero dopo il turno del {date}: {dates} ({calendar})",
-      "dayOffCountered": "Controproposta {to} per il giorno libero dopo il turno del {date} ({calendar})",
-      "dayOffAccepted": "Giorno libero dopo il turno del {date} concordato per il {to} ({calendar})",
-      "dayOffDeclined": "Proposta {to} per il giorno libero dopo il turno del {date} rifiutata ({calendar})",
-      "dayOffReset": "Giorno libero dopo il turno del {date} reimpostato ({calendar})",
-      "dayOffDropped": "Giorno libero dopo il turno del {date} annullato ({calendar})",
+      "dayOffMoved": "Giorno libero per il turno del {date} spostato dal {from} al {to} ({calendar})",
+      "dayOffLocked": "Giorno libero per il turno del {date} bloccato ({calendar})",
+      "dayOffProposed": "Date proposte per il giorno libero per il turno del {date}: {dates} ({calendar})",
+      "dayOffCountered": "Controproposta {to} per il giorno libero per il turno del {date} ({calendar})",
+      "dayOffAccepted": "Giorno libero per il turno del {date} concordato per il {to} ({calendar})",
+      "dayOffDeclined": "Proposta {to} per il giorno libero per il turno del {date} rifiutata ({calendar})",
+      "dayOffReset": "Giorno libero per il turno del {date} reimpostato ({calendar})",
+      "dayOffDropped": "Giorno libero per il turno del {date} annullato ({calendar})",
       "userBanned": "{user} bloccato",
       "userBannedPermanently": "{user} bloccato in modo permanente",
       "userUnbanned": "Blocco di {user} rimosso",
@@ -1194,7 +1194,19 @@
       "telemetrySendFailed": "Invio manuale della telemetria non riuscito",
       "telemetryAutoSent": "Telemetria inviata automaticamente",
       "telemetryAutoSendFailed": "Invio automatico della telemetria non riuscito",
-      "dayOffNotificationFailed": "Impossibile inviare l'e-mail del giorno libero ({kind})"
+      "dayOffNotificationFailed": "Impossibile inviare l'e-mail del giorno libero ({kind})",
+      "rotationYearDeltaSet": "Rotazione «{name}»: delta {year} modificato",
+      "vacationRequested": "Ferie {from}–{to} richieste",
+      "vacationApproved": "Ferie {from}–{to} approvate",
+      "vacationRejected": "Ferie {from}–{to} rifiutate",
+      "vacationWithdrawn": "Ferie {from}–{to} ritirate",
+      "vacationEntered": "Ferie {from}–{to} inserite",
+      "vacationChanged": "Ferie {from}–{to} modificate",
+      "vacationCancelled": "Ferie {from}–{to} annullate",
+      "vacationChangeRequested": "Modifica delle ferie {from}–{to} richiesta",
+      "vacationChangeApproved": "Modifica delle ferie {from}–{to} approvata",
+      "vacationChangeRejected": "Modifica delle ferie {from}–{to} rifiutata",
+      "vacationChangeWithdrawn": "Modifica delle ferie {from}–{to} ritirata"
     }
   },
   "adminUsers": {
@@ -1435,11 +1447,21 @@
       "closedTitleHint": "Compare nei giorni di chiusura come «Testo (motivo)», ad es. «Chiuso (Natale)».",
       "entryTitle": "Modello di voce",
       "entryTitleHint": "Così si chiama ogni posto nel calendario e in Outlook.",
-      "dayOffEnabled": "Giorno libero dopo il servizio",
-      "dayOffEnabledHint": "Ogni posto ottiene libero il giorno lavorativo successivo (lun–ven) dopo il servizio.",
+      "dayOffEnabled": "Dienstfrei per ogni servizio",
+      "dayOffEnabledHint": "Ogni posto ottiene un giorno lavorativo libero (lun–ven).",
+      "dayOffTiming": "Il Dienstfrei cade",
+      "dayOffTimingAfter": "dopo il servizio (giorno lavorativo successivo)",
+      "dayOffTimingBefore": "prima del servizio (lunedì della settimana di servizio)",
+      "dayOffTimingHint": "Prima del servizio: in uno scambio ognuno tiene il proprio Dienstfrei; chi subentra in un servizio non ne riceve uno per esso.",
+      "minPresentEnabled": "Organico minimo nei giorni lavorativi",
+      "minPresentEnabledHint": "Tanti partecipanti devono essere presenti da lun. a ven. I Dienstfrei evitano i giorni pieni; per le ferie compare un avviso.",
+      "minPresent": "Presenti almeno",
+      "minPresentHint": "su {count} partecipanti",
       "dayOffTitle": "Testo del giorno libero",
       "dayOffMembers": "Giorno libero per partecipante",
       "dayOffMembersHint": "Disattiva per i partecipanti senza giorno libero, ad es. con contratto all-in. Se uno di loro prende un turno, il giorno libero di quel posto decade.",
+      "yearlyFairness": "Equo per anno solare",
+      "yearlyFairnessHint": "Ogni anno inizia un nuovo giro. Chi ha avuto più turni l’anno precedente salta i turni corrispondenti a inizio anno.",
       "entryTitleInfo": "Informazioni sul modello di voce",
       "entryTitleHelp": "Segnaposto: '{Vorname}' = prima parola del nome, '{Name}' = nome completo, '{Dienst}' = titolo del turno. Deve comparire '{Vorname}' o '{Name}'. Esempio: «'{Vorname}' Dienst» → «Günther Dienst».",
       "entryTitlePreview": "Anteprima: {title}",
@@ -1448,6 +1470,18 @@
       "holidayCalendarUnavailable": "Calendario senza accesso",
       "holidayCalendarHint": "Ogni voce di questo calendario in un giorno di turno chiude quel giorno. Meglio un calendario sincronizzato con un feed delle festività.",
       "holidayOpenDates": "Festività con turno"
+    },
+    "yearly": {
+      "hint": "Delta = turni dell’anno precedente meno il minor numero di turni di un partecipante presente tutto l’anno. Un valore personalizzato sostituisce quello automatico; si applica alla prossima generazione.",
+      "tableTitle": "Riporto {from} → {to}",
+      "member": "Partecipante",
+      "held": "Turni {year}",
+      "autoDelta": "Delta",
+      "override": "Valore personalizzato",
+      "overrideFor": "Valore personalizzato per {name} ({year})",
+      "newSince": "nuovo dal {date}",
+      "reset": "Usa il valore automatico",
+      "noData": "Nessun turno nell’anno precedente: nulla da riportare."
     },
     "period": {
       "day": "Giorno",
@@ -1508,7 +1542,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} non è più un partecipante ma ha un posto scambiato.",
         "lockedWithoutDuty": "{date}: nessun turno è più previsto, ma esistono posti scambiati – il turno resta.",
-        "lockedOverCapacity": "{date}: più posti scambiati ({count}) di quelli ora previsti – il turno mantiene tutti i posti scambiati."
+        "lockedOverCapacity": "{date}: più posti scambiati ({count}) di quelli ora previsti – il turno mantiene tutti i posti scambiati.",
+        "understaffed": "{date}: solo {filled} posti su {capacity} occupati."
       },
       "unlock": "Rimuovi blocco",
       "skipReason": "Motivo della chiusura",
@@ -1560,11 +1595,19 @@
       "holidayOpenDates": "Festività con turno non valide.",
       "entryTitle": "Modello di voce non valido: serve '{Vorname}' o '{Name}' e può contenere solo '{Vorname}', '{Name}' e '{Dienst}' (max. 100 caratteri).",
       "dayOffTitle": "Il modello di voce del giorno libero non è valido.",
+      "dayOffTiming": "La posizione del giorno libero non è valida.",
+      "minPresent": "L'organico minimo deve essere compreso tra 1 e il numero di partecipanti meno 1.",
       "dayOffExcluded": "Giorno libero per partecipante non valido: si possono escludere solo partecipanti della rotazione.",
-      "reinforcedDates": "Giorni rinforzati non validi: una voce per data; i giorni futuri richiedono più persone di «Persone per turno» e al massimo quanti sono i partecipanti."
+      "reinforcedDates": "Giorni rinforzati non validi: una voce per data; i giorni futuri richiedono più persone di «Persone per turno» e al massimo quanti sono i partecipanti.",
+      "yearlyFairness": "Impostazione non valida per l’equità annuale.",
+      "yearDelta": "Delta non valido (0–52).",
+      "notMember": "Questa persona non partecipa alla rotazione."
     }
   },
   "swap": {
+    "dayOffStays": "Il tuo giorno libero per questo servizio resta a te; chi lo rileva non ne riceve nessuno.",
+    "dayOffStaysForced": "Il giorno libero resta al titolare precedente; il sostituto non ne riceve nessuno.",
+    "dayOffStaysAccept": "Per questo servizio non ricevi nessun giorno libero; resta al titolare precedente.",
     "notifications": {
       "open": "Notifiche",
       "title": "Notifiche",
@@ -1581,7 +1624,11 @@
       "dayOffRequestsHint": "Quando i partecipanti propongono date per un giorno libero bloccato o attendono la tua risposta.",
       "notConfigured": "L'invio delle e-mail non è configurato su questo server. La tua scelta varrà non appena lo sarà.",
       "saveFailed": "Impossibile salvare l'impostazione.",
-      "loadFailed": "Impossibile caricare le impostazioni."
+      "loadFailed": "Impossibile caricare le impostazioni.",
+      "myVacations": "Le mie ferie",
+      "myVacationsHint": "Decisioni e modifiche sulle mie ferie",
+      "vacationRequests": "Richieste di ferie",
+      "vacationRequestsHint": "Nuove richieste e richieste di modifica dei partecipanti che gestisco"
     },
     "title": "Bacheca scambi",
     "subtitle": "Scambia i turni",
@@ -1686,6 +1733,7 @@
       "closedDuty": "In un giorno di chiusura non ci sono posti.",
       "counterNotDue": "Per questo scambio non c'è nessuna compensazione in sospeso.",
       "outsideWindow": "Questo turno è fuori dalla finestra di compensazione.",
+      "onVacation": "La persona è in ferie quel giorno.",
       "internal": "Errore imprevisto."
     },
     "retry": "Riprova",
@@ -1765,12 +1813,15 @@
       "duplicate": "Questa data è già stata proposta.",
       "tooMany": "Troppe proposte aperte.",
       "reasonRequired": "Indica un motivo, per favore.",
-      "proposalNotOpen": "Questa proposta non è più aperta."
+      "proposalNotOpen": "Questa proposta non è più aperta.",
+      "belowMinimum": "In quel giorno non sarebbe raggiunto l'organico minimo."
     },
     "tab": "Giorno libero",
     "mineTitle": "I miei giorni liberi",
     "manageTitle": "Gestione",
-    "cardTitle": "Giorno libero dopo il servizio del {date}",
+    "cardTitle": "Giorno libero per il servizio del {date}",
+    "keptOnSwap": "Da un servizio scambiato: il giorno libero resta a te.",
+    "keptOnSwapManage": "Da un servizio scambiato: il giorno libero resta a {name}.",
     "status": {
       "standard": "Standard",
       "moved": "Spostato",
@@ -1811,7 +1862,13 @@
       "title": "Sposta giorno libero",
       "text": "Scegli un altro giorno lavorativo della stessa settimana.",
       "loadFailed": "Impossibile caricare i giorni possibili.",
-      "none": "Non c'è nessun altro giorno possibile."
+      "none": "Non c'è nessun altro giorno possibile.",
+      "full": "pieno"
+    },
+    "override": {
+      "title": "Organico minimo non raggiunto",
+      "text": "Il {date} sarebbero presenti {present, plural, one {solo # partecipante} other {solo # partecipanti}} su almeno {minimum}. Concederlo comunque?",
+      "confirm": "Concedi comunque"
     },
     "propose": {
       "text": "Proponi fino a {max} date entro il {date}. La gestione ne accetta una.",
@@ -1859,7 +1916,16 @@
         "dayOffDeclined": "Proposta rifiutata",
         "dayOffReset": "Il tuo giorno libero è cambiato",
         "dayOffDropped": "Il tuo giorno libero è annullato",
-        "dayOffReminder": "Proposte di data in sospeso"
+        "dayOffReminder": "Proposte di data in sospeso",
+        "vacationRequested": "Nuova richiesta di ferie",
+        "vacationChangeRequested": "Modifica delle ferie richiesta",
+        "vacationApproved": "Ferie approvate",
+        "vacationRejected": "Ferie rifiutate",
+        "vacationChangeApproved": "Modifica delle ferie approvata",
+        "vacationChangeRejected": "Modifica delle ferie rifiutata",
+        "vacationEntered": "Ferie registrate",
+        "vacationChanged": "Ferie modificate",
+        "vacationCancelled": "Ferie annullate"
       },
       "lead": {
         "offerToAll": "{name} offre il turno del {duty}.",
@@ -1870,14 +1936,23 @@
         "forcedToMe": "{actor} ti ha assegnato come sostituto di {name} il {duty}.",
         "dutyTransferred": "Il tuo turno del {duty} è stato trasferito a {name}.",
         "counterChosen": "In cambio del tuo turno del {duty}, prendi il turno del {counter}.",
-        "dayOffLocked": "Il tuo giorno libero dopo il turno del {duty} è stato bloccato. Proponi delle date, per favore.",
-        "dayOffProposed": "{holder} propone per il giorno libero dopo il turno del {duty}: {dates}.",
-        "dayOffCountered": "Per il tuo giorno libero dopo il turno del {duty} viene proposto il {date}.",
-        "dayOffAccepted": "Il giorno libero dopo il turno del {duty} è il {date}.",
-        "dayOffDeclined": "La proposta del {date} per il giorno libero dopo il turno del {duty} è stata rifiutata.",
-        "dayOffReset": "Il tuo giorno libero dopo il turno del {duty} non è più valido ed è stato reimpostato.",
-        "dayOffDropped": "Il tuo giorno libero dopo il turno del {duty} è annullato.",
-        "dayOffReminder": "Le proposte di {holder} per il giorno libero dopo il turno del {duty} sono in attesa di risposta da 3 giorni."
+        "dayOffLocked": "Il tuo giorno libero per il turno del {duty} è stato bloccato. Proponi delle date, per favore.",
+        "dayOffProposed": "{holder} propone per il giorno libero per il turno del {duty}: {dates}.",
+        "dayOffCountered": "Per il tuo giorno libero per il turno del {duty} viene proposto il {date}.",
+        "dayOffAccepted": "Il giorno libero per il turno del {duty} è il {date}.",
+        "dayOffDeclined": "La proposta del {date} per il giorno libero per il turno del {duty} è stata rifiutata.",
+        "dayOffReset": "Il tuo giorno libero per il turno del {duty} non è più valido ed è stato reimpostato.",
+        "dayOffDropped": "Il tuo giorno libero per il turno del {duty} è annullato.",
+        "dayOffReminder": "Le proposte di {holder} per il giorno libero per il turno del {duty} sono in attesa di risposta da 3 giorni.",
+        "vacationRequested": "{holder} richiede ferie dal {from} al {to}.",
+        "vacationChangeRequested": "{holder} vuole modificare o annullare le ferie dal {from} al {to}.",
+        "vacationApproved": "Le tue ferie dal {from} al {to} sono approvate. I tuoi turni in questo periodo sono stati riassegnati.",
+        "vacationRejected": "La tua richiesta di ferie dal {from} al {to} è stata rifiutata.",
+        "vacationChangeApproved": "La tua modifica è approvata: ferie ora dal {from} al {to} (prima: {previous}).",
+        "vacationChangeRejected": "La tua modifica delle ferie dal {from} al {to} è stata rifiutata.",
+        "vacationEntered": "Sono state registrate per te ferie dal {from} al {to}. I tuoi turni in questo periodo sono stati riassegnati.",
+        "vacationChanged": "Le tue ferie sono state modificate: ora dal {from} al {to} (prima: {previous}).",
+        "vacationCancelled": "Le tue ferie dal {from} al {to} sono state annullate."
       },
       "kind": {
         "give": "Cessione – chi accetta prende il turno.",
@@ -1891,7 +1966,8 @@
       "allDay": "tutto il giorno",
       "button": "Apri la bacheca degli scambi",
       "footer": "Modifica le notifiche",
-      "someone": "Qualcuno"
+      "someone": "Qualcuno",
+      "vacationRange": "dal {from} al {to}"
     }
   },
   "outlook": {
@@ -1904,9 +1980,91 @@
     "calendarName": "I miei turni",
     "with": "Con: {names}",
     "swapLink": "Scambia: {url}",
-    "dayOffLink": "Giorno libero: {url}"
+    "dayOffLink": "Giorno libero: {url}",
+    "vacationLink": "Gestisci le ferie: {url}"
   },
   "announcements": {
     "dismiss": "Nascondi annuncio"
+  },
+  "vacation": {
+    "entryTitle": "{name} ferie",
+    "calendarHint": "Ferie – dettagli sotto Ferie",
+    "errors": {
+      "notFound": "Ferie non trovate.",
+      "forbidden": "Non hai il permesso di farlo.",
+      "invalid": "Controlla i dati inseriti.",
+      "reasonRequired": "Indica un motivo.",
+      "tooLong": "Le ferie possono durare al massimo 366 giorni.",
+      "notParticipant": "Solo i partecipanti a una rotazione possono avere ferie.",
+      "begun": "I giorni passati e oggi non possono più essere modificati.",
+      "overlap": "Il periodo si sovrappone ad altre ferie.",
+      "wrongStatus": "Non è più possibile in questo stato.",
+      "changePending": "C'è già una richiesta di modifica aperta.",
+      "rotationUnavailable": "Al momento non è possibile ripianificare una rotazione di questa persona (modello mancante o iscrizioni disattivate). Controlla la rotazione."
+    },
+    "tab": "Ferie",
+    "mine": "Le mie ferie",
+    "requests": "Richieste aperte",
+    "calendar": "Calendario ferie",
+    "request": "Richiedi ferie",
+    "requestStaffing": "Per {count, plural, one {# giorno lavorativo} other {# giorni lavorativi}} il team sarebbe sotto organico ({dates}). Decide la gestione.",
+    "enter": "Inserisci ferie",
+    "person": "Persona",
+    "from": "Dal",
+    "to": "Al",
+    "note": "Nota",
+    "reason": "Motivo",
+    "emptyMine": "Ancora nessuna ferie.",
+    "emptyRequests": "Nessuna richiesta aperta.",
+    "emptyCalendar": "Nessuna ferie quest'anno.",
+    "loadFailed": "Impossibile caricare le ferie.",
+    "rejectHint": "Indica a {name} il motivo del rifiuto.",
+    "requestCancelHint": "La gestione decide sull'annullamento.",
+    "status": {
+      "pending": "Richieste",
+      "approved": "Approvate",
+      "rejected": "Rifiutate",
+      "withdrawn": "Ritirate",
+      "cancelled": "Annullate"
+    },
+    "pendingChange": {
+      "change": "Modifica richiesta: {range}",
+      "cancel": "Annullamento richiesto"
+    },
+    "direct": "Inserite dalla gestione",
+    "actions": {
+      "withdraw": "Ritira",
+      "requestChange": "Richiedi modifica",
+      "requestCancel": "Richiedi annullamento",
+      "withdrawChange": "Ritira richiesta",
+      "approve": "Approva",
+      "reject": "Rifiuta",
+      "approveChange": "Approva modifica",
+      "rejectChange": "Rifiuta modifica",
+      "edit": "Modifica",
+      "cancel": "Annulla"
+    },
+    "preview": {
+      "title": "Effetto sui turni",
+      "loading": "Calcolo del nuovo piano …",
+      "none": "Nessun turno interessato.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Data",
+      "before": "Prima",
+      "after": "Dopo",
+      "understaffed": "Il {date} sono occupati solo {filled} posti su {capacity}.",
+      "staffing": "Il {date} sarebbero presenti solo {present} su almeno {minimum}.",
+      "hint": "Dopo la conferma, i turni vengono ridistribuiti a partire dalle ferie. Le persone interessate ricevono nuovi inviti Outlook."
+    },
+    "done": {
+      "requested": "Ferie richieste.",
+      "approved": "Ferie approvate, turni ridistribuiti.",
+      "rejected": "Richiesta rifiutata.",
+      "entered": "Ferie inserite, turni ridistribuiti.",
+      "changed": "Ferie modificate, turni ridistribuiti.",
+      "cancelled": "Ferie annullate, turni ridistribuiti.",
+      "withdrawn": "Ritirato.",
+      "changeRequested": "Modifica richiesta."
+    }
   }
 }

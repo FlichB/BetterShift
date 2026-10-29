@@ -1145,14 +1145,14 @@
       "personalFeedCreated": "Suscripción de calendario personal creada",
       "personalFeedRotated": "Suscripción de calendario personal regenerada",
       "personalFeedRevoked": "Suscripción de calendario personal revocada",
-      "dayOffMoved": "Día libre tras el turno del {date} movido del {from} al {to} ({calendar})",
-      "dayOffLocked": "Día libre tras el turno del {date} bloqueado ({calendar})",
-      "dayOffProposed": "Fechas propuestas para el día libre tras el turno del {date}: {dates} ({calendar})",
-      "dayOffCountered": "Contrapropuesta {to} para el día libre tras el turno del {date} ({calendar})",
-      "dayOffAccepted": "Día libre tras el turno del {date} acordado para el {to} ({calendar})",
-      "dayOffDeclined": "Propuesta {to} para el día libre tras el turno del {date} rechazada ({calendar})",
-      "dayOffReset": "Día libre tras el turno del {date} restablecido ({calendar})",
-      "dayOffDropped": "Día libre tras el turno del {date} anulado ({calendar})",
+      "dayOffMoved": "Día libre para el turno del {date} movido del {from} al {to} ({calendar})",
+      "dayOffLocked": "Día libre para el turno del {date} bloqueado ({calendar})",
+      "dayOffProposed": "Fechas propuestas para el día libre para el turno del {date}: {dates} ({calendar})",
+      "dayOffCountered": "Contrapropuesta {to} para el día libre para el turno del {date} ({calendar})",
+      "dayOffAccepted": "Día libre para el turno del {date} acordado para el {to} ({calendar})",
+      "dayOffDeclined": "Propuesta {to} para el día libre para el turno del {date} rechazada ({calendar})",
+      "dayOffReset": "Día libre para el turno del {date} restablecido ({calendar})",
+      "dayOffDropped": "Día libre para el turno del {date} anulado ({calendar})",
       "userBanned": "{user} bloqueado",
       "userBannedPermanently": "{user} bloqueado permanentemente",
       "userUnbanned": "Bloqueo de {user} levantado",
@@ -1194,7 +1194,19 @@
       "telemetrySendFailed": "Error al enviar la telemetría manualmente",
       "telemetryAutoSent": "Telemetría enviada automáticamente",
       "telemetryAutoSendFailed": "Error al enviar la telemetría automáticamente",
-      "dayOffNotificationFailed": "No se pudo enviar el correo del día libre ({kind})"
+      "dayOffNotificationFailed": "No se pudo enviar el correo del día libre ({kind})",
+      "rotationYearDeltaSet": "Rotación «{name}»: delta de {year} modificado",
+      "vacationRequested": "Vacaciones {from}–{to} solicitadas",
+      "vacationApproved": "Vacaciones {from}–{to} aprobadas",
+      "vacationRejected": "Vacaciones {from}–{to} rechazadas",
+      "vacationWithdrawn": "Vacaciones {from}–{to} retiradas",
+      "vacationEntered": "Vacaciones {from}–{to} registradas",
+      "vacationChanged": "Vacaciones {from}–{to} modificadas",
+      "vacationCancelled": "Vacaciones {from}–{to} canceladas",
+      "vacationChangeRequested": "Cambio de las vacaciones {from}–{to} solicitado",
+      "vacationChangeApproved": "Cambio de las vacaciones {from}–{to} aprobado",
+      "vacationChangeRejected": "Cambio de las vacaciones {from}–{to} rechazado",
+      "vacationChangeWithdrawn": "Cambio de las vacaciones {from}–{to} retirado"
     }
   },
   "adminUsers": {
@@ -1435,11 +1447,21 @@
       "closedTitleHint": "Aparece en los días de cierre como «Texto (motivo)», p. ej. «Cerrado (Navidad)».",
       "entryTitle": "Plantilla de entrada",
       "entryTitleHint": "Así se llama cada plaza en el calendario y en Outlook.",
-      "dayOffEnabled": "Día libre tras el servicio",
-      "dayOffEnabledHint": "Cada plaza recibe libre el siguiente día laborable (lun–vie) tras el servicio.",
+      "dayOffEnabled": "Dienstfrei por cada servicio",
+      "dayOffEnabledHint": "Cada plaza recibe un día laborable libre (lun–vie).",
+      "dayOffTiming": "El Dienstfrei cae",
+      "dayOffTimingAfter": "después del servicio (siguiente día laborable)",
+      "dayOffTimingBefore": "antes del servicio (lunes de la semana de servicio)",
+      "dayOffTimingHint": "Antes del servicio: en un intercambio cada uno conserva su Dienstfrei; quien asume un servicio no recibe ninguno por él.",
+      "minPresentEnabled": "Dotación mínima en días laborables",
+      "minPresentEnabledHint": "Tantos participantes deben estar presentes de lun. a vie. Los Dienstfrei evitan los días completos; las vacaciones muestran un aviso.",
+      "minPresent": "Presentes como mínimo",
+      "minPresentHint": "de {count} participantes",
       "dayOffTitle": "Texto del día libre",
       "dayOffMembers": "Día libre por participante",
       "dayOffMembersHint": "Desactívalo para participantes sin día libre, p. ej. con contrato all-in. Si alguien así asume un turno, se pierde el día libre de esa plaza.",
+      "yearlyFairness": "Justo por año natural",
+      "yearlyFairnessHint": "Cada año empieza una nueva ronda. Quien tuvo más turnos el año anterior descansa en proporción al inicio del año.",
       "entryTitleInfo": "Sobre la plantilla de entrada",
       "entryTitleHelp": "Marcadores: '{Vorname}' = primera palabra del nombre, '{Name}' = nombre completo, '{Dienst}' = título del turno. Debe aparecer '{Vorname}' o '{Name}'. Ejemplo: «'{Vorname}' Dienst» → «Günther Dienst».",
       "entryTitlePreview": "Vista previa: {title}",
@@ -1448,6 +1470,18 @@
       "holidayCalendarUnavailable": "Calendario sin acceso",
       "holidayCalendarHint": "Cada entrada de este calendario en un día de servicio cierra ese día. Lo mejor es un calendario que sincronice un feed de festivos.",
       "holidayOpenDates": "Festivos con servicio"
+    },
+    "yearly": {
+      "hint": "Delta = turnos del año anterior menos los turnos del participante de año completo con menos turnos. Un valor propio sustituye al automático; se aplica en la próxima generación.",
+      "tableTitle": "Arrastre {from} → {to}",
+      "member": "Participante",
+      "held": "Turnos {year}",
+      "autoDelta": "Delta",
+      "override": "Valor propio",
+      "overrideFor": "Valor propio para {name} ({year})",
+      "newSince": "nuevo desde {date}",
+      "reset": "Usar el valor automático",
+      "noData": "Aún no hubo turnos el año anterior: no hay nada que arrastrar."
     },
     "period": {
       "day": "Día",
@@ -1508,7 +1542,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} ya no participa, pero tiene una plaza intercambiada.",
         "lockedWithoutDuty": "{date}: Ya no hay ningún turno previsto, pero existen plazas intercambiadas: el turno se mantiene.",
-        "lockedOverCapacity": "{date}: Más plazas intercambiadas ({count}) de las previstas ahora; el turno conserva todas las plazas intercambiadas."
+        "lockedOverCapacity": "{date}: Más plazas intercambiadas ({count}) de las previstas ahora; el turno conserva todas las plazas intercambiadas.",
+        "understaffed": "{date}: Solo {filled} de {capacity} plazas ocupadas."
       },
       "unlock": "Quitar bloqueo",
       "skipReason": "Motivo del cierre",
@@ -1560,11 +1595,19 @@
       "holidayOpenDates": "Festivos con servicio no válidos.",
       "entryTitle": "Plantilla de entrada no válida: necesita '{Vorname}' o '{Name}' y solo puede contener '{Vorname}', '{Name}' y '{Dienst}' (máx. 100 caracteres).",
       "dayOffTitle": "La plantilla de entrada del día libre no es válida.",
+      "dayOffTiming": "La posición del día libre no es válida.",
+      "minPresent": "La dotación mínima debe estar entre 1 y el número de participantes menos 1.",
       "dayOffExcluded": "Día libre por participante no válido: solo se pueden excluir participantes de la rotación.",
-      "reinforcedDates": "Días reforzados no válidos: una entrada por fecha; los días futuros necesitan más personas que «Personas por turno» y como máximo tantas como participantes."
+      "reinforcedDates": "Días reforzados no válidos: una entrada por fecha; los días futuros necesitan más personas que «Personas por turno» y como máximo tantas como participantes.",
+      "yearlyFairness": "Ajuste no válido para el reparto anual.",
+      "yearDelta": "Delta no válido (0–52).",
+      "notMember": "Esta persona no participa en la rotación."
     }
   },
   "swap": {
+    "dayOffStays": "Tu día libre de este servicio se queda contigo; quien lo asuma no recibe ninguno por él.",
+    "dayOffStaysForced": "El día libre se queda con el titular anterior; quien sustituye no recibe ninguno por él.",
+    "dayOffStaysAccept": "No recibes ningún día libre por este servicio; se queda con el titular anterior.",
     "notifications": {
       "open": "Notificaciones",
       "title": "Notificaciones",
@@ -1581,7 +1624,11 @@
       "dayOffRequestsHint": "Cuando los participantes proponen fechas para un día libre bloqueado o esperan tu respuesta.",
       "notConfigured": "El envío de correos no está configurado en este servidor. Tu elección se aplicará en cuanto lo esté.",
       "saveFailed": "No se pudo guardar el ajuste.",
-      "loadFailed": "No se pudieron cargar los ajustes."
+      "loadFailed": "No se pudieron cargar los ajustes.",
+      "myVacations": "Mis vacaciones",
+      "myVacationsHint": "Decisiones y cambios sobre mis vacaciones",
+      "vacationRequests": "Solicitudes de vacaciones",
+      "vacationRequestsHint": "Nuevas solicitudes y peticiones de cambio de los participantes que gestiono"
     },
     "title": "Bolsa de cambios",
     "subtitle": "Intercambiar turnos",
@@ -1686,6 +1733,7 @@
       "closedDuty": "En un día de cierre no hay plazas.",
       "counterNotDue": "Para este intercambio no hay ninguna compensación pendiente.",
       "outsideWindow": "Este turno está fuera del plazo de compensación.",
+      "onVacation": "La persona está de vacaciones ese día.",
       "internal": "Error inesperado."
     },
     "retry": "Reintentar",
@@ -1765,12 +1813,15 @@
       "duplicate": "Esta fecha ya se ha propuesto.",
       "tooMany": "Demasiadas propuestas abiertas.",
       "reasonRequired": "Por favor, indica un motivo.",
-      "proposalNotOpen": "Esta propuesta ya no está abierta."
+      "proposalNotOpen": "Esta propuesta ya no está abierta.",
+      "belowMinimum": "Ese día no se alcanzaría la dotación mínima."
     },
     "tab": "Día libre",
     "mineTitle": "Mis días libres",
     "manageTitle": "Gestión",
-    "cardTitle": "Día libre tras el servicio del {date}",
+    "cardTitle": "Día libre para el servicio del {date}",
+    "keptOnSwap": "De un servicio intercambiado: el día libre se queda contigo.",
+    "keptOnSwapManage": "De un servicio intercambiado: el día libre se queda con {name}.",
     "status": {
       "standard": "Estándar",
       "moved": "Movido",
@@ -1811,7 +1862,13 @@
       "title": "Mover día libre",
       "text": "Elige otro día laborable de la misma semana.",
       "loadFailed": "No se pudieron cargar los días posibles.",
-      "none": "No hay otro día posible."
+      "none": "No hay otro día posible.",
+      "full": "completo"
+    },
+    "override": {
+      "title": "Dotación mínima no alcanzada",
+      "text": "El {date} solo estarían presentes {present} de al menos {minimum} participantes. ¿Concederlo igualmente?",
+      "confirm": "Conceder igualmente"
     },
     "propose": {
       "text": "Propón hasta {max} fechas hasta el {date}. La gestión acepta una de ellas.",
@@ -1859,7 +1916,16 @@
         "dayOffDeclined": "Propuesta rechazada",
         "dayOffReset": "Tu día libre ha cambiado",
         "dayOffDropped": "Tu día libre se cancela",
-        "dayOffReminder": "Propuestas de fecha pendientes"
+        "dayOffReminder": "Propuestas de fecha pendientes",
+        "vacationRequested": "Nueva solicitud de vacaciones",
+        "vacationChangeRequested": "Cambio de vacaciones solicitado",
+        "vacationApproved": "Vacaciones aprobadas",
+        "vacationRejected": "Vacaciones rechazadas",
+        "vacationChangeApproved": "Cambio de vacaciones aprobado",
+        "vacationChangeRejected": "Cambio de vacaciones rechazado",
+        "vacationEntered": "Vacaciones registradas",
+        "vacationChanged": "Vacaciones modificadas",
+        "vacationCancelled": "Vacaciones canceladas"
       },
       "lead": {
         "offerToAll": "{name} ofrece el turno del {duty}.",
@@ -1870,14 +1936,23 @@
         "forcedToMe": "{actor} te ha asignado para sustituir a {name} el {duty}.",
         "dutyTransferred": "Tu turno del {duty} ha sido traspasado a {name}.",
         "counterChosen": "A cambio de tu turno del {duty}, asumes el turno del {counter}.",
-        "dayOffLocked": "Tu día libre tras el servicio del {duty} ha sido bloqueado. Propón fechas, por favor.",
-        "dayOffProposed": "{holder} propone para el día libre tras el servicio del {duty}: {dates}.",
-        "dayOffCountered": "Para tu día libre tras el servicio del {duty} se propone el {date}.",
-        "dayOffAccepted": "El día libre tras el servicio del {duty} es el {date}.",
-        "dayOffDeclined": "La propuesta del {date} para el día libre tras el servicio del {duty} fue rechazada.",
-        "dayOffReset": "Tu día libre tras el servicio del {duty} ya no es válido y se ha restablecido.",
-        "dayOffDropped": "Tu día libre tras el servicio del {duty} se cancela.",
-        "dayOffReminder": "Las propuestas de {holder} para el día libre tras el servicio del {duty} llevan 3 días esperando respuesta."
+        "dayOffLocked": "Tu día libre para el servicio del {duty} ha sido bloqueado. Propón fechas, por favor.",
+        "dayOffProposed": "{holder} propone para el día libre para el servicio del {duty}: {dates}.",
+        "dayOffCountered": "Para tu día libre para el servicio del {duty} se propone el {date}.",
+        "dayOffAccepted": "El día libre para el servicio del {duty} es el {date}.",
+        "dayOffDeclined": "La propuesta del {date} para el día libre para el servicio del {duty} fue rechazada.",
+        "dayOffReset": "Tu día libre para el servicio del {duty} ya no es válido y se ha restablecido.",
+        "dayOffDropped": "Tu día libre para el servicio del {duty} se cancela.",
+        "dayOffReminder": "Las propuestas de {holder} para el día libre para el servicio del {duty} llevan 3 días esperando respuesta.",
+        "vacationRequested": "{holder} solicita vacaciones del {from} al {to}.",
+        "vacationChangeRequested": "{holder} quiere modificar o cancelar las vacaciones del {from} al {to}.",
+        "vacationApproved": "Tus vacaciones del {from} al {to} están aprobadas. Tus turnos en ese periodo se han reasignado.",
+        "vacationRejected": "Tu solicitud de vacaciones del {from} al {to} fue rechazada.",
+        "vacationChangeApproved": "Tu cambio está aprobado: vacaciones ahora del {from} al {to} (antes {previous}).",
+        "vacationChangeRejected": "Tu cambio de las vacaciones del {from} al {to} fue rechazado.",
+        "vacationEntered": "Se han registrado para ti vacaciones del {from} al {to}. Tus turnos en ese periodo se han reasignado.",
+        "vacationChanged": "Tus vacaciones se han modificado: ahora del {from} al {to} (antes {previous}).",
+        "vacationCancelled": "Tus vacaciones del {from} al {to} fueron canceladas."
       },
       "kind": {
         "give": "Cesión – quien acepta se queda con el turno.",
@@ -1891,7 +1966,8 @@
       "allDay": "todo el día",
       "button": "Abrir el tablón de intercambios",
       "footer": "Cambiar notificaciones",
-      "someone": "Alguien"
+      "someone": "Alguien",
+      "vacationRange": "del {from} al {to}"
     }
   },
   "outlook": {
@@ -1904,9 +1980,91 @@
     "calendarName": "Mis turnos",
     "with": "Con: {names}",
     "swapLink": "Intercambiar: {url}",
-    "dayOffLink": "Día libre: {url}"
+    "dayOffLink": "Día libre: {url}",
+    "vacationLink": "Gestionar vacaciones: {url}"
   },
   "announcements": {
     "dismiss": "Ocultar anuncio"
+  },
+  "vacation": {
+    "entryTitle": "{name} vacaciones",
+    "calendarHint": "Vacaciones – detalles en Vacaciones",
+    "errors": {
+      "notFound": "Vacaciones no encontradas.",
+      "forbidden": "No tienes permiso para hacer eso.",
+      "invalid": "Revisa los datos introducidos.",
+      "reasonRequired": "Indica un motivo.",
+      "tooLong": "Unas vacaciones pueden durar como máximo 366 días.",
+      "notParticipant": "Solo los participantes de una rotación pueden tener vacaciones.",
+      "begun": "Los días pasados y el día de hoy ya no se pueden modificar.",
+      "overlap": "El período se solapa con otras vacaciones.",
+      "wrongStatus": "Ya no es posible en este estado.",
+      "changePending": "Ya hay una solicitud de cambio abierta.",
+      "rotationUnavailable": "Ahora mismo no se puede volver a planificar una rotación de esta persona (falta la plantilla o las inscripciones están desactivadas). Revisa la rotación."
+    },
+    "tab": "Vacaciones",
+    "mine": "Mis vacaciones",
+    "requests": "Solicitudes abiertas",
+    "calendar": "Calendario de vacaciones",
+    "request": "Solicitar vacaciones",
+    "requestStaffing": "En {count, plural, one {# día laborable} other {# días laborables}} el equipo quedaría sin personal suficiente ({dates}). La administración decide.",
+    "enter": "Registrar vacaciones",
+    "person": "Persona",
+    "from": "Desde",
+    "to": "Hasta",
+    "note": "Nota",
+    "reason": "Motivo",
+    "emptyMine": "Todavía no hay vacaciones.",
+    "emptyRequests": "No hay solicitudes abiertas.",
+    "emptyCalendar": "No hay vacaciones este año.",
+    "loadFailed": "No se pudieron cargar las vacaciones.",
+    "rejectHint": "Explica a {name} el motivo del rechazo.",
+    "requestCancelHint": "La gestión decide sobre la cancelación.",
+    "status": {
+      "pending": "Solicitadas",
+      "approved": "Aprobadas",
+      "rejected": "Rechazadas",
+      "withdrawn": "Retiradas",
+      "cancelled": "Canceladas"
+    },
+    "pendingChange": {
+      "change": "Cambio solicitado: {range}",
+      "cancel": "Cancelación solicitada"
+    },
+    "direct": "Registradas por la gestión",
+    "actions": {
+      "withdraw": "Retirar",
+      "requestChange": "Solicitar cambio",
+      "requestCancel": "Solicitar cancelación",
+      "withdrawChange": "Retirar solicitud",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "approveChange": "Aprobar cambio",
+      "rejectChange": "Rechazar cambio",
+      "edit": "Cambiar",
+      "cancel": "Cancelar"
+    },
+    "preview": {
+      "title": "Efecto en los turnos",
+      "loading": "Calculando el nuevo plan …",
+      "none": "Ningún turno afectado.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Fecha",
+      "before": "Antes",
+      "after": "Después",
+      "understaffed": "El {date} solo están ocupadas {filled} de {capacity} plazas.",
+      "staffing": "El {date} solo estarían presentes {present} de al menos {minimum}.",
+      "hint": "Al confirmar, los turnos se redistribuyen a partir de las vacaciones. Las personas afectadas reciben nuevas invitaciones de Outlook."
+    },
+    "done": {
+      "requested": "Vacaciones solicitadas.",
+      "approved": "Vacaciones aprobadas, turnos redistribuidos.",
+      "rejected": "Solicitud rechazada.",
+      "entered": "Vacaciones registradas, turnos redistribuidos.",
+      "changed": "Vacaciones cambiadas, turnos redistribuidos.",
+      "cancelled": "Vacaciones canceladas, turnos redistribuidos.",
+      "withdrawn": "Retirado.",
+      "changeRequested": "Cambio solicitado."
+    }
   }
 }

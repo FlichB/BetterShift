@@ -23,7 +23,8 @@ export type SwapErrorCode =
   | "dutySlotSwapOnly"
   | "closedDuty"
   | "counterNotDue"
-  | "outsideWindow";
+  | "outsideWindow"
+  | "onVacation"; // [fork] Urlaub (SPEC 12.43)
 
 export interface DutyInfo {
   shiftId: string;
@@ -33,6 +34,8 @@ export interface DutyInfo {
   endTime: string;
   isAllDay: boolean;
   title: string;
+  /** The Dienstfrei of this duty stays with its holder on a swap (SPEC 12.42). */
+  dayOffStays: boolean;
 }
 
 export interface Person {
@@ -96,6 +99,7 @@ export interface CalendarSwapState {
   openOffers: { shiftId: string; userId: string }[];
   /** [fork] Dated Dienstfreie of the calendar's rotations (from today − 60 days), titled by the Dienstfrei-Vorlage. */
   dayOffs: { id: string; userId: string; date: string; title: string }[];
+  vacations: { id: string; userId: string; startDate: string; endDate: string; name: string; email: string | null }[]; // [fork] Urlaub
   /** the caller may force swaps in this calendar */
   canForce: boolean;
 }

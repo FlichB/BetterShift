@@ -189,6 +189,8 @@ export function useAuditDescription() {
           });
         case "rotation.lock_removed":
           return t("adminAudit.describe.rotationLockRemoved", { name: text(m, "rotationName") });
+        case "rotation.year_delta_set":
+          return t("adminAudit.describe.rotationYearDeltaSet", { name: text(m, "rotationName"), year: text(m, "year") });
         // [fork] Swap events
         case "swap.offered":
           return t("adminAudit.describe.swapOffered", { date: text(m, "offeredDate"), calendar });
@@ -257,6 +259,29 @@ export function useAuditDescription() {
           return t("adminAudit.describe.dayOffReset", { date: text(m, "dutyDate"), calendar });
         case "dayoff.dropped":
           return t("adminAudit.describe.dayOffDropped", { date: text(m, "dutyDate"), calendar });
+        // [fork] Urlaub
+        case "vacation.requested":
+          return t("adminAudit.describe.vacationRequested", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.approved":
+          return t("adminAudit.describe.vacationApproved", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.rejected":
+          return t("adminAudit.describe.vacationRejected", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.withdrawn":
+          return t("adminAudit.describe.vacationWithdrawn", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.entered":
+          return t("adminAudit.describe.vacationEntered", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.changed":
+          return t("adminAudit.describe.vacationChanged", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.cancelled":
+          return t("adminAudit.describe.vacationCancelled", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.change_requested":
+          return t("adminAudit.describe.vacationChangeRequested", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.change_approved":
+          return t("adminAudit.describe.vacationChangeApproved", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.change_rejected":
+          return t("adminAudit.describe.vacationChangeRejected", { from: text(m, "startDate"), to: text(m, "endDate") });
+        case "vacation.change_withdrawn":
+          return t("adminAudit.describe.vacationChangeWithdrawn", { from: text(m, "startDate"), to: text(m, "endDate") });
       }
       return log.action;
     },

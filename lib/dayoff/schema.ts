@@ -36,6 +36,8 @@ export const dayOffs = sqliteTable(
     agreedByUserId: text("agreed_by_user_id").references(() => user.id, { onDelete: "set null" }),
     lockNote: text("lock_note"),
     dropReason: text("drop_reason").$type<DropReason>(),
+    // The holder gave the Platz away by swap and keeps this Dienstfrei (timing "before", SPEC 12.42).
+    keptOnSwap: integer("kept_on_swap", { mode: "boolean" }).notNull().default(false),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),

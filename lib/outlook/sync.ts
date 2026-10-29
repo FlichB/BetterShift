@@ -2,18 +2,20 @@
 // Local fingerprints decide what changed, so Graph is only called for real differences —
 // including holder changes made through upstream signup routes, which fork code never sees.
 // One event per Platz (spec 12.32); a swap is one cancel plus one create.
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, gte, inArray } from "drizzle-orm"; // [fork] gte
 import { db } from "@/lib/db";
 import { shiftSignups, shifts, user } from "@/lib/db/schema";
 import { formatDateToLocal } from "@/lib/date-utils";
 import type { OutlookSyncFailedMetadata } from "@/lib/outlook/audit";
 import { dayOffs } from "@/lib/dayoff/schema"; // [fork]
 import { entryTitle } from "@/lib/rotation/entry-title"; // [fork]
-import { desiredDayOffEvent, desiredEvents, dutyStartsAt, fingerprint, type DesiredEvent, type DutyForSync, type PlaceEvent } from "@/lib/outlook/desired";
+import { desiredDayOffEvent, desiredEvents, desiredVacationEvent, dutyStartsAt, fingerprint, type DesiredEvent, type DutyForSync, type PlaceEvent } from "@/lib/outlook/desired";
 import { GraphError, type GraphClient, type GraphEvent } from "@/lib/outlook/graph-client";
 import { outlookEvents, type OutlookEvent } from "@/lib/outlook/schema";
 import { hasStarted } from "@/lib/rotation/dates";
-import { rotationDuties, rotations } from "@/lib/rotation/schema";
+import { rotationDuties, rotationMembers, rotations } from "@/lib/rotation/schema"; // [fork] rotationMembers
+import { vacations } from "@/lib/vacation/schema"; // [fork]
+import { vacationTitle } from "@/lib/vacation/title"; // [fork]
 
 export const MAX_CALLS_PER_RUN = 50;
 const BACKOFF_MINUTES = [1, 5, 15, 60];
@@ -124,9 +126,41 @@ export function loadDesiredDayOffs(now: Date, rotationId?: string): PlaceEvent[]
     });
 }
 
+/** [fork] Urlaub: approved vacations of Teilnehmer of Outlook-enabled rotations up to their last day (a running one can still change its end); one event each. */
+export function loadDesiredVacations(now: Date, rotationId?: string): PlaceEvent[] {
+  const today = formatDateToLocal(now);
+  const owners = db
+    .select({ userId: rotationMembers.userId, rotationId: rotations.id, name: rotations.name })
+    .from(rotationMembers)
+    .innerJoin(rotations, eq(rotations.id, rotationMembers.rotationId))
+    .where(eq(rotations.outlookEnabled, true))
+    .all()
+    .sort((a, b) => a.name.localeCompare(b.name) || a.rotationId.localeCompare(b.rotationId));
+  // A person belongs to their first Outlook-enabled rotation by name.
+  const rotationOf = new Map<string, string>();
+  for (const o of owners) if (!rotationOf.has(o.userId)) rotationOf.set(o.userId, o.rotationId);
+  const rows = db
+    .select({ id: vacations.id, userId: vacations.userId, startDate: vacations.startDate, endDate: vacations.endDate, email: user.email, name: user.name })
+    .from(vacations)
+    .innerJoin(user, eq(user.id, vacations.userId))
+    .where(and(eq(vacations.status, "approved"), gte(vacations.endDate, today)))
+    .all();
+  return rows
+    .filter((r) => rotationOf.has(r.userId) && r.email?.trim() && (!rotationId || rotationOf.get(r.userId) === rotationId))
+    .sort((a, b) => a.startDate.localeCompare(b.startDate))
+    .map((r) => {
+      const holder = { userId: r.userId, email: r.email, name: r.name };
+      return desiredVacationEvent({ id: r.id, rotationId: rotationOf.get(r.userId)!, userId: r.userId, startDate: r.startDate, endDate: r.endDate, title: vacationTitle(holder), holder });
+    });
+}
+
 /** Every office@ event the enabled rotations want, nearest first. */
 export function loadDesiredPlaces(now: Date, rotationId?: string): PlaceEvent[] {
-  return [...loadDesiredDuties(now, rotationId).flatMap(desiredEvents), ...loadDesiredDayOffs(now, rotationId)]; // [fork] Dienstfreie
+  return [
+    ...loadDesiredDuties(now, rotationId).flatMap(desiredEvents),
+    ...loadDesiredDayOffs(now, rotationId), // [fork] Dienstfreie
+    ...loadDesiredVacations(now, rotationId), // [fork] Urlaub
+  ];
 }
 
 function markSynced(key: string, values: Partial<OutlookEvent>, now: Date): void {

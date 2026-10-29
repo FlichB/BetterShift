@@ -39,9 +39,15 @@ export async function PUT(request: NextRequest, { params }: Context) {
     const rateLimitResponse = rateLimit(request, user?.id, "bundle-mutations", existing.calendarId);
     if (rateLimitResponse) return rateLimitResponse;
 
-    const parsed = validateRotationInput(await readJson(request));
+    const body = await readJson(request);
+    const parsed = validateRotationInput(body);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
-    const input = parsed.value;
+    // [fork] Jahresausgleich: a caller that leaves the switch out keeps the stored value.
+    const keepsSwitch = (body as Record<string, unknown>).yearlyFairness === undefined; // validated: an object
+    // [fork] Mindestbesetzung: the same for the minimum staffing.
+    const keepsMinPresent = (body as Record<string, unknown>).minPresent === undefined;
+    const kept = keepsSwitch ? { ...parsed.value, yearlyFairness: existing.yearlyFairness } : parsed.value;
+    const input = keepsMinPresent ? { ...kept, minPresent: existing.minPresent } : kept;
     if (input.calendarId !== existing.calendarId) {
       return NextResponse.json({ error: "calendarId" }, { status: 400 });
     }

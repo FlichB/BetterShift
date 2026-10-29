@@ -4,6 +4,7 @@
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { calendars, shiftPresets, shifts, user } from "@/lib/db/schema";
+import type { DayOffTiming } from "@/lib/dayoff/types"; // [fork]
 import type { ReinforcedDate, RotationDutyKind, RotationPeriod, SkipDate } from "@/lib/rotation/types";
 
 export const rotations = sqliteTable(
@@ -36,6 +37,10 @@ export const rotations = sqliteTable(
     // [fork] Dienstfrei (SPEC 12.34): one free weekday per Platz after the duty.
     dayOffEnabled: integer("day_off_enabled", { mode: "boolean" }).notNull().default(false),
     dayOffTitle: text("day_off_title").notNull().default("{Vorname} dienstfrei"),
+    dayOffTiming: text("day_off_timing").$type<DayOffTiming>().notNull().default("after"), // [fork] SPEC 12.42
+    // [fork] Jahresausgleich (SPEC 12.41): cut rounds at year ends and settle the previous year's Delta.
+    yearlyFairness: integer("yearly_fairness", { mode: "boolean" }).notNull().default(false),
+    minPresent: integer("min_present"), // [fork] Mindestbesetzung an Werktagen, null = off (SPEC 12.44)
     // [fork phase 3] Mirror this rotation's duties into the office@ calendar (spec 12.24).
     outlookEnabled: integer("outlook_enabled", { mode: "boolean" }).notNull().default(false),
     createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
@@ -61,6 +66,9 @@ export const rotationMembers = sqliteTable(
     position: integer("position").notNull(),
     // [fork] Dienstfrei per Teilnehmer (SPEC 12.40): false = no Dienstfrei, e.g. an all-in contract.
     dayOff: integer("day_off", { mode: "boolean" }).notNull().default(true),
+    // [fork] Jahresausgleich (SPEC 12.41): since when this person is a Teilnehmer (local YYYY-MM-DD).
+    // Always written by writeMembers; the empty default only exists for the migration backfill.
+    joinedOn: text("joined_on").notNull().default(""),
   },
   (table) => [primaryKey({ columns: [table.rotationId, table.userId] })]
 );
@@ -97,6 +105,26 @@ export const rotationSlotLocks = sqliteTable(
       .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [primaryKey({ columns: [table.shiftId, table.userId] })]
+);
+
+/** [fork] Jahresausgleich (SPEC 12.41): a manager's Delta for `year` (the year that settles it). Automatic values are never stored. */
+export const rotationYearDeltas = sqliteTable(
+  "rotation_year_deltas",
+  {
+    rotationId: text("rotation_id")
+      .notNull()
+      .references(() => rotations.id, { onDelete: "cascade" }),
+    year: integer("year").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    delta: integer("delta").notNull(),
+    setBy: text("set_by").references(() => user.id, { onDelete: "set null" }),
+    setAt: integer("set_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [primaryKey({ columns: [table.rotationId, table.year, table.userId] })]
 );
 
 export type Rotation = typeof rotations.$inferSelect;

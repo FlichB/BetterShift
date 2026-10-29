@@ -7,6 +7,7 @@ import { buildPersonalFeed, isUserBanned, loadPersonalDayOffs, loadPersonalDutie
 import { dayOffs } from "@/lib/dayoff/schema";
 import { reconcileRotation } from "@/lib/dayoff/service";
 import { rotations } from "@/lib/rotation/schema";
+import { vacations } from "@/lib/vacation/schema";
 import { acceptOffer, createOffer } from "@/lib/swap/service";
 import { now, seedDuties } from "@/lib/swap/__tests__/fixtures";
 
@@ -98,5 +99,16 @@ describe("buildPersonalFeed", () => {
     db.transaction((tx) => reconcileRotation(tx, s.rotation.id, now));
     db.update(dayOffs).set({ shiftId: null }).where(and(eq(dayOffs.userId, s.m0), eq(dayOffs.dutyDate, "2026-11-07"))).run();
     expect((await loadPersonalDayOffs(s.m0, now)).map((d) => d.date)).toEqual(["2026-12-14"]);
+  });
+
+  it("[fork] lists approved vacations as one multi-day event", async () => {
+    db.insert(vacations).values({ userId: s.m0, startDate: "2026-12-07", endDate: "2026-12-11", status: "approved", requestedBy: s.m0 }).run();
+    db.insert(vacations).values({ userId: s.m0, startDate: "2026-12-21", endDate: "2026-12-23", status: "pending", requestedBy: s.m0 }).run();
+    const ics = await buildPersonalFeed(s.m0, now);
+    expect(ics).toMatch(/UID:vacation-[^\r\n]+-me/);
+    expect(ics.match(/UID:vacation-/g)).toHaveLength(1);
+    expect(ics).toContain("DTSTART;VALUE=DATE:20261207");
+    expect(ics).toContain("DTEND;VALUE=DATE:20261212");
+    expect(ics).toMatch(/Urlaub verwalten: https?:\/\/.+\/swaps\?tab=vacation/);
   });
 });

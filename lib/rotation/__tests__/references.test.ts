@@ -27,7 +27,10 @@ beforeEach(() => {
     entryTitle: "{Vorname} Dienst",
     dayOffEnabled: false,
     dayOffTitle: "{Vorname} dienstfrei",
+    dayOffTiming: "after",
     dayOffExcludedIds: [],
+    yearlyFairness: false,
+    minPresent: null,
     reinforcedDates: [],
   };
 });

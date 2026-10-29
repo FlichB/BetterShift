@@ -12,6 +12,7 @@ import { ChoiceChips, Field, ToggleRow, inputClass } from "@/components/form-kit
 import { ENTRY_TITLE_MAX, entryTitle, validateEntryTitle } from "@/lib/rotation/entry-title"; // [fork] Dienstfrei
 import { EntryTitleField } from "@/components/rotation/entry-title-field";
 import { MemberOrderList } from "@/components/rotation/member-order-list";
+import { YearDeltaPanel } from "@/components/rotation/year-delta-panel"; // [fork] Jahresausgleich
 import { useRotationForm } from "@/components/rotation/use-rotation-form";
 import { fetchSuggestedOffset, RotationApiError, useSaveRotation, type RotationCalendar } from "@/hooks/useRotations";
 import { useCalendars } from "@/hooks/useCalendars";
@@ -19,6 +20,7 @@ import { handleRateLimitError } from "@/lib/rate-limit-client";
 import { formatDateToLocal } from "@/lib/date-utils";
 import type { RotationDetail } from "@/lib/rotation/service";
 import type { RotationPeriod } from "@/lib/rotation/types";
+import type { DayOffTiming } from "@/lib/dayoff/types"; // [fork] SPEC 12.42
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
@@ -289,6 +291,19 @@ export function RotationForm({
           onCheckedChange={(checked) => set("dayOffEnabled", checked)}
         />
         {state.dayOffEnabled && (
+          <Field label={t("rotation.fields.dayOffTiming")} htmlFor="rotation-day-off-timing" hint={t("rotation.fields.dayOffTimingHint")}>
+            <Select value={state.dayOffTiming} onValueChange={(v) => set("dayOffTiming", v as DayOffTiming)}>
+              <SelectTrigger id="rotation-day-off-timing" className={cn(inputClass, "w-full")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="after">{t("rotation.fields.dayOffTimingAfter")}</SelectItem>
+                <SelectItem value="before">{t("rotation.fields.dayOffTimingBefore")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
+        {state.dayOffEnabled && (
           <Field label={t("rotation.fields.dayOffTitle")} htmlFor="rotation-day-off-title">
             <Input
               id="rotation-day-off-title"
@@ -323,6 +338,47 @@ export function RotationForm({
             </ul>
           </Field>
         )}
+      </div>
+
+      {/* [fork] Mindestbesetzung an Werktagen (SPEC 12.44) */}
+      <div className="space-y-3 rounded-[11px] border border-control px-3.5 py-2.5">
+        <ToggleRow
+          id="rotation-min-present"
+          title={t("rotation.fields.minPresentEnabled")}
+          description={t("rotation.fields.minPresentEnabledHint")}
+          checked={state.minPresent !== null}
+          onCheckedChange={(checked) => set("minPresent", checked ? Math.max(1, state.memberIds.length - 1) : null)}
+          disabled={state.memberIds.length < 2 && state.minPresent === null}
+        />
+        {state.minPresent !== null && (
+          <Field
+            label={t("rotation.fields.minPresent")}
+            hint={t("rotation.fields.minPresentHint", { count: state.memberIds.length })}
+            htmlFor="rotation-min-present-value"
+          >
+            <Input
+              id="rotation-min-present-value"
+              type="number"
+              min={1}
+              max={Math.max(1, state.memberIds.length - 1)}
+              value={state.minPresent}
+              onChange={(e) => set("minPresent", e.target.value === "" ? 1 : Number(e.target.value))}
+              className={inputClass}
+            />
+          </Field>
+        )}
+      </div>
+
+      {/* [fork] Jahresausgleich (SPEC 12.41) */}
+      <div className="space-y-3 rounded-[11px] border border-control px-3.5 py-2.5">
+        <ToggleRow
+          id="rotation-yearly-fairness"
+          title={t("rotation.fields.yearlyFairness")}
+          description={t("rotation.fields.yearlyFairnessHint")}
+          checked={state.yearlyFairness}
+          onCheckedChange={(checked) => set("yearlyFairness", checked)}
+        />
+        {rotation && state.yearlyFairness && <YearDeltaPanel rotationId={rotation.id} members={calendar.members} />}
       </div>
 
       <Field label={t("rotation.fields.closedTitle")} hint={t("rotation.fields.closedTitleHint")}>

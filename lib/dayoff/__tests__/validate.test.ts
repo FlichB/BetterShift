@@ -1,7 +1,7 @@
 // [fork] Dienstfrei request validators and the move permission for non-members.
 import { describe, expect, it } from "vitest";
 import { canMoveOwnDayOff } from "@/lib/dayoff/permissions";
-import { validateDate, validateDates, validateDecline, validateLock } from "@/lib/dayoff/validate";
+import { validateCounter, validateDate, validateDates, validateDecline, validateLock, validateOverride } from "@/lib/dayoff/validate";
 import { seedDuties } from "@/lib/swap/__tests__/fixtures";
 
 describe("dayoff validators", () => {
@@ -43,5 +43,18 @@ describe("canMoveOwnDayOff", () => {
   it("is false for a user who is not a member of the calendar", async () => {
     const s = await seedDuties();
     expect(await canMoveOwnDayOff("not-a-member", s.team.calendarId)).toBe(false);
+  });
+});
+
+describe("override bodies (SPEC 12.44)", () => {
+  it("counter: date with optional override", () => {
+    expect(validateCounter({ date: "2026-11-18" })).toEqual({ ok: true, value: { date: "2026-11-18", override: false } });
+    expect(validateCounter({ date: "2026-11-18", override: true })).toEqual({ ok: true, value: { date: "2026-11-18", override: true } });
+    expect(validateCounter({ date: "2026-11-18", override: "yes" })).toEqual({ ok: false, error: "invalid" });
+  });
+  it("accept: empty body or override flag", () => {
+    expect(validateOverride(undefined)).toEqual({ ok: true, value: { override: false } });
+    expect(validateOverride({ override: true })).toEqual({ ok: true, value: { override: true } });
+    expect(validateOverride({ override: 1 })).toEqual({ ok: false, error: "invalid" });
   });
 });

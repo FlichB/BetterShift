@@ -12,6 +12,8 @@ import { getAppUrl } from "@/lib/outlook/config";
 import { entryTitle } from "@/lib/rotation/entry-title";
 import { addDays } from "@/lib/rotation/dates";
 import { rotationDuties, rotations } from "@/lib/rotation/schema";
+import { vacations } from "@/lib/vacation/schema"; // [fork]
+import { vacationTitle } from "@/lib/vacation/title"; // [fork]
 
 export const PERSONAL_FEED_PAST_DAYS = 60;
 
@@ -119,6 +121,18 @@ export async function loadPersonalDayOffs(userId: string, now: Date): Promise<Pe
     .map((r) => ({ id: r.id, date: r.date!, title: entryTitle(r.template, me, r.dutyTitle ?? "") }));
 }
 
+/** [fork] Urlaub: the user's approved vacations ending in the last 60 days or later. */
+export function loadPersonalVacations(userId: string, now: Date): { id: string; startDate: string; endDate: string; title: string }[] {
+  const from = addDays(formatDateToLocal(now), -PERSONAL_FEED_PAST_DAYS);
+  const me = db.select({ name: user.name, email: user.email }).from(user).where(eq(user.id, userId)).get() ?? { name: null, email: null };
+  return db
+    .select({ id: vacations.id, startDate: vacations.startDate, endDate: vacations.endDate })
+    .from(vacations)
+    .where(and(eq(vacations.userId, userId), eq(vacations.status, "approved"), gte(vacations.endDate, from)))
+    .all()
+    .map((v) => ({ ...v, title: vacationTitle(me) }));
+}
+
 export async function buildPersonalFeed(userId: string, now: Date): Promise<string> {
   const { t, locale } = await getMailTranslator();
   const { calendars, duties } = await loadPersonalDuties(userId, now);
@@ -130,6 +144,8 @@ export async function buildPersonalFeed(userId: string, now: Date): Promise<stri
     summary: d.title,
     description: dayOffLine,
   }));
+  const vacationLine = t("personalFeed.vacationLink", { url: `${getAppUrl()}/swaps?tab=vacation` }); // [fork] Urlaub
+  const vacationEvents = loadPersonalVacations(userId, now).map((v) => ({ uid: `vacation-${v.id}-me`, date: v.startDate, endDate: v.endDate, summary: v.title, description: vacationLine }));
   const extraLines = new Map(
     duties.map((d) => [
       d.shiftId,
@@ -146,7 +162,7 @@ export async function buildPersonalFeed(userId: string, now: Date): Promise<stri
       uidSuffix: "-me",
       calendarName: t("personalFeed.calendarName"),
       titles: new Map(duties.map((d) => [d.shiftId, d.title])),
-      extraEvents: dayOffEvents, // [fork]
+      extraEvents: [...dayOffEvents, ...vacationEvents], // [fork]
     },
   });
 }

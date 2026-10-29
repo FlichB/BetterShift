@@ -239,3 +239,17 @@ describe("capacity per duty", () => {
     expect(plan.warnings).toEqual([{ kind: "lockedOverCapacity", shiftId: current.shiftId, date: "2026-12-19", userIds: ["a", "b", "c"], capacity: 2 }]);
   });
 });
+
+it("[fork] warns when a desired duty has fewer holders than Plätze", () => {
+  const result = planGeneration({
+    desired: [{ date: "2027-04-03", userIds: ["a"], capacity: 2 }],
+    existing: [],
+    template,
+    presetId: "p",
+    memberIds: ["a", "b"],
+    perShift: 2,
+    now,
+  });
+  expect(result.entries[0]).toMatchObject({ kind: "create", userIds: ["a"], capacity: 2 });
+  expect(result.warnings).toContainEqual({ kind: "understaffed", shiftId: null, date: "2027-04-03", capacity: 2, filled: 1 });
+});

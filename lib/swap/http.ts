@@ -28,6 +28,7 @@ const STATUS: Record<SwapErrorCode, number> = {
   duplicateOffer: 409,
   counterNotDue: 409,
   outsideWindow: 409,
+  onVacation: 409, // [fork]
 };
 
 export const swapError = (code: SwapErrorCode) => NextResponse.json({ error: code }, { status: STATUS[code] });

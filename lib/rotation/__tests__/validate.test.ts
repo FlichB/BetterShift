@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkPastReinforcedDates, validateRange, validateRotationInput } from "@/lib/rotation/validate";
+import { checkPastReinforcedDates, validateRange, validateRotationInput, validateYearDeltaOverride } from "@/lib/rotation/validate";
 
 const valid = {
   name: "Samstagsdienst",
@@ -19,7 +19,10 @@ const valid = {
   entryTitle: "{Vorname} Dienst",
   dayOffEnabled: false,
   dayOffTitle: "{Vorname} dienstfrei",
+  dayOffTiming: "after",
   dayOffExcludedIds: [] as string[],
+  yearlyFairness: false,
+  minPresent: null as number | null,
   reinforcedDates: [] as { date: string; perShift: number }[],
 };
 
@@ -194,6 +197,17 @@ describe("checkPastReinforcedDates", () => {
 
 // [fork] Dienstfrei
 describe("dayOff fields", () => {
+  it("defaults dayOffTiming to after and accepts before", () => {
+    const b: Record<string, unknown> = { ...valid };
+    delete b.dayOffTiming;
+    const r = validateRotationInput(b);
+    expect(r.ok && r.value.dayOffTiming).toBe("after");
+    const r2 = validateRotationInput({ ...valid, dayOffTiming: "before" });
+    expect(r2.ok && r2.value.dayOffTiming).toBe("before");
+  });
+  it("rejects an unknown dayOffTiming", () => {
+    expect(validateRotationInput({ ...valid, dayOffTiming: "monday" })).toEqual({ ok: false, error: "dayOffTiming" });
+  });
   it("default to off with the standard template", () => {
     const body: Record<string, unknown> = { ...valid };
     delete body.dayOffEnabled;
@@ -212,5 +226,54 @@ describe("dayOff fields", () => {
     expect(excluded.ok && excluded.value.dayOffExcludedIds).toEqual([valid.memberIds[1]]);
     expect(validateRotationInput({ ...valid, dayOffExcludedIds: ["stranger"] })).toEqual({ ok: false, error: "dayOffExcluded" });
     expect(validateRotationInput({ ...valid, dayOffExcludedIds: "u1" })).toEqual({ ok: false, error: "dayOffExcluded" });
+  });
+});
+
+describe("yearlyFairness", () => {
+  it("defaults to false and must be a boolean", () => {
+    const ok = validateRotationInput({ ...valid });
+    expect(ok.ok && ok.value.yearlyFairness).toBe(false);
+    const on = validateRotationInput({ ...valid, yearlyFairness: true });
+    expect(on.ok && on.value.yearlyFairness).toBe(true);
+    expect(validateRotationInput({ ...valid, yearlyFairness: "yes" })).toEqual({ ok: false, error: "yearlyFairness" });
+  });
+});
+
+describe("validateYearDeltaOverride", () => {
+  it("accepts 0–52 or null for a year and user", () => {
+    expect(validateYearDeltaOverride({ year: 2027, userId: "u", delta: 3 })).toEqual({ ok: true, value: { year: 2027, userId: "u", delta: 3 } });
+    expect(validateYearDeltaOverride({ year: 2027, userId: "u", delta: null })).toEqual({ ok: true, value: { year: 2027, userId: "u", delta: null } });
+  });
+
+  it.each([
+    [{ year: 2027, userId: "u", delta: -1 }],
+    [{ year: 2027, userId: "u", delta: 53 }],
+    [{ year: 2027, userId: "u", delta: 1.5 }],
+    [{ year: 1999, userId: "u", delta: 1 }],
+    [{ year: 2027, userId: "", delta: 1 }],
+    [{ year: 2027, userId: "u" }],
+    [null],
+  ])("rejects %j", (body) => {
+    expect(validateYearDeltaOverride(body)).toEqual({ ok: false, error: "yearDelta" });
+  });
+});
+
+describe("minPresent", () => {
+  it("defaults minPresent to null (off)", () => {
+    const { minPresent, ...rest } = valid;
+    void minPresent;
+    const r = validateRotationInput(rest);
+    expect(r.ok && r.value.minPresent).toBeNull();
+  });
+  it("accepts minPresent between 1 and Teilnehmer - 1", () => {
+    for (const n of [1, valid.memberIds.length - 1]) {
+      const r = validateRotationInput({ ...valid, minPresent: n });
+      expect(r.ok && r.value.minPresent).toBe(n);
+    }
+  });
+  it("rejects minPresent outside 1 … Teilnehmer - 1 or not an integer", () => {
+    for (const n of [0, valid.memberIds.length, 2.5, "3"]) {
+      expect(validateRotationInput({ ...valid, minPresent: n })).toEqual({ ok: false, error: "minPresent" });
+    }
   });
 });

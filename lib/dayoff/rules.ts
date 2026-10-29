@@ -1,5 +1,5 @@
 // [fork] Dienstfrei rules (design 3). Pure: no database.
-import type { DayOffErrorCode, DayOffStatus } from "@/lib/dayoff/types";
+import type { DayOffErrorCode, DayOffStatus, DayOffTiming } from "@/lib/dayoff/types";
 import { MAX_DATES_PER_PROPOSAL, MAX_OPEN_PROPOSALS } from "@/lib/dayoff/types";
 import { addDays, fromDayNumber, isoWeekday, mondayOf, toDayNumber } from "@/lib/rotation/dates";
 import { counterWindowEnd } from "@/lib/swap/rules";
@@ -27,10 +27,19 @@ export function makeIsOff(closed: ReadonlySet<string>, taken: ReadonlySet<string
   fn.closedOnly = closedOnly;
   return fn;
 }
+/** Never full: the default when no Mindestbesetzung applies. */
+export const never: IsOff = () => false;
 const closedPart = (isOff: IsOff): IsOff => (isOff as IsOff & { closedOnly?: IsOff }).closedOnly ?? isOff;
 
-/** First Arbeitstag after the duty, across week boundaries (SPEC 12.35). */
-export function standardDate(dutyDate: string, isOff: IsOff): string {
+/**
+ * First Arbeitstag after the duty, across week boundaries (SPEC 12.35). With timing "before"
+ * the first Arbeitstag of the duty week before the duty day comes first (SPEC 12.42).
+ */
+export function standardDate(dutyDate: string, isOff: IsOff, timing: DayOffTiming = "after"): string {
+  if (timing === "before") {
+    const before = daysBefore(dutyDate).find((d) => !isOff(d));
+    if (before) return before;
+  }
   for (let i = 1; i <= MAX_SEARCH_DAYS; i++) {
     const date = addDays(dutyDate, i);
     if (!isOff(date)) return date;
@@ -38,9 +47,31 @@ export function standardDate(dutyDate: string, isOff: IsOff): string {
   return addDays(dutyDate, 1);
 }
 
+/**
+ * Date of a standard Dienstfrei (SPEC 12.44): the standard search that also skips full days.
+ * Falls back to the Standardtag `std` when no free day is found.
+ */
+export function placeStandard(dutyDate: string, base: IsOff, isFull: IsOff, timing: DayOffTiming, std: string): string {
+  const date = standardDate(dutyDate, (d) => base(d) || isFull(d), timing);
+  return base(date) || isFull(date) ? std : date;
+}
+
 export function weekOf(date: string): string[] {
   const monday = fromDayNumber(mondayOf(toDayNumber(date)));
   return [0, 1, 2, 3, 4].map((i) => addDays(monday, i));
+}
+
+/** Mo–Fr of the duty week that lie before the duty day. */
+function daysBefore(dutyDate: string): string[] {
+  return weekOf(dutyDate).filter((d) => d < dutyDate);
+}
+
+/** Days the holder may move a Dienstfrei to: the week before the duty, or the standard day's week after it. */
+export function moveRange(row: Pick<DayOffState, "dutyDate" | "standardDate">, timing: DayOffTiming): string[] {
+  if (!row.standardDate) return [];
+  if (timing === "before" && row.standardDate < row.dutyDate) return daysBefore(row.dutyDate);
+  // A weekday duty's week starts before it: only days after the duty count.
+  return weekOf(row.standardDate).filter((d) => d > row.dutyDate);
 }
 
 /** Why a date can't hold a Dienstfrei, or null. Order: begun, weekend/closed, taken. */
@@ -51,15 +82,15 @@ function dateError(date: string, closedOnly: IsOff, isOff: IsOff, today: string)
   return null;
 }
 
-export function checkMove(row: DayOffState, target: string, isOff: IsOff, today: string): RuleResult<{ status: "standard" | "moved"; date: string }> {
+export function checkMove(row: DayOffState, target: string, isOff: IsOff, today: string, timing: DayOffTiming = "after", isFull: IsOff = never): RuleResult<{ status: "standard" | "moved"; date: string }> {
   if (row.status !== "standard" && row.status !== "moved") return fail("wrongStatus");
   if (!row.date || !row.standardDate) return fail("wrongStatus");
   if (row.date <= today) return fail("alreadyStarted");
-  // A weekday duty's week starts before it: only days after the duty count.
-  if (!weekOf(row.standardDate).includes(target) || target <= row.dutyDate) return fail("outsideWeek");
+  if (!moveRange(row, timing).includes(target)) return fail("outsideWeek");
   if (target !== row.date) {
     const error = dateError(target, closedPart(isOff), isOff, today);
     if (error) return fail(error);
+    if (isFull(target)) return fail("belowMinimum");
   }
   return ok({ status: target === row.standardDate ? "standard" : "moved", date: target });
 }
@@ -70,7 +101,7 @@ export function checkLock(row: DayOffState, today: string): RuleResult<null> {
   return ok(null);
 }
 
-export function checkProposeDates(row: DayOffState, dates: string[], openDates: string[], isOff: IsOff, today: string): RuleResult<string[]> {
+export function checkProposeDates(row: DayOffState, dates: string[], openDates: string[], isOff: IsOff, today: string, isFull: IsOff = never): RuleResult<string[]> {
   if (row.status !== "locked" && row.status !== "agreed") return fail("wrongStatus");
   // A consumed agreed Dienstfrei is history; it cannot be renegotiated.
   if (row.status === "agreed" && row.date && row.date <= today) return fail("alreadyStarted");
@@ -82,26 +113,29 @@ export function checkProposeDates(row: DayOffState, dates: string[], openDates: 
     if (openDates.includes(date) || date === row.date) return fail("duplicate");
     const error = dateError(date, closedPart(isOff), isOff, today);
     if (error) return fail(error);
+    if (isFull(date)) return fail("belowMinimum");
     if (date > windowEnd) return fail("outsideWindow");
   }
   return ok(unique);
 }
 
-export function checkCounter(row: DayOffState, date: string, openDates: string[], isOff: IsOff, today: string): RuleResult<string> {
+export function checkCounter(row: DayOffState, date: string, openDates: string[], isOff: IsOff, today: string, isFull: IsOff = never): RuleResult<string> {
   if (row.status !== "locked" && row.status !== "agreed") return fail("wrongStatus");
   // A consumed agreed Dienstfrei is history; it cannot be renegotiated.
   if (row.status === "agreed" && row.date && row.date <= today) return fail("alreadyStarted");
   if (openDates.includes(date) || date === row.date) return fail("duplicate");
   const error = dateError(date, closedPart(isOff), isOff, today);
-  return error ? fail(error) : ok(date);
+  if (error) return fail(error);
+  return isFull(date) ? fail("belowMinimum") : ok(date);
 }
 
-export function checkAcceptDate(row: DayOffState, date: string, isOff: IsOff, today: string): RuleResult<string> {
+export function checkAcceptDate(row: DayOffState, date: string, isOff: IsOff, today: string, isFull: IsOff = never): RuleResult<string> {
   if (row.status !== "locked" && row.status !== "agreed") return fail("wrongStatus");
   // A consumed agreed Dienstfrei is history; it cannot be renegotiated.
   if (row.status === "agreed" && row.date && row.date <= today) return fail("alreadyStarted");
   const error = dateError(date, closedPart(isOff), isOff, today);
-  return error ? fail(error) : ok(date);
+  if (error) return fail(error);
+  return isFull(date) ? fail("belowMinimum") : ok(date);
 }
 
 export function transferStatus(status: DayOffStatus): "standard" | "locked" | null {
@@ -111,15 +145,21 @@ export function transferStatus(status: DayOffStatus): "standard" | "locked" | nu
 }
 
 /** SPEC 12.38: re-checks a non-frozen row against the current Arbeitstage. */
-export function revalidate(row: DayOffState, isOff: IsOff, today: string): Revalidated {
+export function revalidate(row: DayOffState, isOff: IsOff, today: string, timing: DayOffTiming = "after", isFull: IsOff = never): Revalidated {
   // A not-yet-taken Dienstfrei is never recomputed onto today or the past.
-  const std = standardDate(row.dutyDate, (d) => d <= today || isOff(d));
+  const base: IsOff = (d) => d <= today || isOff(d);
+  const std = standardDate(row.dutyDate, base, timing);
+  // Standard Dienstfreie avoid full days; moved and agreed ones are never displaced (SPEC 12.44).
+  const placed = placeStandard(row.dutyDate, base, isFull, timing, std);
   const invalid = (date: string | null) => !date || date <= today || isOff(date);
   switch (row.status) {
     case "standard":
-      return { status: "standard", date: std, standardDate: std, notify: null };
+      return { status: "standard", date: placed, standardDate: std, notify: null };
     case "moved":
-      if (invalid(row.date)) return { status: "standard", date: std, standardDate: std, notify: "reset" };
+      // Begun, or outside the range of the current timing (e.g. after switching it): back to standard (SPEC 12.42).
+      // Under "after" only a day on or before the duty is outside; the recomputed week is not re-checked.
+      if (!row.date || invalid(row.date) || (timing === "before" ? !moveRange({ dutyDate: row.dutyDate, standardDate: std }, timing).includes(row.date) : row.date <= row.dutyDate))
+        return { status: "standard", date: placed, standardDate: std, notify: "reset" };
       // Still valid but now the standard day itself: same day for the holder, so it is standard again.
       if (row.date === std) return { status: "standard", date: std, standardDate: std, notify: null };
       return { status: "moved", date: row.date, standardDate: std, notify: null };

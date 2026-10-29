@@ -31,6 +31,13 @@ export interface ReinforcedDate {
   perShift: number;
 }
 
+/** [fork] Urlaub (SPEC 12.43): an approved vacation of a Teilnehmer, both ends inclusive. */
+export interface Absence {
+  userId: string;
+  from: string;
+  to: string;
+}
+
 /** Everything the round-robin needs; no database identifiers beyond user ids. */
 export interface RotationRule {
   /** Teilnehmer in rotation order (index = position). */
@@ -51,6 +58,24 @@ export interface RotationRule {
   openHolidays: Holiday[];
   /** Verstärkte Tage; on these dates a duty has perShift Plätze instead of rule.perShift. */
   reinforcedDates: ReinforcedDate[];
+  // [fork] Jahresausgleich (SPEC 12.41); all optional, absent = off.
+  yearlyFairness?: boolean;
+  /** userId → since when a Teilnehmer (local YYYY-MM-DD); absent = since forever. */
+  memberSince?: Record<string, string>;
+  /** Real holders per Diensttag where the database knows them; win over the plan when counting Plätze. */
+  heldDuties?: Record<string, string[]>;
+  /** Year that settles → userId → Delta set by a manager. */
+  deltaOverrides?: Record<number, Record<string, number>>;
+  /** [fork] Urlaub: approved vacations; a Teilnehmer gets no Platz on a duty touching one. */
+  absences?: Absence[];
+  /**
+   * [fork] Urlaub: a duty whose period ends before this date keeps its holders from frozenDuties
+   * (when given there); only read together with absences. Replanning from a date sets it so the
+   * rest of a round cannot move a Platz into a duty that is no longer rewritten.
+   */
+  frozenBefore?: string;
+  /** [fork] Urlaub: holders per Diensttag before frozenBefore, as the plan sees them (a swap's taker counts as the one replaced). */
+  frozenDuties?: Record<string, string[]>;
 }
 
 export interface PlannedDuty {

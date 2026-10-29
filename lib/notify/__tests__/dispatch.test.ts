@@ -49,7 +49,7 @@ describe("dispatchNotifications", () => {
   });
 
   it("respects switched-off preferences", async () => {
-    setPreferences(s.m2, { offersToAll: false, offersToMe: true, myOffers: true, myDayOffs: true, dayOffRequests: true });
+    setPreferences(s.m2, { offersToAll: false, offersToMe: true, myOffers: true, myDayOffs: true, dayOffRequests: true, myVacations: true, vacationRequests: true });
     createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     await dispatch();
     expect(graph.mails[0].bcc).not.toContain(emailOf(s.m2));
@@ -77,7 +77,7 @@ describe("dispatchNotifications", () => {
     const withdrawn = createOffer(offer(s.duty("2026-11-07")), s.m0, now);
     withdrawOffer(withdrawn.id, s.m0, now);
     const lonely = createOffer(offer(s.duty("2026-11-14"), s.m4), s.m2, now);
-    setPreferences(s.m4, { offersToAll: true, offersToMe: false, myOffers: true, myDayOffs: true, dayOffRequests: true });
+    setPreferences(s.m4, { offersToAll: true, offersToMe: false, myOffers: true, myDayOffs: true, dayOffRequests: true, myVacations: true, vacationRequests: true });
     expect(await dispatch()).toMatchObject({ sent: 0, skipped: 2 });
     expect(statusOf(withdrawn.id)).toEqual([{ kind: "offer_to_all", status: "skipped" }]);
     expect(statusOf(lonely.id)).toEqual([{ kind: "offer_to_me", status: "skipped" }]);

@@ -10,6 +10,8 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = {
   myOffers: true,
   myDayOffs: true,
   dayOffRequests: true,
+  myVacations: true,
+  vacationRequests: true,
 };
 
 export function preferenceFor(kind: NotificationKind): keyof NotificationPreferences {
@@ -37,6 +39,8 @@ export function getPreferences(userId: string): NotificationPreferences {
         myOffers: row.myOffers,
         myDayOffs: row.myDayOffs,
         dayOffRequests: row.dayOffRequests,
+        myVacations: row.myVacations,
+        vacationRequests: row.vacationRequests,
       }
     : { ...DEFAULT_PREFERENCES };
 }
@@ -49,11 +53,11 @@ export function setPreferences(userId: string, prefs: NotificationPreferences): 
   return prefs;
 }
 
-/** Exactly the five boolean switches; anything else is rejected. */
+/** Exactly the seven boolean switches; anything else is rejected. */
 export function validatePreferences(body: unknown): NotificationPreferences | null {
   if (typeof body !== "object" || body === null) return null;
-  const { offersToAll, offersToMe, myOffers, myDayOffs, dayOffRequests } = body as Record<string, unknown>;
-  const flags = [offersToAll, offersToMe, myOffers, myDayOffs, dayOffRequests];
+  const { offersToAll, offersToMe, myOffers, myDayOffs, dayOffRequests, myVacations, vacationRequests } = body as Record<string, unknown>;
+  const flags = [offersToAll, offersToMe, myOffers, myDayOffs, dayOffRequests, myVacations, vacationRequests];
   if (!flags.every((flag) => typeof flag === "boolean")) return null;
-  return { offersToAll, offersToMe, myOffers, myDayOffs, dayOffRequests } as NotificationPreferences;
+  return { offersToAll, offersToMe, myOffers, myDayOffs, dayOffRequests, myVacations, vacationRequests } as NotificationPreferences;
 }

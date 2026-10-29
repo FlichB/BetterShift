@@ -1145,14 +1145,14 @@
       "personalFeedCreated": "Created personal calendar feed",
       "personalFeedRotated": "Regenerated personal calendar feed",
       "personalFeedRevoked": "Revoked personal calendar feed",
-      "dayOffMoved": "Day off after the duty on {date} moved from {from} to {to} ({calendar})",
-      "dayOffLocked": "Day off after the duty on {date} locked ({calendar})",
-      "dayOffProposed": "Dates proposed for the day off after the duty on {date}: {dates} ({calendar})",
-      "dayOffCountered": "Counter-proposal {to} for the day off after the duty on {date} ({calendar})",
-      "dayOffAccepted": "Day off after the duty on {date} agreed for {to} ({calendar})",
-      "dayOffDeclined": "Proposal {to} for the day off after the duty on {date} declined ({calendar})",
-      "dayOffReset": "Day off after the duty on {date} reset ({calendar})",
-      "dayOffDropped": "Day off after the duty on {date} dropped ({calendar})",
+      "dayOffMoved": "Day off for the duty on {date} moved from {from} to {to} ({calendar})",
+      "dayOffLocked": "Day off for the duty on {date} locked ({calendar})",
+      "dayOffProposed": "Dates proposed for the day off for the duty on {date}: {dates} ({calendar})",
+      "dayOffCountered": "Counter-proposal {to} for the day off for the duty on {date} ({calendar})",
+      "dayOffAccepted": "Day off for the duty on {date} agreed for {to} ({calendar})",
+      "dayOffDeclined": "Proposal {to} for the day off for the duty on {date} declined ({calendar})",
+      "dayOffReset": "Day off for the duty on {date} reset ({calendar})",
+      "dayOffDropped": "Day off for the duty on {date} dropped ({calendar})",
       "userBanned": "{user} banned",
       "userBannedPermanently": "{user} banned permanently",
       "userUnbanned": "Ban lifted for {user}",
@@ -1194,7 +1194,19 @@
       "telemetrySendFailed": "Sending telemetry manually failed",
       "telemetryAutoSent": "Telemetry sent automatically",
       "telemetryAutoSendFailed": "Sending telemetry automatically failed",
-      "dayOffNotificationFailed": "Day-off mail could not be sent ({kind})"
+      "dayOffNotificationFailed": "Day-off mail could not be sent ({kind})",
+      "rotationYearDeltaSet": "Rotation “{name}”: delta for {year} changed",
+      "vacationRequested": "Vacation {from}–{to} requested",
+      "vacationApproved": "Vacation {from}–{to} approved",
+      "vacationRejected": "Vacation {from}–{to} rejected",
+      "vacationWithdrawn": "Vacation {from}–{to} withdrawn",
+      "vacationEntered": "Vacation {from}–{to} entered",
+      "vacationChanged": "Vacation {from}–{to} changed",
+      "vacationCancelled": "Vacation {from}–{to} cancelled",
+      "vacationChangeRequested": "Change to vacation {from}–{to} requested",
+      "vacationChangeApproved": "Change to vacation {from}–{to} approved",
+      "vacationChangeRejected": "Change to vacation {from}–{to} rejected",
+      "vacationChangeWithdrawn": "Change to vacation {from}–{to} withdrawn"
     }
   },
   "adminUsers": {
@@ -1435,11 +1447,21 @@
       "closedTitleHint": "Shown on closure days as \"Text (reason)\", e.g. \"Closed (Christmas Day)\".",
       "entryTitle": "Entry template",
       "entryTitleHint": "This is what each Platz is called in the calendar and in Outlook.",
-      "dayOffEnabled": "Day off after duty",
-      "dayOffEnabledHint": "Every seat gets the next working day (Mon–Fri) after the duty off.",
+      "dayOffEnabled": "Day off for each duty",
+      "dayOffEnabledHint": "Every seat gets one free working day (Mon–Fri).",
+      "dayOffTiming": "Day off falls",
+      "dayOffTimingAfter": "after the duty (next working day)",
+      "dayOffTimingBefore": "before the duty (Monday of the duty week)",
+      "dayOffTimingHint": "Before the duty: on a swap everyone keeps their day off; whoever takes over a duty gets none for it.",
+      "minPresentEnabled": "Minimum staffing on weekdays",
+      "minPresentEnabledHint": "This many participants must be present Mon–Fri. Days off avoid full days; vacations show a warning.",
+      "minPresent": "At least present",
+      "minPresentHint": "of {count} participants",
       "dayOffTitle": "Day-off entry text",
       "dayOffMembers": "Day off per member",
       "dayOffMembersHint": "Switch off for members without a day off, e.g. on an all-in contract. If such a member takes over a duty, that seat's day off is dropped.",
+      "yearlyFairness": "Fair per calendar year",
+      "yearlyFairnessHint": "Each year starts a new round. Whoever had more duties last year sits out correspondingly at the start of the year.",
       "entryTitleInfo": "About the entry template",
       "entryTitleHelp": "Placeholders: '{Vorname}' = first word of the name, '{Name}' = full name, '{Dienst}' = title of the duty. '{Vorname}' or '{Name}' must appear. Example: \"'{Vorname}' Dienst\" → \"Günther Dienst\".",
       "entryTitlePreview": "Preview: {title}",
@@ -1448,6 +1470,18 @@
       "holidayCalendarUnavailable": "Calendar without access",
       "holidayCalendarHint": "Every entry of this calendar on a duty day closes that day. Best use a calendar that syncs a public-holiday feed.",
       "holidayOpenDates": "Holidays with duty"
+    },
+    "yearly": {
+      "hint": "Delta = duties last year minus the fewest duties of a full-year participant. A custom value replaces the automatic one; applied at the next generation.",
+      "tableTitle": "Carry-over {from} → {to}",
+      "member": "Participant",
+      "held": "Duties {year}",
+      "autoDelta": "Delta",
+      "override": "Custom value",
+      "overrideFor": "Custom value for {name} ({year})",
+      "newSince": "new since {date}",
+      "reset": "Use the automatic value",
+      "noData": "No duties in the previous year yet – nothing to carry over."
     },
     "period": {
       "day": "Day",
@@ -1508,7 +1542,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} is no longer a participant but has a swapped slot.",
         "lockedWithoutDuty": "{date}: No duty planned any more, but swapped slots exist – the duty stays.",
-        "lockedOverCapacity": "{date}: More swapped Plätze ({count}) than now planned – the duty keeps all swapped Plätze."
+        "lockedOverCapacity": "{date}: More swapped Plätze ({count}) than now planned – the duty keeps all swapped Plätze.",
+        "understaffed": "{date}: Only {filled} of {capacity} places filled."
       },
       "unlock": "Remove lock",
       "skipReason": "Reason for closing",
@@ -1560,11 +1595,19 @@
       "holidayOpenDates": "Invalid holidays with duty.",
       "entryTitle": "Invalid entry template: it needs '{Vorname}' or '{Name}' and may only contain '{Vorname}', '{Name}' and '{Dienst}' (max. 100 characters).",
       "dayOffTitle": "The day-off entry template is invalid.",
+      "dayOffTiming": "Invalid day-off timing.",
+      "minPresent": "Minimum staffing must be between 1 and the number of participants minus 1.",
       "dayOffExcluded": "Day off per member is invalid: only members of the rotation can be excluded.",
-      "reinforcedDates": "Invalid reinforced days: one entry per date; future days need more people than \"People per duty\" and at most as many as there are participants."
+      "reinforcedDates": "Invalid reinforced days: one entry per date; future days need more people than \"People per duty\" and at most as many as there are participants.",
+      "yearlyFairness": "Invalid setting for yearly fairness.",
+      "yearDelta": "Invalid delta (0–52).",
+      "notMember": "This person is not a participant of the rotation."
     }
   },
   "swap": {
+    "dayOffStays": "Your day off for this duty stays with you; whoever takes it over gets none for it.",
+    "dayOffStaysForced": "The day off stays with the previous holder; the substitute gets none for it.",
+    "dayOffStaysAccept": "You get no day off for this duty; it stays with the previous holder.",
     "notifications": {
       "open": "Notifications",
       "title": "Notifications",
@@ -1581,7 +1624,11 @@
       "dayOffRequestsHint": "When participants propose dates for a locked day off or are still waiting for your answer.",
       "notConfigured": "Email is not set up on this server. Your choice applies once it is.",
       "saveFailed": "Could not save the setting.",
-      "loadFailed": "The settings could not be loaded."
+      "loadFailed": "The settings could not be loaded.",
+      "myVacations": "My vacations",
+      "myVacationsHint": "Decisions and changes to my vacation",
+      "vacationRequests": "Vacation requests",
+      "vacationRequestsHint": "New requests and change requests from the participants I manage"
     },
     "title": "Swap board",
     "subtitle": "Swap duties",
@@ -1686,6 +1733,7 @@
       "closedDuty": "There are no places on a closure day.",
       "counterNotDue": "There is no open counter duty for this swap.",
       "outsideWindow": "This duty is outside the counter-duty window.",
+      "onVacation": "This person is on vacation that day.",
       "internal": "Unexpected error."
     },
     "retry": "Try again",
@@ -1765,12 +1813,15 @@
       "duplicate": "This date has already been proposed.",
       "tooMany": "Too many open proposals.",
       "reasonRequired": "Please give a reason.",
-      "proposalNotOpen": "This proposal is no longer open."
+      "proposalNotOpen": "This proposal is no longer open.",
+      "belowMinimum": "The minimum staffing would not be met on that day."
     },
     "tab": "Day off",
     "mineTitle": "My days off",
     "manageTitle": "Management",
-    "cardTitle": "Day off after the duty on {date}",
+    "cardTitle": "Day off for the duty on {date}",
+    "keptOnSwap": "From a swapped duty – the day off stays with you.",
+    "keptOnSwapManage": "From a swapped duty – the day off stays with {name}.",
     "status": {
       "standard": "Standard",
       "moved": "Moved",
@@ -1811,7 +1862,13 @@
       "title": "Move day off",
       "text": "Pick another workday in the same week.",
       "loadFailed": "The possible days could not be loaded.",
-      "none": "There is no other possible day."
+      "none": "There is no other possible day.",
+      "full": "full"
+    },
+    "override": {
+      "title": "Below minimum staffing",
+      "text": "On {date} only {present} of at least {minimum} participants would be present. Give it anyway?",
+      "confirm": "Give anyway"
     },
     "propose": {
       "text": "Propose up to {max} dates until {date}. Management accepts one of them.",
@@ -1859,7 +1916,16 @@
         "dayOffDeclined": "Proposal declined",
         "dayOffReset": "Your day off changed",
         "dayOffDropped": "Your day off is cancelled",
-        "dayOffReminder": "Open date proposals"
+        "dayOffReminder": "Open date proposals",
+        "vacationRequested": "New vacation request",
+        "vacationChangeRequested": "Vacation change requested",
+        "vacationApproved": "Vacation approved",
+        "vacationRejected": "Vacation declined",
+        "vacationChangeApproved": "Vacation change approved",
+        "vacationChangeRejected": "Vacation change declined",
+        "vacationEntered": "Vacation entered",
+        "vacationChanged": "Vacation changed",
+        "vacationCancelled": "Vacation cancelled"
       },
       "lead": {
         "offerToAll": "{name} is offering the duty on {duty}.",
@@ -1870,14 +1936,23 @@
         "forcedToMe": "{actor} assigned you to cover {name} on {duty}.",
         "dutyTransferred": "Your duty on {duty} was handed over to {name}.",
         "counterChosen": "In return for your duty on {duty}, you take over the duty on {counter}.",
-        "dayOffLocked": "Your day off after the duty on {duty} was locked. Please propose dates.",
-        "dayOffProposed": "{holder} proposes for the day off after the duty on {duty}: {dates}.",
-        "dayOffCountered": "For your day off after the duty on {duty}, {date} is proposed.",
-        "dayOffAccepted": "The day off after the duty on {duty} is on {date}.",
-        "dayOffDeclined": "The proposal {date} for the day off after the duty on {duty} was declined.",
-        "dayOffReset": "Your day off after the duty on {duty} is no longer valid and was reset.",
-        "dayOffDropped": "Your day off after the duty on {duty} is cancelled.",
-        "dayOffReminder": "The proposals by {holder} for the day off after the duty on {duty} have been waiting 3 days for an answer."
+        "dayOffLocked": "Your day off for the duty on {duty} was locked. Please propose dates.",
+        "dayOffProposed": "{holder} proposes for the day off for the duty on {duty}: {dates}.",
+        "dayOffCountered": "For your day off for the duty on {duty}, {date} is proposed.",
+        "dayOffAccepted": "The day off for the duty on {duty} is on {date}.",
+        "dayOffDeclined": "The proposal {date} for the day off for the duty on {duty} was declined.",
+        "dayOffReset": "Your day off for the duty on {duty} is no longer valid and was reset.",
+        "dayOffDropped": "Your day off for the duty on {duty} is cancelled.",
+        "dayOffReminder": "The proposals by {holder} for the day off for the duty on {duty} have been waiting 3 days for an answer.",
+        "vacationRequested": "{holder} requests vacation from {from} to {to}.",
+        "vacationChangeRequested": "{holder} wants to change or cancel the vacation from {from} to {to}.",
+        "vacationApproved": "Your vacation from {from} to {to} is approved. Your duties in that period were reassigned.",
+        "vacationRejected": "Your vacation request from {from} to {to} was declined.",
+        "vacationChangeApproved": "Your change is approved: vacation now {from} to {to} (before {previous}).",
+        "vacationChangeRejected": "Your change to the vacation from {from} to {to} was declined.",
+        "vacationEntered": "Vacation from {from} to {to} was entered for you. Your duties in that period were reassigned.",
+        "vacationChanged": "Your vacation was changed: now {from} to {to} (before {previous}).",
+        "vacationCancelled": "Your vacation from {from} to {to} was cancelled."
       },
       "kind": {
         "give": "Hand-over – whoever accepts takes the duty.",
@@ -1891,7 +1966,8 @@
       "allDay": "all day",
       "button": "Open swap board",
       "footer": "Change notifications",
-      "someone": "Someone"
+      "someone": "Someone",
+      "vacationRange": "{from} to {to}"
     }
   },
   "outlook": {
@@ -1904,9 +1980,91 @@
     "calendarName": "My duties",
     "with": "With: {names}",
     "swapLink": "Swap: {url}",
-    "dayOffLink": "Day off: {url}"
+    "dayOffLink": "Day off: {url}",
+    "vacationLink": "Manage vacation: {url}"
   },
   "announcements": {
     "dismiss": "Dismiss announcement"
+  },
+  "vacation": {
+    "entryTitle": "{name} vacation",
+    "calendarHint": "Vacation – details under Vacation",
+    "errors": {
+      "notFound": "Vacation not found.",
+      "forbidden": "You are not allowed to do that.",
+      "invalid": "Please check your input.",
+      "reasonRequired": "Please give a reason.",
+      "tooLong": "A vacation can last at most 366 days.",
+      "notParticipant": "Only rotation participants can have vacation.",
+      "begun": "Past days and today can no longer be changed.",
+      "overlap": "The period overlaps another vacation.",
+      "wrongStatus": "That is no longer possible in this state.",
+      "changePending": "There is already an open change request.",
+      "rotationUnavailable": "A rotation of this person cannot be replanned right now (template missing or sign-ups off). Please check the rotation."
+    },
+    "tab": "Vacation",
+    "mine": "My vacations",
+    "requests": "Open requests",
+    "calendar": "Vacation calendar",
+    "request": "Request vacation",
+    "requestStaffing": "On {count, plural, one {# weekday} other {# weekdays}} the team would be understaffed ({dates}). The managers decide.",
+    "enter": "Enter vacation",
+    "person": "Person",
+    "from": "From",
+    "to": "To",
+    "note": "Note",
+    "reason": "Reason",
+    "emptyMine": "No vacation yet.",
+    "emptyRequests": "No open requests.",
+    "emptyCalendar": "No vacation this year.",
+    "loadFailed": "Could not load the vacations.",
+    "rejectHint": "Please give {name} a reason for declining.",
+    "requestCancelHint": "The management decides on the cancellation.",
+    "status": {
+      "pending": "Requested",
+      "approved": "Approved",
+      "rejected": "Declined",
+      "withdrawn": "Withdrawn",
+      "cancelled": "Cancelled"
+    },
+    "pendingChange": {
+      "change": "Change requested: {range}",
+      "cancel": "Cancellation requested"
+    },
+    "direct": "Entered by the management",
+    "actions": {
+      "withdraw": "Withdraw",
+      "requestChange": "Request change",
+      "requestCancel": "Request cancellation",
+      "withdrawChange": "Withdraw request",
+      "approve": "Approve",
+      "reject": "Decline",
+      "approveChange": "Approve change",
+      "rejectChange": "Decline change",
+      "edit": "Change",
+      "cancel": "Cancel"
+    },
+    "preview": {
+      "title": "Effect on the duties",
+      "loading": "Calculating the new plan …",
+      "none": "No duties affected.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Date",
+      "before": "Before",
+      "after": "After",
+      "understaffed": "On {date} only {filled} of {capacity} places are filled.",
+      "staffing": "On {date} only {present} of at least {minimum} would be present.",
+      "hint": "After confirming, duties from the vacation on are redistributed. Those affected get new Outlook invitations."
+    },
+    "done": {
+      "requested": "Vacation requested.",
+      "approved": "Vacation approved, duties redistributed.",
+      "rejected": "Request declined.",
+      "entered": "Vacation entered, duties redistributed.",
+      "changed": "Vacation changed, duties redistributed.",
+      "cancelled": "Vacation cancelled, duties redistributed.",
+      "withdrawn": "Withdrawn.",
+      "changeRequested": "Change requested."
+    }
   }
 }

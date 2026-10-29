@@ -6,10 +6,10 @@ describe("notification preferences", () => {
   it("defaults to everything on and stores changes", () => {
     const userId = createUser("Pref");
     expect(getPreferences(userId)).toEqual(DEFAULT_PREFERENCES);
-    setPreferences(userId, { offersToAll: false, offersToMe: true, myOffers: true, myDayOffs: true, dayOffRequests: false });
-    expect(getPreferences(userId)).toEqual({ offersToAll: false, offersToMe: true, myOffers: true, myDayOffs: true, dayOffRequests: false });
-    setPreferences(userId, { offersToAll: true, offersToMe: false, myOffers: false, myDayOffs: false, dayOffRequests: true });
-    expect(getPreferences(userId)).toEqual({ offersToAll: true, offersToMe: false, myOffers: false, myDayOffs: false, dayOffRequests: true });
+    setPreferences(userId, { offersToAll: false, offersToMe: true, myOffers: true, myDayOffs: true, dayOffRequests: false, myVacations: true, vacationRequests: true });
+    expect(getPreferences(userId)).toEqual({ offersToAll: false, offersToMe: true, myOffers: true, myDayOffs: true, dayOffRequests: false, myVacations: true, vacationRequests: true });
+    setPreferences(userId, { offersToAll: true, offersToMe: false, myOffers: false, myDayOffs: false, dayOffRequests: true, myVacations: true, vacationRequests: true });
+    expect(getPreferences(userId)).toEqual({ offersToAll: true, offersToMe: false, myOffers: false, myDayOffs: false, dayOffRequests: true, myVacations: true, vacationRequests: true });
   });
 
   it("maps kinds to switches", () => {
@@ -19,8 +19,8 @@ describe("notification preferences", () => {
     expect(preferenceFor("offer_declined")).toBe("myOffers");
   });
 
-  it("accepts exactly five booleans", () => {
-    const all = { offersToAll: true, offersToMe: false, myOffers: true, myDayOffs: false, dayOffRequests: true };
+  it("accepts exactly seven booleans", () => {
+    const all = { offersToAll: true, offersToMe: false, myOffers: true, myDayOffs: false, dayOffRequests: true, myVacations: true, vacationRequests: true };
     expect(validatePreferences(all)).toEqual(all);
     expect(validatePreferences({ offersToAll: true, offersToMe: false, myOffers: true })).toBeNull();
     expect(validatePreferences({ ...all, offersToAll: "yes" })).toBeNull();

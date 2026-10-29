@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, lt, lte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { calendars, shiftPresets, shiftSignups, shifts } from "@/lib/db/schema";
+import type { YearDeltaTable } from "@/lib/rotation/yearly"; // [fork] Jahresausgleich
 import { formatDateToLocal, parseLocalDate } from "@/lib/date-utils";
 import { replaceShiftSegments, withPresetSegments } from "@/lib/shift-time-ranges";
 import {
@@ -13,7 +14,7 @@ import { reconcileRotation, type ReconcileEvent } from "@/lib/dayoff/service"; /
 import { logReconcileEventsLater } from "@/lib/dayoff/audit"; // [fork] Dienstfrei
 import { CLOSURE_FIELDS, resolveClosedDates } from "@/lib/rotation/closures";
 import { hasStarted } from "@/lib/rotation/dates";
-import { generateDays, suggestStartOffset } from "@/lib/rotation/generate";
+import { generateDays, suggestStartOffset, yearSummary } from "@/lib/rotation/generate";
 import { loadHolidays } from "@/lib/rotation/holidays";
 import {
   planClosures,
@@ -27,21 +28,39 @@ import {
   rotationDuties,
   rotationMembers,
   rotationSlotLocks,
+  rotationYearDeltas,
   rotations,
   type Rotation,
 } from "@/lib/rotation/schema";
 import type { ClosedDate, RotationRule } from "@/lib/rotation/types";
 import type { RotationInput } from "@/lib/rotation/validate";
+import { approvedRanges } from "@/lib/vacation/dates"; // [fork] Urlaub
+import type { DateRange } from "@/lib/vacation/types"; // [fork] Urlaub
 
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 export interface RotationDetail extends Rotation {
   memberIds: string[];
   /** [fork] Teilnehmer without Dienstfrei (SPEC 12.40). */
   dayOffExcludedIds: string[];
+  /** [fork] Jahresausgleich: userId → since when a Teilnehmer (SPEC 12.41). */
+  memberSince: Record<string, string>;
 }
 
-export type RotationError = "notFound" | "presetMissing" | "presetArchived" | "signupsDisabled";
+/** [fork] Urlaub: a hypothetical set of approved ranges for one user, used by previews. */
+export interface VacationOverride {
+  userId: string;
+  ranges: DateRange[];
+}
+
+/** [fork] Urlaub: approved vacations of the Teilnehmer, with an optional override for one user. */
+function loadAbsences(reader: Tx | typeof db, memberIds: string[], override?: VacationOverride): Map<string, DateRange[]> {
+  const ranges = approvedRanges(reader, memberIds);
+  if (override && memberIds.includes(override.userId)) ranges.set(override.userId, override.ranges);
+  return ranges;
+}
+
+export type RotationError = "notFound" | "presetMissing" | "presetArchived" | "signupsDisabled" | "notMember";
 
 export class RotationServiceError extends Error {
   constructor(public readonly code: RotationError) {
@@ -57,7 +76,9 @@ export interface GenerationSummary {
   warnings: number;
 }
 
-interface LoadedTemplate {
+/** What generation needs from outside a transaction; the preset fields as loadTemplate reads them. */
+export interface PreparedGeneration {
+  rotationId: string;
   presetId: string;
   template: DutyTemplate;
   segments: TimeRange[];
@@ -66,7 +87,7 @@ interface LoadedTemplate {
 
 function withMembers(tx: Tx | typeof db, rotation: Rotation): RotationDetail {
   const members = tx
-    .select({ userId: rotationMembers.userId, dayOff: rotationMembers.dayOff })
+    .select({ userId: rotationMembers.userId, dayOff: rotationMembers.dayOff, joinedOn: rotationMembers.joinedOn })
     .from(rotationMembers)
     .where(eq(rotationMembers.rotationId, rotation.id))
     .orderBy(asc(rotationMembers.position))
@@ -75,6 +96,7 @@ function withMembers(tx: Tx | typeof db, rotation: Rotation): RotationDetail {
     ...rotation,
     memberIds: members.map((m) => m.userId),
     dayOffExcludedIds: members.filter((m) => !m.dayOff).map((m) => m.userId), // [fork] Dienstfrei
+    memberSince: Object.fromEntries(members.map((m) => [m.userId, m.joinedOn])), // [fork] Jahresausgleich
   };
 }
 
@@ -107,11 +129,90 @@ function begunClosures(reader: Tx | typeof db, r: RotationDetail, today: string)
     .map((row) => ({ date: row.date, reason: row.title, source: "holiday" }));
 }
 
-function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date): RotationRule {
+/**
+ * [fork] Jahresausgleich: real holders per Diensttag for counting Plätze. Begun days and days with a
+ * Gesperrter Platz are authoritative; other future seats are only plan, so the generator counts its own.
+ */
+function loadHeldDuties(reader: Tx | typeof db, rotationId: string, today: string): Record<string, string[]> {
+  const rows = reader
+    .select({ shiftId: rotationDuties.shiftId, date: rotationDuties.date, userId: shiftSignups.userId })
+    .from(rotationDuties)
+    .leftJoin(shiftSignups, eq(shiftSignups.shiftId, rotationDuties.shiftId))
+    .where(and(eq(rotationDuties.rotationId, rotationId), eq(rotationDuties.kind, "duty")))
+    .all();
+  const lockedShifts = new Set(
+    reader
+      .select({ shiftId: rotationSlotLocks.shiftId })
+      .from(rotationSlotLocks)
+      .innerJoin(rotationDuties, eq(rotationDuties.shiftId, rotationSlotLocks.shiftId))
+      .where(eq(rotationDuties.rotationId, rotationId))
+      .all()
+      .map((l) => l.shiftId)
+  );
+  const held: Record<string, string[]> = {};
+  for (const row of rows) {
+    if (row.date > today && !lockedShifts.has(row.shiftId)) continue;
+    const list = (held[row.date] ??= []);
+    if (row.userId) list.push(row.userId);
+  }
+  return held;
+}
+
+/**
+ * [fork] Urlaub: holders per Diensttag in [from, before) as the plan sees them: a swap's taker
+ * (a Gesperrter Platz with replacesUserId) counts as the Teilnehmer they replaced, as in planGeneration.
+ */
+function loadFrozenDuties(reader: Tx | typeof db, rotationId: string, from: string, before: string): Record<string, string[]> {
+  const rows = reader
+    .select({ shiftId: rotationDuties.shiftId, date: rotationDuties.date, userId: shiftSignups.userId })
+    .from(rotationDuties)
+    .leftJoin(shiftSignups, eq(shiftSignups.shiftId, rotationDuties.shiftId))
+    .where(
+      and(eq(rotationDuties.rotationId, rotationId), eq(rotationDuties.kind, "duty"), gte(rotationDuties.date, from), lt(rotationDuties.date, before))
+    )
+    .all();
+  const replaced = new Map(
+    reader
+      .select({ shiftId: rotationSlotLocks.shiftId, userId: rotationSlotLocks.userId, replacesUserId: rotationSlotLocks.replacesUserId })
+      .from(rotationSlotLocks)
+      .innerJoin(rotationDuties, eq(rotationDuties.shiftId, rotationSlotLocks.shiftId))
+      .where(and(eq(rotationDuties.rotationId, rotationId), gte(rotationDuties.date, from), lt(rotationDuties.date, before)))
+      .all()
+      .filter((l) => l.replacesUserId)
+      .map((l) => [`${l.shiftId}|${l.userId}`, l.replacesUserId as string])
+  );
+  const held: Record<string, string[]> = {};
+  for (const row of rows) {
+    const list = (held[row.date] ??= []);
+    if (!row.userId) continue;
+    const planned = replaced.get(`${row.shiftId}|${row.userId}`) ?? row.userId;
+    list.push(list.includes(planned) ? row.userId : planned);
+  }
+  return held;
+}
+
+function loadDeltaOverrides(reader: Tx | typeof db, rotationId: string): Record<number, Record<string, number>> {
+  const overrides: Record<number, Record<string, number>> = {};
+  for (const row of reader.select().from(rotationYearDeltas).where(eq(rotationYearDeltas.rotationId, rotationId)).all()) {
+    (overrides[row.year] ??= {})[row.userId] = row.delta;
+  }
+  return overrides;
+}
+
+function toRule(
+  reader: Tx | typeof db,
+  r: RotationDetail,
+  to: string,
+  now: Date,
+  absences: Map<string, DateRange[]> // [fork] Urlaub
+): RotationRule {
   // Seat rounds make a duty depend on the sizes of later duties in its round, so a Feiertag
   // after `to` can still matter. Closures after the last verstärkter Tag cannot change the
   // size sequence before it, so loading up to there keeps the plan independent of the window.
-  const holidaysTo = r.reinforcedDates.reduce((max, d) => (d.date > max ? d.date : max), to);
+  // [fork] Jahresausgleich: a yearly round looks ahead to the end of its year, so a Feiertag up to
+  // 31.12. of `to`'s year can change earlier rounds.
+  const lookahead = r.yearlyFairness && `${to.slice(0, 4)}-12-31` > to ? `${to.slice(0, 4)}-12-31` : to;
+  const holidaysTo = r.reinforcedDates.reduce((max, d) => (d.date > max ? d.date : max), lookahead);
   const holidays =
     r.holidayCalendarId && to >= r.startDate ? loadHolidays(reader, r.holidayCalendarId, r.startDate, holidaysTo) : [];
   const resolved = resolveClosedDates(r.skipDates, holidays, r.holidayOpenDates);
@@ -134,14 +235,37 @@ function toRule(reader: Tx | typeof db, r: RotationDetail, to: string, now: Date
     closedDates,
     openHolidays,
     reinforcedDates: r.reinforcedDates,
+    // [fork] Jahresausgleich (SPEC 12.41)
+    yearlyFairness: r.yearlyFairness,
+    memberSince: r.memberSince,
+    heldDuties: r.yearlyFairness ? loadHeldDuties(reader, r.id, formatDateToLocal(now)) : {},
+    deltaOverrides: r.yearlyFairness ? loadDeltaOverrides(reader, r.id) : {},
+    absences: [...absences].flatMap(([userId, list]) => list.map((range) => ({ userId, from: range.from, to: range.to }))), // [fork] Urlaub
   };
 }
 
-function writeMembers(tx: Tx, rotationId: string, input: RotationInput): void {
+function writeMembers(tx: Tx, rotationId: string, input: RotationInput, joinedToday: string): void {
   const excluded = new Set(input.dayOffExcludedIds); // [fork] Dienstfrei
+  // [fork] Jahresausgleich: staying Teilnehmer keep their joinedOn; new ones join joinedToday.
+  const since = new Map(
+    tx
+      .select({ userId: rotationMembers.userId, joinedOn: rotationMembers.joinedOn })
+      .from(rotationMembers)
+      .where(eq(rotationMembers.rotationId, rotationId))
+      .all()
+      .map((m) => [m.userId, m.joinedOn])
+  );
   tx.delete(rotationMembers).where(eq(rotationMembers.rotationId, rotationId)).run();
   tx.insert(rotationMembers)
-    .values(input.memberIds.map((userId, position) => ({ rotationId, userId, position, dayOff: !excluded.has(userId) })))
+    .values(
+      input.memberIds.map((userId, position) => ({
+        rotationId,
+        userId,
+        position,
+        dayOff: !excluded.has(userId),
+        joinedOn: since.get(userId) ?? joinedToday,
+      }))
+    )
     .run();
 }
 
@@ -163,6 +287,9 @@ function configValues(input: RotationInput) {
     reinforcedDates: input.reinforcedDates,
     dayOffEnabled: input.dayOffEnabled, // [fork] Dienstfrei
     dayOffTitle: input.dayOffTitle, // [fork] Dienstfrei
+    dayOffTiming: input.dayOffTiming, // [fork] Dienstfrei
+    yearlyFairness: input.yearlyFairness, // [fork] Jahresausgleich
+    minPresent: input.minPresent, // [fork] Mindestbesetzung
   };
 }
 
@@ -181,14 +308,15 @@ export function getRotation(id: string): RotationDetail | null {
   return rotation ? withMembers(db, rotation) : null;
 }
 
-export function createRotation(input: RotationInput, actorId: string | null): RotationDetail {
+export function createRotation(input: RotationInput, actorId: string | null, now: Date = new Date()): RotationDetail {
   return db.transaction((tx) => {
     const row = tx
       .insert(rotations)
       .values({ calendarId: input.calendarId, ...configValues(input), createdBy: actorId })
       .returning()
       .get();
-    writeMembers(tx, row.id, input);
+    const today = formatDateToLocal(now);
+    writeMembers(tx, row.id, input, input.startDate < today ? input.startDate : today);
     return withMembers(tx, row);
   });
 }
@@ -204,7 +332,7 @@ export function updateRotation(id: string, input: RotationInput, now: Date = new
       .returning()
       .get();
     if (!row) throw new RotationServiceError("notFound");
-    writeMembers(tx, id, input);
+    writeMembers(tx, id, input, formatDateToLocal(now));
     dayOffEvents = reconcileRotation(tx, id, now).events; // [fork] Dienstfrei
     return withMembers(tx, row);
   });
@@ -212,7 +340,13 @@ export function updateRotation(id: string, input: RotationInput, now: Date = new
   return result;
 }
 
-function loadExistingDuties(tx: Tx, rotationId: string, from: string, to: string): ExistingDuty[] {
+function loadExistingDuties(
+  tx: Tx,
+  rotationId: string,
+  from: string,
+  to: string,
+  absences: Map<string, DateRange[]> // [fork] Urlaub
+): ExistingDuty[] {
   const rows = tx
     .select({
       shiftId: rotationDuties.shiftId,
@@ -260,7 +394,8 @@ function loadExistingDuties(tx: Tx, rotationId: string, from: string, to: string
       .filter((s) => s.shiftId === row.shiftId)
       .map((s) => {
         const lock = lockByKey.get(lockKey(s.shiftId, s.userId));
-        return { userId: s.userId, locked: Boolean(lock), replacesUserId: lock?.replacesUserId ?? null };
+        const onVacation = (absences.get(s.userId) ?? []).some((r) => r.from <= row.date && row.date <= r.to); // [fork] Urlaub
+        return { userId: s.userId, locked: Boolean(lock) && !onVacation, replacesUserId: lock?.replacesUserId ?? null };
       }),
   }));
 }
@@ -292,7 +427,7 @@ function loadExistingClosures(tx: Tx, rotationId: string, from: string, to: stri
     .all();
 }
 
-async function loadTemplate(rotation: RotationDetail): Promise<LoadedTemplate> {
+async function loadTemplate(rotation: RotationDetail): Promise<Omit<PreparedGeneration, "rotationId">> {
   if (!rotation.presetId) throw new RotationServiceError("presetMissing");
   const preset = db.select().from(shiftPresets).where(eq(shiftPresets.id, rotation.presetId)).get();
   if (!preset || preset.calendarId !== rotation.calendarId) throw new RotationServiceError("presetMissing");
@@ -326,12 +461,20 @@ function buildPlan(
   to: string,
   template: DutyTemplate,
   presetId: string,
-  now: Date
+  now: Date,
+  override?: VacationOverride // [fork] Urlaub
 ): GenerationPlan {
   // Duties before startDate belong to an earlier configuration and are left alone.
   const windowStart = from > rotation.startDate ? from : rotation.startDate;
   if (windowStart > to) return { entries: [], warnings: [], closures: [], openHolidays: [] };
-  const rule = toRule(tx, rotation, to, now);
+  const absences = loadAbsences(tx, rotation.memberIds, override); // [fork] Urlaub
+  const rule = toRule(tx, rotation, to, now, absences);
+  // [fork] Urlaub: a round reaching back before windowStart must not move a Platz into a duty that is
+  // not rewritten (a vacation would cost a seat without a Nachholplatz), so those duties keep their holders.
+  if (rule.absences?.length) {
+    rule.frozenBefore = windowStart;
+    rule.frozenDuties = loadFrozenDuties(tx, rotation.id, rotation.startDate, windowStart);
+  }
   const days = generateDays(rule, windowStart, to);
   // A day that has begun keeps what it holds: a Schließeintrag can no longer be written there,
   // so a duty on a newly closed begun day stays instead of leaving a gap. (A begun Schließeintrag
@@ -341,7 +484,7 @@ function buildPlan(
   );
   const duties = planGeneration({
     desired: days.duties,
-    existing: loadExistingDuties(tx, rotation.id, windowStart, to).filter((d) => !begunClosedDays.has(d.date)),
+    existing: loadExistingDuties(tx, rotation.id, windowStart, to, absences).filter((d) => !begunClosedDays.has(d.date)),
     template,
     presetId,
     memberIds: rotation.memberIds,
@@ -359,10 +502,146 @@ function buildPlan(
   return { ...duties, closures, openHolidays };
 }
 
-export async function previewGeneration(id: string, from: string, to: string, now: Date): Promise<GenerationPlan> {
-  const rotation = loadRotation(db, id);
-  const { template, presetId } = await loadTemplate(rotation);
-  return db.transaction((tx) => buildPlan(tx, rotation, from, to, template, presetId, now));
+/** Loads what generation needs outside a transaction (presets may be read asynchronously). */
+export async function prepareGeneration(id: string): Promise<PreparedGeneration> {
+  return { rotationId: id, ...(await loadTemplate(loadRotation(db, id))) };
+}
+
+/** The plan for [from, to] inside a transaction; `override` previews a hypothetical vacation state. */
+export function planInTx(
+  tx: Tx,
+  prepared: PreparedGeneration,
+  from: string,
+  to: string,
+  now: Date,
+  override?: VacationOverride
+): GenerationPlan {
+  const rotation = loadRotation(tx, prepared.rotationId);
+  if (rotation.presetId !== prepared.presetId) throw new RotationServiceError("presetMissing");
+  return buildPlan(tx, rotation, from, to, prepared.template, prepared.presetId, now, override);
+}
+
+/** Writes a plan: duties, Schließeinträge, freed locks; then reconciles the Dienstfreie. */
+export function applyPlan(
+  tx: Tx,
+  prepared: PreparedGeneration,
+  plan: GenerationPlan,
+  actorId: string,
+  now: Date
+): { summary: GenerationSummary; dayOffEvents: ReconcileEvent[] } {
+  const rotation = loadRotation(tx, prepared.rotationId);
+  const loaded = prepared;
+  const { template } = loaded;
+  const summary: GenerationSummary = { created: 0, updated: 0, deleted: 0, unchanged: 0, warnings: plan.warnings.length };
+
+  // Write order matters: the unique (rotation_id, date) index must never see two rows for one date.
+  // (1) closure deletes, (2) duties, (3) closure creates/updates.
+  for (const entry of plan.closures) {
+    if (entry.kind !== "delete") continue;
+    tx.delete(shifts).where(eq(shifts.id, entry.shiftId)).run();
+    summary.deleted++;
+  }
+
+  for (const entry of plan.entries) {
+    switch (entry.kind) {
+      case "create": {
+        const shift = tx
+          .insert(shifts)
+          .values({
+            calendarId: rotation.calendarId,
+            presetId: loaded.presetId,
+            date: parseLocalDate(entry.date),
+            ...template,
+            signupCapacity: entry.capacity,
+            createdBy: actorId,
+            createdAt: now,
+            updatedAt: now,
+          })
+          .returning()
+          .get();
+        replaceShiftSegments(tx, shift.id, loaded.segments);
+        replaceShiftCustomFieldValues(tx, shift.id, loaded.customFieldValues);
+        tx.insert(rotationDuties).values({ shiftId: shift.id, rotationId: rotation.id, date: entry.date }).run();
+        tx.insert(shiftSignups)
+          .values(entry.userIds.map((userId) => ({ shiftId: shift.id, userId, signedUpBy: actorId })))
+          .run();
+        summary.created++;
+        break;
+      }
+      case "update": {
+        if (entry.remove.length > 0) {
+          tx.delete(shiftSignups)
+            .where(and(eq(shiftSignups.shiftId, entry.shiftId), inArray(shiftSignups.userId, entry.remove)))
+            .run();
+          tx.delete(rotationSlotLocks) // [fork] Urlaub: a freed lock goes with its Platz
+            .where(and(eq(rotationSlotLocks.shiftId, entry.shiftId), inArray(rotationSlotLocks.userId, entry.remove)))
+            .run();
+        }
+        if (entry.add.length > 0) {
+          tx.insert(shiftSignups)
+            .values(entry.add.map((userId) => ({ shiftId: entry.shiftId, userId, signedUpBy: actorId })))
+            .run();
+        }
+        if (entry.fieldsChanged) {
+          tx.update(shifts)
+            .set({ ...template, presetId: loaded.presetId, signupCapacity: entry.capacity, updatedAt: now })
+            .where(eq(shifts.id, entry.shiftId))
+            .run();
+          replaceShiftSegments(tx, entry.shiftId, loaded.segments);
+          replaceShiftCustomFieldValues(tx, entry.shiftId, loaded.customFieldValues);
+        } else if (entry.capacityChanged) {
+          tx.update(shifts).set({ signupCapacity: entry.capacity, updatedAt: now }).where(eq(shifts.id, entry.shiftId)).run();
+        }
+        summary.updated++;
+        break;
+      }
+      case "delete":
+        tx.delete(shifts).where(eq(shifts.id, entry.shiftId)).run();
+        summary.deleted++;
+        break;
+      case "unchanged":
+        summary.unchanged++;
+        break;
+    }
+  }
+
+  for (const entry of plan.closures) {
+    switch (entry.kind) {
+      case "create": {
+        const shift = tx
+          .insert(shifts)
+          .values({
+            calendarId: rotation.calendarId,
+            presetId: null,
+            date: parseLocalDate(entry.date),
+            ...CLOSURE_FIELDS,
+            title: entry.title,
+            signupCapacity: 0,
+            createdBy: actorId,
+            createdAt: now,
+            updatedAt: now,
+          })
+          .returning()
+          .get();
+        tx.insert(rotationDuties).values({ shiftId: shift.id, rotationId: rotation.id, date: entry.date, kind: "closed" }).run();
+        summary.created++;
+        break;
+      }
+      case "update":
+        tx.update(shifts)
+          .set({ ...CLOSURE_FIELDS, title: entry.title, presetId: null, signupCapacity: 0, updatedAt: now })
+          .where(eq(shifts.id, entry.shiftId))
+          .run();
+        replaceShiftSegments(tx, entry.shiftId, []);
+        summary.updated++;
+        break;
+      case "unchanged":
+        summary.unchanged++;
+        break;
+    }
+  }
+  const dayOffEvents = reconcileRotation(tx, rotation.id, now).events; // [fork] Dienstfrei
+  return { summary, dayOffEvents };
 }
 
 export async function runGeneration(
@@ -372,124 +651,41 @@ export async function runGeneration(
   actorId: string,
   now: Date
 ): Promise<GenerationSummary> {
-  const loaded = await loadTemplate(loadRotation(db, id));
-  const { template } = loaded;
-
-  let dayOffEvents: ReconcileEvent[] = []; // [fork] Dienstfrei
-  const result = db.transaction((tx) => {
-    const rotation = loadRotation(tx, id);
-    if (rotation.presetId !== loaded.presetId) throw new RotationServiceError("presetMissing");
-    const plan = buildPlan(tx, rotation, from, to, template, loaded.presetId, now);
-    const summary: GenerationSummary = { created: 0, updated: 0, deleted: 0, unchanged: 0, warnings: plan.warnings.length };
-
-    // Write order matters: the unique (rotation_id, date) index must never see two rows for one date.
-    // (1) closure deletes, (2) duties, (3) closure creates/updates.
-    for (const entry of plan.closures) {
-      if (entry.kind !== "delete") continue;
-      tx.delete(shifts).where(eq(shifts.id, entry.shiftId)).run();
-      summary.deleted++;
-    }
-
-    for (const entry of plan.entries) {
-      switch (entry.kind) {
-        case "create": {
-          const shift = tx
-            .insert(shifts)
-            .values({
-              calendarId: rotation.calendarId,
-              presetId: loaded.presetId,
-              date: parseLocalDate(entry.date),
-              ...template,
-              signupCapacity: entry.capacity,
-              createdBy: actorId,
-              createdAt: now,
-              updatedAt: now,
-            })
-            .returning()
-            .get();
-          replaceShiftSegments(tx, shift.id, loaded.segments);
-          replaceShiftCustomFieldValues(tx, shift.id, loaded.customFieldValues);
-          tx.insert(rotationDuties).values({ shiftId: shift.id, rotationId: rotation.id, date: entry.date }).run();
-          tx.insert(shiftSignups)
-            .values(entry.userIds.map((userId) => ({ shiftId: shift.id, userId, signedUpBy: actorId })))
-            .run();
-          summary.created++;
-          break;
-        }
-        case "update": {
-          if (entry.remove.length > 0) {
-            tx.delete(shiftSignups)
-              .where(and(eq(shiftSignups.shiftId, entry.shiftId), inArray(shiftSignups.userId, entry.remove)))
-              .run();
-          }
-          if (entry.add.length > 0) {
-            tx.insert(shiftSignups)
-              .values(entry.add.map((userId) => ({ shiftId: entry.shiftId, userId, signedUpBy: actorId })))
-              .run();
-          }
-          if (entry.fieldsChanged) {
-            tx.update(shifts)
-              .set({ ...template, presetId: loaded.presetId, signupCapacity: entry.capacity, updatedAt: now })
-              .where(eq(shifts.id, entry.shiftId))
-              .run();
-            replaceShiftSegments(tx, entry.shiftId, loaded.segments);
-            replaceShiftCustomFieldValues(tx, entry.shiftId, loaded.customFieldValues);
-          } else if (entry.capacityChanged) {
-            tx.update(shifts).set({ signupCapacity: entry.capacity, updatedAt: now }).where(eq(shifts.id, entry.shiftId)).run();
-          }
-          summary.updated++;
-          break;
-        }
-        case "delete":
-          tx.delete(shifts).where(eq(shifts.id, entry.shiftId)).run();
-          summary.deleted++;
-          break;
-        case "unchanged":
-          summary.unchanged++;
-          break;
-      }
-    }
-
-    for (const entry of plan.closures) {
-      switch (entry.kind) {
-        case "create": {
-          const shift = tx
-            .insert(shifts)
-            .values({
-              calendarId: rotation.calendarId,
-              presetId: null,
-              date: parseLocalDate(entry.date),
-              ...CLOSURE_FIELDS,
-              title: entry.title,
-              signupCapacity: 0,
-              createdBy: actorId,
-              createdAt: now,
-              updatedAt: now,
-            })
-            .returning()
-            .get();
-          tx.insert(rotationDuties).values({ shiftId: shift.id, rotationId: rotation.id, date: entry.date, kind: "closed" }).run();
-          summary.created++;
-          break;
-        }
-        case "update":
-          tx.update(shifts)
-            .set({ ...CLOSURE_FIELDS, title: entry.title, presetId: null, signupCapacity: 0, updatedAt: now })
-            .where(eq(shifts.id, entry.shiftId))
-            .run();
-          replaceShiftSegments(tx, entry.shiftId, []);
-          summary.updated++;
-          break;
-        case "unchanged":
-          summary.unchanged++;
-          break;
-      }
-    }
-    dayOffEvents = reconcileRotation(tx, id, now).events; // [fork] Dienstfrei
-    return summary;
-  });
+  const prepared = await prepareGeneration(id);
+  const { summary, dayOffEvents } = db.transaction((tx) =>
+    applyPlan(tx, prepared, planInTx(tx, prepared, from, to, now), actorId, now)
+  );
   logReconcileEventsLater(dayOffEvents); // [fork] Dienstfrei
-  return result;
+  return summary;
+}
+
+export async function previewGeneration(id: string, from: string, to: string, now: Date): Promise<GenerationPlan> {
+  const prepared = await prepareGeneration(id);
+  return db.transaction((tx) => planInTx(tx, prepared, from, to, now));
+}
+
+/** [fork] Urlaub: the date of the rotation's last written entry (the bisheriges Planende). */
+export function planEnd(reader: Tx | typeof db, rotationId: string): string | null {
+  return (
+    reader
+      .select({ date: rotationDuties.date })
+      .from(rotationDuties)
+      .where(eq(rotationDuties.rotationId, rotationId))
+      .orderBy(desc(rotationDuties.date))
+      .limit(1)
+      .get()?.date ?? null
+  );
+}
+
+/** [fork] Urlaub: rotations in which the user is a Teilnehmer. */
+export function rotationsOfMember(reader: Tx | typeof db, userId: string): { id: string; name: string; calendarId: string }[] {
+  return reader
+    .select({ id: rotations.id, name: rotations.name, calendarId: rotations.calendarId })
+    .from(rotationMembers)
+    .innerJoin(rotations, eq(rotations.id, rotationMembers.rotationId))
+    .where(eq(rotationMembers.userId, userId))
+    .orderBy(asc(rotations.name))
+    .all();
 }
 
 /** startOffset suggestion for restarting at restartDate with a new member order. */
@@ -509,6 +705,43 @@ export function suggestOffsetFor(id: string, restartDate: string, memberIds: str
     .all()
     .map((s) => s.userId);
   return suggestStartOffset(memberIds, userIds, loadRotation(db, id).perShift);
+}
+
+/** [fork] Jahresausgleich: the Delta tables of this year and the next, as the generator settles them. */
+export function getYearDeltaTables(id: string, now: Date): YearDeltaTable[] {
+  const rotation = loadRotation(db, id);
+  const year = now.getFullYear();
+  // Counted as if switched on, so a manager sees the numbers before turning it on.
+  // [fork] Urlaub: count with the approved vacations, as generation does.
+  const rule = toRule(db, { ...rotation, yearlyFairness: true }, `${year + 1}-12-31`, now, loadAbsences(db, rotation.memberIds));
+  return [year, year + 1].flatMap((y) => {
+    const rows = yearSummary(rule, y);
+    return rows ? [{ year: y, rows: rows.map((r) => ({ ...r, joinedOn: rotation.memberSince[r.userId] ?? rotation.startDate })) }] : [];
+  });
+}
+
+/** [fork] Jahresausgleich: sets (or with delta null removes) a manager's Delta. */
+export function setYearDeltaOverride(
+  id: string,
+  { year, userId, delta }: { year: number; userId: string; delta: number | null },
+  actorId: string | null,
+  now: Date
+): RotationDetail {
+  const rotation = loadRotation(db, id);
+  if (!rotation.memberIds.includes(userId)) throw new RotationServiceError("notMember");
+  const key = and(eq(rotationYearDeltas.rotationId, id), eq(rotationYearDeltas.year, year), eq(rotationYearDeltas.userId, userId));
+  if (delta === null) {
+    db.delete(rotationYearDeltas).where(key).run();
+  } else {
+    db.insert(rotationYearDeltas)
+      .values({ rotationId: id, year, userId, delta, setBy: actorId, setAt: now })
+      .onConflictDoUpdate({
+        target: [rotationYearDeltas.rotationId, rotationYearDeltas.year, rotationYearDeltas.userId],
+        set: { delta, setBy: actorId, setAt: now },
+      })
+      .run();
+  }
+  return rotation;
 }
 
 export function deleteRotation(

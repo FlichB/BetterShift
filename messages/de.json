@@ -1127,6 +1127,7 @@
       "rotationDeleted": "Rotation „{name}“ in „{calendar}“ gelöscht",
       "rotationGenerated": "Rotation „{name}“: Dienste {from} – {to} erzeugt",
       "rotationLockRemoved": "Rotation „{name}“: Sperre eines Platzes aufgehoben",
+      "rotationYearDeltaSet": "Rotation „{name}“: Delta für {year} geändert",
       "swapOffered": "Dienst am {date} in „{calendar}“ angeboten",
       "swapAccepted": "Dienst am {date} in „{calendar}“ übernommen",
       "swapExchanged": "Dienste am {date} und {other} in „{calendar}“ getauscht",
@@ -1145,14 +1146,14 @@
       "personalFeedCreated": "Persönlichen Kalender-Feed erstellt",
       "personalFeedRotated": "Persönlichen Kalender-Feed neu erzeugt",
       "personalFeedRevoked": "Persönlichen Kalender-Feed widerrufen",
-      "dayOffMoved": "Dienstfrei nach dem Dienst am {date} von {from} auf {to} verschoben ({calendar})",
-      "dayOffLocked": "Dienstfrei nach dem Dienst am {date} gesperrt ({calendar})",
-      "dayOffProposed": "Termine für Dienstfrei nach dem Dienst am {date} vorgeschlagen: {dates} ({calendar})",
-      "dayOffCountered": "Gegenvorschlag {to} für Dienstfrei nach dem Dienst am {date} ({calendar})",
-      "dayOffAccepted": "Dienstfrei nach dem Dienst am {date} auf {to} vereinbart ({calendar})",
-      "dayOffDeclined": "Vorschlag {to} für Dienstfrei nach dem Dienst am {date} abgelehnt ({calendar})",
-      "dayOffReset": "Dienstfrei nach dem Dienst am {date} zurückgesetzt ({calendar})",
-      "dayOffDropped": "Dienstfrei nach dem Dienst am {date} entfallen ({calendar})",
+      "dayOffMoved": "Dienstfrei zum Dienst am {date} von {from} auf {to} verschoben ({calendar})",
+      "dayOffLocked": "Dienstfrei zum Dienst am {date} gesperrt ({calendar})",
+      "dayOffProposed": "Termine für Dienstfrei zum Dienst am {date} vorgeschlagen: {dates} ({calendar})",
+      "dayOffCountered": "Gegenvorschlag {to} für Dienstfrei zum Dienst am {date} ({calendar})",
+      "dayOffAccepted": "Dienstfrei zum Dienst am {date} auf {to} vereinbart ({calendar})",
+      "dayOffDeclined": "Vorschlag {to} für Dienstfrei zum Dienst am {date} abgelehnt ({calendar})",
+      "dayOffReset": "Dienstfrei zum Dienst am {date} zurückgesetzt ({calendar})",
+      "dayOffDropped": "Dienstfrei zum Dienst am {date} entfallen ({calendar})",
       "userBanned": "{user} gesperrt",
       "userBannedPermanently": "{user} dauerhaft gesperrt",
       "userUnbanned": "Sperre für {user} aufgehoben",
@@ -1194,7 +1195,18 @@
       "telemetrySendFailed": "Manuelles Senden der Telemetriedaten fehlgeschlagen",
       "telemetryAutoSent": "Telemetriedaten automatisch gesendet",
       "telemetryAutoSendFailed": "Automatisches Senden der Telemetriedaten fehlgeschlagen",
-      "dayOffNotificationFailed": "Dienstfrei-Mail konnte nicht gesendet werden ({kind})"
+      "dayOffNotificationFailed": "Dienstfrei-Mail konnte nicht gesendet werden ({kind})",
+      "vacationRequested": "Urlaub {from}–{to} beantragt",
+      "vacationApproved": "Urlaub {from}–{to} genehmigt",
+      "vacationRejected": "Urlaub {from}–{to} abgelehnt",
+      "vacationWithdrawn": "Urlaub {from}–{to} zurückgezogen",
+      "vacationEntered": "Urlaub {from}–{to} eingetragen",
+      "vacationChanged": "Urlaub {from}–{to} geändert",
+      "vacationCancelled": "Urlaub {from}–{to} storniert",
+      "vacationChangeRequested": "Änderung zum Urlaub {from}–{to} beantragt",
+      "vacationChangeApproved": "Änderung zum Urlaub {from}–{to} genehmigt",
+      "vacationChangeRejected": "Änderung zum Urlaub {from}–{to} abgelehnt",
+      "vacationChangeWithdrawn": "Änderung zum Urlaub {from}–{to} zurückgezogen"
     }
   },
   "adminUsers": {
@@ -1435,11 +1447,21 @@
       "closedTitleHint": "Erscheint an Schließtagen als „Text (Grund)“, z. B. „Geschlossen (Mariä Empfängnis)“.",
       "entryTitle": "Eintragsvorlage",
       "entryTitleHint": "So heißt jeder Platz im Kalender und in Outlook.",
-      "dayOffEnabled": "Dienstfrei nach Dienst",
-      "dayOffEnabledHint": "Jeder Platz bekommt den nächsten Arbeitstag (Mo–Fr) nach dem Dienst frei.",
+      "dayOffEnabled": "Dienstfrei zum Dienst",
+      "dayOffEnabledHint": "Jeder Platz bekommt einen freien Arbeitstag (Mo–Fr).",
+      "dayOffTiming": "Dienstfrei liegt",
+      "dayOffTimingAfter": "nach dem Dienst (nächster Arbeitstag)",
+      "dayOffTimingBefore": "vor dem Dienst (Montag der Dienstwoche)",
+      "dayOffTimingHint": "Vor dem Dienst: Bei einem Tausch behält jeder sein Dienstfrei; wer einen Dienst übernimmt, bekommt dafür keines.",
+      "minPresentEnabled": "Mindestbesetzung an Werktagen",
+      "minPresentEnabledHint": "Mo–Fr müssen so viele Teilnehmer da sein. Dienstfreie weichen vollen Tagen aus, bei Urlaub gibt es eine Warnung.",
+      "minPresent": "Mindestens anwesend",
+      "minPresentHint": "von {count} Teilnehmern",
       "dayOffTitle": "Text für Dienstfrei",
       "dayOffMembers": "Dienstfrei je Teilnehmer",
       "dayOffMembersHint": "Ausschalten für Teilnehmer ohne Dienstfrei, z. B. mit All-in-Vertrag. Übernimmt so jemand einen Dienst, entfällt das Dienstfrei dieses Platzes.",
+      "yearlyFairness": "Gerecht pro Kalenderjahr",
+      "yearlyFairnessHint": "Jedes Jahr beginnt eine neue Runde. Wer im Vorjahr mehr Dienste hatte, setzt am Jahresanfang entsprechend aus.",
       "entryTitleInfo": "Erklärung zur Eintragsvorlage",
       "entryTitleHelp": "Platzhalter: '{Vorname}' = erstes Wort des Namens, '{Name}' = ganzer Name, '{Dienst}' = Titel des Dienstes. '{Vorname}' oder '{Name}' muss vorkommen. Beispiel: „'{Vorname}' Dienst“ → „Günther Dienst“.",
       "entryTitlePreview": "Vorschau: {title}",
@@ -1448,6 +1470,18 @@
       "holidayCalendarUnavailable": "Kalender ohne Zugriff",
       "holidayCalendarHint": "Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. Am besten ein Kalender mit externer Synchronisierung eines Feiertags-Feeds.",
       "holidayOpenDates": "Geöffnete Feiertage"
+    },
+    "yearly": {
+      "hint": "Delta = Dienste im Vorjahr minus die wenigsten Dienste eines Ganzjahres-Teilnehmers. Ein eigener Wert gilt statt des automatischen; wirksam beim nächsten Generieren.",
+      "tableTitle": "Übertrag {from} → {to}",
+      "member": "Teilnehmer",
+      "held": "Dienste {year}",
+      "autoDelta": "Delta",
+      "override": "Eigener Wert",
+      "overrideFor": "Eigener Wert für {name} ({year})",
+      "newSince": "neu seit {date}",
+      "reset": "Automatischen Wert verwenden",
+      "noData": "Im Vorjahr gab es noch keine Dienste – kein Übertrag."
     },
     "period": {
       "day": "Tag",
@@ -1508,7 +1542,8 @@
       "warning": {
         "lockedNonMember": "{date}: {user} ist kein Teilnehmer mehr, hat aber einen getauschten Platz.",
         "lockedWithoutDuty": "{date}: Kein Dienst mehr geplant, aber getauschte Plätze vorhanden – der Dienst bleibt bestehen.",
-        "lockedOverCapacity": "{date}: Mehr getauschte Plätze ({count}) als jetzt geplant – der Dienst behält alle getauschten Plätze."
+        "lockedOverCapacity": "{date}: Mehr getauschte Plätze ({count}) als jetzt geplant – der Dienst behält alle getauschten Plätze.",
+        "understaffed": "{date}: Nur {filled} von {capacity} Plätzen besetzt."
       },
       "unlock": "Sperre aufheben",
       "skipReason": "Grund des Ausfalls",
@@ -1560,11 +1595,19 @@
       "holidayOpenDates": "Geöffnete Feiertage ungültig.",
       "entryTitle": "Eintragsvorlage ungültig: Sie braucht '{Vorname}' oder '{Name}' und darf nur '{Vorname}', '{Name}' und '{Dienst}' enthalten (max. 100 Zeichen).",
       "dayOffTitle": "Die Vorlage für Dienstfrei ist ungültig.",
+      "dayOffTiming": "Ungültige Lage des Dienstfreis.",
+      "minPresent": "Die Mindestbesetzung muss zwischen 1 und der Teilnehmerzahl minus 1 liegen.",
       "dayOffExcluded": "Dienstfrei je Teilnehmer ungültig: Nur Teilnehmer der Rotation können ausgenommen werden.",
-      "reinforcedDates": "Verstärkte Tage ungültig: Je Datum ein Eintrag, und künftige Tage brauchen mehr Personen als „Personen pro Dienst“, höchstens so viele wie Teilnehmer."
+      "reinforcedDates": "Verstärkte Tage ungültig: Je Datum ein Eintrag, und künftige Tage brauchen mehr Personen als „Personen pro Dienst“, höchstens so viele wie Teilnehmer.",
+      "yearlyFairness": "Ungültige Einstellung für den Jahresausgleich.",
+      "yearDelta": "Ungültiger Wert für das Delta (0–52).",
+      "notMember": "Diese Person ist kein Teilnehmer der Rotation."
     }
   },
   "swap": {
+    "dayOffStays": "Dein Dienstfrei zu diesem Dienst bleibt bei dir; wer ihn übernimmt, bekommt dafür keines.",
+    "dayOffStaysForced": "Das Dienstfrei bleibt beim bisherigen Inhaber; der Einspringer bekommt dafür keines.",
+    "dayOffStaysAccept": "Für diesen Dienst bekommst du kein Dienstfrei; es bleibt beim bisherigen Inhaber.",
     "notifications": {
       "open": "Benachrichtigungen",
       "title": "Benachrichtigungen",
@@ -1581,7 +1624,11 @@
       "dayOffRequestsHint": "Wenn Teilnehmer Termine für ein gesperrtes Dienstfrei vorschlagen oder darauf warten, dass du antwortest.",
       "notConfigured": "Der E-Mail-Versand ist auf diesem Server nicht eingerichtet. Deine Auswahl gilt, sobald er eingerichtet ist.",
       "saveFailed": "Einstellung konnte nicht gespeichert werden.",
-      "loadFailed": "Die Einstellungen konnten nicht geladen werden."
+      "loadFailed": "Die Einstellungen konnten nicht geladen werden.",
+      "myVacations": "Meine Urlaube",
+      "myVacationsHint": "Entscheidungen und Änderungen zu meinem Urlaub",
+      "vacationRequests": "Urlaubsanträge",
+      "vacationRequestsHint": "Neue Anträge und Änderungswünsche der Teilnehmer, die ich verwalte"
     },
     "title": "Tauschbörse",
     "subtitle": "Dienste tauschen",
@@ -1686,6 +1733,7 @@
       "closedDuty": "An einem Schließtag gibt es keine Plätze.",
       "counterNotDue": "Für diesen Tausch ist kein Ausgleich offen.",
       "outsideWindow": "Dieser Dienst liegt außerhalb des Ausgleichsfensters.",
+      "onVacation": "An diesem Tag ist die Person auf Urlaub.",
       "internal": "Unerwarteter Fehler."
     },
     "retry": "Erneut versuchen",
@@ -1765,12 +1813,15 @@
       "duplicate": "Dieser Termin ist schon vorgeschlagen.",
       "tooMany": "Zu viele offene Vorschläge.",
       "reasonRequired": "Bitte gib eine Begründung an.",
-      "proposalNotOpen": "Dieser Vorschlag ist nicht mehr offen."
+      "proposalNotOpen": "Dieser Vorschlag ist nicht mehr offen.",
+      "belowMinimum": "An diesem Tag wäre die Mindestbesetzung unterschritten."
     },
     "tab": "Dienstfrei",
     "mineTitle": "Meine Dienstfreie",
     "manageTitle": "Verwaltung",
-    "cardTitle": "Dienstfrei nach dem Dienst am {date}",
+    "cardTitle": "Dienstfrei zum Dienst am {date}",
+    "keptOnSwap": "Aus getauschtem Dienst – das Dienstfrei bleibt bei dir.",
+    "keptOnSwapManage": "Aus getauschtem Dienst – das Dienstfrei bleibt bei {name}.",
     "status": {
       "standard": "Standard",
       "moved": "Verschoben",
@@ -1811,7 +1862,13 @@
       "title": "Dienstfrei verschieben",
       "text": "Wähle einen anderen Arbeitstag in derselben Woche.",
       "loadFailed": "Die möglichen Tage konnten nicht geladen werden.",
-      "none": "Es gibt keinen anderen möglichen Tag."
+      "none": "Es gibt keinen anderen möglichen Tag.",
+      "full": "voll"
+    },
+    "override": {
+      "title": "Mindestbesetzung unterschritten",
+      "text": "Am {date} wären nur {present} von mindestens {minimum} Teilnehmern anwesend. Trotzdem vergeben?",
+      "confirm": "Trotzdem vergeben"
     },
     "propose": {
       "text": "Schlage bis zu {max} Termine bis {date} vor. Die Verwaltung nimmt einen davon an.",
@@ -1859,7 +1916,16 @@
         "dayOffDeclined": "Vorschlag abgelehnt",
         "dayOffReset": "Dein Dienstfrei hat sich geändert",
         "dayOffDropped": "Dein Dienstfrei entfällt",
-        "dayOffReminder": "Offene Terminvorschläge"
+        "dayOffReminder": "Offene Terminvorschläge",
+        "vacationRequested": "Neuer Urlaubsantrag",
+        "vacationChangeRequested": "Änderung eines Urlaubs beantragt",
+        "vacationApproved": "Urlaub genehmigt",
+        "vacationRejected": "Urlaub abgelehnt",
+        "vacationChangeApproved": "Urlaubsänderung genehmigt",
+        "vacationChangeRejected": "Urlaubsänderung abgelehnt",
+        "vacationEntered": "Urlaub eingetragen",
+        "vacationChanged": "Urlaub geändert",
+        "vacationCancelled": "Urlaub storniert"
       },
       "lead": {
         "offerToAll": "{name} bietet den Dienst am {duty} an.",
@@ -1870,14 +1936,23 @@
         "forcedToMe": "{actor} hat dich als Einspringer für {name} am {duty} eingeteilt.",
         "dutyTransferred": "Dein Dienst am {duty} wurde an {name} übertragen.",
         "counterChosen": "Als Ausgleich für deinen Dienst am {duty} übernimmst du den Dienst am {counter}.",
-        "dayOffLocked": "Dein Dienstfrei nach dem Dienst am {duty} wurde gesperrt. Schlage bitte Termine vor.",
-        "dayOffProposed": "{holder} schlägt für das Dienstfrei nach dem Dienst am {duty} vor: {dates}.",
-        "dayOffCountered": "Für dein Dienstfrei nach dem Dienst am {duty} wird der {date} vorgeschlagen.",
-        "dayOffAccepted": "Das Dienstfrei nach dem Dienst am {duty} ist am {date}.",
-        "dayOffDeclined": "Der Vorschlag {date} für das Dienstfrei nach dem Dienst am {duty} wurde abgelehnt.",
-        "dayOffReset": "Dein Dienstfrei nach dem Dienst am {duty} ist nicht mehr gültig und wurde zurückgesetzt.",
-        "dayOffDropped": "Dein Dienstfrei nach dem Dienst am {duty} entfällt.",
-        "dayOffReminder": "Die Vorschläge von {holder} für das Dienstfrei nach dem Dienst am {duty} warten seit 3 Tagen auf Antwort."
+        "dayOffLocked": "Dein Dienstfrei zum Dienst am {duty} wurde gesperrt. Schlage bitte Termine vor.",
+        "dayOffProposed": "{holder} schlägt für das Dienstfrei zum Dienst am {duty} vor: {dates}.",
+        "dayOffCountered": "Für dein Dienstfrei zum Dienst am {duty} wird der {date} vorgeschlagen.",
+        "dayOffAccepted": "Das Dienstfrei zum Dienst am {duty} ist am {date}.",
+        "dayOffDeclined": "Der Vorschlag {date} für das Dienstfrei zum Dienst am {duty} wurde abgelehnt.",
+        "dayOffReset": "Dein Dienstfrei zum Dienst am {duty} ist nicht mehr gültig und wurde zurückgesetzt.",
+        "dayOffDropped": "Dein Dienstfrei zum Dienst am {duty} entfällt.",
+        "dayOffReminder": "Die Vorschläge von {holder} für das Dienstfrei zum Dienst am {duty} warten seit 3 Tagen auf Antwort.",
+        "vacationRequested": "{holder} beantragt Urlaub von {from} bis {to}.",
+        "vacationChangeRequested": "{holder} möchte den Urlaub von {from} bis {to} ändern oder stornieren.",
+        "vacationApproved": "Dein Urlaub von {from} bis {to} ist genehmigt. Deine Dienste in diesem Zeitraum wurden neu verteilt.",
+        "vacationRejected": "Dein Urlaubsantrag von {from} bis {to} wurde abgelehnt.",
+        "vacationChangeApproved": "Deine Änderung ist genehmigt: Urlaub jetzt {from} bis {to} (vorher {previous}).",
+        "vacationChangeRejected": "Deine Änderung zum Urlaub von {from} bis {to} wurde abgelehnt.",
+        "vacationEntered": "Für dich wurde Urlaub von {from} bis {to} eingetragen. Deine Dienste in diesem Zeitraum wurden neu verteilt.",
+        "vacationChanged": "Dein Urlaub wurde geändert: jetzt {from} bis {to} (vorher {previous}).",
+        "vacationCancelled": "Dein Urlaub von {from} bis {to} wurde storniert."
       },
       "kind": {
         "give": "Abgabe – wer annimmt, übernimmt den Dienst.",
@@ -1891,7 +1966,8 @@
       "allDay": "ganztägig",
       "button": "Zur Tauschbörse",
       "footer": "Benachrichtigungen ändern",
-      "someone": "Jemand"
+      "someone": "Jemand",
+      "vacationRange": "{from} bis {to}"
     }
   },
   "outlook": {
@@ -1904,9 +1980,91 @@
     "calendarName": "Meine Dienste",
     "with": "Mit: {names}",
     "swapLink": "Tauschen: {url}",
-    "dayOffLink": "Dienstfrei: {url}"
+    "dayOffLink": "Dienstfrei: {url}",
+    "vacationLink": "Urlaub verwalten: {url}"
   },
   "announcements": {
     "dismiss": "Ankündigung ausblenden"
+  },
+  "vacation": {
+    "entryTitle": "{name} Urlaub",
+    "calendarHint": "Urlaub – Details unter Urlaub",
+    "errors": {
+      "notFound": "Urlaub nicht gefunden.",
+      "forbidden": "Dafür fehlt dir die Berechtigung.",
+      "invalid": "Bitte prüfe die Eingaben.",
+      "reasonRequired": "Bitte gib eine Begründung an.",
+      "tooLong": "Ein Urlaub darf höchstens 366 Tage dauern.",
+      "notParticipant": "Urlaub gibt es nur für Teilnehmer einer Rotation.",
+      "begun": "Vergangene oder heutige Tage lassen sich nicht mehr ändern.",
+      "overlap": "Der Zeitraum überschneidet sich mit einem anderen Urlaub.",
+      "wrongStatus": "Das geht in diesem Status nicht mehr.",
+      "changePending": "Es gibt schon einen offenen Änderungsantrag.",
+      "rotationUnavailable": "Eine Rotation dieser Person kann gerade nicht neu geplant werden (Vorlage fehlt oder Anmeldungen sind aus). Bitte die Rotation prüfen."
+    },
+    "tab": "Urlaub",
+    "mine": "Meine Urlaube",
+    "requests": "Offene Anträge",
+    "calendar": "Urlaubskalender",
+    "request": "Urlaub beantragen",
+    "requestStaffing": "An {count, plural, one {# Werktag} other {# Werktagen}} wäre das Team unterbesetzt ({dates}). Die Verwaltung entscheidet.",
+    "enter": "Urlaub eintragen",
+    "person": "Person",
+    "from": "Von",
+    "to": "Bis",
+    "note": "Notiz",
+    "reason": "Begründung",
+    "emptyMine": "Noch kein Urlaub eingetragen.",
+    "emptyRequests": "Keine offenen Anträge.",
+    "emptyCalendar": "Kein Urlaub in diesem Jahr.",
+    "loadFailed": "Die Urlaube konnten nicht geladen werden.",
+    "rejectHint": "Bitte begründe die Ablehnung für {name}.",
+    "requestCancelHint": "Die Verwaltung entscheidet über die Stornierung.",
+    "status": {
+      "pending": "Beantragt",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt",
+      "withdrawn": "Zurückgezogen",
+      "cancelled": "Storniert"
+    },
+    "pendingChange": {
+      "change": "Änderung beantragt: {range}",
+      "cancel": "Storno beantragt"
+    },
+    "direct": "Von der Verwaltung eingetragen",
+    "actions": {
+      "withdraw": "Zurückziehen",
+      "requestChange": "Änderung beantragen",
+      "requestCancel": "Storno beantragen",
+      "withdrawChange": "Antrag zurückziehen",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "approveChange": "Änderung genehmigen",
+      "rejectChange": "Änderung ablehnen",
+      "edit": "Ändern",
+      "cancel": "Stornieren"
+    },
+    "preview": {
+      "title": "Auswirkungen auf die Dienste",
+      "loading": "Neuplanung wird berechnet …",
+      "none": "Keine Dienste betroffen.",
+      "rotation": "{rotation} · {calendar}",
+      "date": "Datum",
+      "before": "Vorher",
+      "after": "Nachher",
+      "understaffed": "Am {date} ist nur {filled} von {capacity} Plätzen besetzt.",
+      "staffing": "Am {date} wären nur {present} von mindestens {minimum} anwesend.",
+      "hint": "Nach dem Bestätigen werden die Dienste ab dem Urlaub neu verteilt. Betroffene bekommen neue Outlook-Einladungen."
+    },
+    "done": {
+      "requested": "Urlaub beantragt.",
+      "approved": "Urlaub genehmigt, Dienste neu verteilt.",
+      "rejected": "Antrag abgelehnt.",
+      "entered": "Urlaub eingetragen, Dienste neu verteilt.",
+      "changed": "Urlaub geändert, Dienste neu verteilt.",
+      "cancelled": "Urlaub storniert, Dienste neu verteilt.",
+      "withdrawn": "Zurückgezogen.",
+      "changeRequested": "Änderung beantragt."
+    }
   }
 }

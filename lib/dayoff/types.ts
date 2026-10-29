@@ -3,6 +3,9 @@ export type DayOffStatus = "standard" | "moved" | "locked" | "agreed" | "dropped
 export type ProposalSide = "holder" | "manager";
 export type ProposalStatus = "open" | "accepted" | "declined" | "void";
 export type DropReason = "noDuty" | "disabled" | "seatRemoved" | "excluded";
+
+/** Where the Dienstfrei of a rotation lies relative to its duty (SPEC 12.42). */
+export type DayOffTiming = "after" | "before";
 export type DayOffAudience = "holder" | "managers";
 export type DayOffNotificationKind =
   | "day_off_locked"
@@ -27,7 +30,8 @@ export type DayOffErrorCode =
   | "duplicate"
   | "tooMany"
   | "reasonRequired"
-  | "proposalNotOpen";
+  | "proposalNotOpen"
+  | "belowMinimum";
 
 export const MAX_DATES_PER_PROPOSAL = 5;
 export const MAX_OPEN_PROPOSALS = 10;
@@ -48,10 +52,21 @@ export interface DayOffView {
   standardDate: string | null;
   lockNote: string | null;
   dropReason: DropReason | null;
+  /** Kept by its holder after giving the Platz away (SPEC 12.42). */
+  keptOnSwap: boolean;
   windowEnd: string;
   proposals: DayOffProposalView[];
   /** Filled by the route; the service always returns false. */
   canMove: boolean;
 }
 export interface DayOffBoard { mine: DayOffView[]; manage: DayOffView[]; manageCalendarIds: string[] }
-export interface MoveOption { date: string; othersOff: number; isCurrent: boolean; isStandard: boolean }
+/** Why a day is full (SPEC 12.44): present after the change vs. the Mindestbesetzung. */
+export interface StaffingDetail { date: string; present: number; minimum: number }
+export interface MoveOption {
+  date: string;
+  othersOff: number;
+  isCurrent: boolean;
+  isStandard: boolean;
+  /** Voller Tag (SPEC 12.44): not selectable for the holder. */
+  full: boolean;
+}

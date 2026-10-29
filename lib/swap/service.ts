@@ -1,7 +1,7 @@
 // [fork] Swap board service. Every write runs in one synchronous better-sqlite3
 // transaction: read state, ask lib/swap/rules.ts, write. Due offers are settled
 // in a separate transaction first, so their status sticks even if the request fails.
-import { and, eq, gte, inArray, isNotNull, ne } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, ne, sql } from "drizzle-orm"; // [fork] sql
 import { db } from "@/lib/db";
 import { dayOffs } from "@/lib/dayoff/schema"; // [fork]
 import { formatDateToLocal } from "@/lib/date-utils"; // [fork]
@@ -10,7 +10,9 @@ import { transferDayOff } from "@/lib/dayoff/service"; // [fork]
 import { calendars, shiftSignups, shifts, user } from "@/lib/db/schema";
 import { enqueueSwapEvent, offerKind } from "@/lib/notify/enqueue";
 import { addDays, hasStarted } from "@/lib/rotation/dates"; // [fork] addDays
-import { rotationDuties, rotationSlotLocks, rotations } from "@/lib/rotation/schema";
+import { rotationDuties, rotationMembers, rotationSlotLocks, rotations } from "@/lib/rotation/schema"; // [fork] rotationMembers
+import { vacations } from "@/lib/vacation/schema"; // [fork]
+import { isOnVacation } from "@/lib/vacation/dates"; // [fork]
 import { logResolved } from "@/lib/swap/audit";
 import {
   checkAccept,
@@ -77,6 +79,7 @@ const dutyColumns = {
   endTime: shifts.endTime,
   isAllDay: shifts.isAllDay,
   title: shifts.title,
+  dayOffStays: sql<boolean>`(${rotations.dayOffEnabled} = 1 and ${rotations.dayOffTiming} = 'before')`.mapWith(Boolean), // [fork] SPEC 12.42
 };
 
 /** The duty behind a shift with its current holders, or null for a plain shift. */
@@ -85,6 +88,7 @@ export function loadSlot(tx: Reader, shiftId: string): SlotView | null {
     .select(dutyColumns)
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId)) // [fork]
     .where(and(eq(rotationDuties.shiftId, shiftId), eq(rotationDuties.kind, "duty")))
     .get();
   if (!duty) return null;
@@ -104,6 +108,7 @@ export function dutiesOf(tx: Reader, userId: string): DutyTiming[] {
     .from(shiftSignups)
     .innerJoin(rotationDuties, eq(rotationDuties.shiftId, shiftSignups.shiftId))
     .innerJoin(shifts, eq(shifts.id, shiftSignups.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId)) // [fork]
     .where(and(eq(shiftSignups.userId, userId), eq(rotationDuties.kind, "duty")))
     .all();
 }
@@ -260,6 +265,9 @@ export interface AcceptResult {
 
 /** Hands one Platz over and carries its lock along (see nextLock). */
 function applyMove(tx: Tx, move: SlotMove, actorId: string, now: Date): void {
+  // [fork] Urlaub (SPEC 12.43): nobody takes over a Platz on their own vacation day.
+  const dutyDate = tx.select({ date: rotationDuties.date }).from(rotationDuties).where(eq(rotationDuties.shiftId, move.shiftId)).get()?.date;
+  if (dutyDate && isOnVacation(tx, move.toUserId, dutyDate)) throw new SwapServiceError("onVacation");
   const fromLock = and(eq(rotationSlotLocks.shiftId, move.shiftId), eq(rotationSlotLocks.userId, move.fromUserId));
   const existing = tx.select().from(rotationSlotLocks).where(fromLock).get() ?? null;
   tx.update(shiftSignups)
@@ -517,6 +525,7 @@ function dutyInfos(shiftIds: string[]): Map<string, DutyInfo> {
     .select(dutyColumns)
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId)) // [fork]
     .where(inArray(rotationDuties.shiftId, shiftIds))
     .all();
   return new Map(rows.map((r) => [r.shiftId, r]));
@@ -624,6 +633,7 @@ export function listDuties(calendarId: string, userId: string, now: Date): DutyL
     .select(dutyColumns)
     .from(rotationDuties)
     .innerJoin(shifts, eq(shifts.id, rotationDuties.shiftId))
+    .innerJoin(rotations, eq(rotations.id, rotationDuties.rotationId)) // [fork]
     .where(and(eq(shifts.calendarId, calendarId), eq(rotationDuties.kind, "duty")))
     .all()
     .filter((d) => !hasStarted(d.date, d.startTime, now))
@@ -687,11 +697,28 @@ export function calendarState(calendarId: string, now: Date): Omit<CalendarSwapS
     .where(and(eq(rotations.calendarId, calendarId), eq(rotations.dayOffEnabled, true), isNotNull(dayOffs.shiftId), gte(dayOffs.date, addDays(formatDateToLocal(now), -60))))
     .all()
     .filter((r) => r.date && ["standard", "moved", "agreed"].includes(r.status));
+  // [fork] Urlaub: approved vacations of Teilnehmer of this calendar's rotations, from 60 days back
+  const members = db
+    .select({ userId: rotationMembers.userId })
+    .from(rotationMembers)
+    .innerJoin(rotations, eq(rotations.id, rotationMembers.rotationId))
+    .where(eq(rotations.calendarId, calendarId))
+    .all()
+    .map((r) => r.userId);
+  const vacationRows = members.length
+    ? db
+        .select({ id: vacations.id, userId: vacations.userId, startDate: vacations.startDate, endDate: vacations.endDate, name: user.name, email: user.email })
+        .from(vacations)
+        .innerJoin(user, eq(user.id, vacations.userId))
+        .where(and(inArray(vacations.userId, [...new Set(members)]), eq(vacations.status, "approved"), gte(vacations.endDate, addDays(formatDateToLocal(now), -60))))
+        .all()
+    : [];
   return {
     dutyShiftIds: duties.map((d) => d.shiftId),
     openOfferShiftIds: [...new Set(openOffers.map((o) => o.shiftId))],
     entryTemplates: Object.fromEntries(duties.map((d) => [d.shiftId, d.entryTitle])),
     openOffers,
     dayOffs: dayOffRows.map((r) => ({ id: r.id, userId: r.userId, date: r.date!, title: entryTitle(r.template, r, r.dutyTitle ?? "") })), // [fork]
+    vacations: vacationRows, // [fork] Urlaub
   };
 }

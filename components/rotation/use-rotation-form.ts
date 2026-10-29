@@ -6,7 +6,7 @@ import type { ReinforcedDate, RotationPeriod, SkipDate } from "@/lib/rotation/ty
 import type { RotationInput } from "@/lib/rotation/validate";
 import type { RotationCalendar } from "@/hooks/useRotations";
 import { ENTRY_TITLE_DEFAULT } from "@/lib/rotation/entry-title";
-import { DEFAULT_DAY_OFF_TITLE } from "@/lib/dayoff/types"; // [fork] Dienstfrei
+import { DEFAULT_DAY_OFF_TITLE, type DayOffTiming } from "@/lib/dayoff/types"; // [fork] Dienstfrei
 import { formatDateToLocal } from "@/lib/date-utils";
 
 export interface RotationFormState {
@@ -28,7 +28,10 @@ export interface RotationFormState {
   // [fork] Dienstfrei
   dayOffEnabled: boolean;
   dayOffTitle: string;
+  dayOffTiming: DayOffTiming; // [fork] SPEC 12.42
   dayOffExcludedIds: string[];
+  yearlyFairness: boolean; // [fork] Jahresausgleich
+  minPresent: number | null; // [fork] Mindestbesetzung
 }
 
 function nextMonday(): string {
@@ -58,7 +61,10 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           memberIds: rotation.memberIds,
           dayOffEnabled: rotation.dayOffEnabled, // [fork] Dienstfrei
           dayOffTitle: rotation.dayOffTitle, // [fork] Dienstfrei
+          dayOffTiming: rotation.dayOffTiming, // [fork] Dienstfrei
           dayOffExcludedIds: rotation.dayOffExcludedIds, // [fork] Dienstfrei
+          yearlyFairness: rotation.yearlyFairness, // [fork] Jahresausgleich
+          minPresent: rotation.minPresent, // [fork] Mindestbesetzung
         }
       : {
           name: "",
@@ -78,7 +84,10 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
           memberIds: [],
           dayOffEnabled: false, // [fork] Dienstfrei
           dayOffTitle: DEFAULT_DAY_OFF_TITLE, // [fork] Dienstfrei
+          dayOffTiming: "after", // [fork] Dienstfrei
           dayOffExcludedIds: [], // [fork] Dienstfrei
+          yearlyFairness: true, // [fork] Jahresausgleich: new rotations on (SPEC 12.41)
+          minPresent: null, // [fork] Mindestbesetzung
         }
   );
 
@@ -155,8 +164,11 @@ export function useRotationForm(calendar: RotationCalendar, rotation: RotationDe
     reinforcedDates: state.reinforcedDates,
     dayOffEnabled: state.dayOffEnabled, // [fork] Dienstfrei
     dayOffTitle: state.dayOffTitle, // [fork] Dienstfrei
+    dayOffTiming: state.dayOffTiming, // [fork] Dienstfrei
     // a removed Teilnehmer leaves no stale entry behind
     dayOffExcludedIds: state.dayOffExcludedIds.filter((id) => state.memberIds.includes(id)), // [fork] Dienstfrei
+    yearlyFairness: state.yearlyFairness, // [fork] Jahresausgleich
+    minPresent: state.minPresent, // [fork] Mindestbesetzung
   });
 
   return {

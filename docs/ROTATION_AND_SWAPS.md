@@ -9,6 +9,8 @@ Diese Anleitung beschreibt die Fork-Erweiterungen von BetterShift: Dienste reihu
 3. [Generieren](#3-generieren)
 4. [Tauschbörse](#4-tauschbörse)
    - [Dienstfrei](#4a-dienstfrei)
+   - [Urlaub](#4b-urlaub)
+   - [Mindestbesetzung an Werktagen](#4c-mindestbesetzung-an-werktagen)
 5. [Rechte](#5-rechte)
 6. [Benachrichtigungen und Outlook](#6-benachrichtigungen-und-outlook)
 7. [Persönlicher Kalender-Feed](#7-persönlicher-kalender-feed)
@@ -73,7 +75,7 @@ Unter `/rotations` den Kalender wählen und „Neue Rotation" anklicken. Die Fel
 | Verstärkte Tage | Einzelne Daten, an denen mehr Personen Dienst haben als „Personen pro Dienst“ (höchstens so viele wie Teilnehmer). Mit „Verstärkten Tag hinzufügen“ ergänzen. |
 | Text bei Schließung | Erscheint an Schließtagen als „Text (Grund)“, z. B. „HeimkinoWelt geschlossen (Inventur)“. |
 | Feiertagskalender | Optional. Jeder Eintrag dieses Kalenders an einem Diensttag schließt den Tag. |
-| Dienstfrei nach Dienst / Text für Dienstfrei / Dienstfrei je Teilnehmer | Schaltet das Dienstfrei ein, legt die Vorlage des Kalendereintrags fest und nimmt einzelne Teilnehmer aus (siehe [Dienstfrei](#4a-dienstfrei)). |
+| Dienstfrei zum Dienst / Text für Dienstfrei / Dienstfrei je Teilnehmer | Schaltet das Dienstfrei ein, legt die Vorlage des Kalendereintrags fest und nimmt einzelne Teilnehmer aus (siehe [Dienstfrei](#4a-dienstfrei)). |
 | Teilnehmer (Reihenfolge) | Die Reihenfolge bestimmt die erste Runde; danach mischt der Generator die Paare selbst. Mit „Nach oben" / „Nach unten" sortieren, mit „Teilnehmer hinzufügen" ergänzen, mit „Entfernen" streichen. |
 
 Beispiel „Samstagsdienst": Periode „Woche (ab Montag)", Diensttag Sa, 2 Personen pro Dienst, 8 Teilnehmer. Jede Person hat dann einmal pro 4 Wochen Dienst. Die erste Runde folgt der Reihenfolge, danach werden die Paare neu gemischt: Niemand hat zwei Samstage hintereinander Dienst, niemand hat zweimal hintereinander denselben Partner, und pro Quartal weicht die Anzahl der Dienste höchstens um 1 ab. Bei wenigen Teilnehmern (z. B. 6) liegt dafür manchmal nur ein freier Samstag zwischen zwei Diensten. Mit „Speichern" wird die Rotation gesichert; erzeugt sind die Dienste damit noch nicht.
@@ -104,6 +106,20 @@ Der 24. und 31. Dezember sind keine gesetzlichen Feiertage und fehlen im Feed. W
 Der Feiertagskalender enthält nur, was die Synchronisierung gerade vorhält: etwa 3 Monate zurück bis 1 Jahr nach dem letzten Sync. Generierst du weit in die Zukunft, synchronisiere den Kalender vorher, bevor du auf „Übernehmen“ klickst; sonst fehlen späte Feiertage, und diese Tage werden als normale Dienste geplant.
 
 Vergangene Schließtage zählen weiter, auch wenn ihr Feiertag später aus dem Feiertagskalender verschwindet (weil die Synchronisierung alte Termine entfernt, du ihn von Hand löschst oder den Feiertagskalender abwählst). Die künftige Besetzung verschiebt sich dadurch nicht. Für künftige Tage entscheidet weiter der Kalender. Löschst du dagegen einen vergangenen Schließeintrag von Hand im Teamkalender, zählt dieser Tag nur noch als Schließtag, solange er als Ausfalltag eingetragen ist oder im Feiertagskalender steht; sonst kann sich die künftige Besetzung beim nächsten „Übernehmen“ verschieben.
+
+### Gerecht pro Kalenderjahr (Jahresausgleich)
+
+Mit dem Schalter „Gerecht pro Kalenderjahr“ beginnt mit dem ersten Diensttag jedes Kalenderjahres eine neue Runde. Wer im Vorjahr mehr Plätze gehalten hat, setzt am Jahresanfang entsprechend früh aus: Der Ausgleich verteilt sich auf die ersten Runden des Jahres, es gibt keinen geschlossenen Block. „Nie zwei Diensttage in Folge“ und „nie derselbe Partner hintereinander“ gelten auch über den Jahreswechsel. Ziel ist, dass die Dienste der Ganzjahres-Teilnehmer pro Kalenderjahr, mit dem Delta verrechnet, höchstens um 1 abweichen.
+
+**Bestehende Rotationen** haben den Schalter aus und verhalten sich wie bisher; bei neuen Rotationen ist er vorgeschlagen. Schaltest du ihn bei einer laufenden Rotation ein, verteilt das nächste Generieren alle nicht gesperrten künftigen Plätze neu. Gesperrte Plätze (z. B. nach einem Tausch) bleiben bestehen.
+
+**So wird das Delta gezählt:** Das Delta eines Teilnehmers sind die Plätze, die er im Vorjahr gehalten hat, minus die wenigsten Plätze eines Ganzjahres-Teilnehmers.
+
+- Es zählt der aktuelle Inhaber eines Platzes, also nach Tausch, erzwungenem Tausch und Ausgleich.
+- Zusatzplätze an verstärkten Tagen zählen mit, ebenso Feiertage, an denen trotzdem Dienst geöffnet wurde („Trotzdem Dienst“). Schließtage zählen nicht.
+- **Ganzjahres-Teilnehmer** ist, wer am ersten Diensttag des Vorjahres (bei einer jüngeren Rotation: am ersten Diensttag der Rotation) schon Teilnehmer war. Alle anderen haben Delta 0 und zählen nicht zum Minimum; in der Tabelle steht bei ihnen „neu seit <Datum>“.
+
+**Bedienung im Formular:** Unter dem Schalter zeigt die Delta-Tabelle den Übertrag vom Vorjahr ins laufende und vom laufenden ins nächste Jahr. Die Werte sind so gerechnet, als wäre der Schalter eingeschaltet. Um die Tabelle zu sehen, schaltest du den Schalter im Formular ein; gespeichert wird der Schalter erst mit „Speichern“. Die Zeile „laufendes → nächstes Jahr“ ist vorläufig: Noch nicht begonnene, nicht gesperrte Tage des laufenden Jahres zählen so, wie sie gerade geplant sind. Bei jedem Teilnehmer kannst du das Delta mit „Eigener Wert“ (ganze Zahl 0–52) überschreiben; „Automatischen Wert verwenden“ nimmt den Override zurück. Ein Override bleibt fix und gilt ab dem nächsten Generieren. Während des Jahres wird nichts nachgezogen: Ein Tausch oder ein erzwungener Tausch (z. B. bei Krankenstand) im laufenden Jahr verschiebt die Plätze nicht neu, sie wirken erst über das Delta im Folgejahr. Mitarbeiter sehen das Delta nicht.
 
 ## 3. Generieren
 
@@ -184,9 +200,11 @@ Regeln, die die App durchsetzt:
 
 ## 4a. Dienstfrei
 
-Wer einen Platz in einem Dienst hat, bekommt danach einen Arbeitstag frei: das **Dienstfrei**. Es hängt am Platz (nicht an der Person) und wechselt bei einem Tausch mit dem Platz den Inhaber.
+Wer einen Platz in einem Dienst hat, bekommt danach einen Arbeitstag frei: das **Dienstfrei**. Es hängt am Platz (nicht an der Person) und wechselt bei einem Tausch mit dem Platz den Inhaber (bei „nach dem Dienst“; „vor dem Dienst“ siehe unten).
 
-**Einschalten.** Im Rotationsformular den Schalter „Dienstfrei nach Dienst" aktivieren und bei „Text für Dienstfrei" die Vorlage anpassen (Standard `{Vorname} dienstfrei`, Platzhalter wie bei der Eintragsvorlage). Beim nächsten Generieren bekommen alle künftigen Dienste ihr Dienstfrei, auch bereits erzeugte. Rückwirkend entsteht nichts. Beim Ausschalten entfernt die App alle künftigen Dienstfreie und benachrichtigt die Inhaber; vergangene bleiben als Historie.
+**Einschalten.** Im Rotationsformular den Schalter „Dienstfrei zum Dienst" aktivieren und bei „Text für Dienstfrei" die Vorlage anpassen (Standard `{Vorname} dienstfrei`, Platzhalter wie bei der Eintragsvorlage). Beim nächsten Generieren bekommen alle künftigen Dienste ihr Dienstfrei, auch bereits erzeugte. Rückwirkend entsteht nichts. Beim Ausschalten entfernt die App alle künftigen Dienstfreie und benachrichtigt die Inhaber; vergangene bleiben als Historie.
+
+**Dienstfrei liegt.** Unter dem Schalter wählt ein Auswahlfeld, wo das Dienstfrei liegt: „nach dem Dienst (nächster Arbeitstag)“ (Standard, auch für alle bestehenden Rotationen) oder „vor dem Dienst (Montag der Dienstwoche)“. Die Einstellung gilt pro Rotation. Die folgenden Absätze beschreiben „nach dem Dienst“; die Abweichungen für „vor dem Dienst“ stehen im Absatz „Dienstfrei vor dem Dienst“ weiter unten.
 
 **Wer bekommt eins.** Jeder besetzte Platz eines Dienstes, auch Zusatzplätze, geöffnete Feiertage sowie Einspringer- und Ausgleichsplätze. Ein Schließtag bringt keines. Wird der Diensttag nachträglich zum Schließtag, entfällt das Dienstfrei (mit Mail an den Inhaber).
 
@@ -218,6 +236,14 @@ Ein vereinbartes Dienstfrei kann der Inhaber nicht selbst verschieben; er beantr
 
 **Bei Tausch und Neugenerieren.** Bei jedem Platzwechsel (Tausch, erzwungener Tausch, Ausgleich, Neugenerieren) gilt für den neuen Inhaber: Aus „Standard" oder „Verschoben" wird „Standard", „Gesperrt" bleibt gesperrt (offene Vorschläge des alten Inhabers verfallen), aus „Vereinbart" wird „Gesperrt" (mit Mail an den neuen Inhaber). Wird das Datum nachträglich ungültig (neuer Feiertag oder Ausfalltag, anderes eigenes Dienstfrei), wandert ein Standard-Dienstfrei still weiter, ein verschobenes fällt mit Mail auf den Standardtag zurück, ein vereinbartes wird mit Mail gesperrt. Dienstfreie, deren Datum begonnen hat, ändern sich nie mehr.
 
+**Dienstfrei vor dem Dienst.** Bei „Dienstfrei liegt: vor dem Dienst“ gilt:
+
+- **Standardtag:** der erste Arbeitstag Mo bis Fr der Dienstwoche vor dem Diensttag (meist der Montag). Hat die Dienstwoche vor dem Diensttag keinen Arbeitstag, gilt der nächste Arbeitstag nach dem Dienst. Liegt der Standardtag schon in der Vergangenheit, gilt der nächste Arbeitstag ab morgen.
+- **Verschieben:** nur innerhalb der Dienstwoche vor dem Diensttag.
+- **Tausch, erzwungener Tausch und Ausgleich:** Das Dienstfrei bleibt mit Datum und Status beim bisherigen Inhaber (gehaltenes Dienstfrei); auf `/swaps` steht dort „Aus getauschtem Dienst – das Dienstfrei bleibt bei dir.“. Der neue Inhaber bekommt für diesen Platz keines, auch nicht, wenn der Abgebende keines hatte oder der Ausgleich erlassen wird. Beim Zurücktauschen wird das Dienstfrei wieder normal. Die Tauschdialoge zeigen einen Hinweis.
+- **Neugenerieren und Umbesetzen durch die Verwaltung:** Nicht gehaltene, nicht begonnene Dienstfreie folgen dem Platz. Pro Dienst gibt es höchstens so viele Dienstfreie wie Plätze. Entfallen Plätze, fallen zuerst verwaiste Dienstfreie weg, dann gehaltene (mit Mail an den Inhaber).
+- **Umschalten:** Beim Wechsel auf „vor dem Dienst“ werden Standard-Dienstfreie neu datiert, verschobene außerhalb des neuen Bereichs fallen mit Mail auf den Standardtag zurück; vereinbarte und gesperrte bleiben. Beim Wechsel auf „nach dem Dienst“ enden alle gehaltenen Dienstfreie, und die Dienstfreie folgen wieder ihrem Platz. Ein verschobenes Dienstfrei wird dort nur zurückgesetzt, wenn es ungültig ist oder am oder vor dem Diensttag liegt (unverändertes Verhalten).
+
 **Mails.** Über Microsoft Graph, wie bei der Tauschbörse:
 
 | Anlass | An wen | Schalter |
@@ -231,7 +257,7 @@ Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die bei
 
 **Grenzen.**
 
-- Arbeitstage pro Person, Urlaub und Krankheit kennt die App nicht. Bei Bedarf sperrt die Verwaltung, und der Termin wird neu vereinbart.
+- Arbeitstage pro Person und Krankheit kennt die App nicht; genehmigter Urlaub zählt nicht als Arbeitstag. Bei Bedarf sperrt die Verwaltung, und der Termin wird neu vereinbart.
 - Beim Neugenerieren werden verwaiste Dienstfreie in fester Reihenfolge den neuen Inhabern zugeordnet; ein gesperrtes kann so an eine andere Person gehen (es bleibt gesperrt).
 - Kollisionen mit eigenen Diensten anderer Rotationen an Werktagen werden nicht geprüft.
 - Manuelles Umbesetzen über „Andere eintragen" (`signUpOthers`) gilt nicht als Platzwechsel: Das alte Dienstfrei entfällt (mit Mail), der neue Inhaber bekommt ein neues auf dem Standardtag; eine Sperre oder Vereinbarung geht verloren. Für Umbesetzungen ist der erzwungene Tausch gedacht, der das Dienstfrei übergibt.
@@ -239,6 +265,67 @@ Annahme, Ablehnung und Gegenvorschlag gehen jeweils an die andere Seite. Die bei
 - Wird eine Rotation gelöscht, verschwinden alle ihre Dienstfreie (auch vergangene und gesperrte) ohne Mail an die Inhaber.
 - Die Verwaltung erhält Mails nur, wenn sie Besitzer ist oder eine Freigabe mit „Kalendereinstellungen verwalten" hat; globale Administratoren ohne Freigabe nicht.
 - Mails nur mit konfiguriertem Outlook.
+
+## 4b. Urlaub
+
+**Urlaub** gehört der Person, nicht einer Rotation: ein Zeitraum ganzer Kalendertage (1 bis 366 Tage), in dem sie keinen Platz bekommt. Er gilt in allen Rotationen, in denen sie Teilnehmer ist. Urlaube derselben Person überschneiden sich nicht. Bedient wird alles auf `/swaps` im Reiter „Urlaub“.
+
+**Antrag und Entscheidung.** Ein Teilnehmer beantragt mit „Urlaub beantragen“ Zeitraum und optional eine Notiz (bis 500 Zeichen); der Start muss nach heute liegen. Die Rotations-Verwaltung der Person (wer in einer ihrer Rotationen Rotationen verwalten darf) sieht den Antrag unter „Offene Anträge“ und genehmigt oder lehnt ab; eine Ablehnung braucht eine Begründung. Den eigenen offenen Antrag zieht der Antragsteller zurück. Anträge sehen nur Antragsteller und Verwaltung.
+
+**Direkte Einträge.** Die Verwaltung kann Urlaub mit „Urlaub eintragen“ direkt für einen Teilnehmer eintragen, ändern und stornieren, ohne Antrag. Die Person bekommt eine Mail.
+
+**Änderung und Storno.** Ein genehmigter Urlaub lässt sich für den Mitarbeiter nur über einen Änderungs- oder Storno-Antrag ändern, den die Verwaltung genehmigt oder ablehnt (höchstens ein offener Antrag je Urlaub). Ein genehmigter Storno-Antrag verschickt die Mail „Urlaub storniert“. Begonnene Urlaubstage sind unveränderlich: Neue und geänderte Startdaten müssen nach heute liegen.
+
+**Neuplanung.** Jede wirksame Aktion (Genehmigen, direkter Eintrag, Änderung, Storno) zeigt zuerst eine Vorschau mit allen betroffenen Plätzen (vorher → nachher). Nach dem Bestätigen generiert die App in einem Schritt jede Rotation der Person neu, vom ersten nicht begonnenen Diensttag im (früheren) Zeitraum bis zum bisherigen Planende. Das kann viele Plätze verschieben und damit viele Outlook-Einladungen und -Absagen auslösen; die Vorschau weist darauf hin.
+
+- Urlaub ist im Generator eine harte Regel. „Nie zwei Diensttage in Folge“, Partnerwechsel und Abstände dürfen dafür gebrochen werden.
+- Der Platz wird zuerst innerhalb der Runde verschoben; sonst springt ein Ersatz ein. Dienste vor dem ersten neu geplanten Tag bleiben dabei, wie sie sind.
+- **Nachholen.** Wer wegen Urlaubs einen Platz verpasst, holt ihn im selben Kalenderjahr des jeweiligen Dienstes nach (das Nachhol-Konto wird pro Kalenderjahr des Dienstes geführt). Was am Jahresende übrig bleibt, verfällt; bei „Gerecht pro Kalenderjahr“ geht es über das Delta ins Folgejahr.
+- **Abstand im Kalenderjahr.** Dass die Plätze pro Kalenderjahr höchstens um 1 abweichen, ist nur mit eingeschaltetem Jahresausgleich garantiert. Ohne ihn laufen die Runden wie bisher über den Jahreswechsel.
+- **Offene Plätze.** Sind in einem Dienst zu wenige Personen verfügbar, bleibt der Platz offen.
+- **Dienstfrei weicht Urlaub aus.** Urlaubstage gelten fürs Dienstfrei nicht als Arbeitstag; ein Dienstfrei wird beim nächsten Abgleich vom Urlaub weg verschoben (siehe [Dienstfrei](#4a-dienstfrei)).
+- **Gesperrte Plätze.** Gesperrte Plätze der Person an Urlaubstagen werden freigegeben, Tauschangebote darauf verfallen.
+
+**Tausch an Urlaubstagen gesperrt.** An einem Tag, an dem eine Person Urlaub hat, kann sie keinen Platz per Tausch übernehmen. Der Versuch endet mit „An diesem Tag ist die Person auf Urlaub.“
+
+**Anzeige.**
+
+- Teamkalender: genehmigter Urlaub erscheint als ganztägiger Eintrag „{Vorname} Urlaub“; ein Klick in der Tagesansicht führt zum Reiter „Urlaub“. Der Eintrag ist keine Schicht und lässt sich nicht bearbeiten.
+- Persönlicher Feed: ganztägiger Termin.
+- Outlook: ganztägiger Termin im Kalender von office@ mit der Person als einzigem Teilnehmer und Status „Abwesend“. Er gehört zur ersten Outlook-fähigen Rotation der Person (nach Namen sortiert). Der Termin gilt erst an seinem letzten Urlaubstag als begonnen: Wird ein laufender Urlaub verlängert, verkürzt oder storniert, zieht Outlook mit. Ab dem letzten Urlaubstag wird der Termin nicht mehr angefasst.
+- Urlaubskalender (Verwaltung): eine Übersicht aller Urlaube pro Jahr; auf dem Handy als Liste, am Desktop als Balken.
+
+**Mails.** Wie bei Tausch und Dienstfrei über Microsoft Graph. Die Verwaltung erhält Anträge und Änderungsanträge, die Person Entscheidungen (genehmigt, abgelehnt, geändert, storniert) und direkte Einträge der Verwaltung. Zwei Schalter unter „Benachrichtigungen“ auf `/swaps`:
+
+| Anlass | An wen | Schalter |
+| --- | --- | --- |
+| Entscheidungen, Einträge, Änderungen und Stornos der Verwaltung | die Person | „Meine Urlaube“ |
+| neue Anträge und Änderungsanträge | die Verwaltung | „Urlaubsanträge“ |
+
+Mails nur mit konfiguriertem Outlook. Mitglieder, die aus der Rotation ausscheiden, behalten ihre Urlaube.
+
+## 4c. Mindestbesetzung an Werktagen
+
+Die **Mindestbesetzung** legt fest, wie viele Teilnehmer einer Rotation an jedem Werktag (Mo bis Fr, kein Schließtag der Rotation, also Ausfalltag oder nicht geöffneter Feiertag) anwesend sein müssen. Sie wirkt auf Dienstfrei und warnt bei Urlaub. Hintergrund: SPEC, Abschnitt 12.44.
+
+**Einstellen.** Im Rotationsformular den Schalter „Mindestbesetzung an Werktagen“ einschalten und bei „Mindestens anwesend“ eine Zahl von 1 bis Teilnehmerzahl − 1 eingeben (das Formular zeigt „von {n} Teilnehmern“). Ausgeschaltet ist alles wie bisher. Das Speichern gleicht die Dienstfreie sofort ab.
+
+**Wer gilt als abwesend.** Genehmigter Urlaub und jedes Dienstfrei mit Datum (Standard, Verschoben, Vereinbart), und zwar aus jeder Rotation der Person, nicht nur aus dieser. Nicht gezählt werden Urlaubsanträge, gesperrte und entfallene Dienstfreie.
+
+**Wirkung auf Dienstfrei.**
+
+- Ein **Standard-Dienstfrei** weicht still auf den nächsten Arbeitstag mit freier Kapazität aus; bei Dienstfrei „vor dem Dienst“ sucht er zuerst die Tage davor in der Dienstwoche, danach erst die Tage danach. Wer den früheren Dienst hat, wählt zuerst; bei gleichem Dienst entscheidet eine feste Reihenfolge.
+- **Verschobene und vereinbarte** Dienstfreie bleiben, wo sie sind, auch wenn der Tag dadurch unterbesetzt ist. Sie zählen als belegt.
+- **Mitarbeiter** können einen vollen Tag nicht wählen: Beim „Verschieben“ erscheint er als ausgegrauter Chip mit „voll“. Das gilt, sobald die Person in einer Rotation mit Mindestbesetzung Teilnehmer ist und ohne sie an dem Tag weniger als das Minimum anwesend wären.
+- Die **Verwaltung** darf trotzdem: Beim Gegenvorschlag und beim Annehmen eines Terminvorschlags des Inhabers fragt die App mit „Mindestbesetzung unterschritten“ nach („Am {date} wären nur {n} von mindestens {m} Teilnehmern anwesend. Trotzdem vergeben?“). „Trotzdem vergeben“ führt die Aktion aus. Nimmt der Inhaber einen Gegenvorschlag der Verwaltung an, wird nicht geprüft.
+
+**Wirkung auf Urlaub.** Urlaub wird nie gesperrt. Die Vorschau vor dem Genehmigen, Eintragen oder Ändern listet Werktage, an denen eine Rotation der Person unter das Minimum fiele („Am {date} wären nur {present} von mindestens {minimum} anwesend“). Im Antrag erscheint ein Hinweis: „An {n} Werktagen wäre das Team unterbesetzt: {Daten}. Die Verwaltung entscheidet.“ Die Antrags-Abfrage (`/api/vacations/staffing`) nennt nur Daten, keine Namen. Beide Prüfungen zählen nur feste Dienstfreie (verschoben oder vereinbart), weil ein Standard-Dienstfrei dem Urlaub ohnehin ausweicht, und betrachten Tage ab morgen.
+
+**Grenzen.**
+
+- Unterbesetzte Tage werden im Kalender und in Outlook nicht markiert; es gibt keine Mails dazu.
+- Der Generator bleibt unverändert: Die Mindestbesetzung beeinflusst die Dienstplanung nicht, nur Dienstfrei und die Urlaubswarnung.
+- Nur Rotationen mit eingeschalteter Mindestbesetzung werden geprüft; Arbeitstage pro Person und Krankheit kennt die App nicht.
 
 ## 5. Rechte
 
@@ -463,5 +550,18 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
   - Ein offener Ausgleich hat keine Frist und keine Erinnerungsmail. Die Verwaltung sieht ihn im Reiter „Verwaltung".
   - Die 3 Monate des Ausgleichsfensters sind fest im Code, keine Einstellung pro Rotation.
   - Der Ausfallende kann einen erzwungenen Tausch weder verhindern noch rückgängig machen. Ein Fehler der Verwaltung lässt sich nur durch einen weiteren Tausch oder durch Umbesetzen mit „Andere eintragen" (`signUpOthers`) korrigieren.
+- **Jahresausgleich:**
+  - Ein begonnener Dienst, der an einem Tag liegt, der später zum Schließtag wurde, wird nicht gezählt.
+  - Bei Perioden über mehrere Tage zählt jedes Datum als Bruchteil eines Platzes.
+  - Ein Neustart innerhalb eines Jahres gleicht das Vorjahr nicht erneut aus. Das gilt auch für einen Neustart in den ersten Tagen des Jahres, wenn in diesem Jahr schon ein Dienst der alten Konfiguration stattgefunden hat: Der Ausgleich des Vorjahres entfällt dann.
+  - Schaltest du den Schalter mitten im Jahr ein, wird dieses Jahr nicht rückwirkend ausgeglichen. Sein Delta wird erst im Folgejahr verrechnet.
+  - Hat ein Jahr weniger Diensttage, als der Ausgleich braucht, entfällt der Rest des Ausgleichs. Er wird nicht ins nächste Jahr übertragen.
+  - Bei 3 Personen pro Dienst kann der Jahresmodus in Konfigurationen, in denen schon der normale Plan Partner wiederholt, ein paar Wiederholungen mehr erzeugen als der normale Plan.
 - **Dienstfrei:** Grenzen siehe [Dienstfrei](#4a-dienstfrei).
+- **Urlaub:**
+  - Es gibt keinen Urlaubsanspruch und keine Resttage-Verwaltung.
+  - Es gibt keine halben Tage; Urlaub zählt immer ganze Kalendertage.
+  - Krankenstand läuft weiter über den [erzwungenen Tausch](#erzwungener-tausch-krankenstand).
+  - Ab dem letzten Urlaubstag wird der Outlook-Termin nicht mehr angefasst; eine Änderung an diesem Tag erreicht Outlook nicht mehr.
+  - Die Neuplanung kann viele Outlook-Mails auslösen.
 - Ohne Anmeldung (`AUTH_ENABLED=false`) gibt es weder Tausch-Mails noch Outlook-Sync noch einen persönlichen Feed.

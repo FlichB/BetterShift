@@ -17,6 +17,7 @@ export function useForceSwapForm(calendarId: string, shiftId: string, absentUser
   );
   const canSubmit = (audience === "everyone" || targets.some((p) => p.id === targetUserId)) && note.length <= 200;
   const targetName = targets.find((p) => p.id === targetUserId)?.name ?? "?";
+  const dayOffStays = duties.data?.duties.find((d) => d.shiftId === shiftId)?.dayOffStays ?? false; // [fork] SPEC 12.42
 
   const toInput = (): ForceSwapInput => ({
     shiftId,
@@ -29,7 +30,7 @@ export function useForceSwapForm(calendarId: string, shiftId: string, absentUser
     audience, setAudience,
     targetUserId, setTargetUserId, targetName,
     note, setNote,
-    targets,
+    targets, dayOffStays,
     loading: duties.isLoading,
     canSubmit, toInput,
   };

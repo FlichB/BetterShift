@@ -12,6 +12,15 @@ _Avoid_: Schichtplan, Turnus, Vorlage
 Ein Benutzer, der mit einer festen Position in einer Rotation steht.
 _Avoid_: Mitglied, Mitarbeiter, Member
 
+**Jahresausgleich**:
+Schalter pro Rotation (SPEC 12.41). Jedes Kalenderjahr beginnt eine neue Runde; am Jahresanfang setzt aus, wer im Vorjahr mehr Plätze gehalten hat (Ausgleichsphase).
+
+**Delta**:
+Gehaltene Plätze eines Teilnehmers im Vorjahr minus die wenigsten gehaltenen Plätze eines Ganzjahres-Teilnehmers. Wird live gerechnet; die Rotations-Verwaltung kann es pro Jahr überschreiben.
+
+**Ganzjahres-Teilnehmer**:
+Wer am ersten Diensttag des Vorjahres schon Teilnehmer war. Alle anderen haben Delta 0 und zählen nicht zum Minimum.
+
 **Periode**:
 Der Zeitabschnitt, in dem dieselbe Besetzung Dienst hat (ein Tag, eine Arbeitswoche ab Montag oder eine feste Anzahl Tage).
 _Avoid_: Turnus, Zyklus
@@ -130,7 +139,13 @@ Ein Werktag Mo–Fr, der kein Feiertag, kein Ausfalltag und kein anderes eigenes
 _Avoid_: Diensttag (der ist der Tag des Dienstes)
 
 **Standardtag**:
-Der erste Arbeitstag nach dem Dienst, auf dem das Dienstfrei ohne weiteres Zutun liegt.
+Der erste Arbeitstag nach dem Dienst, auf dem das Dienstfrei ohne weiteres Zutun liegt (bei „vor dem Dienst“: erster Arbeitstag der Dienstwoche vor dem Diensttag).
+
+**Dienstfrei vor dem Dienst**:
+Einstellung der Rotation („Dienstfrei liegt: vor dem Dienst“): Der Standardtag liegt in der Dienstwoche vor dem Diensttag, meist am Montag, statt nach dem Dienst.
+
+**Gehaltenes Dienstfrei**:
+Bei „vor dem Dienst“ ein Dienstfrei, das nach Tausch, erzwungenem Tausch oder Ausgleich mit Datum und Status beim bisherigen Inhaber bleibt; der neue Inhaber des Platzes bekommt keines.
 
 **Verschieben**:
 Das selbständige Verlegen des eigenen Dienstfreis auf einen anderen Arbeitstag derselben Arbeitswoche.
@@ -149,3 +164,32 @@ Ein Dienstfrei, dessen Termin die Verwaltung angenommen hat; der Inhaber kann es
 
 **Entfallenes Dienstfrei**:
 Ein Dienstfrei, dessen Dienst weggefallen ist, z. B. weil der Diensttag zum Schließtag wurde.
+
+## Urlaub
+
+**Urlaub**:
+Zeitraum ganzer Kalendertage, in dem eine Person keinen Platz bekommt; er gehört der Person und gilt in allen ihren Rotationen. Genehmigt wird er von der Rotations-Verwaltung der Person.
+_Avoid_: Abwesenheit, Krankenstand (der läuft über den erzwungenen Tausch)
+
+**Urlaubsantrag**:
+Beantragter Urlaub, den die Verwaltung genehmigt oder ablehnt; Änderungs- und Storno-Anträge betreffen einen genehmigten Urlaub.
+
+**Neuplanung**:
+Das automatische Neugenerieren aller Rotationen der Person ab dem ersten betroffenen Diensttag bis zum bisherigen Planende, nach Vorschau, in einem Schritt.
+
+**Nachhol-Schuld**:
+Plätze, die jemand wegen Urlaubs verpasst hat und im selben Kalenderjahr des jeweiligen Dienstes nachholt; was übrig bleibt, verfällt bzw. geht über das Delta (Jahresausgleich) ins Folgejahr.
+
+## Mindestbesetzung
+
+**Mindestbesetzung**:
+Wie viele Teilnehmer einer Rotation an einem Werktag (Mo–Fr, kein Schließtag) mindestens anwesend sein müssen.
+_Avoid_: Mindestanzahl, Kapazität (die gehört zum Dienst)
+
+**Abwesend**:
+Ein Teilnehmer an einem Tag mit genehmigtem Urlaub oder einem Dienstfrei mit Datum, aus welcher Rotation auch immer.
+_Avoid_: Frei (zu ungenau)
+
+**Voller Tag**:
+Ein Werktag, an dem in einer Rotation der Person die Mindestbesetzung fehlen würde, wenn sie selbst auch noch fehlte; Mitarbeiter können dort kein Dienstfrei hinlegen.
+_Avoid_: Ausgebucht

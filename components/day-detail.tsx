@@ -110,11 +110,28 @@ export function Kpi({
   );
 }
 
-/** [fork] The Dienstfreie of a calendar on one day, as rendering entries for the day detail. */
+/** [fork] The Dienstfreie and Urlaube of a calendar on one day, as rendering entries for the day detail. */
 export function useDayOffEntries(calendarId: string | undefined, day: Date): ShiftWithCalendar[] {
   const { entryTemplates, dayOffs } = useSwapCalendarState(calendarId);
   const date = formatDateToLocal(day);
   return useMemo(() => dayOffEntries(date, null, { templates: entryTemplates, dayOffs }), [date, entryTemplates, dayOffs]);
+}
+
+/** [fork] Urlaub: a vacation day in the day detail, a link to the vacation tab of the swap board. */
+function VacationDetailRow({ shift }: { shift: ShiftWithCalendar }) {
+  const t = useTranslations();
+  return (
+    <Link
+      href="/swaps?tab=vacation"
+      className="flex items-center gap-[11px] rounded-lg border border-line bg-surface-card px-3 py-[11px] transition-colors hover:bg-surface-panel"
+    >
+      <span className="shift-rail h-[34px] w-1 shrink-0 rounded-full" style={shiftVars(shift.color)} />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[13.5px] font-semibold text-fg-strong">{shift.title}</div>
+        <div className="mt-0.5 text-xs text-fg-tertiary">{t("vacation.calendarHint")}</div>
+      </div>
+    </Link>
+  );
 }
 
 /** [fork] A Dienstfrei in the day detail: a link to the swap board instead of the shift sheet. */
@@ -169,6 +186,7 @@ export function ShiftDetailRow({
   const { signupsEnabled } = useShiftSignupPermission(shift.calendarId);
   const { entryTemplates } = useSwapCalendarState(shift.calendarId); // [fork]
   const { customFields: customFieldDefinitions } = useCustomFields(shift.calendarId);
+  if (shift.vacation) return <VacationDetailRow shift={shift} />; // [fork] Urlaub
   if (shift.dayOff) return <DayOffDetailRow shift={shift} />; // [fork] details live on the swap board
 
   return (

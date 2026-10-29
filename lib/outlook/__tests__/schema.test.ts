@@ -29,7 +29,10 @@ describe("phase 3 schema", () => {
         entryTitle: "{Vorname} Dienst",
         dayOffEnabled: false,
         dayOffTitle: "{Vorname} dienstfrei",
+        dayOffTiming: "after",
         dayOffExcludedIds: [],
+        yearlyFairness: false,
+        minPresent: null,
         reinforcedDates: [],
         holidayCalendarId: null,
         holidayOpenDates: [],
@@ -75,6 +78,8 @@ describe("phase 3 schema", () => {
       myOffers: true,
       myDayOffs: true,
       dayOffRequests: true,
+      myVacations: true,
+      vacationRequests: true,
     });
   });
 });
