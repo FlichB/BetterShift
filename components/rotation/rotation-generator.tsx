@@ -39,8 +39,10 @@ export function RotationGenerator({
   const t = useTranslations();
   const locale = useLocale();
   const today = formatDateToLocal(new Date());
-  const [from, setFromRaw] = useState(today);
-  const [to, setToRaw] = useState(addDays(today, 12 * 7 - 1));
+  // From the rotation's Beginn, but never before today: begun days are not written anyway.
+  const start = rotation.startDate > today ? rotation.startDate : today;
+  const [from, setFromRaw] = useState(start);
+  const [to, setToRaw] = useState(addDays(start, 12 * 7 - 1));
   // The plan is stored with the range it was computed for; Apply uses exactly that range.
   const [shown, setShown] = useState<{ plan: GenerationPlan; from: string; to: string } | null>(null);
   const plan = shown?.plan ?? null;
