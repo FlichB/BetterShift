@@ -35,7 +35,10 @@ Die wichtigsten Begriffe (das vollständige Glossar steht in [`CONTEXT.md`](../C
 | **Ausfalltag** | Ein Schließtag aus eigenem Grund, mit Datum und Grund eingetragen. |
 | **Feiertagskalender** | Ein Kalender, aus dem eine Rotation Feiertage liest; jeder Eintrag darin gilt an seinem Datum als Feiertag. |
 | **Schließeintrag** | Die ganztägige Schicht ohne Plätze, die eine Rotation an einem Schließtag anlegt. |
-| **Dienstfrei** | Der freie Arbeitstag, den ein Platz seinem Inhaber mitbringt; er wechselt mit dem Platz den Inhaber (siehe [Dienstfrei](#4a-dienstfrei)). |
+| **Dienstfrei** | Der freie Arbeitstag, den ein Platz seinem Inhaber mitbringt; bei „nach dem Dienst“ wechselt er mit dem Platz den Inhaber, bei „vor dem Dienst“ bleibt er beim bisherigen (siehe [Dienstfrei](#4a-dienstfrei)). |
+| **Jahresausgleich** | Rotations-Schalter „Gerecht pro Kalenderjahr“: Die Plätze werden pro Kalenderjahr gerecht verteilt; das **Delta** (Mehrplätze des Vorjahres) wird am Jahresanfang ausgeglichen (siehe [Jahresausgleich](#gerecht-pro-kalenderjahr-jahresausgleich)). |
+| **Urlaub** | Ein Zeitraum ganzer Kalendertage, in dem eine Person in keiner ihrer Rotationen einen Platz bekommt (siehe [Urlaub](#4b-urlaub)). |
+| **Mindestbesetzung** | Wie viele Teilnehmer einer Rotation an jedem Werktag anwesend sein müssen; wirkt auf Dienstfrei und warnt bei Urlaub (siehe [Mindestbesetzung](#4c-mindestbesetzung-an-werktagen)). |
 | **Dienst** | Ein einzelner Kalendertag-Eintrag im Teamkalender, den eine Rotation erzeugt hat und der eine feste Zahl an Plätzen hat. |
 | **Platz** | Die Zuordnung genau eines Teilnehmers zu einem Dienst. |
 | **Gesperrter Platz** | Ein Platz, der durch einen Tausch entstanden ist. Neues Generieren überschreibt ihn nie. |
@@ -103,7 +106,7 @@ Fällt ein Feiertag auf einen Diensttag, steht in der Vorschau „<Text bei Schl
 
 Der 24. und 31. Dezember sind keine gesetzlichen Feiertage und fehlen im Feed. Wenn du dort schließt, trage sie als Ausfalltag mit Grund ein. Ein Ausfalltag hat Vorrang vor einem Feiertag am selben Tag.
 
-Der Feiertagskalender enthält nur, was die Synchronisierung gerade vorhält: etwa 3 Monate zurück bis 1 Jahr nach dem letzten Sync. Generierst du weit in die Zukunft, synchronisiere den Kalender vorher, bevor du auf „Übernehmen“ klickst; sonst fehlen späte Feiertage, und diese Tage werden als normale Dienste geplant.
+Der Feiertagskalender enthält nur, was die Synchronisierung gerade vorhält: etwa 3 Monate zurück bis zu dem Jahresende, das beim Abo unter „Termine abrufen bis“ eingestellt ist. Standard ist der 31.12. des übernächsten Jahres (bei einem Sync im Oktober 2026 also bis 31.12.2028). Generierst du weit in die Zukunft, synchronisiere den Kalender vorher, bevor du auf „Übernehmen“ klickst; sonst fehlen späte Feiertage, und diese Tage werden als normale Dienste geplant.
 
 Vergangene Schließtage zählen weiter, auch wenn ihr Feiertag später aus dem Feiertagskalender verschwindet (weil die Synchronisierung alte Termine entfernt, du ihn von Hand löschst oder den Feiertagskalender abwählst). Die künftige Besetzung verschiebt sich dadurch nicht. Für künftige Tage entscheidet weiter der Kalender. Löschst du dagegen einen vergangenen Schließeintrag von Hand im Teamkalender, zählt dieser Tag nur noch als Schließtag, solange er als Ausfalltag eingetragen ist oder im Feiertagskalender steht; sonst kann sich die künftige Besetzung beim nächsten „Übernehmen“ verschieben.
 
@@ -316,7 +319,7 @@ Die **Mindestbesetzung** legt fest, wie viele Teilnehmer einer Rotation an jedem
 
 - Ein **Standard-Dienstfrei** weicht still auf den nächsten Arbeitstag mit freier Kapazität aus; bei Dienstfrei „vor dem Dienst“ sucht er zuerst die Tage davor in der Dienstwoche, danach erst die Tage danach. Wer den früheren Dienst hat, wählt zuerst; bei gleichem Dienst entscheidet eine feste Reihenfolge.
 - **Verschobene und vereinbarte** Dienstfreie bleiben, wo sie sind, auch wenn der Tag dadurch unterbesetzt ist. Sie zählen als belegt.
-- **Mitarbeiter** können einen vollen Tag nicht wählen: Beim „Verschieben“ erscheint er als ausgegrauter Chip mit „voll“. Das gilt, sobald die Person in einer Rotation mit Mindestbesetzung Teilnehmer ist und ohne sie an dem Tag weniger als das Minimum anwesend wären.
+- **Mitarbeiter** können einen vollen Tag nicht wählen: Beim „Verschieben“ erscheint er als ausgegrauter Chip mit „voll“, und einen Terminvorschlag für einen vollen Tag lehnt die App ab („An diesem Tag wäre die Mindestbesetzung unterschritten.“). Das gilt, sobald die Person in einer Rotation mit Mindestbesetzung Teilnehmer ist und ohne sie an dem Tag weniger als das Minimum anwesend wären.
 - Die **Verwaltung** darf trotzdem: Beim Gegenvorschlag und beim Annehmen eines Terminvorschlags des Inhabers fragt die App mit „Mindestbesetzung unterschritten“ nach („Am {date} wären nur {n} von mindestens {m} Teilnehmern anwesend. Trotzdem vergeben?“). „Trotzdem vergeben“ führt die Aktion aus. Nimmt der Inhaber einen Gegenvorschlag der Verwaltung an, wird nicht geprüft.
 
 **Wirkung auf Urlaub.** Urlaub wird nie gesperrt. Die Vorschau vor dem Genehmigen, Eintragen oder Ändern listet Werktage, an denen eine Rotation der Person unter das Minimum fiele („Am {date} wären nur {present} von mindestens {minimum} anwesend“). Im Antrag erscheint ein Hinweis: „An {n} Werktagen wäre das Team unterbesetzt: {Daten}. Die Verwaltung entscheidet.“ Die Antrags-Abfrage (`/api/vacations/staffing`) nennt nur Daten, keine Namen. Beide Prüfungen zählen nur feste Dienstfreie (verschoben oder vereinbart), weil ein Standard-Dienstfrei dem Urlaub ohnehin ausweicht, und betrachten Tage ab morgen.
@@ -334,7 +337,9 @@ Die **Mindestbesetzung** legt fest, wie viele Teilnehmer einer Rotation an jedem
 | Verwaltung von Rotationen | Rotationen anlegen, ändern, generieren, Outlook-Schalter | Besitzer des Kalenders, Recht „Kalendereinstellungen verwalten" im Kalender oder Administrator der Instanz |
 | Tausch erzwingen | Tausch erzwingen, Gegendienst stellvertretend wählen, Ausgleich erlassen | wie Verwaltung von Rotationen |
 | Dienstfrei selbst verschieben | Das eigene Dienstfrei innerhalb der Arbeitswoche verlegen | Recht „Dienstfrei selbst verschieben" (`moveOwnDayOff`), in allen Bündeln standardmäßig angehakt. Zählt nur für Besitzer und Freigaben an Benutzer, nie für Freigabe-Links oder Gäste |
-| Dienstfrei sperren und vereinbaren | Sperren, Vorschläge annehmen oder ablehnen, Gegenvorschlag | wie Verwaltung von Rotationen |
+| Dienstfrei sperren und vereinbaren | Sperren, Vorschläge annehmen oder ablehnen, Gegenvorschlag, Mindestbesetzung mit „Trotzdem vergeben“ unterschreiten | wie Verwaltung von Rotationen |
+| Urlaub beantragen | Eigenen Urlaub beantragen, Änderung oder Storno beantragen, eigene Anträge zurückziehen | Teilnehmer mindestens einer Rotation |
+| Urlaub verwalten | Anträge genehmigen oder ablehnen, Urlaub direkt eintragen, ändern, stornieren, Urlaubskalender | Verwaltung von Rotationen in mindestens einer Rotation, in der die Person Teilnehmer ist |
 | Tauschen | Dienste anbieten und annehmen | Angemeldet, im Kalender das Recht „Sich selbst eintragen" (`signUpSelf`) und Anmeldungen im Kalender eingeschaltet |
 | Persönlicher Feed | Eigenen Feed einrichten | Angemeldet; im Feed erscheinen nur Dienste aus Kalendern, die der Benutzer sehen darf |
 
@@ -356,7 +361,8 @@ Kurzfassung; die vollständige Einrichtung steht in [`OUTLOOK_SETUP.md`](OUTLOOK
   | „Ausgleich für deinen Dienst: …" | der Ausfallende, sobald der Gegendienst gewählt ist | „Meine Angebote" |
 
   Das Erlassen eines Ausgleichs löst keine Mail aus. Jeder Benutzer schaltet unter „Benachrichtigungen" auf `/swaps` die Arten „Neue Angebote an alle", „Anfragen an mich" und „Meine Angebote" einzeln ab.
-- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Platz (und bei eingeschaltetem Dienstfrei jedes Dienstfrei, siehe [Dienstfrei](#4a-dienstfrei)) wird ein ganztägiger Termin im Kalender von office@ (Status „Frei", Titel aus der Eintragsvorlage); eingeladen ist nur der Inhaber des Platzes. Dienstfrei-Termine haben dagegen den Status „Abwesend" und den Titel aus der Vorlage „Text für Dienstfrei". Bei Tausch oder Umbesetzung sagt die App den Termin des bisherigen Inhabers ab und lädt den neuen Inhaber ein; Exchange verschickt die Absage sowie Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
+- **Dienstfrei- und Urlaubs-Mails.** Dazu kommen je zwei Schalter für Dienstfrei („Mein Dienstfrei (Sperre, Antworten, Änderungen)", „Dienstfrei-Vorschläge der Teilnehmer (Verwaltung)") und Urlaub („Meine Urlaube", „Urlaubsanträge"); die Anlässe stehen unter [Dienstfrei](#4a-dienstfrei) und [Urlaub](#4b-urlaub). Alle Schalter sind anfangs eingeschaltet.
+- **Outlook-Termine.** Pro Rotation gibt es den Schalter „In Outlook (office@) eintragen". Jeder künftige Platz (und bei eingeschaltetem Dienstfrei jedes Dienstfrei, siehe [Dienstfrei](#4a-dienstfrei); dazu jeder genehmigte Urlaub, siehe [Urlaub](#4b-urlaub), und jeder Schließtag ohne Einladungen) wird ein ganztägiger Termin im Kalender von office@ (Status „Frei", Titel aus der Eintragsvorlage); eingeladen ist nur der Inhaber des Platzes. Dienstfrei-Termine haben dagegen den Status „Abwesend" und den Titel aus der Vorlage „Text für Dienstfrei". Bei Tausch oder Umbesetzung sagt die App den Termin des bisherigen Inhabers ab und lädt den neuen Inhaber ein; Exchange verschickt die Absage sowie Einladungen, Aktualisierungen und Absagen. Tausch, Umbesetzung und Ausfalltag werden binnen etwa einer Minute nachgezogen, ein nächtlicher Vollabgleich stellt gelöschte oder von Hand geänderte Termine wieder her.
 - **Ohne Konfiguration** bleibt alles aus; die Rotationsseite zeigt den Schalter deaktiviert („nicht eingerichtet"), und die Tausch-Mails entfallen.
 - Wer die Einladungen von office@ erhält, braucht den [Kalender-Feed](#7-persönlicher-kalender-feed) nicht zusätzlich in Outlook.
 
@@ -518,6 +524,13 @@ Alles, was seit dem Backup eingetragen oder getauscht wurde, ist danach verloren
 
 **Besonderheit beim Update auf „Ein Eintrag pro Person" (Oktober 2026).** Jeder Platz hat jetzt einen eigenen Titel (Eintragsvorlage) und bei Outlook einen eigenen Termin. Nach dem Update auf diese Version sagt der erste Abgleich alle künftigen Termine im alten Format (ein Termin pro Dienst) ab und lädt pro Platz neu ein — jeder Teilnehmer bekommt einmalig eine Absage plus eine Einladung je künftigem Platz (bei einem Jahr voller Samstage mehrere Dutzend Mails pro Person), die Exchange teils verzögert zustellt. Informiere das Team vorher.
 
+**Besonderheit beim Update auf Jahresausgleich, Dienstfrei vor dem Dienst, Urlaub und Mindestbesetzung (Oktober 2026).** Die Fork-Migrationen `0011` bis `0015` laufen beim Start von selbst; neue Umgebungsvariablen gibt es nicht. Bestehende Rotationen verhalten sich danach wie vorher: „Gerecht pro Kalenderjahr“ ist aus, „Dienstfrei liegt“ steht auf „nach dem Dienst“, die Mindestbesetzung ist aus. Erst wenn du eine dieser Einstellungen änderst, ändert sich etwas:
+
+1. **Jahresausgleich einschalten:** Das nächste Generieren verteilt alle nicht gesperrten künftigen Plätze neu. Zuerst die „Vorschau“ ansehen und das Team informieren; mit Outlook folgen geänderte Einladungen und Absagen.
+2. **Dienstfrei auf „vor dem Dienst“ umstellen:** Standard-Dienstfreie werden neu datiert (meist auf den Montag der Dienstwoche); die Inhaber bekommen Outlook-Aktualisierungen, verschobene außerhalb des neuen Bereichs zusätzlich eine Mail.
+3. **Mindestbesetzung einschalten:** Das Speichern verschiebt Standard-Dienstfreie still von vollen Tagen weg.
+4. **Urlaub:** Der Reiter „Urlaub“ auf `/swaps` steht sofort allen Teilnehmern zur Verfügung. Jede Genehmigung plant die Rotationen der Person neu und kann viele Outlook-Mails auslösen. Die zwei neuen Mail-Schalter sind für alle eingeschaltet.
+
 Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./data`.
 
 ### Erstinbetriebnahme
@@ -528,9 +541,10 @@ Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe `./da
 4. **Teilnehmer einladen** bzw. registrieren lassen und den Kalender mit ihnen teilen, mit dem Bündel **„Read"** (siehe [Rechte](#5-rechte)).
 5. **Feiertagskalender anlegen**: Kalender „Feiertage AT“ mit dem Abo `webcal://www.wien.gv.at/spezial/daten/ics/feiertage.ics` (siehe [Feiertage und Schließtage](#feiertage-und-schließtage)).
 6. Unter `/rotations` die **Rotation anlegen** (siehe [Rotation anlegen](#2-rotation-anlegen)): Preset wählen, Teilnehmer in Reihenfolge, 2 pro Dienst, Periode Woche, Diensttag Sa, „Feiertagskalender“ „Feiertage AT“ und „Text bei Schließung“ „HeimkinoWelt geschlossen“.
+   Dabei gleich festlegen: „Gerecht pro Kalenderjahr“ (bei neuen Rotationen vorgeschlagen), „Dienstfrei zum Dienst“ mit „Dienstfrei liegt“ (nach oder vor dem Dienst) und bei Bedarf „Mindestbesetzung an Werktagen“ (siehe [Dienstfrei](#4a-dienstfrei) und [Mindestbesetzung](#4c-mindestbesetzung-an-werktagen)).
 7. Zeitraum wählen, „Vorschau" ansehen, dann „Übernehmen".
 8. Optional: **Outlook** nach [`OUTLOOK_SETUP.md`](OUTLOOK_SETUP.md) einrichten und den Schalter der Rotation einschalten, zuerst im Trockenlauf.
-9. Das Team auf den persönlichen [Kalender-Feed](#7-persönlicher-kalender-feed) und die Tauschbörse hinweisen.
+9. Das Team auf den persönlichen [Kalender-Feed](#7-persönlicher-kalender-feed), die Tauschbörse und den Reiter „Urlaub“ hinweisen; die Anleitung für Mitarbeiter liegt in `docs/anleitung/`.
 
 ## 9. Grenzen und bekannte Punkte
 

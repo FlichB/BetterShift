@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installation und Betrieb</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm 15mm; }
+  :root {
+    --text: #1c2430; --muted: #5b6575; --line: #dfe3ea; --accent: #2563eb;
+    --accent-soft: #eef3fe; --warn-soft: #fff7e6; --warn-line: #f3d79b; --page: #ffffff;
+    --code-bg: #f4f6f9;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0; background: var(--page); color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 6px; }
+  h2 { font-size: 21px; margin: 40px 0 12px; padding-top: 10px; border-top: 2px solid var(--line); break-after: avoid; }
+  h3 { font-size: 17px; margin: 24px 0 8px; break-after: avoid; }
+  h4 { font-size: 15px; margin: 18px 0 6px; break-after: avoid; }
+  p, ul, ol { margin: 0 0 12px; }
+  li { margin-bottom: 4px; }
+  li > ul, li > ol { margin: 4px 0 0; }
+  a { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 16px; margin-bottom: 20px; }
+  .box { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 14px 0; break-inside: avoid; }
+  .box > :last-child { margin-bottom: 0; }
+  .box.tip { background: var(--accent-soft); border-color: #c9d8fb; }
+  .box strong.label { display: block; margin-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 16px; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: #f4f6f9; }
+  code { font-family: Consolas, "Cascadia Mono", Menlo, monospace; font-size: 0.9em; background: var(--code-bg); border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; overflow-x: auto; font-size: 13px; line-height: 1.45; break-inside: avoid; }
+  pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+  nav.toc { columns: 2; column-gap: 32px; font-size: 14px; }
+  nav.toc ul { margin: 0; padding-left: 0; list-style: none; }
+  nav.toc ul ul { padding-left: 16px; }
+  nav.toc a { text-decoration: none; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 40px; border-top: 1px solid var(--line); padding-top: 10px; }
+  @media print {
+    main { max-width: none; padding: 0; }
+    body { font-size: 13.5px; }
+    tr { break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+    pre { white-space: pre-wrap; }
+  }
+  @media (max-width: 600px) {
+    nav.toc { columns: 1; }
+    h1 { font-size: 25px; }
+  }
+</style>
+</head>
+<body>
+<main>
+<h1>Installation und Betrieb</h1>
+<div class="subtitle">Anleitung für den Betreiber: Docker, Datensicherung, Updates, Erstinbetriebnahme und Outlook</div>
+<div class="box tip"><strong class="label">Für wen?</strong>Für den Betreiber des Servers: Container einrichten, sichern, aktualisieren, in Betrieb nehmen und Outlook anbinden. Die Bedienung steht in der <a href="verwaltung-anleitung.html">Verwaltungsanleitung</a>.</div>
+<nav class="toc"><strong>Inhalt</strong><ul><li><a href="#compose-datei">Compose-Datei</a></li><li><a href="#datensicherung">Datensicherung</a></li><li><a href="#bestehende-instanz-aktualisieren">Bestehende Instanz aktualisieren</a></li><li><a href="#erstinbetriebnahme">Erstinbetriebnahme</a></li><li><a href="#outlook-anbindung-einrichten-microsoft-365">Outlook-Anbindung einrichten (Microsoft 365)</a><ul><li><a href="#überblick">Überblick</a></li><li><a href="#app-registrierung-entra-admin-center">App-Registrierung (Entra Admin Center)</a></li><li><a href="#berechtigungen">Berechtigungen</a></li><li><a href="#auf-office-beschränken-wichtig">Auf office@ beschränken (wichtig)</a></li><li><a href="#konfiguration">Konfiguration</a></li><li><a href="#testen">Testen</a></li><li><a href="#fehlerbilder">Fehlerbilder</a></li><li><a href="#grenzen">Grenzen</a></li></ul></li></ul></nav>
+<p>BetterShift läuft als ein Container; das Image baut GitHub Actions und legt es in der GitHub Container Registry ab. <b>Images nur für linux/amd64.</b></p>
+<h2 id="compose-datei">Compose-Datei</h2>
+<p>Auf Basis der <code>docker-compose.yml</code> des Repositories. Das Image ist das des Forks; die Datei im Repository zeigt noch auf das Upstream-Image.</p>
+<pre><code class="language-yaml">services:
+  bettershift:
+    image: ghcr.io/flichb/bettershift:latest
+    container_name: bettershift
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/public/uploads
+    environment:
+      TZ: "Europe/Vienna"
+      DEFAULT_LOCALE: "de"
+      BETTER_AUTH_URL: "https://dienste.firma.at"
+      BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET}"
+      TRUSTED_PROXY_HEADER: "X-Real-IP"</code></pre>
+<p>Hinweise zu den Einträgen:</p>
+<ul><li><b>Port</b> 3000 (im Image gesetzt, mit Healthcheck auf <code>/api/health</code>). Davor gehört ein Reverse Proxy mit HTTPS.</li>
+<li><b><code>./data</code></b> enthält die SQLite-Datenbank (<code>sqlite.db</code>). Das Verzeichnis muss erhalten bleiben, sonst gehen alle Daten verloren. Der Entrypoint korrigiert die Besitzrechte beim Start selbst.</li>
+<li><b><code>./uploads</code></b> nimmt hochgeladene Dateien auf.</li>
+<li><b><code>TZ=Europe/Vienna</code></b>: Ohne diese Angabe läuft der Container in UTC und alle Uhrzeiten wären verschoben. Der Standard in <code>.env.example</code> ist <code>Europe/Berlin</code>.</li>
+<li><b><code>DEFAULT_LOCALE=de</code></b>: Sprache, wenn der Browser keine verlangt; zugleich die Sprache der Mails und der Feed-Texte. Standard in <code>.env.example</code> ist <code>en</code>.</li>
+<li><b><code>BETTER_AUTH_URL</code></b>: Die öffentliche Adresse, mit Schema und ohne Schrägstrich am Ende. Sie erscheint auch in den Links des persönlichen Feeds und in Tausch-Mails.</li>
+<li><b><code>BETTER_AUTH_SECRET</code></b>: Pflicht bei eingeschalteter Anmeldung. Erzeugen mit <code>npx @better-auth/cli secret</code>, außerhalb der Compose-Datei halten (z. B. in einer <code>.env</code> neben der Compose-Datei). Eine Änderung meldet alle Benutzer ab.</li>
+<li><b><code>TRUSTED_PROXY_HEADER</code></b>: Muss zum Reverse Proxy passen, weil die Ratenbegrenzung die Client-Adresse daraus liest. Den Header des eigenen Proxys eintragen (Caddy, nginx, Traefik: <code>X-Real-IP</code>; Cloudflare: <code>CF-Connecting-IP</code>; der Wert im Beispiel ist anzupassen). Hinter genau einem Proxy mit unbekanntem Header darf die Variable leer bleiben (dann gilt der letzte Eintrag von <code>X-Forwarded-For</code>). <b>Ohne Proxy</b> (direkt erreichbar) muss sie <code>none</code> sagen, sonst kann der Client seine Adresse frei wählen. Die Erläuterung steht in <code>.env.example</code>.</li>
+<li>Weitere Variablen: <code>.env.example</code> erklärt alle mit ihren Standardwerten. Die Outlook-Variablen stehen in <a href="#outlook-anbindung-einrichten-microsoft-365"><code>OUTLOOK_SETUP.md</code></a>.</li></ul>
+<p>Alternativ lässt sich statt <code>environment:</code> wie in der Datei des Repositories eine <code>.env</code> per <code>env_file:</code> einbinden.</p>
+<h2 id="datensicherung">Datensicherung</h2>
+<p>Gesichert werden muss das Verzeichnis <code>./data</code> (die SQLite-Datei). Nimm es ins Server-Backup auf. Damit die Datei konsistent ist, entweder</p>
+<ul><li>den Container kurz anhalten (<code>docker compose stop</code>), <code>./data</code> kopieren, wieder starten (<code>docker compose start</code>), oder</li>
+<li>im laufenden Betrieb auf dem Host mit <code>sqlite3 data/sqlite.db ".backup 'sicherung.db'"</code> eine konsistente Kopie ziehen. Das <code>sqlite3</code>-Programm ist im Image nicht enthalten, es läuft auf dem Host.</li></ul>
+<p><code>./uploads</code> gehört ebenfalls ins Backup, sofern Dateien hochgeladen werden.</p>
+<h2 id="bestehende-instanz-aktualisieren">Bestehende Instanz aktualisieren</h2>
+<p>So bringst du eine bereits laufende Instanz auf einen neuen Stand. Die Daten in <code>./data</code> bleiben dabei erhalten.</p>
+<p><b>Woher neue Versionen kommen.</b> GitHub Actions baut die Images des Forks und legt sie unter <code>ghcr.io/flichb/bettershift</code> ab:</p>
+<table><tr><th>Tag</th><th>Entsteht durch</th><th>Gedacht für</th></tr><tr><td><code>latest</code></td><td>ein Release (Git-Tag <code>vX.Y.Z</code>, angelegt mit <code>npm run release:patch</code>, <code>release:minor</code> oder <code>release:major</code>)</td><td>den produktiven Betrieb</td></tr><tr><td><code>vX.Y.Z</code>, <code>vX.Y</code>, <code>vX</code></td><td>dasselbe Release</td><td>eine fest eingestellte Version</td></tr><tr><td><code>dev</code></td><td>jeden Push auf <code>main</code>, also jeden zusammengeführten Pull Request</td><td>Testinstanzen</td></tr><tr><td><code>pr-&lt;Nummer&gt;</code></td><td>einen Pull Request aus diesem Repository</td><td>das Ausprobieren vor dem Zusammenführen</td></tr></table>
+<p>Eine Änderung auf einem Feature-Branch, z. B. <code>feat/rotation-generator</code>, erreicht den Server also erst, wenn der Pull Request nach <code>main</code> zusammengeführt ist (dann <code>dev</code>) und danach ein Release erstellt wurde (dann <code>latest</code> und <code>vX.Y.Z</code>).</p>
+<p><b>Empfehlung: Version fest einstellen.</b> Trag in der Compose-Datei statt <code>latest</code> die Version ein, z. B. <code>image: ghcr.io/flichb/bettershift:v3.3.1</code>. Dann aktualisiert sich nichts unbemerkt, ein Update ist eine bewusste Änderung dieser Zeile, und für ein Zurück kennst du die alte Version.</p>
+<p><b>Vorher prüfen.</b></p>
+<ol><li>Welche Version läuft gerade: <code>https://&lt;deine-adresse&gt;/api/version</code> im Browser aufrufen oder auf dem Server <code>docker compose images</code> ausführen.</li>
+<li>Die Release-Notizen der neuen Version auf GitHub (Reiter „Releases" des Repositories) und <code>UPGRADING.md</code> lesen. Dort steht, ob eine Version Handgriffe verlangt, z. B. neue Umgebungsvariablen oder ein zusätzliches Volume.</li>
+<li>Einen ruhigen Zeitpunkt wählen. Während des Neustarts ist die App etwa eine Minute nicht erreichbar.</li></ol>
+<p><b>Schritte.</b> Auf dem Server im Verzeichnis der Compose-Datei:</p>
+<ol><li><p><b>Backup ziehen</b> (siehe <a href="#datensicherung">Datensicherung</a>), z. B.:</p>
+<pre><code class="language-bash">docker compose stop
+cp -a data "data-backup-$(date +%Y%m%d)"</code></pre></li>
+<li><p>Bei fest eingestellter Version die Zeile <code>image:</code> in der Compose-Datei auf die neue Version ändern. Bei <code>latest</code> entfällt dieser Schritt.</p></li>
+<li><p><b>Neues Image holen und starten:</b></p>
+<pre><code class="language-bash">docker compose pull
+docker compose up -d</code></pre></li>
+<li><p><b>Start beobachten:</b></p>
+<pre><code class="language-bash">docker compose logs -f bettershift</code></pre>
+<p>Die Migrationen laufen beim Start von selbst (siehe unten). Wenn „Ready" erscheint, ist der Server bereit; mit Strg+C beendest du die Anzeige, der Container läuft weiter.</p></li>
+<li><p><b>Kontrollieren:</b> <code>/api/version</code> zeigt die neue Nummer, <code>/api/health</code> meldet <code>"status": "healthy"</code>, und Anmeldung, Kalender und <code>/swaps</code> funktionieren.</p></li>
+<li><p>Alte Images aufräumen (optional): <code>docker image prune</code>.</p></li></ol>
+<p><b>Migrationen.</b> Das Image startet mit <code>node scripts/migrate.mjs &amp;&amp; node server.js</code>. Erst werden die offenen Migrationen der Upstream-Tabellen eingespielt, danach die der Fork-Tabellen (Ordner <code>drizzle/fork</code>, eigene Verwaltungstabelle); danach startet der Server. Ein manueller Migrationsschritt ist nicht nötig. Schlägt eine Migration fehl, startet der Server nicht, und <code>docker compose logs bettershift</code> zeigt den Grund.</p>
+<p><b>Zurück auf die alte Version.</b> Migrationen lassen sich nicht rückgängig machen. Ein Zurück geht deshalb nur zusammen mit dem Backup:</p>
+<pre><code class="language-bash">docker compose down
+rm -rf data
+cp -a "data-backup-JJJJMMTT" data
+# in der Compose-Datei die alte Version bei image: eintragen
+docker compose up -d</code></pre>
+<p>Alles, was seit dem Backup eingetragen oder getauscht wurde, ist danach verloren.</p>
+<p><b>Image nicht abrufbar?</b> Meldet <code>docker compose pull</code> „denied" oder „unauthorized", ist das Paket in der GitHub Container Registry privat. Entweder stellt man es auf GitHub unter „Packages" → „bettershift" → „Package settings" auf öffentlich, oder man meldet den Server einmalig mit einem Token an, das das Recht <code>read:packages</code> hat: <code>docker login ghcr.io -u &lt;github-benutzer&gt;</code>, als Passwort das Token.</p>
+<p><b>Besonderheit beim Update auf die wechselnden Paare (Oktober 2026).</b> Ab dieser Version mischt der Generator die Paare ab der zweiten Runde neu (siehe <a href="verwaltung-anleitung.html#2-rotation-anlegen">Rotation anlegen</a>). Bereits erzeugte Dienste bleiben, bis du die Rotation das nächste Mal generierst. Beim nächsten „Generieren" werden alle künftigen, nicht getauschten Plätze neu verteilt; getauschte Plätze bleiben gesperrt. Deshalb:</p>
+<ol><li>Nach dem Update unter <code>/rotations</code> zuerst die „Vorschau" ansehen und erst dann „Übernehmen".</li>
+<li>Ist Outlook eingeschaltet, aktualisieren sich die Termine danach von selbst; die Betroffenen bekommen geänderte Einladungen bzw. Absagen.</li>
+<li>Das Team vorher kurz informieren, dass sich künftige Dienste verschieben.</li></ol>
+<p><b>Besonderheit beim Update auf „Ein Eintrag pro Person" (Oktober 2026).</b> Jeder Platz hat jetzt einen eigenen Titel (Eintragsvorlage) und bei Outlook einen eigenen Termin. Nach dem Update auf diese Version sagt der erste Abgleich alle künftigen Termine im alten Format (ein Termin pro Dienst) ab und lädt pro Platz neu ein — jeder Teilnehmer bekommt einmalig eine Absage plus eine Einladung je künftigem Platz (bei einem Jahr voller Samstage mehrere Dutzend Mails pro Person), die Exchange teils verzögert zustellt. Informiere das Team vorher.</p>
+<p><b>Besonderheit beim Update auf Jahresausgleich, Dienstfrei vor dem Dienst, Urlaub und Mindestbesetzung (Oktober 2026).</b> Die Fork-Migrationen <code>0011</code> bis <code>0015</code> laufen beim Start von selbst; neue Umgebungsvariablen gibt es nicht. Bestehende Rotationen verhalten sich danach wie vorher: „Gerecht pro Kalenderjahr“ ist aus, „Dienstfrei liegt“ steht auf „nach dem Dienst“, die Mindestbesetzung ist aus. Erst wenn du eine dieser Einstellungen änderst, ändert sich etwas:</p>
+<ol><li><b>Jahresausgleich einschalten:</b> Das nächste Generieren verteilt alle nicht gesperrten künftigen Plätze neu. Zuerst die „Vorschau“ ansehen und das Team informieren; mit Outlook folgen geänderte Einladungen und Absagen.</li>
+<li><b>Dienstfrei auf „vor dem Dienst“ umstellen:</b> Standard-Dienstfreie werden neu datiert (meist auf den Montag der Dienstwoche); die Inhaber bekommen Outlook-Aktualisierungen, verschobene außerhalb des neuen Bereichs zusätzlich eine Mail.</li>
+<li><b>Mindestbesetzung einschalten:</b> Das Speichern verschiebt Standard-Dienstfreie still von vollen Tagen weg.</li>
+<li><b>Urlaub:</b> Der Reiter „Urlaub“ auf <code>/swaps</code> steht sofort allen Teilnehmern zur Verfügung. Jede Genehmigung plant die Rotationen der Person neu und kann viele Outlook-Mails auslösen. Die zwei neuen Mail-Schalter sind für alle eingeschaltet.</li></ol>
+<p>Der Container hat nur eine Instanz: Starte nie zwei Container auf dieselbe <code>./data</code>.</p>
+<h2 id="erstinbetriebnahme">Erstinbetriebnahme</h2>
+<ol><li>Container starten und <code>BETTER_AUTH_URL</code> im Browser öffnen. Den <b>ersten Benutzer registrieren: Er wird automatisch Superadmin.</b></li>
+<li><b>Teamkalender anlegen</b> und in den Kalendereinstellungen die <b>Anmeldungen einschalten</b>.</li>
+<li><b>Preset „Samstagsdienst"</b> anlegen: 09:30 bis 15:00 Uhr.</li>
+<li><b>Teilnehmer einladen</b> bzw. registrieren lassen und den Kalender mit ihnen teilen, mit dem Bündel <b>„Read"</b> (siehe <a href="verwaltung-anleitung.html#5-rechte">Rechte</a>).</li>
+<li><b>Feiertagskalender anlegen</b>: Kalender „Feiertage AT“ mit dem Abo <code>webcal://www.wien.gv.at/spezial/daten/ics/feiertage.ics</code> (siehe <a href="verwaltung-anleitung.html#feiertage-und-schließtage">Feiertage und Schließtage</a>).</li>
+<li>Unter <code>/rotations</code> die <b>Rotation anlegen</b> (siehe <a href="verwaltung-anleitung.html#2-rotation-anlegen">Rotation anlegen</a>): Preset wählen, Teilnehmer in Reihenfolge, 2 pro Dienst, Periode Woche, Diensttag Sa, „Feiertagskalender“ „Feiertage AT“ und „Text bei Schließung“ „HeimkinoWelt geschlossen“. Dabei gleich festlegen: „Gerecht pro Kalenderjahr“ (bei neuen Rotationen vorgeschlagen), „Dienstfrei zum Dienst“ mit „Dienstfrei liegt“ (nach oder vor dem Dienst) und bei Bedarf „Mindestbesetzung an Werktagen“ (siehe <a href="verwaltung-anleitung.html#4a-dienstfrei">Dienstfrei</a> und <a href="verwaltung-anleitung.html#4c-mindestbesetzung-an-werktagen">Mindestbesetzung</a>).</li>
+<li>Zeitraum wählen, „Vorschau" ansehen, dann „Übernehmen".</li>
+<li>Optional: <b>Outlook</b> nach <a href="#outlook-anbindung-einrichten-microsoft-365"><code>OUTLOOK_SETUP.md</code></a> einrichten und den Schalter der Rotation einschalten, zuerst im Trockenlauf.</li>
+<li>Das Team auf den persönlichen <a href="verwaltung-anleitung.html#7-persönlicher-kalender-feed">Kalender-Feed</a>, die Tauschbörse und den Reiter „Urlaub“ hinweisen; die Anleitung für Mitarbeiter liegt in <code>docs/anleitung/</code>.</li></ol>
+<h2 id="outlook-anbindung-einrichten-microsoft-365">Outlook-Anbindung einrichten (Microsoft 365)</h2>
+<p>Diese Anleitung beschreibt, wie BetterShift an Microsoft 365 angebunden wird: Dienste von Rotationen erscheinen als Termine im Kalender von office@, und Tausch-Aktionen versenden Benachrichtigungs-Mails.</p>
+<h3 id="überblick">Überblick</h3>
+<p>Die Bedienung von Rotationen, Tauschbörse und persönlichem Kalender-Feed sowie den Betrieb beschreibt <a href="verwaltung-anleitung.html"><code>ROTATION_AND_SWAPS.md</code></a>.</p>
+<ul><li><b>office@ ist der Organisator.</b> Die App legt Termine im Kalender dieses Postfachs an, ändert sie und sagt sie ab. Pro Platz gibt es einen ganztägigen Termin (Status „Frei"); eingeladen ist nur der aktuelle Platzinhaber. Bei Tausch oder Umbesetzung wird der Termin des bisherigen Inhabers abgesagt und der neue Inhaber eingeladen. Nach dem Update auf diese Version sagt der erste Abgleich alle künftigen Termine im alten Format (ein Termin pro Dienst) ab und lädt pro künftigem Platz neu ein — jeder Teilnehmer bekommt einmalig eine Absage plus eine Einladung je künftigem Platz (bei einem Jahr voller Samstage mehrere Dutzend Mails pro Person), die Exchange teils verzögert zustellt. Informiere das Team vorher.</li>
+<li><b>Weitere Termine derselben Rotation:</b> Schließtage als ganztägiger Termin ohne Teilnehmer; jedes Dienstfrei (bei eingeschaltetem Dienstfrei) und jeder genehmigte Urlaub als ganztägiger Termin mit der Person als einzigem Teilnehmer und Status „Abwesend". Ein Urlaub gehört zur ersten Outlook-fähigen Rotation der Person (nach Namen sortiert). Einzelheiten in <a href="verwaltung-anleitung.html"><code>ROTATION_AND_SWAPS.md</code></a>, Abschnitte 4a und 4b.</li>
+<li><b>Exchange verschickt den Rest</b>: Einladungen, Aktualisierungen und Absagen kommen von Exchange selbst, die App sendet sie nicht.</li>
+<li><b>Benachrichtigungs-Mails</b> werden über Graph <code>sendMail</code> von office@ verschickt: Tausch (neues Angebot, Direktanfrage, angenommen, abgelehnt, erzwungener Tausch, Ausgleich), Dienstfrei (Sperre, Vorschläge, Antworten, Erinnerung) und Urlaub (Anträge, Entscheidungen, direkte Einträge). Jeder Benutzer kann die Arten auf <code>/swaps</code> unter „Benachrichtigungen" einzeln abschalten.</li>
+<li>Benötigt wird <b>eine</b> Entra-App mit Anwendungsberechtigungen (kein Benutzer-Login, kein Redirect).</li>
+<li>Ohne Konfiguration bleibt alles aus; die App verhält sich wie ohne Phase 3. Pro Rotation gibt es zusätzlich den Schalter „In Outlook (office@) eintragen".</li>
+<li>Bei <code>AUTH_ENABLED=false</code> sind Sync und Mails immer aus.</li></ul>
+<h3 id="app-registrierung-entra-admin-center">App-Registrierung (Entra Admin Center)</h3>
+<ol><li><i>Identität › Anwendungen › App-Registrierungen › Neue Registrierung</i>.</li>
+<li>Name <code>BetterShift</code>, Kontotyp <b>Nur dieses Organisationsverzeichnis</b> (Single Tenant), <b>keine</b> Umleitungs-URI.</li>
+<li>Auf der Übersichtsseite notieren:
+<ul><li><i>Verzeichnis-ID (Mandant)</i> → <code>OUTLOOK_TENANT_ID</code></li>
+<li><i>Anwendungs-ID (Client)</i> → <code>OUTLOOK_CLIENT_ID</code></li></ul></li>
+<li><i>Zertifikate &amp; Geheimnisse › Neuer geheimer Clientschlüssel</i> → den <b>Wert</b> (nicht die ID) sofort kopieren → <code>OUTLOOK_CLIENT_SECRET</code>.</li>
+<li><b>Ablaufdatum des Geheimnisses notieren und eine Kalendererinnerung davor setzen.</b> Ein abgelaufenes Geheimnis zeigt sich als <code>outlook.auth_failed</code> im Audit-Log (siehe <a href="#fehlerbilder">Fehlerbilder</a>).</li></ol>
+<h3 id="berechtigungen">Berechtigungen</h3>
+<p><i>API-Berechtigungen › Berechtigung hinzufügen › Microsoft Graph › Anwendungsberechtigungen</i>:</p>
+<table><tr><th>Berechtigung</th><th>Wofür</th></tr><tr><td><code>Calendars.ReadWrite</code></td><td>Termine in office@ anlegen, ändern, absagen, nächtlich vergleichen</td></tr><tr><td><code>Mail.Send</code></td><td>Benachrichtigungs-Mails von office@</td></tr></table>
+<p>Anschließend <b>Administratorzustimmung erteilen</b>.</p>
+<h3 id="auf-office-beschränken-wichtig">Auf office@ beschränken (wichtig)</h3>
+<p>Anwendungsberechtigungen gelten standardmäßig für <b>jedes</b> Postfach im Mandanten. Ohne Einschränkung könnte die App (und jeder, der das Client-Secret kennt) alle Kalender lesen und in fremdem Namen Mails senden. Deshalb auf office@ begrenzen, mit Exchange Online RBAC for Applications (PowerShell, nach <code>Connect-ExchangeOnline</code>):</p>
+<pre><code class="language-powershell">New-ServicePrincipal -AppId &lt;OUTLOOK_CLIENT_ID&gt; -ObjectId &lt;Objekt-ID der Unternehmensanwendung&gt; -DisplayName "BetterShift"
+New-ManagementScope -Name "BetterShift office" -RecipientRestrictionFilter "PrimarySmtpAddress -eq 'office@firma.at'"
+New-ManagementRoleAssignment -App &lt;OUTLOOK_CLIENT_ID&gt; -Role "Application Calendars.ReadWrite" -CustomResourceScope "BetterShift office"
+New-ManagementRoleAssignment -App &lt;OUTLOOK_CLIENT_ID&gt; -Role "Application Mail.Send" -CustomResourceScope "BetterShift office"
+Test-ServicePrincipalAuthorization -Identity &lt;OUTLOOK_CLIENT_ID&gt; -Resource office@firma.at</code></pre>
+<p>Die <i>Objekt-ID der Unternehmensanwendung</i> steht unter <i>Identität › Anwendungen › Unternehmensanwendungen › BetterShift</i> (nicht die Objekt-ID der App-Registrierung). <code>Test-ServicePrincipalAuthorization</code> sollte für office@ <code>InScope = True</code> melden und für ein anderes Postfach <code>False</code>.</p>
+<p><b>Danach die mandantenweiten Graph-Anwendungsberechtigungen aus dem vorigen Abschnitt wieder entfernen.</b> Die RBAC-Zuweisung erteilt die Rechte bereits eingeschränkt; solange die mandantenweite Zustimmung besteht, gilt sie weiterhin für alle Postfächer.</p>
+<p><b>Wartezeit:</b> RBAC-Zuweisungen in Exchange brauchen oft bis zu etwa 30 Minuten, bis sie wirken. Ein früher <code>outlook.auth_failed</code> direkt nach der Einrichtung ist daher normal; der Sync versucht es nach der Pause von selbst erneut.</p>
+<p>Hintergrund: Microsoft-Artikel „Role Based Access Control for Applications in Exchange Online" (learn.microsoft.com).</p>
+<h3 id="konfiguration">Konfiguration</h3>
+<p>Die Variablen stehen mit Erklärung in <code>.env.example</code> (Abschnitt „[fork] Outlook / Microsoft 365"):</p>
+<table><tr><th>Variable</th><th>Bedeutung</th></tr><tr><td><code>OUTLOOK_TENANT_ID</code></td><td>Verzeichnis-ID (Mandant)</td></tr><tr><td><code>OUTLOOK_CLIENT_ID</code></td><td>Anwendungs-ID (Client)</td></tr><tr><td><code>OUTLOOK_CLIENT_SECRET</code></td><td>Wert des Clientschlüssels</td></tr><tr><td><code>OUTLOOK_ORGANIZER</code></td><td>Postfach des Organisators, z. B. <code>office@firma.at</code></td></tr><tr><td><code>OUTLOOK_SYNC_INTERVAL_SECONDS</code></td><td>Scan-Intervall, Standard 60, Minimum 15</td></tr><tr><td><code>OUTLOOK_DRY_RUN</code></td><td><code>true</code> = Graph-Aufrufe nur loggen; braucht nur <code>OUTLOOK_ORGANIZER</code></td></tr></table>
+<p>Die ersten vier sind Pflicht; fehlt eine, bleibt der Sync aus. <code>docker-compose</code>:</p>
+<pre><code class="language-yaml">services:
+  bettershift:
+    environment:
+      OUTLOOK_TENANT_ID: "00000000-0000-0000-0000-000000000000"
+      OUTLOOK_CLIENT_ID: "00000000-0000-0000-0000-000000000000"
+      OUTLOOK_CLIENT_SECRET: "${OUTLOOK_CLIENT_SECRET}"
+      OUTLOOK_ORGANIZER: "office@firma.at"</code></pre>
+<p>Das Secret besser in einer <code>.env</code>-Datei neben der Compose-Datei oder als Docker-Secret halten, nicht im Klartext einchecken. Danach den Container neu starten (<code>docker compose up -d</code>).</p>
+<p>Die Anmelde-E-Mail eines Benutzers muss seine Microsoft-365-Adresse sein; sie wird als Teilnehmer- und Empfängeradresse verwendet.</p>
+<h3 id="testen">Testen</h3>
+<ol><li><b>Trockenlauf</b>: <code>OUTLOOK_ORGANIZER=office@example.test</code>, <code>OUTLOOK_DRY_RUN=true</code>, <code>OUTLOOK_SYNC_INTERVAL_SECONDS=15</code> setzen. Beim Einschalten des Schalters einer Rotation erscheint im Server-Log je künftigem Platz eine Zeile <code>[Outlook dry-run] create …</code> (ganztägig, Status Frei, ein Teilnehmer); ein Tausch erzeugt ein <code>cancel</code> an den bisherigen und ein <code>create</code> (Einladung) für den neuen Inhaber sowie ein <code>update</code> am Termin des Partners (Zeile „Mit: …"), dazu <code>mail "…"</code>; Ausschalten erzeugt <code>cancel</code>.</li>
+<li><b>Echt</b>: Dry-Run abschalten und die vier Pflichtvariablen setzen. Den Schalter für <b>eine</b> Rotation aktivieren und prüfen:
+<ul><li>Im office@-Kalender steht pro künftigem Platz ein ganztägiger Termin (Status Frei).</li>
+<li>Ein Teilnehmer hat die Einladung im Posteingang.</li>
+<li>Zwei Dienste tauschen lassen: Die Absagen an die bisherigen und die Einladungen an die neuen Inhaber (plus Aktualisierung der Partner-Termine) kommen innerhalb etwa einer Minute.</li>
+<li>Ein Angebot erzeugt eine Mail von office@ an die richtigen Empfänger.</li>
+<li>Bei eingeschaltetem Dienstfrei: Der Inhaber hat einen ganztägigen Dienstfrei-Termin (Status Abwesend); nach „Verschieben" wandert er auf den neuen Tag.</li>
+<li>Einen Urlaub für einen Teilnehmer eintragen: Er bekommt einen ganztägigen Urlaubs-Termin (Status Abwesend) und eine Mail; betroffene Dienste werden abgesagt bzw. neu eingeladen. Storno entfernt den Termin wieder.</li>
+<li>Eine Rotation ausschalten, die Schließeinträge hat: Der Schließtermin (ohne Teilnehmer) muss aus dem Kalender verschwinden. Graph lehnt die Absage dafür mit 400 ab; die App löscht ihn dann stattdessen.</li></ul></li>
+<li>Erst danach weitere Rotationen aktivieren.</li></ol>
+<h3 id="fehlerbilder">Fehlerbilder</h3>
+<table><tr><th>Symptom</th><th>Ursache und Abhilfe</th></tr><tr><td>Audit-Log <code>outlook.auth_failed</code>, Sync pausiert 15 Minuten</td><td>Graph antwortet mit 401/403: Clientschlüssel abgelaufen oder falsch, Administratorzustimmung fehlt oder der RBAC-Bereich passt nicht zu <code>OUTLOOK_ORGANIZER</code>. Ursache beheben; nach der Pause läuft der Sync von selbst weiter. Keine Änderung geht verloren.</td></tr><tr><td>Statuszeile der Rotation meldet Fehler bei einzelnen Diensten</td><td>Einzelfehler pro Termin; die App versucht es mit wachsendem Abstand (1, 5, 15, 60 Minuten, danach stündlich) erneut. Der Text der Statuszeile nennt die Graph-Meldung.</td></tr><tr><td><code>ErrorInvalidRecipients</code> oder unbekannte Adresse</td><td>Die Anmelde-E-Mail des Teilnehmers ist keine Microsoft-365-Adresse. Adresse des Benutzers korrigieren.</td></tr><tr><td>Termin in office@ wurde von Hand geändert oder gelöscht</td><td>Der nächtliche Vollabgleich (täglich um 03:00 Serverzeit) stellt den Sollzustand wieder her (Änderungen an Zeit, Betreff, Teilnehmern; gelöschte Termine werden neu angelegt).</td></tr><tr><td>Nichts passiert</td><td>Prüfen, dass alle vier Pflichtvariablen gesetzt sind (oder <code>OUTLOOK_DRY_RUN</code> mit <code>OUTLOOK_ORGANIZER</code>), <code>AUTH_ENABLED</code> nicht <code>false</code> ist und der Schalter der Rotation an ist. Ohne Konfiguration zeigt die Rotationsseite den Schalter deaktiviert mit „nicht eingerichtet".</td></tr></table>
+<h3 id="grenzen">Grenzen</h3>
+<ul><li><b>Eine Serverinstanz.</b> Der Sync-Worker läuft im Prozess; mehrere Replikas würden doppelt synchronisieren.</li>
+<li><b>Mails werden mindestens einmal zugestellt.</b> Stürzt der Server zwischen dem Versand und dem Speichern des Status ab, kann eine Mail ein zweites Mal gesendet werden.</li>
+<li>Mails werden in der Sprache <code>DEFAULT_LOCALE</code> verschickt, nicht pro Empfänger.</li>
+<li><b>Keine Übernahme bestehender Termine</b>: Termine, die schon von Hand in office@ stehen, werden weder erkannt noch verknüpft. Die Rotation sollte in einem Zeitraum ohne manuelle Dienst-Termine starten.</li>
+<li>Vergangene und bereits begonnene Dienste werden nie angefasst.</li></ul>
+<footer>BetterShift · Installationsanleitung · Stand: Oktober 2026 · erzeugt aus docs/ROTATION_AND_SWAPS.md (Abschnitt 8) und docs/OUTLOOK_SETUP.md</footer>
+</main>
+</body>
+</html>
