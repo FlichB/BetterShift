@@ -48,6 +48,9 @@ export function YearDeltaPanel({ rotationId, members }: { rotationId: string; me
       {tables.map((table) => (
         <div key={table.year} className="space-y-1">
           <p className="text-[13px] font-medium text-fg-strong">{t("rotation.yearly.tableTitle", { from: table.year - 1, to: table.year })}</p>
+          {table.rows.some((row) => row.held === null) && (
+            <p className="text-xs text-fg-tertiary">{t("rotation.yearly.startHint", { year: table.year, previous: table.year - 1 })}</p>
+          )}
           <table className="w-full table-fixed text-sm">
             <thead>
               <tr className="text-left text-xs text-fg-tertiary">
@@ -66,7 +69,7 @@ export function YearDeltaPanel({ rotationId, members }: { rotationId: string; me
                       <span className="block text-xs text-fg-tertiary">{t("rotation.yearly.newSince", { date: row.joinedOn })}</span>
                     )}
                   </td>
-                  <td className="py-1.5 text-right tabular-nums">{row.held}</td>
+                  <td className="py-1.5 text-right tabular-nums">{row.held ?? "–"}</td>
                   <td className="py-1.5 text-right tabular-nums">{row.autoDelta}</td>
                   <td className="py-1.5">
                     <div className="flex items-center justify-end gap-1">

@@ -1481,6 +1481,7 @@
       "overrideFor": "Valore personalizzato per {name} ({year})",
       "newSince": "nuovo dal {date}",
       "reset": "Usa il valore automatico",
+      "startHint": "La rotazione inizia nel {year} e non ha contato nulla nel {previous}. Inserisci i valori iniziali della vostra pianificazione precedente come valore personalizzato.",
       "noData": "Nessun turno nell’anno precedente: nulla da riportare."
     },
     "period": {

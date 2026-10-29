@@ -1481,6 +1481,7 @@
       "overrideFor": "Eigener Wert für {name} ({year})",
       "newSince": "neu seit {date}",
       "reset": "Automatischen Wert verwenden",
+      "startHint": "Die Rotation beginnt {year} und hat {previous} noch nichts gezählt. Trage Startwerte aus eurer bisherigen Planung als eigenen Wert ein.",
       "noData": "Im Vorjahr gab es noch keine Dienste – kein Übertrag."
     },
     "period": {

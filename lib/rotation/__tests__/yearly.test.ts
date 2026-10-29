@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compensationSeats, yearDeltaRows } from "@/lib/rotation/yearly";
+import { compensationSeats, startDeltaRows, yearDeltaRows } from "@/lib/rotation/yearly";
 
 const tally = (counts: Record<string, number>, firstDate: string | null = "2026-11-07") => ({
   counts: new Map(Object.entries(counts)),
@@ -45,6 +45,16 @@ describe("yearDeltaRows", () => {
   it("counts a Teilnehmer missing from the tally as 0", () => {
     const rows = yearDeltaRows(["a", "b"], undefined, tally({ a: 2 }), undefined)!;
     expect(rows.map((r) => r.autoDelta)).toEqual([2, 0]);
+  });
+});
+
+describe("startDeltaRows", () => {
+  it("gives everyone 0 without a count and lets an override replace it", () => {
+    const rows = startDeltaRows(["a", "b"], { b: 2 });
+    expect(rows).toEqual([
+      { userId: "a", held: null, fullYear: true, autoDelta: 0, override: null, delta: 0 },
+      { userId: "b", held: null, fullYear: true, autoDelta: 0, override: 2, delta: 2 },
+    ]);
   });
 });
 

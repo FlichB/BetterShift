@@ -1481,6 +1481,7 @@
       "overrideFor": "Custom value for {name} ({year})",
       "newSince": "new since {date}",
       "reset": "Use the automatic value",
+      "startHint": "The rotation starts in {year} and counted nothing in {previous}. Enter start values from your previous planning as a custom value.",
       "noData": "No duties in the previous year yet – nothing to carry over."
     },
     "period": {

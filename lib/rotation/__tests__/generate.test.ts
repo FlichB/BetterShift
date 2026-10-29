@@ -483,8 +483,24 @@ describe("Jahresausgleich (SPEC 12.41)", () => {
     expect(rows.find((r) => r.userId === "h")).toMatchObject({ fullYear: false, autoDelta: 0 });
   });
 
-  it("is null for the first year of a rotation", () => {
-    expect(yearSummary(yearly, 2026)).toBeNull();
+  it("offers start values for the first year of a rotation and nothing before it", () => {
+    const rows = yearSummary(yearly, 2026)!;
+    expect(rows.map((r) => [r.held, r.autoDelta, r.delta])).toEqual(eight.map(() => [null, 0, 0]));
+    expect(yearSummary(yearly, 2025)).toBeNull();
+  });
+
+  it("settles start values at the beginning of the first year", () => {
+    const rule: RotationRule = { ...yearly, startDate: "2027-01-01", deltaOverrides: { 2027: { c: 2 } } };
+    expect(yearSummary(rule, 2027)!.find((r) => r.userId === "c")).toMatchObject({ held: null, override: 2, delta: 2 });
+    const duties = generateDuties(rule, "2027-01-01", "2027-03-31");
+    const first = (u: string) => duties.findIndex((d) => d.userIds.includes(u));
+    expect(first("c")).toBeGreaterThan(Math.max(...eight.filter((u) => u !== "c").map(first)));
+  });
+
+  it("plans the first year as before without start values", () => {
+    const rule: RotationRule = { ...yearly, startDate: "2027-01-01" };
+    const withZeros: RotationRule = { ...rule, deltaOverrides: { 2027: Object.fromEntries(eight.map((u) => [u, 0])) } };
+    expect(generateDuties(withZeros, "2027-01-01", "2028-12-31")).toEqual(generateDuties(rule, "2027-01-01", "2028-12-31"));
   });
 
   it("settles held Plätze from before a restart on 1 January", () => {

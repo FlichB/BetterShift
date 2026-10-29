@@ -1481,6 +1481,7 @@
       "overrideFor": "Valor propio para {name} ({year})",
       "newSince": "nuevo desde {date}",
       "reset": "Usar el valor automático",
+      "startHint": "La rotación empieza en {year} y no contó nada en {previous}. Introduce los valores iniciales de vuestra planificación anterior como valor propio.",
       "noData": "Aún no hubo turnos el año anterior: no hay nada que arrastrar."
     },
     "period": {

@@ -1481,6 +1481,7 @@
       "overrideFor": "Vlastní hodnota pro {name} ({year})",
       "newSince": "nový od {date}",
       "reset": "Použít automatickou hodnotu",
+      "startHint": "Rotace začíná v roce {year} a za rok {previous} ještě nic nezapočítala. Zadejte počáteční hodnoty z dosavadního plánování jako vlastní hodnotu.",
       "noData": "V minulém roce ještě nebyly žádné služby – nic k převodu."
     },
     "period": {
