@@ -922,6 +922,9 @@
     "defaultSignupCapacityHint": "Define cuántas personas pueden inscribirse en turnos creados a partir de esta plantilla. Déjalo vacío para inscripciones ilimitadas. Se copia al crear el turno y puede ajustarse por turno."
   },
   "syncSheet": {
+    "yearsAheadLabel": "Importar eventos hasta",
+    "yearsAheadDefault": "{date} (predeterminado)",
+    "yearsAheadHint": "Se importan los eventos desde hace 3 meses. Para la planificación anual debería incluirse todo el año siguiente; se aplica en la próxima sincronización.",
     "intervalPill": "Cada {interval}",
     "intervalValue": "cada {interval}",
     "lastSynced": "último {time}",

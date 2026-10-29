@@ -9,6 +9,8 @@ import {
   type CalendarSyncType,
 } from "@/lib/external-calendar-utils";
 import { logUserAction, type SyncDeletedMetadata } from "@/lib/audit-log";
+import { setYearsAhead, withYearsAhead } from "@/lib/sync-window/store"; // [fork]
+import { isValidYearsAhead, MAX_YEARS_AHEAD } from "@/lib/sync-window/window"; // [fork]
 
 // GET single external sync
 export async function GET(
@@ -58,7 +60,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(externalSync);
+    return NextResponse.json(withYearsAhead([externalSync])[0]); // [fork]
   } catch (error) {
     console.error("Failed to fetch external sync:", error);
     return NextResponse.json(
@@ -84,6 +86,7 @@ export async function PATCH(
       isHidden,
       hideFromStats,
       autoSyncInterval,
+      yearsAhead, // [fork]
     } = body;
 
     // Get existing sync to validate URL with correct sync type
@@ -162,6 +165,14 @@ export async function PATCH(
       );
     }
 
+    // [fork] Import horizon in years after the current one
+    if (yearsAhead !== undefined && !isValidYearsAhead(yearsAhead)) {
+      return NextResponse.json(
+        { error: `Invalid import horizon. Must be a whole number of years from 0 to ${MAX_YEARS_AHEAD}` },
+        { status: 400 }
+      );
+    }
+
     const updateData: Record<string, unknown> = {
       updatedAt: new Date(),
     };
@@ -199,7 +210,10 @@ export async function PATCH(
         .where(eq(shifts.externalSyncId, id));
     }
 
-    return NextResponse.json(updated);
+    // [fork] An uploaded file is never synced again, so it keeps no horizon
+    if (yearsAhead !== undefined && !existingSync.isOneTimeImport) setYearsAhead(id, yearsAhead);
+
+    return NextResponse.json(withYearsAhead([updated])[0]); // [fork]
   } catch (error) {
     console.error("Failed to update external sync:", error);
     return NextResponse.json(

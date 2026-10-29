@@ -922,6 +922,9 @@
     "defaultSignupCapacityHint": "Sets how many people can sign up for shifts created from this preset. Leave empty for unlimited signups. Copied when a shift is created and can be adjusted per shift."
   },
   "syncSheet": {
+    "yearsAheadLabel": "Import events until",
+    "yearsAheadDefault": "{date} (default)",
+    "yearsAheadHint": "Events are imported from 3 months back. For yearly planning the whole next year should be included; takes effect on the next sync.",
     "intervalPill": "Every {interval}",
     "intervalValue": "every {interval}",
     "lastSynced": "last {time}",

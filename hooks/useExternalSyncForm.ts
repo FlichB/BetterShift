@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { ExternalSync } from "@/lib/db/schema";
 import { DEFAULT_COLOR } from "@/lib/constants";
+import { DEFAULT_YEARS_AHEAD } from "@/lib/sync-window/window"; // [fork]
 
 export type SyncDisplayMode = "normal" | "minimal";
 export type SyncImportType = "url" | "file";
@@ -11,6 +12,8 @@ export interface ExternalSyncFormValues {
   color: string;
   displayMode: SyncDisplayMode;
   autoSyncInterval: number;
+  /** [fork] Import up to 31.12. of the current year + yearsAhead */
+  yearsAhead: number;
   isHidden: boolean;
   hideFromStats: boolean;
   importType: SyncImportType;
@@ -26,13 +29,14 @@ export const EMPTY_SYNC_FORM: ExternalSyncFormValues = {
   color: DEFAULT_COLOR,
   displayMode: "normal",
   autoSyncInterval: 0,
+  yearsAhead: DEFAULT_YEARS_AHEAD,
   isHidden: false,
   hideFromStats: false,
   importType: "url",
   file: null,
 };
 
-export function syncToFormValues(sync: ExternalSync): ExternalSyncFormValues {
+export function syncToFormValues(sync: ExternalSync & { yearsAhead?: number }): ExternalSyncFormValues {
   return {
     ...EMPTY_SYNC_FORM,
     name: sync.name || "",
@@ -40,6 +44,7 @@ export function syncToFormValues(sync: ExternalSync): ExternalSyncFormValues {
     color: sync.color || DEFAULT_COLOR,
     displayMode: sync.displayMode === "minimal" ? "minimal" : "normal",
     autoSyncInterval: sync.autoSyncInterval || 0,
+    yearsAhead: sync.yearsAhead ?? DEFAULT_YEARS_AHEAD,
     isHidden: sync.isHidden || false,
     hideFromStats: sync.hideFromStats || false,
   };
@@ -52,6 +57,7 @@ const TRACKED_FIELDS = [
   "color",
   "displayMode",
   "autoSyncInterval",
+  "yearsAhead",
   "isHidden",
   "hideFromStats",
   "file",

@@ -922,6 +922,9 @@
     "defaultSignupCapacityHint": "Définit combien de personnes peuvent s'inscrire aux gardes créées à partir de ce modèle. Laissez vide pour un nombre illimité. Copié à la création et modifiable pour chaque garde."
   },
   "syncSheet": {
+    "yearsAheadLabel": "Importer les événements jusqu’au",
+    "yearsAheadDefault": "{date} (par défaut)",
+    "yearsAheadHint": "Les événements sont importés à partir de 3 mois en arrière. Pour la planification annuelle, toute l’année suivante devrait être incluse ; effectif à la prochaine synchronisation.",
     "intervalPill": "Toutes les {interval}",
     "intervalValue": "toutes les {interval}",
     "lastSynced": "dernier {time}",

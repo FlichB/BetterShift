@@ -11,6 +11,8 @@ import {
   type CalendarSyncType,
 } from "@/lib/external-calendar-utils";
 import { logUserAction, type SyncCreatedMetadata } from "@/lib/audit-log";
+import { setYearsAhead, withYearsAhead } from "@/lib/sync-window/store"; // [fork]
+import { DEFAULT_YEARS_AHEAD, isValidYearsAhead, MAX_YEARS_AHEAD } from "@/lib/sync-window/window"; // [fork]
 
 // GET all external syncs for a calendar
 export async function GET(request: NextRequest) {
@@ -54,7 +56,7 @@ export async function GET(request: NextRequest) {
       .where(eq(externalSyncs.calendarId, calendarId))
       .orderBy(desc(externalSyncs.createdAt));
 
-    return NextResponse.json(syncs);
+    return NextResponse.json(withYearsAhead(syncs)); // [fork]
   } catch (error) {
     console.error("Failed to fetch external syncs:", error);
     return NextResponse.json(
@@ -78,6 +80,7 @@ export async function POST(request: NextRequest) {
       icsContent, // For file uploads
       isHidden,
       hideFromStats,
+      yearsAhead = DEFAULT_YEARS_AHEAD, // [fork]
     } = body;
 
     if (!calendarId || !name) {
@@ -182,6 +185,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // [fork] Import horizon in years after the current one
+    if (!isValidYearsAhead(yearsAhead)) {
+      return NextResponse.json(
+        { error: `Invalid import horizon. Must be a whole number of years from 0 to ${MAX_YEARS_AHEAD}` },
+        { status: 400 }
+      );
+    }
+
     const [externalSync] = await db
       .insert(externalSyncs)
       .values({
@@ -200,6 +211,7 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
       })
       .returning();
+    if (!isOneTimeImport) setYearsAhead(externalSync.id, yearsAhead); // [fork]
 
     // Log external sync creation event
     if (user) {
@@ -217,7 +229,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(externalSync, { status: 201 });
+    return NextResponse.json(withYearsAhead([externalSync])[0], { status: 201 }); // [fork]
   } catch (error) {
     console.error("Failed to create external sync:", error);
     return NextResponse.json(
