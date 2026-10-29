@@ -20,8 +20,9 @@ Diese Anleitung beschreibt, wie BetterShift an Microsoft 365 angebunden wird: Di
 Die Bedienung von Rotationen, Tauschbörse und persönlichem Kalender-Feed sowie den Betrieb beschreibt [`ROTATION_AND_SWAPS.md`](ROTATION_AND_SWAPS.md).
 
 - **office@ ist der Organisator.** Die App legt Termine im Kalender dieses Postfachs an, ändert sie und sagt sie ab. Pro Platz gibt es einen ganztägigen Termin (Status „Frei"); eingeladen ist nur der aktuelle Platzinhaber. Bei Tausch oder Umbesetzung wird der Termin des bisherigen Inhabers abgesagt und der neue Inhaber eingeladen. Nach dem Update auf diese Version sagt der erste Abgleich alle künftigen Termine im alten Format (ein Termin pro Dienst) ab und lädt pro künftigem Platz neu ein — jeder Teilnehmer bekommt einmalig eine Absage plus eine Einladung je künftigem Platz (bei einem Jahr voller Samstage mehrere Dutzend Mails pro Person), die Exchange teils verzögert zustellt. Informiere das Team vorher.
+- **Weitere Termine derselben Rotation:** Schließtage als ganztägiger Termin ohne Teilnehmer; jedes Dienstfrei (bei eingeschaltetem Dienstfrei) und jeder genehmigte Urlaub als ganztägiger Termin mit der Person als einzigem Teilnehmer und Status „Abwesend". Ein Urlaub gehört zur ersten Outlook-fähigen Rotation der Person (nach Namen sortiert). Einzelheiten in [`ROTATION_AND_SWAPS.md`](ROTATION_AND_SWAPS.md), Abschnitte 4a und 4b.
 - **Exchange verschickt den Rest**: Einladungen, Aktualisierungen und Absagen kommen von Exchange selbst, die App sendet sie nicht.
-- **Tausch-Mails** (neues Angebot, Direktanfrage, angenommen, abgelehnt) werden über Graph `sendMail` von office@ verschickt. Jeder Benutzer kann die Arten auf `/swaps` einzeln abschalten.
+- **Benachrichtigungs-Mails** werden über Graph `sendMail` von office@ verschickt: Tausch (neues Angebot, Direktanfrage, angenommen, abgelehnt, erzwungener Tausch, Ausgleich), Dienstfrei (Sperre, Vorschläge, Antworten, Erinnerung) und Urlaub (Anträge, Entscheidungen, direkte Einträge). Jeder Benutzer kann die Arten auf `/swaps` unter „Benachrichtigungen" einzeln abschalten.
 - Benötigt wird **eine** Entra-App mit Anwendungsberechtigungen (kein Benutzer-Login, kein Redirect).
 - Ohne Konfiguration bleibt alles aus; die App verhält sich wie ohne Phase 3. Pro Rotation gibt es zusätzlich den Schalter „In Outlook (office@) eintragen".
 - Bei `AUTH_ENABLED=false` sind Sync und Mails immer aus.
@@ -102,8 +103,10 @@ Die Anmelde-E-Mail eines Benutzers muss seine Microsoft-365-Adresse sein; sie wi
 2. **Echt**: Dry-Run abschalten und die vier Pflichtvariablen setzen. Den Schalter für **eine** Rotation aktivieren und prüfen:
    - Im office@-Kalender steht pro künftigem Platz ein ganztägiger Termin (Status Frei).
    - Ein Teilnehmer hat die Einladung im Posteingang.
-   - Einen Dienst abgeben und übernehmen lassen: Die Absage an den bisherigen und die Einladung an den neuen Inhaber (plus Aktualisierung des Partner-Termins) kommen innerhalb etwa einer Minute.
+   - Zwei Dienste tauschen lassen: Die Absagen an die bisherigen und die Einladungen an die neuen Inhaber (plus Aktualisierung der Partner-Termine) kommen innerhalb etwa einer Minute.
    - Ein Angebot erzeugt eine Mail von office@ an die richtigen Empfänger.
+   - Bei eingeschaltetem Dienstfrei: Der Inhaber hat einen ganztägigen Dienstfrei-Termin (Status Abwesend); nach „Verschieben" wandert er auf den neuen Tag.
+   - Einen Urlaub für einen Teilnehmer eintragen: Er bekommt einen ganztägigen Urlaubs-Termin (Status Abwesend) und eine Mail; betroffene Dienste werden abgesagt bzw. neu eingeladen. Storno entfernt den Termin wieder.
    - Eine Rotation ausschalten, die Schließeinträge hat: Der Schließtermin (ohne Teilnehmer) muss aus dem Kalender verschwinden. Graph lehnt die Absage dafür mit 400 ab; die App löscht ihn dann stattdessen.
 3. Erst danach weitere Rotationen aktivieren.
 

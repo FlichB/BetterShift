@@ -8,8 +8,8 @@ export interface YearTally {
 
 export interface YearDeltaRow {
   userId: string;
-  /** Plätze held in the counted year, rounded. */
-  held: number;
+  /** Plätze held in the counted year, rounded; null for start values (nothing counted before the rotation). */
+  held: number | null;
   /** Teilnehmer since the first Diensttag of the counted year at the latest. */
   fullYear: boolean;
   autoDelta: number;
@@ -47,6 +47,17 @@ export function yearDeltaRows(
     const autoDelta = fullYear ? held(userId) - min : 0;
     const override = overrides?.[userId] ?? null;
     return { userId, held: held(userId), fullYear, autoDelta, override, delta: override ?? autoDelta };
+  });
+}
+
+/**
+ * Start values for the first year of a rotation that counted nothing in the year before: Delta 0
+ * unless a manager carries one over from the planning before the rotation.
+ */
+export function startDeltaRows(memberIds: readonly string[], overrides: Readonly<Record<string, number>> | undefined): YearDeltaRow[] {
+  return memberIds.map((userId) => {
+    const override = overrides?.[userId] ?? null;
+    return { userId, held: null, fullYear: true, autoDelta: 0, override, delta: override ?? 0 };
   });
 }
 

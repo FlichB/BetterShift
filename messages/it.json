@@ -922,6 +922,9 @@
     "defaultSignupCapacityHint": "Stabilisce quante persone possono iscriversi ai turni creati da questo modello. Lascia vuoto per un numero illimitato. Viene copiato alla creazione e può essere modificato per ogni turno."
   },
   "syncSheet": {
+    "yearsAheadLabel": "Importa eventi fino al",
+    "yearsAheadDefault": "{date} (predefinito)",
+    "yearsAheadHint": "Gli eventi vengono importati a partire da 3 mesi fa. Per la pianificazione annuale dovrebbe essere incluso tutto l’anno successivo; ha effetto dalla prossima sincronizzazione.",
     "intervalPill": "Ogni {interval}",
     "intervalValue": "ogni {interval}",
     "lastSynced": "ultimo {time}",
@@ -1481,6 +1484,7 @@
       "overrideFor": "Valore personalizzato per {name} ({year})",
       "newSince": "nuovo dal {date}",
       "reset": "Usa il valore automatico",
+      "startHint": "La rotazione inizia nel {year} e non ha contato nulla nel {previous}. Inserisci i valori iniziali della vostra pianificazione precedente come valore personalizzato.",
       "noData": "Nessun turno nell’anno precedente: nulla da riportare."
     },
     "period": {

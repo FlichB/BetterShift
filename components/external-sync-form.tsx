@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { ChevronDown, FileUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // [fork]
 import { CheckRow, ColorSwatches, Field, inputClass, SectionLabel } from "@/components/form-kit";
 import { SegmentedControl } from "@/components/segmented-control";
 import { formatSyncInterval } from "@/components/external-sync-list";
@@ -13,6 +14,7 @@ import {
   ExternalSyncFormValues,
   SyncDisplayMode,
 } from "@/hooks/useExternalSyncForm";
+import { DEFAULT_YEARS_AHEAD, YEARS_AHEAD_CHOICES } from "@/lib/sync-window/window"; // [fork]
 import { cn } from "@/lib/utils";
 
 interface ExternalSyncFormProps {
@@ -127,6 +129,31 @@ export function ExternalSyncForm({
           onChange={(minutes) => setField("autoSyncInterval", minutes)}
           disabled={disabled}
         />
+      )}
+
+      {/* [fork] How far ahead the feed is imported */}
+      {!fileImport && (
+        <Field label={t("syncSheet.yearsAheadLabel")} htmlFor={`${id}-years-ahead`} hint={t("syncSheet.yearsAheadHint")}>
+          <Select
+            value={String(values.yearsAhead)}
+            onValueChange={(v) => setField("yearsAhead", Number(v))}
+            disabled={disabled}
+          >
+            <SelectTrigger id={`${id}-years-ahead`} className={cn(inputClass, "w-full")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {YEARS_AHEAD_CHOICES.map((years) => {
+                const date = `31.12.${new Date().getFullYear() + years}`;
+                return (
+                  <SelectItem key={years} value={String(years)}>
+                    {years === DEFAULT_YEARS_AHEAD ? t("syncSheet.yearsAheadDefault", { date }) : date}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </Field>
       )}
 
       <div className="flex flex-col gap-[9px]">

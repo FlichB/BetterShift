@@ -463,6 +463,7 @@ describe("joinedOn", () => {
 });
 
 describe("Jahresausgleich", () => {
+  const of2027 = (id: string) => getYearDeltaTables(id, now).find((t) => t.year === 2027)!;
   const range = ["2026-11-01", "2026-12-31"] as const;
 
   function swapSeat(rotationId: string, date: string, from: string, to: string) {
@@ -480,8 +481,10 @@ describe("Jahresausgleich", () => {
     swapSeat(r.id, "2026-11-07", m2, m3);
 
     const tables = getYearDeltaTables(r.id, now);
-    expect(tables.map((t) => t.year)).toEqual([2027]);
-    const row = (u: string) => tables[0].rows.find((x) => x.userId === u)!;
+    // The rotation starts in 2026: 2026 offers start values, 2027 counts the duties of 2026.
+    expect(tables.map((t) => t.year)).toEqual([2026, 2027]);
+    expect(tables[0].rows.every((x) => x.held === null && x.delta === 0)).toBe(true);
+    const row = (u: string) => tables[1].rows.find((x) => x.userId === u)!;
     expect(row(m2)).toMatchObject({ held: 1, autoDelta: 0, fullYear: true, joinedOn: "2026-10-21" });
     expect(row(m3)).toMatchObject({ held: 3, autoDelta: 2 });
     expect(row(m1)).toMatchObject({ held: 2, autoDelta: 1 });
@@ -491,7 +494,7 @@ describe("Jahresausgleich", () => {
     const extra = seedTeam({ members: 1 }).memberIds[0];
     const r = createRotation({ ...input, yearlyFairness: true }, team.ownerId, now);
     updateRotation(r.id, { ...input, yearlyFairness: true, memberIds: [...input.memberIds, extra] }, new Date(2026, 10, 10, 12, 0));
-    const row = getYearDeltaTables(r.id, now)[0].rows.find((x) => x.userId === extra)!;
+    const row = of2027(r.id).rows.find((x) => x.userId === extra)!;
     expect(row).toMatchObject({ fullYear: false, autoDelta: 0, joinedOn: "2026-11-10" });
   });
 
@@ -499,11 +502,11 @@ describe("Jahresausgleich", () => {
     const r = createRotation({ ...input, yearlyFairness: true }, team.ownerId, now);
     const m1 = team.memberIds[0];
     setYearDeltaOverride(r.id, { year: 2027, userId: m1, delta: 3 }, team.ownerId, now);
-    expect(getYearDeltaTables(r.id, now)[0].rows.find((x) => x.userId === m1)).toMatchObject({ override: 3, delta: 3 });
+    expect(of2027(r.id).rows.find((x) => x.userId === m1)).toMatchObject({ override: 3, delta: 3 });
     setYearDeltaOverride(r.id, { year: 2027, userId: m1, delta: 1 }, team.ownerId, now);
-    expect(getYearDeltaTables(r.id, now)[0].rows.find((x) => x.userId === m1)).toMatchObject({ override: 1 });
+    expect(of2027(r.id).rows.find((x) => x.userId === m1)).toMatchObject({ override: 1 });
     setYearDeltaOverride(r.id, { year: 2027, userId: m1, delta: null }, team.ownerId, now);
-    expect(getYearDeltaTables(r.id, now)[0].rows.find((x) => x.userId === m1)).toMatchObject({ override: null });
+    expect(of2027(r.id).rows.find((x) => x.userId === m1)).toMatchObject({ override: null });
     expect(() => setYearDeltaOverride(r.id, { year: 2027, userId: team.ownerId, delta: 1 }, team.ownerId, now)).toThrow(
       RotationServiceError
     );
@@ -535,7 +538,7 @@ describe("Jahresausgleich", () => {
   it("[fork] counts approved vacations in the Delta table as generation does", () => {
     const r = createRotation({ ...input, yearlyFairness: true }, team.ownerId, now);
     const m1 = team.memberIds[0];
-    const table = () => getYearDeltaTables(r.id, now)[0].rows;
+    const table = () => of2027(r.id).rows;
     const before = table();
     expect(before.find((x) => x.userId === m1)).toMatchObject({ held: 2, autoDelta: 0 });
     // m1 misses every December duty, and 2026 has no later duty to make up on

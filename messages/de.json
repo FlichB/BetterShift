@@ -922,6 +922,9 @@
     "defaultSignupCapacityHint": "Legt fest, wie viele Personen sich für Schichten aus dieser Vorlage eintragen können. Leer lassen für unbegrenzt viele Anmeldungen. Wird beim Anlegen übernommen und kann pro Schicht angepasst werden."
   },
   "syncSheet": {
+    "yearsAheadLabel": "Termine abrufen bis",
+    "yearsAheadDefault": "{date} (Standard)",
+    "yearsAheadHint": "Zurück werden 3 Monate abgerufen. Für die Jahresplanung sollte das ganze nächste Jahr enthalten sein; wirksam ab dem nächsten Abruf.",
     "intervalPill": "Alle {interval}",
     "intervalValue": "alle {interval}",
     "lastSynced": "zuletzt {time}",
@@ -1481,6 +1484,7 @@
       "overrideFor": "Eigener Wert für {name} ({year})",
       "newSince": "neu seit {date}",
       "reset": "Automatischen Wert verwenden",
+      "startHint": "Die Rotation beginnt {year} und hat {previous} noch nichts gezählt. Trage Startwerte aus eurer bisherigen Planung als eigenen Wert ein.",
       "noData": "Im Vorjahr gab es noch keine Dienste – kein Übertrag."
     },
     "period": {

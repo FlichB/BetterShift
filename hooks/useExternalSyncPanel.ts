@@ -168,6 +168,7 @@ export function useExternalSyncPanel({
           color: values.color,
           displayMode: values.displayMode,
           autoSyncInterval: values.autoSyncInterval,
+          yearsAhead: values.yearsAhead, // [fork]
           icsContent,
           isHidden: values.isHidden,
           hideFromStats: values.hideFromStats,
@@ -207,6 +208,7 @@ export function useExternalSyncPanel({
           color: values.color,
           displayMode: values.displayMode,
           autoSyncInterval: values.autoSyncInterval,
+          yearsAhead: values.yearsAhead, // [fork]
           isHidden: values.isHidden,
           hideFromStats: values.hideFromStats,
         }),

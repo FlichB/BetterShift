@@ -922,6 +922,9 @@
     "defaultSignupCapacityHint": "Určuje, kolik lidí se může přihlásit na směny vytvořené z této šablony. Nechte prázdné pro neomezený počet. Při vytvoření směny se zkopíruje a lze ho u každé směny upravit."
   },
   "syncSheet": {
+    "yearsAheadLabel": "Importovat události do",
+    "yearsAheadDefault": "{date} (výchozí)",
+    "yearsAheadHint": "Události se importují od 3 měsíců zpět. Pro roční plánování by měl být zahrnut celý příští rok; projeví se při další synchronizaci.",
     "intervalPill": "Každých {interval}",
     "intervalValue": "každých {interval}",
     "lastSynced": "naposledy {time}",
@@ -1481,6 +1484,7 @@
       "overrideFor": "Vlastní hodnota pro {name} ({year})",
       "newSince": "nový od {date}",
       "reset": "Použít automatickou hodnotu",
+      "startHint": "Rotace začíná v roce {year} a za rok {previous} ještě nic nezapočítala. Zadejte počáteční hodnoty z dosavadního plánování jako vlastní hodnotu.",
       "noData": "V minulém roce ještě nebyly žádné služby – nic k převodu."
     },
     "period": {

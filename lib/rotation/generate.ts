@@ -1,6 +1,6 @@
 import { fromDayNumber, isoWeekday, mondayOf, toDayNumber } from "@/lib/rotation/dates";
 import type { PlannedDays, PlannedDuty, RotationRule } from "@/lib/rotation/types";
-import { compensationSeats, yearDeltaRows, type YearDeltaRow, type YearTally } from "@/lib/rotation/yearly";
+import { compensationSeats, startDeltaRows, yearDeltaRows, type YearDeltaRow, type YearTally } from "@/lib/rotation/yearly";
 
 function assertRule(rule: RotationRule): void {
   if (!Number.isInteger(rule.perShift) || rule.perShift < 1) {
@@ -784,7 +784,7 @@ function planner(rule: RotationRule) {
         deltasAt: (year, duty, planned) => {
           // A restart inside a year must not settle the year before a second time.
           if (duty === 0 && tallyYear(rule, periodAt, [], year).firstDate !== null) return new Map();
-          const rows = yearDeltaRows(rule.memberIds, rule.memberSince, tallyYear(rule, periodAt, planned, year - 1), rule.deltaOverrides?.[year]);
+          const rows = settledRows(rule, periodAt, planned, year);
           return new Map((rows ?? []).map((r) => [r.userId, r.delta]));
         },
       }
@@ -841,7 +841,18 @@ export function yearSummary(rule: RotationRule, year: number): YearDeltaRow[] | 
   if (yearOfDate(periodAt(0).dates[0]) === year && tallyYear(rule, periodAt, [], year).firstDate !== null) return null;
   const planned: string[][] = [];
   for (let i = 0; periodAt(i).dates[0] < `${year}-01-01`; i++) planned.push(groups.next().value as string[]);
-  return yearDeltaRows(rule.memberIds, rule.memberSince, tallyYear(rule, periodAt, planned, year - 1), rule.deltaOverrides?.[year]);
+  return settledRows(rule, periodAt, planned, year);
+}
+
+/**
+ * The Delta rows `year` settles; start values when the rotation begins in `year` and counted
+ * nothing in year − 1 (planning before the rotation is carried over as overrides).
+ */
+function settledRows(rule: RotationRule, periodAt: (i: number) => Period, planned: readonly string[][], year: number): YearDeltaRow[] | null {
+  const overrides = rule.deltaOverrides?.[year];
+  const rows = yearDeltaRows(rule.memberIds, rule.memberSince, tallyYear(rule, periodAt, planned, year - 1), overrides);
+  if (rows) return rows;
+  return yearOfDate(periodAt(0).dates[0]) === year ? startDeltaRows(rule.memberIds, overrides) : null;
 }
 
 /**

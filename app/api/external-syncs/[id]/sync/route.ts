@@ -18,6 +18,8 @@ import {
   logSystemEvent,
   type SyncExecutedMetadata,
 } from "@/lib/audit-log";
+import { getYearsAhead } from "@/lib/sync-window/store"; // [fork]
+import { syncWindowEnd as endOfSyncWindow } from "@/lib/sync-window/window"; // [fork]
 
 /**
  * Core sync logic extracted for reuse by both API route and auto-sync service
@@ -100,11 +102,11 @@ export async function syncExternalCalendar(
     const vevents = comp.getAllSubcomponents("vevent");
     const vtodos = comp.getAllSubcomponents("vtodo");
 
-    // Define sync window: 3 months back to 1 year forward
+    // Define sync window: 3 months back to 31.12. of the feed's horizon
+    // [fork] (default the year after next, so a whole next year can be planned with its Feiertage)
     const syncWindowStart = new Date();
     syncWindowStart.setMonth(syncWindowStart.getMonth() - 3);
-    const syncWindowEnd = new Date();
-    syncWindowEnd.setFullYear(syncWindowEnd.getFullYear() + 1);
+    const syncWindowEnd = endOfSyncWindow(new Date(), getYearsAhead(syncId));
 
     // Get existing synced shifts for this sync
     const existingShifts = await db
