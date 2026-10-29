@@ -32,7 +32,7 @@ import {
   rotations,
   type Rotation,
 } from "@/lib/rotation/schema";
-import type { ClosedDate, RotationRule } from "@/lib/rotation/types";
+import type { ClosedDate, PlannedDays, RotationRule } from "@/lib/rotation/types";
 import type { RotationInput } from "@/lib/rotation/validate";
 import { approvedRanges } from "@/lib/vacation/dates"; // [fork] Urlaub
 import type { DateRange } from "@/lib/vacation/types"; // [fork] Urlaub
@@ -718,6 +718,17 @@ export function getYearDeltaTables(id: string, now: Date): YearDeltaTable[] {
     const rows = yearSummary(rule, y);
     return rows ? [{ year: y, rows: rows.map((r) => ({ ...r, joinedOn: rotation.memberSince[r.userId] ?? rotation.startDate })) }] : [];
   });
+}
+
+/**
+ * [fork] Test helper for scripts/backtest-rotation.ts: the plan from startDate up to `to` as if
+ * nothing had been served yet, with the approved vacations. Nothing is written.
+ */
+export function backtestDays(id: string, to: string): PlannedDays {
+  const rotation = loadRotation(db, id);
+  // Just before startDate: no written duty or Schließeintrag counts as held yet.
+  const now = new Date(parseLocalDate(rotation.startDate).getTime() - 1);
+  return generateDays(toRule(db, rotation, to, now, loadAbsences(db, rotation.memberIds)), rotation.startDate, to);
 }
 
 /** [fork] Jahresausgleich: sets (or with delta null removes) a manager's Delta. */
